@@ -187,6 +187,13 @@
             const useCustomList = document.getElementById("useCustomList").checked;
             const file = document.getElementById("funksprueche").files[0];
 
+            spruecheProTeilnehmer = Number(document.getElementById("spruecheProTeilnehmer").value);
+            spruecheAnAlle = Number(document.getElementById("spruecheAnAlle").value);
+            spruecheAnMehrere = Number(document.getElementById("spruecheAnMehrere").value);
+            leitung = document.getElementById("leitung").value;
+            rufgruppe = document.getElementById("rufgruppe").value;
+            nameDerUebung = document.getElementById("nameDerUebung").value;
+
             if (useCustomList) {
                 // Falls der Nutzer eine eigene Datei hochlädt
                 if (!file) {
