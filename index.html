@@ -356,9 +356,10 @@
         /**
          * Erstellt HTML-Seiten und zeigt sie im iframe mit Paginierung an.
          * 
-         * @param {Array} jsonDaten - JSON-Array mit den Übungsdaten
+         * @param {Array} funksprueche - JSON-Array mit den Funksprüchen
          */
-        function generateAllPages(jsonDaten) {
+        function generateAllPages(funksprueche) {
+            jsonDaten = generiereUebung(funksprueche);
             generatedPages = jsonDaten.map(data => generateHTMLPage(data));
             currentPageIndex = 0;
 
