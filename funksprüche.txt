@@ -1,0 +1,303 @@
+Haben Standort gewechselt. Neuer Standort ist TRIFTPLATZ.
+Haben Einsatzstelle in LÖNSSTRASSE erreicht.
+Haben Standort gewechselt. Neuer Standort ist GIEBELSTIEG Weg.
+Sind auf dem Weg zu Einsatzstelle in HAYDNSTRASSE.
+Haben Standort gewechselt. Neuer Standort ist BOKSBERG.
+Sind in Bereitstellungxraum Hotel TSCHILLER angekommen.
+Haben Einsatzstelle KOLDINGER Weg erreicht.
+Ihr neuer Einsatzauftrag: Einsatzstelle HEISEDERSTR anfahren.
+Sind an Einsatzstelle DORNIERSTR angekommen.
+Rückbau beendet, Einsatz in RUSCHEPLATEN Weg beendet. Kehren zurück zum Bereitstellungsraum.
+Richten Einsatzleitung am Bahnhofsvorplatz ein.
+Einsatzleitung ist einsatzbereit. Übernehmen Leitung über Abschnitte 2 und 3.
+Benötigen Ablösung für 2 Technische Züge und weiteren Verpflegung für ca. 200 Kräfte.
+Benötigen Ablösung für 2 Bergungsgruppen. Zusätzlich 50l Motorsägenkraftstoff.
+Feuerwehr hat Brandbekämpfung abgeschlossen. Löschzug 1 rückt ab.
+Feuerwehr hat Brandbekämpfung abgeschlossen. Löschzug 2 rückt ab.
+Verpflegung ist eingetroffen. Helfer werden Schichtweise vom Einsatz abgezogen.
+Der Bereitstellungsraum meldet 2 freie Technische Züge. Werden diese anderswo benötigt?
+Bereitstellungsraum meldet eine freie Bergungsgruppe. Haben Sie Bedarf an weiteren Kräften?
+Rückbau beendet. Wir fahren Unterkunft an.
+Rückbau beendet. Wir fahren Bereitstellungsraum an.
+Rückbau beendet. Haben Sie eine weitere Einsatzstelle für uns?
+Rückbau beendet. Wohin sollen wir uns begeben?
+Verlassen die Unterkunft mit der Stärke 1/1/2/4
+Verlassen die Unterkunft mit der Stärke 0/2/5/7
+Verlassen die Unterkunft mit der Stärke 1/5/26/32
+Haben die Einsatzstelle erreicht. Beginnen mit der Erkundung.
+Durch das steigende Wasser wurden die Bahngleise unterspült. Ein Wagen ist entgleist.
+Pegel steigt weiter, benötigen weitere 500 Sandsäcke
+Der Wagen ist gesichert. Die Türen sind aufgrund der Deformation nicht zugänglich.
+Es werden noch 10 Insassen vermisst. Benötigen Rettungsdienst.
+Eine schwer verletzte Person gefunden. Benötigen dringend Rettungsdienst.
+Zwei schwer verletzte Personen gefunden. Benötigen dringend Rettungsdienst mit Notarzt.
+Wagen geöffnet und alle Personen in Sicherheit gebracht. Ausstattung wird verlastet.
+Rettungsdienst hat letzte Person übernommen. Einsatz ist Beendet und wir fahren die Unterkunft an.
+Haben Unterkunft erreicht und melden uns wieder Einsatzbereit.
+Haben Bereitstellungsraum erreicht und melden uns wieder Einsatzbereit.
+Pegel des Flusses steigt weiter. Aktuell 1m über normal.
+Deich droht zu brechen. Evakuierung des Wohngebiets ist angeordnet.
+Benötigen mindestens 2 weitere Züge für Evakuierung. Außerdem min. 500 Sandsäcke nötig.
+Einige Keller laufen voll. Benötigen eine Fachgruppe WP.
+Fachgruppe Räumen mit BRmG ist eingetroffen.
+Wasser beginnt durch den Deich zu drücken. An den Stellen werden Quellkaden gebaut.
+Dringend: Benötigen 2000 Sandsäcke. Anlieferung zur TRIERER Straße.
+Evakuierung des Wohngebiets läuft.  Benötigen noch zwei Einsatzeinheiten zur Betreuung.
+Evakuierung des Wohngebiets abgeschlossen. Benötigen noch eine weitere Einsatzeinheit zur Betreuung.
+Der Deich ist an einer Stelle gebrochen. Verlassen Sie das Einsatzgebiet.
+Alle Einheiten bis zur ADALBERT Straße zurückgezogen. Einsatzleitung an nächste Schicht übergeben.
+Ein Baum blockiert die Straße. Einsatzstelle ist abgesichert.
+Zwei Sägetrupps haben Arbeit aufgenommen.
+Umleitung über KRANZWEG wurde eingerichtet.
+Baum wurde zersägt. Abtransport übernimmt Straßenmeisterei.
+Polizei meldet weiteren umgestürzten Baum im KRANZWEG. Wir fahren die Einsatzstelle an.
+Der zweite Baum hat ein Fahrzeug getroffen. Eine Person eingeklemmt. Benötigen Rettungsdienst.
+Der Baum wurde zersägt und der Fahrer konnte aus dem Fahrzeug befreit werden.
+Der Verletzte wurde an den Rettungsdienst übergeben. Bereit für neuen Auftrag.
+Haben Fahrzeuge besetzt und sind abfahrbereit.
+Haben Einsatzstelle erreicht. Ein Keller steht etwa 50 cm unter Wasser.
+Das Wasser kam aus einem gebrochenen  Rohr. Dieses wurde von den Stadtwerken abgestellt.
+Abpumpen des Wassers wird vorbereitet. Darf direkt in die Kanalisation eingeleitet werden?
+Das Wasser wird mittels einer Tauchpumpe abgepumpt. Leistung etwa 500 l pro Minute. Benötigen weitere Pumpen.
+Das Wasser wird mittels einer Tauchpumpe abgepumpt. Leistung etwa 1000 l pro Minute.
+Wasserstand im Keller auf etwa 20 cm gesunken. Benötigen 50 l Treibstoff.
+Wasserstand im Keller auf etwa 10 cm gesunken. Benötigen 40 l Treibstoff.
+Der Keller wurde vollständig ausgepumpt. Die Ausstattung wird verlastet.
+Haben Einsatzaufgaben abgearbeitet und sind bereit für neuen Auftrag.
+Vor uns hat sich ein Verkehrsunfall ereignet. Vermutlich Personen verletzt. Benötigen dringend Notarzt.
+Es sind zwei Personen in den Fahrzeugen eingeklemmt. Notarzt ist eingetroffen.
+In Abstimmung mit dem Notarzt werden die Personen aus den Fahrzeugen befreit. Benötigen einen RTW und einen KTW.
+Erste Person ist befreit. Person hat multiple Brüche und ein Schleudertrauma.
+Erste Person an Rettungsdienst übergeben. Zweite Person wird derzeit befreit.
+Zweite Person erfolgreich befreit. Benötigen zwei Abschleppfahrzeuge.
+Unfallstelle geräumt. Fahren eigentliches Einsatzziel an.
+Sprengung wird in Kürze durchgeführt. Verlassen Sie die festgelegte Evakuierungszone.
+Benötigen in 5 Stunden etwa 400l Dieselkraftstoff.
+Wann benötigen Sie eine Ablösung?
+Wie viel Verpflegung wird benötigt?
+Welche Sätze EGS führen Sie mit sich?
+Deich droht zu brechen. Bereiten Sie Evakuierung vor.
+Einsatz ist beendet. Kehren Sie in zurück in Bereitstellungsraum.
+Das ENT ist alarmiert und wird in etwa einer Stunde eintreffen.
+Bei Rückfragen zu allgemeiner Lage an ZFü wenden.
+Verpflegungsausgabe ab 12:05 Uhr in SARSTEDT.
+Keine Sprengung durchführen, Genehmigung noch nicht vorhanden.
+Einsatzauftrag: Unterstützung FGr Sp an der Einsatzstelle.
+Einsatzauftrag: Unterstützung FGr WP an der Einsatzstelle.
+Einsatzauftrag: Unterstützung FGr E an der Einsatzstelle.
+Einsatzauftrag: Unterstützung FGr W an der Einsatzstelle.
+Einsatzauftrag: Unterstützung FGr R an der Einsatzstelle.
+MTW Zugtrupp steht für Logistikfahrten zur Verfügung.
+Ist in Ihrer Gruppe ein San-Helfer vorhanden?
+Wo ist Ihr aktueller Standort?
+Was ist Ihre aktuelle Stärke?
+Was ist Ihr aktueller Einsatzauftrag?
+Wie lange benötigen Sie noch für den aktuellen Auftrag?
+Paket mit Aufschrift "EURODYN" eingetroffen, haben Sie das angefordert?
+Anfahrt mit Wege- und Sonderrechten freigegeben?
+Auf Anfahrt um MzKW abzuschleppen, ein Trupp bleibt an Einsatzstelle zurück.
+GKW liegen geblieben, benötigen Logistik mit Ersatzrad und Fahrzeug zur Aufnahme der Helfer.
+MLW 4 mit Defekt in Elektrik. Fremdstarten nicht möglich. Benötigen Unterstützung.
+Benötigen EGS vor Ort, ist eine Alarmierung notwendig?
+GrFü B2 nicht erreichbar. Übermitteln Sie an GrFü B2: B1 ist vor Ort und erkundet die Einsatzstelle.
+Gruppenführer ist über Handy erreichbar.
+Atemschutzgeräte sind einsatzbereit.
+Benötigen Ablösung für AGT-Trupp.
+Ankunft verzögert sich wegen Verkehrsunfall.
+Wann wird Verpflegung benötigt?
+Benötigen evtl. weitere AGT.
+Zugführer nicht erreichbar, übermitteln sie: Benötigen Notarzt und RTW bei Verkehrsunfall.
+MzKW lässt sich nicht starten, mit Zeitverzögerung rechen.
+Wird bei dem Verkehrsunfall weitere Unterstützung benötigt?
+Unser Tank ist leer, wie lautet die PIN der DKV-Tankkarte?
+Ist die Betonkettensäge auf dem MzKW verladen?
+Benötigen Lotsen zur Anfahrt der Einsatzstelle.
+Warten Sie bis zum Eintreffen des Lotsen an aktuellem Standort.
+Wird vor Ort weitere Hilfe benötigt?
+Sprengarbeiten an Einsatzstelle notwendig. Beachten Sie entsprechende Warnhinweise.
+Einsatzauftrag: Fahren Sie Koordinaten 32U ND 5888 0150 an und erkunden die Schadenslage vor Ort.
+Aktueller Standort ist 32U NC 6032 8819.
+Gefahrstoffbehälter mit UN-Nummer 1223 gefunden. Worum handelt es sich?
+Gefahrstoffbehälter mit UN-Nummer 1073 gefunden. Welcher Sicherheitsabstand ist einzuhalten?
+Gefahrstoffbehälter mit UN-Nummer 1350 gefunden. Alarmieren Sie Gefahrstoffzug.
+Befinden uns auf Anfahrt zur Einsatzstelle über SENKINGWEG.
+Anfahrt über PFAFFENSTIEG ist blockiert. Welche Alternative ist frei?
+Bei Anfahrt zur Einstelle ausschließlich über GOSCHENSTRASSE anrücken.
+PININGWEG ist geflutet und nicht passierbar.
+Die Ablösung wird um 18:00 Uhr erfolgen.
+Von 12:30 bis 14:00 steht Verpflegung an der Logistikstelle bereit.
+Anfahrt zum Bereitstellungsraum bis spätestens 21:15 Uhr.
+Erstes MzAB ist zu Wasser gelassen.
+Benötigen in 7 Stunden etwa 500l Dieselkraftstoff.
+Stromversorgung wird in 30 Minuten hergestellt.
+Behelfsbrücke ist zu einem Drittel fertig gestellt.
+Behelfsbrücke ist zur Hälfte fertig gestellt.
+Angeforderte Dekon-P wird in Kürze vor Ort sein.
+Angeforderte Dekon-P ist eingetroffen.
+Aktuelle Förderleistung beträgt ca. 2500 Liter/Minute.
+Aktuelle Förderleistung beträgt ca. 5000 Liter/Minute.
+Aktuelle Förderleistung beträgt ca. 10000 Liter/Minute.
+Aktuelle Förderleistung beträgt ca. 15000 Liter/Minute.
+Aktuelle Last beträgt ca. 50 kW mit Spitzen bis zu 75 kW.
+Aktuelle Last beträgt ca. 70 kW mit Schwankungen um 20 kW.
+Aktuelle Last beträgt ca. 90 kW mit Spitzen bis 140 kW.
+Aktuelle Last beträgt ca. 115 kW, Tendenz steigend.
+Die nächste LKW-Ladung Sandsäcke steht zur Abholung bereit.
+Zwei LKW-Ladungen Sandsäcke stehen zur Abholung bereit.
+Westwand des Gebäude ist gesichert. Erwarten weitere Anweisungen.
+Südwand des Gebäudes wird gerade gesichert. Restdauer geschätzt 2 Stunden.
+Benötigen einen weiteren Satz EGS 1-4 an der Einsatzstelle.
+Benötigen zwei weitere Sätze EGS 1-4 an der Einsatzstelle.
+LiMa ist in Position. Betrieb wird in 20 Minuten aufgenommen.
+Äußerer Trümmerkegel ist abgesucht. Dringen weiter ins Innere vor.
+Eine verschüttete Person gefunden. Person ist ansprechbar. Beginnen mit Rettung.
+Letzte vermisste Person konnte nur noch tot gefunden werden. Beginnen mit Bergung.
+Vier eingeschlossene Personen geortet. Benötigen weitere Kräfte zur Rettung.
+Benötigen weiteren Abstützmaterial an Ostseite des Gebäudes.
+In den Trümmern werden weitere Verschüttete vermutet. Benötigen FGr Ortungen.
+Hunde brauchen eine Pause. Ortung wird mit technischen Mitteln fortgesetzt.
+Tank hat ein Leck. Benötigen FGr Ö.
+Leiten fünfte Phase der Bergung ein. Eintreffen der FGr R in Kürze.
+Bei Kilometer 53 sickert Wasser durch den Deich.
+Notstromversorgung ist sicher gestellt. Kritische Phase ist vorbei.
+Stehen in Ihrer Einheit freie Kraftfahrer Klasse CE zur Verfügung?
+Stehen in Ihrer Einheit freie Kraftfahrer Klasse BE zur Verfügung?
+Stehen in Ihrer Einheit freie AGT zur Verfügung?
+Einsatzauftrag: Durchsuchung der Zone B auf weitere Anwohner.
+Evakuierung der Anwohner ist abgeschlossen. Rückzug aller Einsatzkräfte aus der Evakuierungszone.
+Benötigen weitere 300m B-Schläuche zur Löschwasserbereitstellung.
+Benötigen weitere 500m B-Schläuche zur Löschwasserbereitstellung.
+Einsatzauftrag: Verteilung von Sandsäcken an Anwohner zur Eigentumssicherung
+Erkundung ist abgeschlossen. Mehrere umgeknickte Bäume gefunden. Benötigen drei Trupps mit Motorsägen.
+Wanddurchbruch ist erfolgt. Dringen weiter zur eingeschlossenen Person vor.
+Bester Zugang mittels Deckendurchbruch. Benötigen entsprechendes Gerät und Personal.
+Versorgung der Milchbauern ist abgeschlossen. Benötigen neuen Einsatzauftrag.
+Keller ist leer gepumpt. Benötigen neuen Einsatzauftrag.
+Dach ist provisorisch gesichert. Benötigen neuen Einsatzauftrag.
+Kehren Sie zurück in Bereitstellungsraum und warten dort auf weitere Anweisungen.
+Betreiben Führungstelle ab jetzt in zwei Schichten. Erreichbarkeit ist gewährleistet.
+Sicherungsposten fünf bis neun sind in Position.
+Erste Marschkolonne befindet sich auf dem Weg. Ankunft in ca. 4 Stunden.
+Dritte Marschkolonne befindet sich auf dem Weg. Ankunft in ca. 6 Stunden.
+Marschkolonne muss unplanmäßigen technischen Halt einlegen. Weiterfahrt verzögert sich auf unbestimmte Zeit.
+Taucher sind an Einsatzstelle eingetroffen.
+Benötigen BrmG an der Einsatzstelle.
+Angefordertes BrmG ist an der Einsatzstelle eingetroffen.
+Lage: Bus mit ca. 40 Insassen verunglückt.
+Sind an Einsatzstelle angetroffen. Einweisung durch die Feuerwehr ist erfolgt.
+Beginnen mit Rettungsarbeiten. Dringen mit schwerem Gerät vor.
+Benötigen Verpflegung für ca. 20 Einsatzkräfte an der Einsatzstelle.
+Sind auf Anfahrt zur Metro zwecks Besorgungen für die Feldküche.
+Fahren Sie Einsatzstelle im SMETANWEG an.
+Benötigen Verpflegung für 50 Einsatzkräfte an Einsatzstelle in TEPLITZER Straße.
+Zufahrt über BÜNTEWEG ist blockiert. Einsatzstelle kann nur zu Fuß erreicht werden.
+Zufahrt über RÖHRICHWEG ist blockert. Gibt es eine Alterative?
+Fahren Sie Meldekopf am ANGERPLATZ an.
+Zwei Helfer mit Erschöpfungserscheinungen ausgefallen.
+Ein Helfer hat sich bei den Rettungsarbeiten verletzt: Schnittwunde im Finger.
+Ein Helfer hat sich bei den Abstützarbeiten verletzt: Platzwunde am Kopf
+Wir benötigen dringend Ablösung unserer Kräfte.
+Ablösung ist unterwegs. Eintreffen ca. 20 Uhr.
+Haben neuen Bereitstellungsraum eingerichtet. Standort: BREMEN.
+Alle Einheiten sollen in den Bereitstellungsraum LINDENWEG zurückkehren. Der Einsatz ist dort beendet.
+An der Einsatzstelle wurde ein Gefahrgut mit der UN-Nummer 1993 entdeckt. Bitte bestätigen Sie die Identifizierung und Maßnahmen einleiten.
+Das Notstromaggregat am TECHNIKHOF ist in Betrieb genommen worden. Die Stromversorgung für kritische Einrichtungen ist sichergestellt.
+Der Feuerwehreinsatz an der EINSATZZONE ist beendet. Die letzten Kräfte ziehen sich zurück.
+Der neue Einsatzauftrag lautet: Unterstützung an der BRÜCKENALLEE. Helfer sollen sich dort einfinden.
+Der Rückbau ist abgeschlossen. Wir verlegen unsere Einheit in den Bereich STADTPLATZ, um dort neue Aufgaben zu übernehmen.
+Der Sandsackverbau wird am FLUTWEHR durchgeführt. Helfer sollen sich dorthin begeben.
+Der Wasserstand an der DEICHSTRASSE steigt weiter an. Die Hochwasserschutzmaßnahmen wurden verstärkt.
+Die Alarmierung weiterer Gruppen für den SONNENWEG wurde bestätigt. Verstärkung trifft in Kürze ein.
+Die Brücke über den FLUSSWEG ist instabil. Die Zufahrt zur Einsatzstelle ist daher nicht möglich.
+Die Einsatzstelle an den Koordinaten 32U ND 4520 8974 wurde erreicht. Erste Maßnahmen zur Lageerkundung laufen.
+Die Evakuierung der OSTSTRASSE läuft. Unterstützung wird weiterhin benötigt.
+Die Evakuierung der SÜDSTRASSE wurde erfolgreich abgeschlossen. Alle betroffenen Bewohner sind untergebracht.
+Die Evakuierung des Gebietes HARMSWEG läuft nach Plan. Es werden noch zusätzliche Helfer benötigt.
+Die Fachgruppe Räumen wird an der Einsatzstelle BAUMWEG benötigt. Eine beschädigte Struktur muss entfernt werden.
+Die Funktionsprüfung am RÜCKSTAUWEG wurde erfolgreich abgeschlossen. Keine Mängel festgestellt. ...
+Die Funkverbindung wurde am FEUERWEHRPLATZ erfolgreich getestet. Weitere Maßnahmen sind nicht erforderlich.
+Die Funkverbindung zur Führung wurde am NOTRUFWEG erfolgreich wiederhergestellt. Kommunikation läuft stabil.
+Die Gefahrenstelle an der INDUSTRIESTRASSE wurde abgesichert. Es besteht kein akutes Risiko mehr.
+Die Koordination der Einsatzkräfte erfolgt am BERGPLATZ. Alle Meldungen dorthin senden.
+Die Koordinationsstelle ist am MARKTGASSE eingerichtet worden. Führung übernimmt die Leitung.
+Die Lageerkundung an der WILHELMSSTRASSE ist abgeschlossen. Es sind keine weiteren Gefahren festgestellt worden.
+Die letzte Einheit rückt ab und verlässt den EINSATZBEREICH. Alle Maßnahmen sind abgeschlossen.
+Die neue Einsatzleitung mit der Kennung EL 3 hat ihre Arbeit aufgenommen. Alle weiteren Funksprüche bitte an diese richten.
+Die Notstromversorgung an der HAUPTSTRASSE ist aktiv. Betroffene Haushalte haben wieder Strom.
+Die Sandsäcke sind zur Verteilung am STADTPARK eingetroffen. Bitte melden Sie sich zur Abholung.
+Die Versorgungsausgabe findet aktuell an der WESTALLEE statt. Alle Einheiten melden sich dort.
+Ein LKW mit Versorgungsgütern ist am MARKTPLATZ angekommen. Helfer zur Entladung werden benötigt.
+Ein Wasserdurchbruch an der DEICHRING wurde gemeldet. Erste Maßnahmen laufen.
+Eine Straßensperrung wurde am SANDWEG errichtet. Bitte eine alternative Route nutzen.
+Eine technische Hilfeleistung wird am BRUNNENWEG benötigt. Ein Fahrzeug ist festgefahren.
+Einheiten in Bereitschaft halten sich am HOFWEG auf. Weitere Anweisungen folgen.
+Es werden Räumgeräte an der BAHNHOFSTRASSE benötigt. Eine Straße ist blockiert.
+Es werden weitere Kräfte an der Einsatzstelle OSTENALLEE benötigt. Die aktuelle Mannschaft reicht nicht aus.
+Es wird Unterstützung in der NORDALLEE benötigt. Ein Gebäude droht einzustürzen.
+Helfer benötigen dringend Ablösung an der KIRCHGASSE. Die Einsatzzeit beträgt bereits mehrere Stunden.
+Starke Rauchentwicklung am HAMBURGERPLATZ festgestellt. Anwohner werden vorsorglich evakuiert.
+Wir befinden uns auf Anfahrt zur Einsatzstelle in FLENSBURG. Die Straßenverhältnisse sind aktuell unklar.
+Wir haben den neuen Bereitstellungsraum in BREMEN eingerichtet. Alle Einheiten sollen sich dorthin begeben.
+Wir haben die Logistikstation HAFENWEG erreicht. Die Versorgung der Einsatzkräfte läuft.
+Wir haben die Unterkunft verlassen und sind auf dem Weg zur Einsatzstelle MÜHLENWEG. Die voraussichtliche Ankunftszeit beträgt 20 Minuten.
+Alle Einheiten sollen in den Bereitstellungsraum LINDENWEG zurückkehren. Der Einsatz ist dort beendet.
+An der Einsatzstelle wurde ein Gefahrgut mit der UN-Nummer 1993 entdeckt. Bitte bestätigen Sie die Identifizierung und Maßnahmen einleiten.
+Das Notstromaggregat am TECHNIKHOF ist in Betrieb genommen worden. Die Stromversorgung für kritische Einrichtungen ist sichergestellt.
+Der Bereitstellungsraum am HAFENGELÄNDE ist eingerichtet. Sammelpunkt für neue Einsatzkräfte.
+Der Einsatzleitwagen hat seine Position am ZENTRALPLATZ eingenommen. Weitere Koordination erfolgt von hier.
+Der Feuerwehreinsatz an der EINSATZZONE ist beendet. Die letzten Kräfte ziehen sich zurück.
+Der neue Einsatzauftrag lautet: Unterstützung an der BRÜCKENALLEE. Helfer sollen sich dort einfinden.
+Der Rückbau ist abgeschlossen. Wir verlegen unsere Einheit in den Bereich STADTPLATZ, um dort neue Aufgaben zu übernehmen.
+Der Sandsackverbau wird am FLUTWEHR durchgeführt. Helfer sollen sich dorthin begeben.
+Der Wasserstand an der DEICHSTRASSE steigt weiter an. Die Hochwasserschutzmaßnahmen wurden verstärkt.
+Die Alarmierung weiterer Gruppen für den SONNENWEG wurde bestätigt. Verstärkung trifft in Kürze ein.
+Die Brücke über den FLUSSWEG ist instabil. Die Zufahrt zur Einsatzstelle ist daher nicht möglich.
+Die Brücke über den FLUSSWEG wurde gesichert. Fahrzeuge dürfen passieren.
+Die Einsatzstelle an den Koordinaten 32U ND 4520 8974 wurde erreicht. Erste Maßnahmen zur Lageerkundung laufen.
+Die Evakuierung der OSTSTRASSE läuft. Unterstützung wird weiterhin benötigt.
+Die Evakuierung der SÜDSTRASSE wurde erfolgreich abgeschlossen. Alle betroffenen Bewohner sind untergebracht.
+Die Evakuierung des Gebietes HARMSWEG läuft nach Plan. Es werden noch zusätzliche Helfer benötigt.
+Die Fachgruppe Räumen wird an der Einsatzstelle BAUMWEG benötigt. Eine beschädigte Struktur muss entfernt werden.
+Die Funktionsprüfung am RÜCKSTAUWEG wurde erfolgreich abgeschlossen. Keine Mängel festgestellt. ...
+Die Funkverbindung wurde am FEUERWEHRPLATZ erfolgreich getestet. Weitere Maßnahmen sind nicht erforderlich.
+Die Funkverbindung zur Führung wurde am NOTRUFWEG erfolgreich wiederhergestellt. Kommunikation läuft stabil.
+Die Gefahrenstelle an der INDUSTRIESTRASSE wurde abgesichert. Es besteht kein akutes Risiko mehr.
+Die Kommunikation zur FÜHRUNGSSTELLE wurde wiederhergestellt. Melden Sie alle aktuellen Lageinformationen.
+Die Koordination der Einsatzkräfte erfolgt am BERGPLATZ. Alle Meldungen dorthin senden.
+Die Koordinationsstelle ist am MARKTGASSE eingerichtet worden. Führung übernimmt die Leitung.
+Die Lageerkundung an der WILHELMSSTRASSE ist abgeschlossen. Es sind keine weiteren Gefahren festgestellt worden.
+Die letzte Einheit rückt ab und verlässt den EINSATZBEREICH. Alle Maßnahmen sind abgeschlossen.
+Die letzte Evakuierungsmaßnahme an der UNTERMARKT wurde erfolgreich durchgeführt. Rückbau beginnt.
+Die Löschmaßnahmen an der BAHNHOFSPLATZ sind erfolgreich abgeschlossen. Nachkontrolle läuft.
+Die mobile Verpflegungsstation hat ihre Arbeit am SCHLACHTHOF aufgenommen. Alle Einheiten können sich versorgen.
+Die neue Einsatzleitung mit der Kennung EL 3 hat ihre Arbeit aufgenommen. Alle weiteren Funksprüche bitte an diese richten.
+Die Notstromversorgung an der HAUPTSTRASSE ist aktiv. Betroffene Haushalte haben wieder Strom.
+Die Pumpe am HOCHWASSERSCHUTZDEICH hat ihre maximale Kapazität erreicht. Weitere Maßnahmen erforderlich.
+Die Sandsäcke sind zur Verteilung am STADTPARK eingetroffen. Bitte melden Sie sich zur Abholung.
+Die Sandsacklieferung ist an der HOCHWASSERWEHR eingetroffen. Einheiten sollen sich zur Abholung bereitmachen.
+Die Sicherungsmaßnahmen am SCHULHOF wurden erfolgreich abgeschlossen. Weitere Arbeiten sind nicht erforderlich.
+Die Straßenbeleuchtung in der KIRCHGASSE ist ausgefallen. Techniker wurden alarmiert.
+Die Stromversorgung am ENERGIEPARK wurde vollständig wiederhergestellt. Keine weiteren Ausfälle gemeldet.
+Die Versorgungsausgabe findet aktuell an der WESTALLEE statt. Alle Einheiten melden sich dort.
+Ein LKW mit Versorgungsgütern ist am MARKTPLATZ angekommen. Helfer zur Entladung werden benötigt.
+Ein medizinischer Notfall wurde am SPORTHALLENWEG gemeldet. Rettungskräfte sind vor Ort.
+Ein schwer beschädigtes Gebäude an der ALTSTADTSTRASSE wurde evakuiert. Weitere Absicherung erforderlich.
+Ein Treibstoffleck wurde an der INDUSTRIEZONE entdeckt. Spezialkräfte sind alarmiert.
+Ein umgestürzter Baum blockiert die Zufahrt zur RATHAUSALLEE. Räumung ist im Gange.
+Ein Wasserdurchbruch an der DEICHRING wurde gemeldet. Erste Maßnahmen laufen.
+Eine beschädigte Gasleitung wurde an der MARKTGASSE festgestellt. Absicherung und Evakuierung laufen.
+Eine beschädigte Wasserleitung am KREUZWEG wurde repariert. Versorgung läuft wieder stabil.
+Eine Straßensperrung wurde am SANDWEG errichtet. Bitte eine alternative Route nutzen.
+Eine Straßensperrung wurde an der STADTAUTOBRUCKE eingerichtet. Bitte Umleitungswege nutzen.
+Eine technische Hilfeleistung wird am BRUNNENWEG benötigt. Ein Fahrzeug ist festgefahren.
+Eine vermisste Person wurde an der WANDERWEG lokalisiert. Bergung läuft.
+Einheiten in Bereitschaft halten sich am HOFWEG auf. Weitere Anweisungen folgen.
+Es werden Räumgeräte an der BAHNHOFSTRASSE benötigt. Eine Straße ist blockiert.
+Es werden weitere Kräfte an der Einsatzstelle OSTENALLEE benötigt. Die aktuelle Mannschaft reicht nicht aus.
+Es wird Unterstützung in der NORDALLEE benötigt. Ein Gebäude droht einzustürzen.
+Helfer benötigen dringend Ablösung an der KIRCHGASSE. Die Einsatzzeit beträgt bereits mehrere Stunden.
+Starke Rauchentwicklung am HAMBURGERPLATZ festgestellt. Anwohner werden vorsorglich evakuiert.
+Wir befinden uns auf Anfahrt zur Einsatzstelle in FLENSBURG. Die Straßenverhältnisse sind aktuell unklar.
+Wir haben den neuen Bereitstellungsraum in BREMEN eingerichtet. Alle Einheiten sollen sich dorthin begeben.
+Wir haben die Logistikstation HAFENWEG erreicht. Die Versorgung der Einsatzkräfte läuft.
+Wir haben die Unterkunft verlassen und sind auf dem Weg zur Einsatzstelle MÜHLENWEG. Die voraussichtliche Ankunftszeit beträgt 20 Minuten.

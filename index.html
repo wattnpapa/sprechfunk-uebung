@@ -1,0 +1,429 @@
+<!DOCTYPE html>
+<html lang="de">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sprechfunk Übungsgenerator</title>
+
+    <!-- Bootstrap für Styling -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+    <!-- FontAwesome für Icons -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/fontawesome/6.4.2/js/all.min.js"></script>
+
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+        }
+
+        .container {
+            max-width: 90%;
+            margin: auto;
+        }
+
+        .table th,
+        .table td {
+            text-align: left;
+            vertical-align: middle;
+        }
+
+        .underline {
+            text-decoration: underline;
+            font-weight: bold;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="container mt-4">
+        <h2 class="text-primary mb-3"><i class="fas fa-broadcast-tower"></i> Sprechfunk Übungsgenerator</h2>
+
+        <div class="mb-3">
+            <label class="form-label">Datum der Übung:</label>
+            <input type="date" class="form-control" id="datum" value="2025-03-29">
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label">Name der Übung:</label>
+            <input type="text" class="form-control" id="nameDerUebung">
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label">Rufgruppe der Übung:</label>
+            <input type="text" class="form-control" id="rufgruppe">
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label">Funkrufname der Übungsleitung:</label>
+            <input type="text" class="form-control" id="leitung">
+        </div>
+
+        <h4 class="mt-4"><i class="fas fa-users"></i> Teilnehmer</h4>
+        <table class="table table-bordered mt-2">
+            <thead class="table-dark">
+                <tr>
+                    <th>Teilnehmer</th>
+                    <th style="width: 50px;">Aktion</th>
+                </tr>
+            </thead>
+            <tbody id="teilnehmer-container"></tbody>
+        </table>
+        <button class="btn btn-primary" onclick="addTeilnehmer()"><i class="fas fa-plus"></i> Teilnehmer
+            hinzufügen</button>
+
+        <h4 class="mt-4"><i class="fas fa-comment"></i> Einstellungen</h4>
+        <div class="mb-3">
+            <label class="form-label">Anzahl Funksprüche pro Teilnehmer:</label>
+            <input type="number" class="form-control" id="spruecheProTeilnehmer" min="1" value="">
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label">Anzahl Funksprüche an alle:</label>
+            <input type="number" class="form-control" id="spruecheAnAlle" min="0" value="">
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label">Anzahl Funksprüche an mehrere:</label>
+            <input type="number" class="form-control" id="spruecheAnMehrere" min="0" value="">
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label">Funksprüche hochladen:</label>
+            <input type="file" class="form-control" id="funksprueche" accept=".txt">
+        </div>
+
+        <button class="btn btn-success w-100" onclick="startUebung()"><i class="fas fa-cogs"></i> Übung
+            generieren</button>
+
+        <pre id="json-output" class="mt-4"></pre>
+
+        <h4 class="mt-4"><i class="fas fa-file-alt"></i> Vorschau der generierten Seiten</h4>
+
+        <div class="text-center mb-3">
+            <button class="btn btn-secondary" onclick="changePage(-1)">⬅ Zurück</button>
+            <span id="current-page">Seite 1 / 1</span>
+            <button class="btn btn-secondary" onclick="changePage(1)">Weiter ➡</button>
+        </div>
+
+        <iframe id="resultFrame" style="width: 100%; height: 900px; border: 1px solid #ccc;"></iframe>
+    </div>
+
+
+
+    <script>
+        let teilnehmerListe = [
+            "Heros Oldenburg 16/11",
+            "Heros Oldenburg 18/13",
+            "Heros Oldenburg 86/25",
+            "Florian Wesermarsch 14/23/4",
+            "Akkon Oldenburg 12/67",
+            "Rotkreuz Schortens 32/54"
+        ];
+
+        let spruecheProTeilnehmer = 10;
+        let spruecheAnAlle = 3;
+        let spruecheAnMehrere = 2;
+
+        let leitung = "Heros Wind 10";
+        let rufgruppe = "T_OL_GOLD-1";
+        let nameDerUebung = "Sprechfunkübung Blauer Wind 2025";
+
+        function renderInitData() {
+            document.getElementById("spruecheProTeilnehmer").value = spruecheProTeilnehmer;
+            document.getElementById("spruecheAnAlle").value = spruecheAnAlle;
+            document.getElementById("spruecheAnMehrere").value = spruecheAnMehrere;
+            document.getElementById("leitung").value = leitung;
+            document.getElementById("rufgruppe").value = rufgruppe;
+            document.getElementById("nameDerUebung").value = nameDerUebung;
+
+            renderTeilnehmer();
+        }
+
+        function renderTeilnehmer() {
+            const container = document.getElementById("teilnehmer-container");
+            container.innerHTML = "";
+            teilnehmerListe.forEach((teilnehmer, index) => {
+                const row = document.createElement("tr");
+                row.innerHTML = `
+                    <td><input type="text" class="form-control" value="${teilnehmer}" oninput="updateTeilnehmer(${index}, this.value)"></td>
+                    <td><button class="btn btn-danger btn-sm" onclick="removeTeilnehmer(${index})"><i class="fas fa-trash"></i></button></td>
+                `;
+                container.appendChild(row);
+            });
+        }
+
+        function updateTeilnehmer(index, value) {
+            teilnehmerListe[index] = value;
+        }
+
+        function addTeilnehmer() {
+            teilnehmerListe.push("");
+            renderTeilnehmer();
+        }
+
+        function removeTeilnehmer(index) {
+            teilnehmerListe.splice(index, 1);
+            renderTeilnehmer();
+        }
+
+        function startUebung() {
+            const file = document.getElementById("funksprueche").files[0];
+            if (!file) {
+                alert("Bitte eine Funkspruch-Datei hochladen!");
+                return;
+            }
+
+            const reader = new FileReader();
+            reader.onload = function (event) {
+                let funksprueche = event.target.result.split("\n").filter(s => s.trim() !== "").sort(() => Math.random() - 0.5);
+                const jsonData = generiereUebung(funksprueche);
+                //document.getElementById("json-output").textContent = JSON.stringify(jsonData, null, 2);
+                generateAllPages(jsonData);
+            };
+            reader.readAsText(file);
+
+            spruecheProTeilnehmer = Number(document.getElementById("spruecheProTeilnehmer").value);
+            spruecheAnAlle = Number(document.getElementById("spruecheAnAlle").value);
+            spruecheAnMehrere = Number(document.getElementById("spruecheAnMehrere").value);
+            leitung = document.getElementById("leitung").value;
+            rufgruppe = document.getElementById("rufgruppe").value;
+            nameDerUebung = document.getElementById("nameDerUebung").value;
+
+
+        }
+
+        /**
+         * Verteilt zufällig Nachrichten an "ALLE" und "MEHRERE", ohne Überschneidung.
+         *
+         * @param {number} totalMessages - Gesamtanzahl verfügbarer Nachrichten (z.B. 0..totalMessages-1)
+         * @param {number} anzahlAlle    - Wie viele Nachrichten sollen an "ALLE" gehen?
+         * @param {number} anzahlMehrere - Wie viele Nachrichten sollen an "MEHRERE" gehen?
+         *
+         * @returns {{ alle: number[], mehrere: number[] }}
+         *    - `alle`: Array mit den Nachrichtennummern, die an "ALLE" gehen
+         *    - `mehrere`: Array mit den Nachrichtennummern, die an "MEHRERE" gehen
+         */
+        function verteileNachrichten(totalMessages, anzahlAlle, anzahlMehrere) {
+            // 1) Validierung: Reicht die Gesamtanzahl für die gewünschten Mengen aus?
+            if (anzahlAlle + anzahlMehrere > totalMessages) {
+                throw new Error(
+                    "Die gewünschte Anzahl für 'ALLE' und 'MEHRERE' übersteigt die Gesamtanzahl an Nachrichten."
+                );
+            }
+
+            // 2) Array aller möglichen Nachrichtennummern (0, 1, 2, ..., totalMessages - 1)
+            const alleNachrichten = [...Array(Number(totalMessages)).keys()];
+
+            // 3) Zufällig mischen
+            alleNachrichten.sort(() => Math.random() - 0.5);
+            alleNachrichten.sort(() => Math.random() - 0.5);
+            alleNachrichten.sort(() => Math.random() - 0.5);
+
+            // 4) Aufteilen in "ALLE" und "MEHRERE", ohne Überschneidung
+            const nachrichtenFuerAlle = alleNachrichten.slice(0, anzahlAlle);
+            const nachrichtenFuerMehrere = alleNachrichten.slice(anzahlAlle, anzahlAlle + anzahlMehrere);
+            const nachrichtenEinfach = alleNachrichten.slice(anzahlAlle + anzahlMehrere);
+
+            return {
+                alle: nachrichtenFuerAlle,
+                mehrere: nachrichtenFuerMehrere,
+                einfach: nachrichtenEinfach
+            };
+        }
+
+        /**
+         * Gibt eine zufällige Liste anderer Teilnehmer zurück (mind. 2).
+         * 
+         * @param {string[]} teilnehmerListe - Gesamte Teilnehmerliste
+         * @param {string} aktuellerTeilnehmer - Der Teilnehmer, der "sich selbst" nicht erhalten darf
+         * @returns {string[]} Zufälliges Teil-Array (mindestens 2 Teilnehmer)
+         */
+        function getRandomSubsetOfOthers(teilnehmerListe, aktuellerTeilnehmer) {
+            // 1) Filter: Wer ist "nicht ich"?
+            const andere = teilnehmerListe.filter(t => t !== aktuellerTeilnehmer);
+
+            // 2) Durchmischen
+            const gemischt = [...andere].sort(() => Math.random() - 0.5);
+
+            // 3) Mindestens 2, maximal die ganze Liste
+            const minGroesse = 2;
+            const maxGroesse = andere.length;
+            const zufallsGroesse = Math.floor(Math.random() * (maxGroesse - minGroesse + 1)) + minGroesse;
+
+            // 4) Den „vorderen“ Teil (z. B. 2, 3, …) zurückgeben
+            return gemischt.slice(0, zufallsGroesse);
+        }
+
+        /**
+         * Gibt einen zufälligen "anderen" Teilnehmer zurück.
+         *
+         * @param {string[]} teilnehmerListe     - Gesamte Liste aller Teilnehmer
+         * @param {string} aktuellerTeilnehmer   - Der Teilnehmer, der sich selbst nicht enthalten darf
+         * @returns {string} Ein zufälliger anderer Teilnehmer
+         */
+        function getRandomOther(teilnehmerListe, aktuellerTeilnehmer) {
+            // 1) Filter: Wer ist "nicht ich"?
+            const andere = teilnehmerListe.filter(t => t !== aktuellerTeilnehmer);
+
+            // 2) Zufälligen Index bestimmen
+            const randomIndex = Math.floor(Math.random() * andere.length);
+
+            // 3) Zurückgeben
+            return andere[randomIndex];
+        }
+
+        function generiereUebung(funksprueche) {
+            // Für alle Teilnehmer durchlaufen
+            //Erster spruch für die Anmeldung berücksichtigen
+            spruecheProTeilnehmer--; 
+            
+
+            return teilnehmerListe.map(teilnehmer => {
+                // Funksprüche für jeden Teilnehmer neu mischen
+                let gemischteFunksprueche = [...funksprueche].sort(() => 0.5 - Math.random());
+
+                let nachrichtenVerteilung = verteileNachrichten(spruecheProTeilnehmer, spruecheAnAlle, spruecheAnMehrere);
+
+                let nachrichten = [];
+                let nachricht = {};
+                nachricht.id = 1;
+                nachricht.nachricht = "Ich melde mich in Ihrem Sprechfunkverkehrskreis an.";
+                nachricht.empfaenger = [leitung];
+                nachrichten.push(nachricht)
+                for (let i = 0; i < spruecheProTeilnehmer; i++) {
+                    let nachricht = {};
+                    nachricht.id = i + 2;
+                    nachricht.nachricht = gemischteFunksprueche[i];
+                    if (nachrichtenVerteilung.alle.includes(i)) {
+                        nachricht.empfaenger = ["Alle"];
+                    }
+                    else if (nachrichtenVerteilung.mehrere.includes(i)) {
+                        nachricht.empfaenger = getRandomSubsetOfOthers(teilnehmerListe, teilnehmer);
+                    }
+                    else {
+                        nachricht.empfaenger = [getRandomOther(teilnehmerListe, teilnehmer)];
+                    }
+                    nachrichten.push(nachricht)
+                }
+
+                // Rückgabe pro Teilnehmer
+                return {
+                    teilnehmer,
+                    kopfdaten: {
+                        datum: document.getElementById("datum").value,
+                        nameDerUebung: nameDerUebung,
+                        leitung: leitung,
+                        teilnehmer: teilnehmerListe,
+                        rufgruppe: rufgruppe
+                    },
+                    nachrichten
+                };
+            });
+        }
+
+        let generatedPages = []; // Speichert die HTML-Dateien der generierten Übungen
+        let currentPageIndex = 0;
+
+        /**
+         * Erstellt HTML-Seiten und zeigt sie im iframe mit Paginierung an.
+         * 
+         * @param {Array} jsonDaten - JSON-Array mit den Übungsdaten
+         */
+        function generateAllPages(jsonDaten) {
+            generatedPages = jsonDaten.map(data => generateHTMLPage(data));
+            currentPageIndex = 0;
+
+            if (generatedPages.length > 0) {
+                displayPage(currentPageIndex);
+            }
+        }
+
+        /**
+         * Zeigt die aktuelle Seite im iframe an.
+         */
+        function displayPage(index) {
+            if (index < 0 || index >= generatedPages.length) return;
+
+            const iframe = document.getElementById("resultFrame");
+            iframe.srcdoc = generatedPages[index]; // Lädt den HTML-Code direkt in das iframe
+
+            document.getElementById("current-page").textContent = `Seite ${index + 1} / ${generatedPages.length}`;
+        }
+
+        /**
+         * Wechselt zur nächsten oder vorherigen Seite.
+         * @param {number} step - 1 für weiter, -1 für zurück
+         */
+        function changePage(step) {
+            const newIndex = currentPageIndex + step;
+            if (newIndex >= 0 && newIndex < generatedPages.length) {
+                currentPageIndex = newIndex;
+                displayPage(currentPageIndex);
+            }
+        }
+
+        /**
+         * Erstellt die HTML-Struktur für eine einzelne Übungsseite.
+         * 
+         * @param {Object} teilnehmerDaten - JSON-Objekt für einen Teilnehmer
+         * @returns {string} - HTML-Code als String
+         */
+        function generateHTMLPage(teilnehmerDaten) {
+            const { teilnehmer, kopfdaten, nachrichten } = teilnehmerDaten;
+
+            const teilnehmerListeHTML = kopfdaten.teilnehmer
+                .map(name => `<li>${name}</li>`)
+                .join("");
+
+            const nachrichtenHTML = nachrichten
+                .map(n => `<tr><td>${n.id}</td><td>${n.empfaenger.join("<br/>").replace(" ","&nbsp;")}</td><td>${n.nachricht}</td></tr>`)
+                .join("");
+
+                return `
+    <!DOCTYPE html>
+    <html lang="de">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Sprechfunkübung - ${teilnehmer}</title>
+        <style>
+            body { font-family: Arial, sans-serif; margin: 20px; }
+            h1, h2 { text-align: center; }
+            table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+            th, td { border: 1px solid black; padding: 8px; text-align: left; }
+            th { background-color: #f2f2f2; }
+            .container { max-width: 100%; margin: auto; }
+        </style>
+    </head>
+    <body>
+        <div class="container">
+            <h1>Sprechfunkübung ${kopfdaten.nameDerUebung}</h1>
+            <h2>Eigener Funkrufname: ${teilnehmer}</h2>
+            <p><strong>Datum:</strong> ${kopfdaten.datum}</p>
+            <p><strong>Rufgruppe:</strong> ${kopfdaten.rufgruppe}</p>
+            <p><strong>Betriebsleitung:</strong> ${kopfdaten.leitung}</p>
+            <h3>Teilnehmer:</h3>
+            <ul>${teilnehmerListeHTML}</ul>
+            <h3>Folgende Nachrichten sind zu übermitteln:</h3>
+            <table>
+                <tr>
+                    <th>Nr.</th>
+                    <th>Empfänger</th>
+                    <th>Nachrichtentext</th>
+                </tr>
+                ${nachrichtenHTML}
+            </table>
+        </div>
+    </body>
+    </html>
+`;
+        }
+
+        renderInitData();
+    </script>
+
+</body>
+
+</html>
