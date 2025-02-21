@@ -90,6 +90,16 @@
         </div>
 
         <div class="mb-3">
+            <label class="form-label">Funksprüche verwenden:</label>
+            <div class="form-check">
+                <input class="form-check-input" type="checkbox" id="useCustomList" onchange="toggleFunkspruchInput()">
+                <label class="form-check-label" for="useCustomList">
+                    Eigene Funkspruchliste hochladen
+                </label>
+            </div>
+        </div>
+        
+        <div class="mb-3" id="fileUploadContainer" style="display: none;">
             <label class="form-label">Funksprüche hochladen:</label>
             <input type="file" class="form-control" id="funksprueche" accept=".txt">
         </div>
@@ -168,28 +178,38 @@
             renderTeilnehmer();
         }
 
+        function toggleFunkspruchInput() {
+            const useCustomList = document.getElementById("useCustomList").checked;
+            document.getElementById("fileUploadContainer").style.display = useCustomList ? "block" : "none";
+        }
+
         function startUebung() {
+            const useCustomList = document.getElementById("useCustomList").checked;
             const file = document.getElementById("funksprueche").files[0];
-            if (!file) {
-                alert("Bitte eine Funkspruch-Datei hochladen!");
-                return;
+
+            if (useCustomList) {
+                // Falls der Nutzer eine eigene Datei hochlädt
+                if (!file) {
+                    alert("Bitte eine Funkspruch-Datei hochladen!");
+                    return;
+                }
+
+                const reader = new FileReader();
+                reader.onload = function (event) {
+                    let funksprueche = event.target.result.split("\n").filter(s => s.trim() !== "").sort(() => Math.random() - 0.5);
+                    generateAllPages(funksprueche);
+                };
+                reader.readAsText(file);
+            } else {
+                // Falls der Nutzer die Standard-Liste nutzen will
+                fetch("funksprueche.txt") // Datei vom Server laden
+                    .then(response => response.text())
+                    .then(data => {
+                        let funksprueche = data.split("\n").filter(s => s.trim() !== "").sort(() => Math.random() - 0.5);
+                        generateAllPages(funksprueche);
+                    })
+                    .catch(error => console.error("Fehler beim Laden der Funkspruchliste:", error));
             }
-
-            const reader = new FileReader();
-            reader.onload = function (event) {
-                let funksprueche = event.target.result.split("\n").filter(s => s.trim() !== "").sort(() => Math.random() - 0.5);
-                const jsonData = generiereUebung(funksprueche);
-                //document.getElementById("json-output").textContent = JSON.stringify(jsonData, null, 2);
-                generateAllPages(jsonData);
-            };
-            reader.readAsText(file);
-
-            spruecheProTeilnehmer = Number(document.getElementById("spruecheProTeilnehmer").value);
-            spruecheAnAlle = Number(document.getElementById("spruecheAnAlle").value);
-            spruecheAnMehrere = Number(document.getElementById("spruecheAnMehrere").value);
-            leitung = document.getElementById("leitung").value;
-            rufgruppe = document.getElementById("rufgruppe").value;
-            nameDerUebung = document.getElementById("nameDerUebung").value;
 
 
         }
