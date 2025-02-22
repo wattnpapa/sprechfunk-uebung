@@ -77,68 +77,98 @@
     <div class="container mt-4">
         <h2 class="text-primary mb-3"><i class="fas fa-broadcast-tower"></i> Sprechfunk Übungsgenerator</h2>
 
-        <div class="mb-3">
-            <label class="form-label">Datum der Übung:</label>
-            <input type="date" class="form-control" id="datum" value="2025-03-29">
-        </div>
+        <div class="row">
+            <!-- Kopfdaten (links) -->
+            <div class="col-md-6">
+                <h4 class="mt-4"><i class="fas fa-info-circle"></i> Kopfdaten</h4>
 
-        <div class="mb-3">
-            <label class="form-label">Name der Übung:</label>
-            <input type="text" class="form-control" id="nameDerUebung">
-        </div>
+                <div class="mb-3">
+                    <label class="form-label">Datum der Übung:</label>
+                    <input type="date" class="form-control" id="datum" value="2025-03-29">
+                </div>
 
-        <div class="mb-3">
-            <label class="form-label">Rufgruppe der Übung:</label>
-            <input type="text" class="form-control" id="rufgruppe">
-        </div>
+                <div class="mb-3">
+                    <label class="form-label">Name der Übung:</label>
+                    <input type="text" class="form-control" id="nameDerUebung">
+                </div>
 
-        <div class="mb-3">
-            <label class="form-label">Funkrufname der Übungsleitung:</label>
-            <input type="text" class="form-control" id="leitung">
-        </div>
+                <div class="mb-3">
+                    <label class="form-label">Rufgruppe der Übung:</label>
+                    <input type="text" class="form-control" id="rufgruppe">
+                </div>
 
-        <h4 class="mt-4"><i class="fas fa-users"></i> Teilnehmer</h4>
-        <table class="table table-bordered mt-2">
-            <thead class="table-dark">
-                <tr>
-                    <th>Teilnehmer</th>
-                    <th style="width: 50px;">Aktion</th>
-                </tr>
-            </thead>
-            <tbody id="teilnehmer-container"></tbody>
-        </table>
-        <button class="btn btn-primary" onclick="addTeilnehmer()"><i class="fas fa-plus"></i> Teilnehmer
-            hinzufügen</button>
+                <div class="mb-3">
+                    <label class="form-label">Funkrufname der Übungsleitung:</label>
+                    <input type="text" class="form-control" id="leitung">
+                </div>
 
-        <h4 class="mt-4"><i class="fas fa-comment"></i> Einstellungen</h4>
-        <div class="mb-3">
-            <label class="form-label">Anzahl Funksprüche pro Teilnehmer:</label>
-            <input type="number" class="form-control" id="spruecheProTeilnehmer" min="1" value="">
-        </div>
+                <h4 class="mt-4"><i class="fas fa-comment"></i> Einstellungen</h4>
 
-        <div class="mb-3">
-            <label class="form-label">Anzahl Funksprüche an alle:</label>
-            <input type="number" class="form-control" id="spruecheAnAlle" min="0" value="">
-        </div>
+                <div class="row">
+                    <!-- Anzahl Funksprüche pro Teilnehmer -->
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label">Funksprüche pro Teilnehmer:</label>
+                        <input type="number" class="form-control" id="spruecheProTeilnehmer" min="1" value="50"
+                            oninput="updateVerteilung()">
+                    </div>
 
-        <div class="mb-3">
-            <label class="form-label">Anzahl Funksprüche an mehrere:</label>
-            <input type="number" class="form-control" id="spruecheAnMehrere" min="0" value="">
-        </div>
+                    <!-- Nachrichten an alle -->
+                    <div class="col-md-3 mb-3">
+                        <label class="form-label">% an Alle:</label>
+                        <div class="input-group">
+                            <input type="number" class="form-control" id="prozentAnAlle" min="0" max="100" value="10"
+                                oninput="updateAbsolute('alle')">
+                            <span class="input-group-text">%</span>
+                        </div>
+                        <small class="text-muted">Ergibt <span id="calcAnAlle">5</span> Nachrichten</small>
+                        <input type="hidden" id="spruecheAnAlle" value="5">
+                    </div>
 
-        <div class="mb-3">
-            <label class="form-label">Funksprüche verwenden:</label>
-            <div class="form-check">
-                <input class="form-check-input" type="checkbox" id="useCustomList" onchange="toggleFunkspruchInput()">
-                <label class="form-check-label" for="useCustomList">
-                    Eigene Funkspruchliste hochladen
-                </label>
+                    <!-- Nachrichten an mehrere -->
+                    <div class="col-md-3 mb-3">
+                        <label class="form-label">% an Mehrere:</label>
+                        <div class="input-group">
+                            <input type="number" class="form-control" id="prozentAnMehrere" min="0" max="100" value="5"
+                                oninput="updateAbsolute('mehrere')">
+                            <span class="input-group-text">%</span>
+                        </div>
+                        <small class="text-muted">Ergibt <span id="calcAnMehrere">2</span> Nachrichten</small>
+                        <input type="hidden" id="spruecheAnMehrere" value="2">
+                    </div>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label">Funksprüche verwenden:</label>
+                    <div class="form-check">
+                        <input class="form-check-input" type="checkbox" id="useCustomList"
+                            onchange="toggleFunkspruchInput()">
+                        <label class="form-check-label" for="useCustomList">
+                            Eigene Funkspruchliste hochladen
+                        </label>
+                    </div>
+                </div>
+
+                <div class="mb-3" id="fileUploadContainer" style="display: none;">
+                    <label class="form-label">Funksprüche hochladen:</label>
+                    <input type="file" class="form-control" id="funksprueche" accept=".txt">
+                </div>
             </div>
-        </div>
 
-        <div class="mb-3" id="fileUploadContainer" style="display: none;">
-            <label class="form-label">Funksprüche hochladen:</label>
-            <input type="file" class="form-control" id="funksprueche" accept=".txt">
+            <!-- Teilnehmer (rechts) -->
+            <div class="col-md-6">
+                <h4 class="mt-4"><i class="fas fa-users"></i> Teilnehmer</h4>
+                <table class="table table-bordered mt-2">
+                    <thead class="table-dark">
+                        <tr>
+                            <th>Teilnehmer</th>
+                            <th style="width: 50px;">Aktion</th>
+                        </tr>
+                    </thead>
+                    <tbody id="teilnehmer-container"></tbody>
+                </table>
+                <button class="btn btn-primary" onclick="addTeilnehmer()"><i class="fas fa-plus"></i> Teilnehmer
+                    hinzufügen</button>
+            </div>
         </div>
 
         <button class="btn btn-success w-100" onclick="startUebung()"><i class="fas fa-cogs"></i> Übung
@@ -147,7 +177,7 @@
         <div id="output-container" style="display: none;">
 
             <h4 class="mt-4"><i class="fas fa-file-alt"></i> Vorschau der generierten Seiten</h4>
-        
+
             <div class="text-center mb-3">
                 <button class="btn btn-secondary" onclick="changePage(-1)">⬅ Zurück</button>
                 <span id="current-page">Seite 1 / 1</span>
@@ -156,7 +186,7 @@
                     <i class="fas fa-file-pdf"></i> Alle PDFs generieren
                 </button>
             </div>
-        
+
             <iframe id="resultFrame" style="width: 100%; height: 900px; border: 1px solid #ccc;"></iframe>
         </div>
     </div>
@@ -192,6 +222,28 @@
         let htmlUebungsDaten = [];
 
         let currentPageIndex = 0;
+
+        function updateVerteilung() {
+            updateAbsolute('alle');
+            updateAbsolute('mehrere');
+        }
+
+        function updateAbsolute(type) {
+            let total = Number(document.getElementById("spruecheProTeilnehmer").value);
+            let percentInput = document.getElementById(`prozentAn${capitalize(type)}`);
+            let calcSpan = document.getElementById(`calcAn${capitalize(type)}`);
+            let hiddenInput = document.getElementById(`spruecheAn${capitalize(type)}`);
+
+            let percentageValue = Number(percentInput.value);
+            let absoluteValue = Math.round((percentageValue / 100) * total);
+
+            calcSpan.textContent = absoluteValue;
+            hiddenInput.value = absoluteValue;
+        }
+
+        function capitalize(str) {
+            return str.charAt(0).toUpperCase() + str.slice(1);
+        }
 
         function renderInitData() {
             document.getElementById("spruecheProTeilnehmer").value = spruecheProTeilnehmer;
@@ -588,18 +640,18 @@
         /**
          * Erstellt die Kopfzeile auf Seite 2+.
          */
-         function drawHeader(pdf, participant, pageNumber, pdfWidth, pageMargin, kopfdaten) {
+        function drawHeader(pdf, participant, pageNumber, pdfWidth, pageMargin, kopfdaten) {
             if (pageNumber > 1) {
                 pdf.setFont("helvetica", "normal");
                 pdf.setFontSize(10);
-                
+
                 // **Links: Funkrufname**
                 pdf.text(`Eigener Funkrufname: ${participant}`, pageMargin, 20);
 
                 // **Rechts: Name der Übung**
                 let rightText = kopfdaten.nameDerUebung + " " + kopfdaten.datum
                 let nameWidth = pdf.getTextWidth(rightText);
-                pdf.text(rightText, pdfWidth - pageMargin - nameWidth, 20); 
+                pdf.text(rightText, pdfWidth - pageMargin - nameWidth, 20);
 
                 // **Trennlinie unter der Kopfzeile**
                 pdf.setDrawColor(0);
@@ -691,7 +743,7 @@
                 body: teilnehmerDaten.nachrichten.map(n => [n.id, n.empfaenger.join("\n"), n.nachricht]),
                 startY: startY,
                 theme: "grid",
-                margin: { left: marginLeft, top: secondPageTableTopMargin},
+                margin: { left: marginLeft, top: secondPageTableTopMargin },
                 tableWidth: tableWidth,
                 columnStyles: {
                     0: { cellWidth: columnWidths[0] },
@@ -708,8 +760,8 @@
     </script>
 
     <footer id="footer" class="text-center mt-4" style="display: none;">
-        <p>© Johannes Rudolph | Version 1.0.0 | 
-            <a href="https://wattnpapa.github.io/sprechfunk-uebung/" target="_blank">Generator</a> | 
+        <p>© Johannes Rudolph | Version 1.0.0 |
+            <a href="https://wattnpapa.github.io/sprechfunk-uebung/" target="_blank">Generator</a> |
             <a href="https://github.com/wattnpapa/sprechfunk-uebung" target="_blank">GitHub-Repository</a>
         </p>
     </footer>
