@@ -24,7 +24,7 @@
         }
 
         .container {
-            max-width: 90%;
+            max-width: 98%;
             margin: auto;
         }
 
@@ -537,52 +537,82 @@
             const { teilnehmer, kopfdaten, nachrichten } = teilnehmerDaten;
 
             const teilnehmerListeHTML = kopfdaten.teilnehmer
-                .map(name => `<li>${name}</li>`)
+                .map(name => "<tr><td>" + name + "</td></tr>")
                 .join("");
 
             const nachrichtenHTML = nachrichten
-                .map(n => `<tr><td>${n.id}</td><td>${n.empfaenger.join("<br/>").replace(" ", "&nbsp;")}</td><td>${n.nachricht}</td></tr>`)
+                .map(n => 
+                    "<tr>" +
+                        "<td>" + n.id + "</td>" +
+                        "<td>" + n.empfaenger.join("<br/>").replace(/ /g, "&nbsp;") + "</td>" +
+                        "<td>" + n.nachricht + "</td>" +
+                    "</tr>")
                 .join("");
 
-            return `
-    <!DOCTYPE html>
-    <html lang="de">
-    <head>
-        <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>Sprechfunkübung - ${teilnehmer}</title>
-        <style>
-            body { font-family: Arial, sans-serif; margin: 20px; }
-            h1, h2 { text-align: center; }
-            table { width: 100%; border-collapse: collapse; margin-top: 20px; }
-            th, td { border: 1px solid black; padding: 8px; text-align: left; }
-            th { background-color: #f2f2f2; }
-            .container { max-width: 100%; margin: auto; }
-        </style>
-    </head>
-    <body>
-        <div class="container">
-            <h1>Sprechfunkübung ${kopfdaten.nameDerUebung}</h1>
-            <h2>Eigener Funkrufname: ${teilnehmer}</h2>
-            <p><strong>Datum:</strong> ${kopfdaten.datum}</p>
-            <p><strong>Rufgruppe:</strong> ${kopfdaten.rufgruppe}</p>
-            <p><strong>Betriebsleitung:</strong> ${kopfdaten.leitung}</p>
-            <h3>Teilnehmer:</h3>
-            <ul>${teilnehmerListeHTML}</ul>
-            <h3>Folgende Nachrichten sind zu übermitteln:</h3>
-            <table>
-                <tr>
-                    <th>Nr.</th>
-                    <th>Empfänger</th>
-                    <th>Nachrichtentext</th>
-                </tr>
-                ${nachrichtenHTML}
-            </table>
-        </div>
-    </body>
-    </html>
-`;
+            return "<!DOCTYPE html>" +
+            "<html lang='de'>" +
+            "<head>" +
+                "<meta charset='UTF-8'>" +
+                "<meta name='viewport' content='width=device-width, initial-scale=1.0'>" +
+                "<title>Sprechfunkübung - " + teilnehmer + "</title>" +
+                "<style>" +
+                    "body { font-family: Arial, sans-serif; margin: 20px; }" +
+                    ".container { max-width: 100%; margin: auto; }" +
+                    "h1, h2 { text-align: center; }" +
+                    "h1 { font-size: 22px; font-weight: bold; }" +
+                    "h2 { font-size: 18px; font-weight: bold; }" +
+                    "table { width: 100%; border-collapse: collapse; margin-top: 20px; }" +
+                    "th, td { border: 1px solid black; padding: 8px; text-align: left; }" +
+                    "th { background-color: #f2f2f2; }" +
+                    ".row { display: flex; justify-content: space-between; margin-top: 20px; }" +
+                    ".col { width: 48%; }" +
+                    "@media (max-width: 768px) {" +
+                        ".row { flex-direction: column; }" +
+                        ".col { width: 100%; margin-bottom: 15px; }" +
+                    "}" +
+                "</style>" +
+            "</head>" +
+            "<body>" +
+                "<div class='container'>" +
+                    "<h1>Sprechfunkübung " + kopfdaten.nameDerUebung + "</h1>" +
+                    "<h2>Eigener Funkrufname: " + teilnehmer + "</h2>" +
+
+                    "<div class='row'>" +
+                        "<div class='col'>" +
+                            "<h3>Kopfdaten</h3>" +
+                            "<table>" +
+                                "<tr><th>Datum</th><td>" + kopfdaten.datum + "</td></tr>" +
+                                "<tr><th>Rufgruppe</th><td>" + kopfdaten.rufgruppe + "</td></tr>" +
+                                "<tr><th>Betriebsleitung</th><td>" + kopfdaten.leitung + "</td></tr>" +
+                            "</table>" +
+                        "</div>" +
+
+                        "<div class='col'>" +
+                            "<h3>Teilnehmer</h3>" +
+                            "<table>" +
+                                teilnehmerListeHTML +
+                            "</table>" +
+                        "</div>" +
+                    "</div>" +
+
+                    "<h3>Folgende Nachrichten sind zu übermitteln:</h3>" +
+                    "<table>" +
+                        "<thead>" +
+                            "<tr>" +
+                                "<th style='width: 10%;'>Nr.</th>" +
+                                "<th style='width: 20%;'>Empfänger</th>" +
+                                "<th style='width: 70%;'>Nachrichtentext</th>" +
+                            "</tr>" +
+                        "</thead>" +
+                        "<tbody>" +
+                            nachrichtenHTML +
+                        "</tbody>" +
+                    "</table>" +
+                "</div>" +
+            "</body>" +
+            "</html>";
         }
+
 
         function fixEncoding(text) {
             return text.normalize("NFC") // Korrigiert Zeichensatz-Probleme
