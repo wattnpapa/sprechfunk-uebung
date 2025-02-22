@@ -152,6 +152,30 @@
                     <label class="form-label">Funksprüche hochladen:</label>
                     <input type="file" class="form-control" id="funksprueche" accept=".txt">
                 </div>
+
+                <!-- Neue Optionen für Lösungswörter -->
+                <div class="mb-3">
+                    <label class="form-label">Sollen Lösungswörter verwendet werden?</label>
+                    <div class="form-check">
+                        <input class="form-check-input" type="radio" name="loesungswortOption" id="loesungswortNein" value="nein" checked onchange="toggleLoesungswortOption()">
+                        <label class="form-check-label" for="loesungswortNein">Nein</label>
+                    </div>
+                    <div class="form-check">
+                        <input class="form-check-input" type="radio" name="loesungswortOption" id="loesungswortGleich" value="gleich" onchange="toggleLoesungswortOption()">
+                        <label class="form-check-label" for="loesungswortGleich">Ja, ein zentrales Lösungswort</label>
+                    </div>
+                    <div class="form-check">
+                        <input class="form-check-input" type="radio" name="loesungswortOption" id="loesungswortIndividuell" value="individuell" onchange="toggleLoesungswortOption()">
+                        <label class="form-check-label" for="loesungswortIndividuell">Ja, jeder bekommt ein eigenes Lösungswort</label>
+                    </div>
+                </div>
+
+                <!-- Eingabefeld für das zentrale Lösungswort (nur sichtbar, wenn gewählt) -->
+                <div class="mb-3" id="zentralesLoesungswortContainer" style="display: none;">
+                    <label class="form-label">Zentrales Lösungswort:</label>
+                    <input type="text" class="form-control" id="zentralesLoesungswort">
+                </div>
+
             </div>
 
             <!-- Teilnehmer (rechts) -->
@@ -161,6 +185,7 @@
                     <thead class="table-dark">
                         <tr>
                             <th>Teilnehmer</th>
+                            <th style="width: 150px;" id="loesungswortColumn" style="display: none;">Lösungswort</th>
                             <th style="width: 50px;">Aktion</th>
                         </tr>
                     </thead>
@@ -191,8 +216,6 @@
         </div>
     </div>
 
-
-
     <script>
         let teilnehmerListe = [
             "Heros Oldenburg 16/11",
@@ -220,6 +243,7 @@
 
         let jsonUebungsDaten;
         let htmlUebungsDaten = [];
+        let loesungswoerter = {};
 
         let currentPageIndex = 0;
 
@@ -259,10 +283,14 @@
         function renderTeilnehmer() {
             const container = document.getElementById("teilnehmer-container");
             container.innerHTML = "";
+            
+            let option = document.querySelector('input[name="loesungswortOption"]:checked').value;
+            
             teilnehmerListe.forEach((teilnehmer, index) => {
                 const row = document.createElement("tr");
                 row.innerHTML = `
                     <td><input type="text" class="form-control" value="${teilnehmer}" oninput="updateTeilnehmer(${index}, this.value)"></td>
+                    ${option === "individuell" ? `<td><input type="text" class="form-control" id="loesungswort-${index}" placeholder="Lösungswort"></td>` : ""}
                     <td><button class="btn btn-danger btn-sm" onclick="removeTeilnehmer(${index})"><i class="fas fa-trash"></i></button></td>
                 `;
                 container.appendChild(row);
@@ -301,6 +329,25 @@
 
             datum = new Date(document.getElementById("datum").value + "T00:00:00");
             natoDate = formatNATODate(datum, false);
+
+            let option = document.querySelector('input[name="loesungswortOption"]:checked').value;
+
+            // Lösungswörter auslesen
+            loesungswoerter = {}; // Zurücksetzen
+            
+            if (option === "gleich") {
+                let zentralesWort = document.getElementById("zentralesLoesungswort").value;
+                teilnehmerListe.forEach(teilnehmer => {
+                    loesungswoerter[teilnehmer] = zentralesWort;
+                });
+            } else if (option === "individuell") {
+                teilnehmerListe.forEach((teilnehmer, index) => {
+                    let individuellesWort = document.getElementById(`loesungswort-${index}`)?.value || "";
+                    loesungswoerter[teilnehmer] = individuellesWort;
+                });
+            }
+
+            console.log("Lösungswörter:", loesungswoerter);
 
             if (useCustomList) {
                 // Falls der Nutzer eine eigene Datei hochlädt
@@ -424,40 +471,10 @@
         }
 
         function generiereUebung(funksprueche) {
-            // Für alle Teilnehmer durchlaufen
-            //Erster spruch für die Anmeldung berücksichtigen
             spruecheProTeilnehmer--;
 
-
-            return teilnehmerListe.map(teilnehmer => {
-                // Funksprüche für jeden Teilnehmer neu mischen
-                let gemischteFunksprueche = [...funksprueche].sort(() => 0.5 - Math.random());
-
-                let nachrichtenVerteilung = verteileNachrichten(spruecheProTeilnehmer, spruecheAnAlle, spruecheAnMehrere);
-
-                let nachrichten = [];
-                let nachricht = {};
-                nachricht.id = 1;
-                nachricht.nachricht = "Ich melde mich in Ihrem Sprechfunkverkehrskreis an.";
-                nachricht.empfaenger = [leitung];
-                nachrichten.push(nachricht)
-                for (let i = 0; i < spruecheProTeilnehmer; i++) {
-                    let nachricht = {};
-                    nachricht.id = i + 2;
-                    nachricht.nachricht = gemischteFunksprueche[i];
-                    if (nachrichtenVerteilung.alle.includes(i)) {
-                        nachricht.empfaenger = ["Alle"];
-                    }
-                    else if (nachrichtenVerteilung.mehrere.includes(i)) {
-                        nachricht.empfaenger = getRandomSubsetOfOthers(teilnehmerListe, teilnehmer);
-                    }
-                    else {
-                        nachricht.empfaenger = [getRandomOther(teilnehmerListe, teilnehmer)];
-                    }
-                    nachrichten.push(nachricht)
-                }
-
-                // Rückgabe pro Teilnehmer
+            // Generiere Übung ohne Lösungsbuchstaben
+            let uebungsDaten = teilnehmerListe.map(teilnehmer => {
                 return {
                     teilnehmer,
                     kopfdaten: {
@@ -467,8 +484,109 @@
                         teilnehmer: teilnehmerListe,
                         rufgruppe: rufgruppe
                     },
-                    nachrichten
+                    nachrichten: generiereNachrichten(teilnehmer, funksprueche),
+                    loesungswort: loesungswoerter[teilnehmer] || "" // Speichere das Lösungswort mit ab
                 };
+            });
+
+            // Jetzt die Lösungsbuchstaben verteilen
+            verteileLoesungswoerter(uebungsDaten);
+
+            return uebungsDaten;
+        }
+
+        /**
+         * Generiert alle Nachrichten für einen Teilnehmer.
+         */
+        function generiereNachrichten(teilnehmer, funksprueche) {
+            let gemischteFunksprueche = [...funksprueche].sort(() => 0.5 - Math.random());
+            let nachrichtenVerteilung = verteileNachrichten(spruecheProTeilnehmer, spruecheAnAlle, spruecheAnMehrere);
+
+            let nachrichten = [];
+
+            // Erste Nachricht: Anmeldung
+            nachrichten.push({
+                id: 1,
+                nachricht: "Ich melde mich in Ihrem Sprechfunkverkehrskreis an.",
+                empfaenger: [leitung]
+            });
+
+            for (let i = 0; i < spruecheProTeilnehmer; i++) {
+                let nachricht = {};
+                nachricht.id = i + 2;
+                nachricht.nachricht = gemischteFunksprueche[i];
+
+                if (nachrichtenVerteilung.alle.includes(i)) {
+                    nachricht.empfaenger = ["Alle"];
+                } else if (nachrichtenVerteilung.mehrere.includes(i)) {
+                    nachricht.empfaenger = getRandomSubsetOfOthers(teilnehmerListe, teilnehmer);
+                } else {
+                    nachricht.empfaenger = [getRandomOther(teilnehmerListe, teilnehmer)];
+                }
+                nachrichten.push(nachricht);
+            }
+
+            return nachrichten;
+        }
+
+        /**
+         * Verteilt die Lösungsbuchstaben zufällig auf Nachrichten an den Empfänger,
+         * aber mit ihrem ursprünglichen Index (+1), damit das Wort zusammengesetzt werden kann.
+         */
+        function verteileLoesungswoerter(uebungsDaten) {
+            uebungsDaten.forEach(empfaengerDaten => {
+                let empfaenger = empfaengerDaten.teilnehmer;
+                let loesungswort = empfaengerDaten.loesungswort.split(""); // Array der Buchstaben mit Index
+
+                // Speichere den Original-Index für spätere Rekonstruktion, +1 für menschliche Lesbarkeit
+                let buchstabenMitIndex = loesungswort.map((buchstabe, index) => ({ index: index + 1, buchstabe }));
+
+                // Alle Nachrichten sammeln, die nur für diesen Teilnehmer bestimmt sind
+                let empfaengerNachrichten = [];
+                uebungsDaten.forEach(absenderDaten => {
+                    if (absenderDaten.teilnehmer !== empfaenger) {
+                        absenderDaten.nachrichten.forEach(nachricht => {
+                            if (nachricht.empfaenger.length === 1 && nachricht.empfaenger[0] === empfaenger) {
+                                empfaengerNachrichten.push(nachricht);
+                            }
+                        });
+                    }
+                });
+
+                let anzahlNachrichten = empfaengerNachrichten.length;
+
+                if (anzahlNachrichten === 0) {
+                    console.warn(`⚠ Warnung: Keine Nachrichten für ${empfaenger} verfügbar!`);
+                    return;
+                }
+
+                // Falls das Lösungswort mehr Buchstaben als Nachrichten hat, müssen mehrere Buchstaben pro Nachricht gesendet werden
+                let buchstabenProNachricht = Math.ceil(buchstabenMitIndex.length / anzahlNachrichten);
+
+                // Zufällig mischen, aber mit Index
+                buchstabenMitIndex.sort(() => Math.random() - 0.5);
+
+                let buchstabenIndex = 0;
+
+                // Nachrichten zufällig mischen
+                let gemischteNachrichten = [...empfaengerNachrichten].sort(() => Math.random() - 0.5);
+
+                // Buchstaben zufällig auf Nachrichten verteilen, aber mit originalem Index (+1 für menschliche Lesbarkeit)
+                gemischteNachrichten.forEach(nachricht => {
+                    let buchstabenSegment = [];
+
+                    for (let i = 0; i < buchstabenProNachricht; i++) {
+                        if (buchstabenIndex < buchstabenMitIndex.length) {
+                            let { index, buchstabe } = buchstabenMitIndex[buchstabenIndex];
+                            buchstabenSegment.push(`${index}${buchstabe}`); // Format: "1F"
+                            buchstabenIndex++;
+                        }
+                    }
+
+                    if (buchstabenSegment.length > 0) {
+                        nachricht.nachricht += " " + buchstabenSegment.join(""); // Mehrere Buchstaben direkt hintereinander
+                    }
+                });
             });
         }
 
@@ -795,6 +913,19 @@
                 styles: { fontSize: 10, cellPadding: 3, lineWidth: 0.5 },
                 headStyles: { fillColor: [200, 200, 200] }
             });
+        }
+
+        // Funktion zum Umschalten der Lösungswort-Optionen
+        function toggleLoesungswortOption() {
+            let option = document.querySelector('input[name="loesungswortOption"]:checked').value;
+            
+            document.getElementById("zentralesLoesungswortContainer").style.display = option === "gleich" ? "block" : "none";
+            
+            // Zeigt/hide die Lösungswort-Spalte in der Teilnehmerliste
+            document.getElementById("loesungswortColumn").style.display = option === "individuell" ? "table-cell" : "none";
+            
+            // Aktualisiert die Teilnehmerliste mit Lösungswörtern (falls benötigt)
+            renderTeilnehmer();
         }
 
 
