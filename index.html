@@ -140,6 +140,14 @@
         let rufgruppe = "T_OL_GOLD-1";
         let nameDerUebung = "Sprechfunkübung Blauer Wind 2025";
 
+        let datum;
+        let natoDate;
+
+        let jsonUebungsDaten;
+        let htmlUebungsDaten = [];
+
+        let currentPageIndex = 0;
+
         function renderInitData() {
             document.getElementById("spruecheProTeilnehmer").value = spruecheProTeilnehmer;
             document.getElementById("spruecheAnAlle").value = spruecheAnAlle;
@@ -193,6 +201,9 @@
             leitung = document.getElementById("leitung").value;
             rufgruppe = document.getElementById("rufgruppe").value;
             nameDerUebung = document.getElementById("nameDerUebung").value;
+
+            datum = new Date(document.getElementById("datum").value+ "T00:00:00");
+            natoDate = formatNATODate(datum,false);
 
             if (useCustomList) {
                 // Falls der Nutzer eine eigene Datei hochlädt
@@ -339,7 +350,7 @@
                 return {
                     teilnehmer,
                     kopfdaten: {
-                        datum: document.getElementById("datum").value,
+                        datum: natoDate,
                         nameDerUebung: nameDerUebung,
                         leitung: leitung,
                         teilnehmer: teilnehmerListe,
@@ -350,8 +361,8 @@
             });
         }
 
-        let generatedPages = []; // Speichert die HTML-Dateien der generierten Übungen
-        let currentPageIndex = 0;
+
+
 
         /**
          * Erstellt HTML-Seiten und zeigt sie im iframe mit Paginierung an.
@@ -359,11 +370,11 @@
          * @param {Array} funksprueche - JSON-Array mit den Funksprüchen
          */
         function generateAllPages(funksprueche) {
-            jsonDaten = generiereUebung(funksprueche);
-            generatedPages = jsonDaten.map(data => generateHTMLPage(data));
+            jsonUebungsDaten = generiereUebung(funksprueche);
+            htmlUebungsDaten = jsonUebungsDaten.map(data => generateHTMLPage(data));
             currentPageIndex = 0;
 
-            if (generatedPages.length > 0) {
+            if (htmlUebungsDaten.length > 0) {
                 displayPage(currentPageIndex);
             }
         }
@@ -372,12 +383,12 @@
          * Zeigt die aktuelle Seite im iframe an.
          */
         function displayPage(index) {
-            if (index < 0 || index >= generatedPages.length) return;
+            if (index < 0 || index >= htmlUebungsDaten.length) return;
 
             const iframe = document.getElementById("resultFrame");
-            iframe.srcdoc = generatedPages[index]; // Lädt den HTML-Code direkt in das iframe
+            iframe.srcdoc = htmlUebungsDaten[index]; // Lädt den HTML-Code direkt in das iframe
 
-            document.getElementById("current-page").textContent = `Seite ${index + 1} / ${generatedPages.length}`;
+            document.getElementById("current-page").textContent = `Seite ${index + 1} / ${htmlUebungsDaten.length}`;
         }
 
         /**
@@ -391,6 +402,22 @@
                 displayPage(currentPageIndex);
             }
         }
+
+        function formatNATODate(date,withTime = true) {
+            const monate = ["jan", "feb", "mar", "apr", "may", "jun", "jul", "aug", "sep", "oct", "nov", "dec"];
+
+            let tag = String(date.getDate()).padStart(2, "0");  // Tag zweistellig
+            let stunde = String(date.getHours()).padStart(2, "0"); // Stunden zweistellig
+            let minute = String(date.getMinutes()).padStart(2, "0"); // Minuten zweistellig
+            let monat = monate[date.getMonth()]; // Monat als 3-Buchstaben-Abkürzung
+            let jahr = String(date.getFullYear()).slice(-2); // Zweistellige Jahreszahl
+
+            if(withTime)
+                return `${tag}${stunde}${minute}${monat}${jahr}`;
+            return `${tag}${monat}${jahr}`;
+        }
+
+
 
         /**
          * Erstellt die HTML-Struktur für eine einzelne Übungsseite.
