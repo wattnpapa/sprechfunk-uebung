@@ -153,51 +153,41 @@
                     <input type="file" class="form-control" id="funksprueche" accept=".txt">
                 </div>
 
-                <!-- Neue Optionen für Lösungswörter -->
                 <div class="mb-3">
-                    <label class="form-label">Sollen Lösungswörter verwendet werden?</label>
-                    <div class="form-check">
-                        <input class="form-check-input" type="radio" name="loesungswortOption" id="loesungswortNein" value="nein" checked onchange="toggleLoesungswortOption()">
-                        <label class="form-check-label" for="loesungswortNein">Nein</label>
-                    </div>
-                    <div class="form-check">
-                        <input class="form-check-input" type="radio" name="loesungswortOption" id="loesungswortGleich" value="gleich" onchange="toggleLoesungswortOption()">
-                        <label class="form-check-label" for="loesungswortGleich">Ja, ein zentrales Lösungswort</label>
-                    </div>
-                    <div class="form-check">
-                        <input class="form-check-input" type="radio" name="loesungswortOption" id="loesungswortIndividuell" value="individuell" onchange="toggleLoesungswortOption()">
-                        <label class="form-check-label" for="loesungswortIndividuell">Ja, jeder bekommt ein eigenes Lösungswort</label>
+                    <input type="radio" id="keineLoesungswoerter" name="loesungswortOption" checked onclick="renderTeilnehmer()">
+                    <label for="keineLoesungswoerter">Keine Lösungswörter</label>
+                
+                    <input type="radio" id="zentralLoesungswort" name="loesungswortOption" onclick="renderTeilnehmer()">
+                    <label for="zentralLoesungswort">Zentrales Lösungswort</label>
+                
+                    <input type="radio" id="individuelleLoesungswoerter" name="loesungswortOption" onclick="renderTeilnehmer()">
+                    <label for="individuelleLoesungswoerter">Individuelle Lösungswörter</label>
+                
+                    <div id="zentralLoesungswortContainer" style="display: none;">
+                        <input type="text" id="zentralLoesungswortInput" class="form-control mt-2" placeholder="Zentrales Lösungswort" readonly>
                     </div>
                 </div>
-
-                <!-- Eingabefeld für das zentrale Lösungswort (nur sichtbar, wenn gewählt) -->
-                <div class="mb-3" id="zentralesLoesungswortContainer" style="display: none;">
-                    <label class="form-label">Zentrales Lösungswort:</label>
-                    <input type="text" class="form-control" id="zentralesLoesungswort">
-                </div>
+                
+                <button id="shuffleButton" class="btn btn-primary" onclick="shuffleLoesungswoerter()" style="display: none;">
+                    🔀 Lösungswörter Zufällig neu zuweisen
+                </button>
 
             </div>
 
-            <!-- Teilnehmer (rechts) -->
+            <!-- Wrapper für Teilnehmerliste -->
             <div class="col-md-6">
-                <h4 class="mt-4"><i class="fas fa-users"></i> Teilnehmer</h4>
-                <table class="table table-bordered mt-2">
-                    <thead class="table-dark">
-                        <tr>
-                            <th>Teilnehmer</th>
-                            <th style="width: 150px;" id="loesungswortColumn" style="display: none;">Lösungswort</th>
-                            <th style="width: 50px;">Aktion</th>
-                        </tr>
-                    </thead>
-                    <tbody id="teilnehmer-container"></tbody>
-                </table>
-                <button class="btn btn-primary" onclick="addTeilnehmer()"><i class="fas fa-plus"></i> Teilnehmer
-                    hinzufügen</button>
+                <h4 class="text-primary"><i class="fas fa-users"></i> Teilnehmerverwaltung</h4>
+
+                <!-- Diese Zeile sorgt für Flexbox-Layout -->
+                <div class="row" id="teilnehmer-container">
+                    <!-- Hier wird per JS die Tabelle eingefügt -->
+                </div>
             </div>
         </div>
 
-        <button class="btn btn-success w-100" onclick="startUebung()"><i class="fas fa-cogs"></i> Übung
-            generieren</button>
+        <button class="btn btn-success w-100 mt-4" onclick="startUebung()">
+            <i class="fas fa-cogs"></i> Übung generieren
+        </button>
 
         <div id="output-container" style="display: none;">
 
@@ -208,7 +198,10 @@
                 <span id="current-page">Seite 1 / 1</span>
                 <button class="btn btn-secondary" onclick="changePage(1)">Weiter ➡</button>
                 <button class="btn btn-danger" onclick="generatePDFs()">
-                    <i class="fas fa-file-pdf"></i> Alle PDFs generieren
+                    <i class="fas fa-file-pdf"></i> Teilnehmer PDFs generieren
+                </button>
+                <button class="btn btn-info" onclick="generateInstructorPDF()">
+                    <i class="fas fa-user-tie"></i> Übungsleitung PDF erzeugen
                 </button>
             </div>
 
@@ -228,6 +221,17 @@
             "Heros Wilhemshaven 21/10",
             "Heros Leer 21/10",
             "Heros Emden 21/10"
+        ];
+
+        const predefinedLoesungswoerter = [
+            "Funkverkehr", "Rettungswagen", "Notruf", "Blaulicht", "Funkdisziplin",
+            "Einsatzleitung", "Mikrofon", "Durchsage", "Sprechgruppe", "Digitalfunk",
+            "Frequenz", "Funkstille", "Antennenmast", "Feuerwehr", "Katastrophenschutz",
+            "Alarmierung", "Fernmelder", "Kommunikation", "Verständigung", "Sicherheitszone",
+            "Einsatzplan", "Koordination", "Funkgerät", "Signalstärke", "Verbindung",
+            "Repeater", "Einsatzbesprechung", "Lautstärke", "Funkkanal", "Empfang",
+            "Relaisstation", "Funkraum", "Gruppenruf", "Rückmeldung", "Einsatzgebiet",
+            "Wellenlänge", "Übertragung", "Ausfallsicherheit", "Rescue", "Einsatzwagen"
         ];
 
         let spruecheProTeilnehmer = 50;
@@ -280,21 +284,64 @@
             renderTeilnehmer();
         }
 
-        function renderTeilnehmer() {
+        function renderTeilnehmer(triggerShuffle = true) {
             const container = document.getElementById("teilnehmer-container");
-            container.innerHTML = "";
-            
-            let option = document.querySelector('input[name="loesungswortOption"]:checked').value;
-            
+            container.innerHTML = ""; // Vorherigen Inhalt leeren
+
+            let option = document.querySelector('input[name="loesungswortOption"]:checked')?.id;
+            let isZentral = option === "zentralLoesungswort";
+            let isIndividuell = option === "individuelleLoesungswoerter";
+
+            // Zeige/verstecke das zentrale Lösungswort-Eingabefeld
+            document.getElementById("zentralLoesungswortContainer").style.display = isZentral ? "block" : "none";
+
+            // Zeige/verstecke den Button für zufällige Verteilung
+            document.getElementById("shuffleButton").style.display = (isZentral || isIndividuell) ? "block" : "none";
+
+            // **Erstelle die Tabelle mit dynamischer Spalte für Lösungswörter**
+            container.innerHTML = `
+                <table class="table table-bordered">
+                    <thead class="table-dark">
+                        <tr>
+                            <th>Teilnehmer</th>
+                            ${isIndividuell ? "<th id='loesungswortHeader'>Lösungswort</th>" : ""}
+                            <th style="width: 50px;">Aktion</th>
+                        </tr>
+                    </thead>
+                    <tbody id="teilnehmer-body"></tbody>
+                </table>
+            `;
+
+            // **Jetzt erst das `tbody` abrufen**
+            const tbody = document.getElementById("teilnehmer-body");
+
+            if (!tbody) {
+                console.error("Fehler: tbody-Element konnte nicht gefunden werden!");
+                return;
+            }
+
+            // **Füge die Teilnehmer als Tabellenzeilen hinzu**
             teilnehmerListe.forEach((teilnehmer, index) => {
                 const row = document.createElement("tr");
+
+                let loesungswortInput = "";
+                if (isIndividuell) {
+                    let wort = loesungswoerter[teilnehmer] || "";
+                    loesungswortInput = `<td><input type="text" class="form-control" id="loesungswort-${index}" value="${wort}" placeholder="Lösungswort" readonly></td>`;
+                }
+
                 row.innerHTML = `
                     <td><input type="text" class="form-control" value="${teilnehmer}" oninput="updateTeilnehmer(${index}, this.value)"></td>
-                    ${option === "individuell" ? `<td><input type="text" class="form-control" id="loesungswort-${index}" placeholder="Lösungswort"></td>` : ""}
+                    ${loesungswortInput}
                     <td><button class="btn btn-danger btn-sm" onclick="removeTeilnehmer(${index})"><i class="fas fa-trash"></i></button></td>
                 `;
-                container.appendChild(row);
+                tbody.appendChild(row);
             });
+
+            // Falls `renderTeilnehmer` von einer Benutzerinteraktion kommt, neu verteilen
+            if (triggerShuffle) {
+                shuffleLoesungswoerter();
+            }
         }
 
         function updateTeilnehmer(index, value) {
@@ -330,23 +377,28 @@
             datum = new Date(document.getElementById("datum").value + "T00:00:00");
             natoDate = formatNATODate(datum, false);
 
-            let option = document.querySelector('input[name="loesungswortOption"]:checked').value;
-
-            // Lösungswörter auslesen
+            // **Lösungswörter beim Start auslesen**
             loesungswoerter = {}; // Zurücksetzen
-            
-            if (option === "gleich") {
-                let zentralesWort = document.getElementById("zentralesLoesungswort").value;
+
+            let option = document.querySelector('input[name="loesungswortOption"]:checked')?.id || "keineLoesungswoerter";
+
+            if (option === "zentralLoesungswort") {
+                let zentralesWort = document.getElementById("zentralLoesungswortInput").value.trim();
+                if (!zentralesWort) {
+                    // Falls leer, zufälliges Wort wählen
+                    zentralesWort = predefinedLoesungswoerter[Math.floor(Math.random() * predefinedLoesungswoerter.length)];
+                    document.getElementById("zentralLoesungswortInput").value = zentralesWort;
+                }
                 teilnehmerListe.forEach(teilnehmer => {
                     loesungswoerter[teilnehmer] = zentralesWort;
                 });
-            } else if (option === "individuell") {
+            } 
+            else if (option === "individuelleLoesungswoerter") {
                 teilnehmerListe.forEach((teilnehmer, index) => {
-                    let individuellesWort = document.getElementById(`loesungswort-${index}`)?.value || "";
+                    let individuellesWort = document.getElementById(`loesungswort-${index}`)?.value.trim() || "";
                     loesungswoerter[teilnehmer] = individuellesWort;
                 });
             }
-
             console.log("Lösungswörter:", loesungswoerter);
 
             if (useCustomList) {
@@ -643,8 +695,6 @@
             return `${tag}${monat}${jahr}`;
         }
 
-
-
         /**
          * Erstellt die HTML-Struktur für eine einzelne Übungsseite.
          * 
@@ -652,7 +702,7 @@
          * @returns {string} - HTML-Code als String
          */
         function generateHTMLPage(teilnehmerDaten) {
-            const { teilnehmer, kopfdaten, nachrichten } = teilnehmerDaten;
+            const { teilnehmer, kopfdaten, nachrichten, loesungswort } = teilnehmerDaten;
 
             const teilnehmerListeHTML = kopfdaten.teilnehmer
                 .map(name => "<tr><td>" + name + "</td></tr>")
@@ -702,6 +752,7 @@
                                 "<tr><th>Datum</th><td>" + kopfdaten.datum + "</td></tr>" +
                                 "<tr><th>Rufgruppe</th><td>" + kopfdaten.rufgruppe + "</td></tr>" +
                                 "<tr><th>Betriebsleitung</th><td>" + kopfdaten.leitung + "</td></tr>" +
+                                "<tr><th>Lösungswort</th><td>" + loesungswort + "</td></tr>" +
                             "</table>" +
                         "</div>" +
 
@@ -928,6 +979,121 @@
             renderTeilnehmer();
         }
 
+        async function generateInstructorPDF() {
+            const { jsPDF } = window.jspdf;
+            let pdf = new jsPDF({ orientation: "landscape", unit: "mm", format: "a4" });
+
+            const pdfWidth = pdf.internal.pageSize.getWidth();
+            const pdfHeight = pdf.internal.pageSize.getHeight();
+            const pageMargin = 10;
+            const firstTableStartY = 30;
+            const secondPageTableTopMargin = 30; // **Garantierter Abstand für Tabellen auf Seite 2+**
+            const softwareVersion = "1.0.0";
+            const generierungszeit = formatNATODate(new Date());
+
+            // **1. Kopfzeile für erste Seite**
+            drawFirstPageHeader(pdf, jsonUebungsDaten[0].kopfdaten, "Übungsleitung", pdfWidth);
+
+            // **2. Kopfdaten-Tabelle**
+            drawKopfdatenTable(pdf, jsonUebungsDaten[0].kopfdaten, firstTableStartY, pageMargin, ((pdfWidth - 2 * pageMargin) / 2));
+
+            // **3. Teilnehmer-Tabelle**
+            let tableStartY = Math.max(pdf.lastAutoTable.finalY + 10, 75);
+
+            let tableBody = jsonUebungsDaten.map(t => [
+                t.teilnehmer,
+                "", // Platz für Anmeldezeitpunkt
+                t.loesungswort ? t.loesungswort : "", // Falls es ein Lösungswort gibt
+                "" // Bemerkungen (handschriftlich eintragbar)
+            ]);
+
+            let columnWidths = [40, 35, 50, 150]; // Anpassung für saubere Darstellung
+
+            pdf.autoTable({
+                head: [["Teilnehmer", "Anmeldung", "Lösungswort", "Bemerkungen"]],
+                body: tableBody,
+                startY: tableStartY,
+                theme: "grid",
+                margin: { left: pageMargin, top: secondPageTableTopMargin },
+                tableWidth: pdfWidth - 2 * pageMargin,
+                columnStyles: {
+                    0: { cellWidth: columnWidths[0] },
+                    1: { cellWidth: columnWidths[1] },
+                    2: { cellWidth: columnWidths[2] },
+                    3: { cellWidth: columnWidths[3] }
+                },
+                styles: { fontSize: 10, cellPadding: 3, lineWidth: 0.5 },
+                headStyles: { fillColor: [200, 200, 200] }
+            });
+
+            // **4. Kopf- und Fußzeilen für alle Seiten**
+            let totalPages = pdf.internal.getNumberOfPages();
+            for (let j = 1; j <= totalPages; j++) {
+                pdf.setPage(j);
+                drawHeader(pdf, "Übungsleitung", j, pdfWidth, pageMargin, jsonUebungsDaten[0].kopfdaten);
+                drawFooter(pdf, generierungszeit, softwareVersion, j, totalPages, pdfWidth, pdfHeight, pageMargin);
+            }
+
+            pdf.save("Uebungsleitung.pdf");
+        }
+
+
+        function setLoesungswoerter() {
+            const isKeine = document.getElementById("keineLoesungswoerter").checked;
+            const isZentral = document.getElementById("zentralLoesungswort").checked;
+            const isIndividuell = document.getElementById("individuelleLoesungswoerter").checked;
+
+            if (isKeine) {
+                // Lösungswörter zurücksetzen
+                loesungswoerter = {};
+                document.getElementById("zentralLoesungswortInput").disabled = true;
+                document.getElementById("zentralLoesungswortInput").value = "";
+                document.getElementById("shuffleButton").disabled = true;
+            } else if (isZentral) {
+                // Zentrales Lösungswort setzen
+                let zentralesWort = document.getElementById("zentralLoesungswortInput").value;
+                teilnehmerListe.forEach(teilnehmer => {
+                    loesungswoerter[teilnehmer] = zentralesWort;
+                });
+
+                // Eingabefeld aktivieren
+                document.getElementById("zentralLoesungswortInput").disabled = false;
+                document.getElementById("shuffleButton").disabled = true;
+            } else if (isIndividuell) {
+                // Individuelle Wörter zuweisen
+                assignRandomLoesungswoerter();
+                document.getElementById("zentralLoesungswortInput").disabled = true;
+                document.getElementById("shuffleButton").disabled = false;
+            }
+
+            renderTeilnehmer(); // UI aktualisieren
+        }
+
+        function assignRandomLoesungswoerter() {
+            // Shuffle-Algorithmus für zufällige Verteilung
+            let shuffledWords = [...predefinedLoesungswoerter].sort(() => Math.random() - 0.5);
+
+            teilnehmerListe.forEach((teilnehmer, index) => {
+                loesungswoerter[teilnehmer] = shuffledWords[index % shuffledWords.length];
+            });
+        }
+
+        function shuffleLoesungswoerter() {
+            const isZentral = document.getElementById("zentralLoesungswort").checked;
+            const isIndividuell = document.getElementById("individuelleLoesungswoerter").checked;
+
+            if (isZentral) {
+                let zentralesWort = predefinedLoesungswoerter[Math.floor(Math.random() * predefinedLoesungswoerter.length)];
+                document.getElementById("zentralLoesungswortInput").value = zentralesWort;
+                teilnehmerListe.forEach(teilnehmer => {
+                    loesungswoerter[teilnehmer] = zentralesWort;
+                });
+            } else if (isIndividuell) {
+                assignRandomLoesungswoerter();
+            }
+
+            renderTeilnehmer(false); // WICHTIG: Setze `triggerShuffle = false`, um Endlosschleife zu vermeiden
+        }
 
         renderInitData();
     </script>
