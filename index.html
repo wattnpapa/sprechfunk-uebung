@@ -380,14 +380,26 @@
         function getRandomSubsetOfOthers(teilnehmerListe, aktuellerTeilnehmer) {
             // 1) Filter: Wer ist "nicht ich"?
             const andere = teilnehmerListe.filter(t => t !== aktuellerTeilnehmer);
+            const gesamtTeilnehmer = andere.length;
 
             // 2) Durchmischen
             const gemischt = [...andere].sort(() => Math.random() - 0.5);
 
-            // 3) Mindestens 2, maximal die ganze Liste -1
+            // 3) Gewichtete Wahrscheinlichkeitsverteilung für Gruppengröße
             const minGroesse = 2;
-            const maxGroesse = andere.length - 1;
-            const zufallsGroesse = Math.floor(Math.random() * (maxGroesse - minGroesse + 1)) + minGroesse;
+            const maxGroesse = gesamtTeilnehmer;
+
+            // Berechnung einer zufälligen Größe mit einer gewichteten Verteilung:
+            // Wahrscheinlichkeit für kleine Gruppen ist höher, größere Gruppen sind seltener.
+            let zufallsGroesse;
+
+            if (Math.random() < 0.7) {
+                // 70% Wahrscheinlichkeit für eine Gruppe bis maximal Hälfte der Teilnehmer
+                zufallsGroesse = Math.floor(Math.random() * (Math.ceil(gesamtTeilnehmer / 2) - minGroesse + 1)) + minGroesse;
+            } else {
+                // 30% Wahrscheinlichkeit für eine größere Gruppe bis zur gesamten Liste
+                zufallsGroesse = Math.floor(Math.random() * (maxGroesse - minGroesse + 1)) + minGroesse;
+            }
 
             // 4) Den „vorderen“ Teil (z. B. 2, 3, …) zurückgeben
             return gemischt.slice(0, zufallsGroesse);
