@@ -10,6 +10,12 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
     <!-- Richtige FontAwesome Einbindung -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+    <!-- jsPDF für PDF-Erstellung -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <!-- AutoTable für saubere Tabellen -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.23/jspdf.plugin.autotable.min.js"></script>
+    <!-- html2canvas für HTML-to-Image-Rendering -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 
     <style>
         body {
@@ -32,10 +38,41 @@
             text-decoration: underline;
             font-weight: bold;
         }
+
+        .github-badge {
+            position: fixed;
+            top: 10px;
+            right: 10px;
+            background-color: #24292e;
+            color: white;
+            padding: 10px 15px;
+            border-radius: 5px;
+            font-size: 14px;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            text-decoration: none;
+            transition: background-color 0.3s ease;
+        }
+
+        .github-badge img {
+            width: 20px;
+            height: 20px;
+            margin-right: 8px;
+        }
+
+        .github-badge:hover {
+            background-color: #444c56;
+        }
     </style>
 </head>
 
 <body>
+
+    <a href="https://github.com/wattnpapa/sprechfunk-uebung" target="_blank" class="github-badge">
+        <img src="https://github.githubassets.com/images/modules/logos_page/GitHub-Mark.png" alt="GitHub Logo">
+        <span>Projekt auf GitHub</span>
+    </a>
 
     <div class="container mt-4">
         <h2 class="text-primary mb-3"><i class="fas fa-broadcast-tower"></i> Sprechfunk Übungsgenerator</h2>
@@ -98,7 +135,7 @@
                 </label>
             </div>
         </div>
-        
+
         <div class="mb-3" id="fileUploadContainer" style="display: none;">
             <label class="form-label">Funksprüche hochladen:</label>
             <input type="file" class="form-control" id="funksprueche" accept=".txt">
@@ -107,17 +144,21 @@
         <button class="btn btn-success w-100" onclick="startUebung()"><i class="fas fa-cogs"></i> Übung
             generieren</button>
 
-        <pre id="json-output" class="mt-4"></pre>
+        <div id="output-container" style="display: none;">
 
-        <h4 class="mt-4"><i class="fas fa-file-alt"></i> Vorschau der generierten Seiten</h4>
-
-        <div class="text-center mb-3">
-            <button class="btn btn-secondary" onclick="changePage(-1)">⬅ Zurück</button>
-            <span id="current-page">Seite 1 / 1</span>
-            <button class="btn btn-secondary" onclick="changePage(1)">Weiter ➡</button>
+            <h4 class="mt-4"><i class="fas fa-file-alt"></i> Vorschau der generierten Seiten</h4>
+        
+            <div class="text-center mb-3">
+                <button class="btn btn-secondary" onclick="changePage(-1)">⬅ Zurück</button>
+                <span id="current-page">Seite 1 / 1</span>
+                <button class="btn btn-secondary" onclick="changePage(1)">Weiter ➡</button>
+                <button class="btn btn-danger" onclick="generatePDFs()">
+                    <i class="fas fa-file-pdf"></i> Alle PDFs generieren
+                </button>
+            </div>
+        
+            <iframe id="resultFrame" style="width: 100%; height: 900px; border: 1px solid #ccc;"></iframe>
         </div>
-
-        <iframe id="resultFrame" style="width: 100%; height: 900px; border: 1px solid #ccc;"></iframe>
     </div>
 
 
@@ -129,10 +170,14 @@
             "Heros Oldenburg 86/25",
             "Florian Wesermarsch 14/23/4",
             "Akkon Oldenburg 12/67",
-            "Rotkreuz Schortens 32/54"
+            "Rotkreuz Schortens 32/54",
+            "Heros Wilhemshaven 22/51",
+            "Heros Wilhemshaven 21/10",
+            "Heros Leer 21/10",
+            "Heros Emden 21/10"
         ];
 
-        let spruecheProTeilnehmer = 10;
+        let spruecheProTeilnehmer = 50;
         let spruecheAnAlle = 3;
         let spruecheAnMehrere = 2;
 
@@ -202,8 +247,8 @@
             rufgruppe = document.getElementById("rufgruppe").value;
             nameDerUebung = document.getElementById("nameDerUebung").value;
 
-            datum = new Date(document.getElementById("datum").value+ "T00:00:00");
-            natoDate = formatNATODate(datum,false);
+            datum = new Date(document.getElementById("datum").value + "T00:00:00");
+            natoDate = formatNATODate(datum, false);
 
             if (useCustomList) {
                 // Falls der Nutzer eine eigene Datei hochlädt
@@ -229,6 +274,8 @@
                     .catch(error => console.error("Fehler beim Laden der Funkspruchliste:", error));
             }
 
+            document.getElementById("output-container").style.display = "block";
+            document.getElementById("footer").style.display = "block";
 
         }
 
@@ -285,9 +332,9 @@
             // 2) Durchmischen
             const gemischt = [...andere].sort(() => Math.random() - 0.5);
 
-            // 3) Mindestens 2, maximal die ganze Liste
+            // 3) Mindestens 2, maximal die ganze Liste -1
             const minGroesse = 2;
-            const maxGroesse = andere.length;
+            const maxGroesse = andere.length - 1;
             const zufallsGroesse = Math.floor(Math.random() * (maxGroesse - minGroesse + 1)) + minGroesse;
 
             // 4) Den „vorderen“ Teil (z. B. 2, 3, …) zurückgeben
@@ -315,8 +362,8 @@
         function generiereUebung(funksprueche) {
             // Für alle Teilnehmer durchlaufen
             //Erster spruch für die Anmeldung berücksichtigen
-            spruecheProTeilnehmer--; 
-            
+            spruecheProTeilnehmer--;
+
 
             return teilnehmerListe.map(teilnehmer => {
                 // Funksprüche für jeden Teilnehmer neu mischen
@@ -361,9 +408,6 @@
             });
         }
 
-
-
-
         /**
          * Erstellt HTML-Seiten und zeigt sie im iframe mit Paginierung an.
          * 
@@ -403,7 +447,7 @@
             }
         }
 
-        function formatNATODate(date,withTime = true) {
+        function formatNATODate(date, withTime = true) {
             const monate = ["jan", "feb", "mar", "apr", "may", "jun", "jul", "aug", "sep", "oct", "nov", "dec"];
 
             let tag = String(date.getDate()).padStart(2, "0");  // Tag zweistellig
@@ -412,7 +456,7 @@
             let monat = monate[date.getMonth()]; // Monat als 3-Buchstaben-Abkürzung
             let jahr = String(date.getFullYear()).slice(-2); // Zweistellige Jahreszahl
 
-            if(withTime)
+            if (withTime)
                 return `${tag}${stunde}${minute}${monat}${jahr}`;
             return `${tag}${monat}${jahr}`;
         }
@@ -433,10 +477,10 @@
                 .join("");
 
             const nachrichtenHTML = nachrichten
-                .map(n => `<tr><td>${n.id}</td><td>${n.empfaenger.join("<br/>").replace(" ","&nbsp;")}</td><td>${n.nachricht}</td></tr>`)
+                .map(n => `<tr><td>${n.id}</td><td>${n.empfaenger.join("<br/>").replace(" ", "&nbsp;")}</td><td>${n.nachricht}</td></tr>`)
                 .join("");
 
-                return `
+            return `
     <!DOCTYPE html>
     <html lang="de">
     <head>
@@ -476,8 +520,199 @@
 `;
         }
 
+        function fixEncoding(text) {
+            return text.normalize("NFC") // Korrigiert Zeichensatz-Probleme
+                .replace(/ /g, "\u00A0"); // Non-Breaking Space für Leerzeichen
+        }
+
+        async function generatePDFs() {
+            const { jsPDF } = window.jspdf;
+            const softwareVersion = "1.0.0"; // Versionsnummer hier anpassen
+            const generierungszeit = formatNATODate(new Date()); // NATO-Datum für Fußzeile
+
+            for (let i = 0; i < jsonUebungsDaten.length; i++) {
+                const teilnehmerDaten = jsonUebungsDaten[i];
+                const participant = fixEncoding(teilnehmerDaten.teilnehmer);
+                const kopfdaten = teilnehmerDaten.kopfdaten;
+
+                let pdf = new jsPDF({ orientation: "landscape", unit: "mm", format: "a4" });
+
+                const pdfWidth = pdf.internal.pageSize.getWidth();
+                const pdfHeight = pdf.internal.pageSize.getHeight();
+                const pageMargin = 10;
+                const firstTableStartY = 30;
+                const secondPageTableTopMargin = 30; // **Garantierter Abstand für die Tabelle auf Seite 2+**
+
+                // **1. Kopfzeile für erste Seite**
+                drawFirstPageHeader(pdf, kopfdaten, participant, pdfWidth);
+
+                // **2. Kopfdaten-Tabelle (links)**
+                let kopfdatenWidth = (pdfWidth - 2 * pageMargin) * 0.35;
+                drawKopfdatenTable(pdf, kopfdaten, firstTableStartY, pageMargin, kopfdatenWidth);
+
+                // **3. Teilnehmerliste (rechts)**
+                let teilnehmerWidth = (pdfWidth - 2 * pageMargin) * 0.60;
+                drawTeilnehmerTable(pdf, kopfdaten, firstTableStartY, pdfWidth - pageMargin - teilnehmerWidth, teilnehmerWidth);
+
+                // **4. Nachrichten-Tabelle**
+                let tableStartY = Math.max(pdf.lastAutoTable.finalY + 10, 75);
+                drawNachrichtenTable(pdf, teilnehmerDaten, tableStartY, pageMargin, pdfWidth, secondPageTableTopMargin);
+
+                // **5. Setze Kopfzeilen & Seitenzahlen auf allen Seiten**
+                let totalPages = pdf.internal.getNumberOfPages();
+                for (let j = 1; j <= totalPages; j++) {
+                    pdf.setPage(j);
+                    drawHeader(pdf, participant, j, pdfWidth, pageMargin, kopfdaten);
+                    drawFooter(pdf, generierungszeit, softwareVersion, j, totalPages, pdfWidth, pdfHeight, pageMargin);
+                }
+
+                // **6. PDF speichern**
+                pdf.save(`${participant}.pdf`);
+            }
+
+            alert("Alle PDFs wurden erfolgreich erstellt!");
+        }
+
+        /**
+         * Erstellt die Kopfzeile der ersten Seite (größer & fett).
+         */
+        function drawFirstPageHeader(pdf, kopfdaten, participant, pdfWidth) {
+            pdf.setFont("helvetica", "bold");
+            pdf.setFontSize(16);
+            pdf.text(`${kopfdaten.nameDerUebung}`, pdfWidth / 2, 15, { align: "center" });
+
+            pdf.setFontSize(14);
+            pdf.text(`${participant}`, pdfWidth / 2, 20, { align: "center" });
+        }
+
+        /**
+         * Erstellt die Kopfzeile auf Seite 2+.
+         */
+         function drawHeader(pdf, participant, pageNumber, pdfWidth, pageMargin, kopfdaten) {
+            if (pageNumber > 1) {
+                pdf.setFont("helvetica", "normal");
+                pdf.setFontSize(10);
+                
+                // **Links: Funkrufname**
+                pdf.text(`Eigener Funkrufname: ${participant}`, pageMargin, 20);
+
+                // **Rechts: Name der Übung**
+                let rightText = kopfdaten.nameDerUebung + " " + kopfdaten.datum
+                let nameWidth = pdf.getTextWidth(rightText);
+                pdf.text(rightText, pdfWidth - pageMargin - nameWidth, 20); 
+
+                // **Trennlinie unter der Kopfzeile**
+                pdf.setDrawColor(0);
+                pdf.line(pageMargin, 22, pdfWidth - pageMargin, 22);
+            }
+        }
+
+        /**
+         * Erstellt die Fußzeile auf allen Seiten.
+         */
+        function drawFooter(pdf, generierungszeit, softwareVersion, pageNumber, totalPages, pdfWidth, pdfHeight, pageMargin) {
+            pdf.setFont("helvetica", "normal");
+            pdf.setFontSize(10);
+
+            // **Seitenzahl bleibt auf allen Seiten gleich formatiert**
+            let pageNumberText = `Seite ${pageNumber} von ${totalPages}`;
+            let pageNumberWidth = pdf.getTextWidth(pageNumberText);
+            pdf.text(pageNumberText, pdfWidth - pageMargin - pageNumberWidth, pdfHeight - 10);
+
+            // **Link und Copyright-Infos linksbündig**
+            let leftText = `© Johannes Rudolph | Version ${softwareVersion} | Generiert: ${generierungszeit} | Generator: wattnpapa.github.io/sprechfunk-uebung`;
+            pdf.textWithLink(leftText, pageMargin, pdfHeight - 10, { url: "https://wattnpapa.github.io/sprechfunk-uebung/" });
+        }
+
+        /**
+         * Erstellt die Kopfdaten-Tabelle.
+         */
+        function drawKopfdatenTable(pdf, kopfdaten, startY, marginLeft, width) {
+            pdf.autoTable({
+                head: [["Beschreibung", "Wert"]],
+                body: [
+                    ["Datum", kopfdaten.datum],
+                    ["Rufgruppe", kopfdaten.rufgruppe],
+                    ["Betriebsleitung", kopfdaten.leitung]
+                ],
+                startY: startY,
+                margin: { left: marginLeft },
+                tableWidth: width,
+                theme: "grid",
+                styles: { fontSize: 10, cellPadding: 3, lineWidth: 0.5 },
+                headStyles: { fillColor: [200, 200, 200] }
+            });
+        }
+
+        /**
+         * Erstellt die Teilnehmerliste-Tabelle.
+         */
+        function drawTeilnehmerTable(pdf, kopfdaten, startY, marginLeft, width) {
+            let teilnehmerColumns = 2;
+            let teilnehmerRows = Math.ceil(kopfdaten.teilnehmer.length / teilnehmerColumns);
+            let teilnehmerTable = [];
+
+            for (let r = 0; r < teilnehmerRows; r++) {
+                let row = [];
+                for (let c = 0; c < teilnehmerColumns; c++) {
+                    let index = r + c * teilnehmerRows;
+                    if (index < kopfdaten.teilnehmer.length) {
+                        row.push(kopfdaten.teilnehmer[index]);
+                    } else {
+                        row.push("");
+                    }
+                }
+                teilnehmerTable.push(row);
+            }
+
+            pdf.autoTable({
+                head: [["Teilnehmer", ""]],
+                body: teilnehmerTable,
+                startY: startY,
+                margin: { left: marginLeft },
+                tableWidth: width,
+                theme: "grid",
+                styles: { fontSize: 10, cellPadding: 3, lineWidth: 0.5 },
+                headStyles: { fillColor: [200, 200, 200] }
+            });
+        }
+
+        /**
+         * Erstellt die Nachrichten-Tabelle.
+         */
+        function drawNachrichtenTable(pdf, teilnehmerDaten, startY, marginLeft, pdfWidth, secondPageTableTopMargin) {
+            let tableWidth = pdfWidth - 2 * marginLeft;
+            let empfaengerWidth = tableWidth * 0.20;
+            let lfdnrWidth = 12;
+            let columnWidths = [lfdnrWidth, empfaengerWidth, tableWidth - lfdnrWidth - empfaengerWidth];
+
+            pdf.autoTable({
+                head: [["Nr.", "Empfänger", "Nachrichtentext"]],
+                body: teilnehmerDaten.nachrichten.map(n => [n.id, n.empfaenger.join("\n"), n.nachricht]),
+                startY: startY,
+                theme: "grid",
+                margin: { left: marginLeft, top: secondPageTableTopMargin},
+                tableWidth: tableWidth,
+                columnStyles: {
+                    0: { cellWidth: columnWidths[0] },
+                    1: { cellWidth: columnWidths[1] },
+                    2: { cellWidth: columnWidths[2] }
+                },
+                styles: { fontSize: 10, cellPadding: 3, lineWidth: 0.5 },
+                headStyles: { fillColor: [200, 200, 200] }
+            });
+        }
+
+
         renderInitData();
     </script>
+
+    <footer id="footer" class="text-center mt-4" style="display: none;">
+        <p>© Johannes Rudolph | Version 1.0.0 | 
+            <a href="https://wattnpapa.github.io/sprechfunk-uebung/" target="_blank">Generator</a> | 
+            <a href="https://github.com/wattnpapa/sprechfunk-uebung" target="_blank">GitHub-Repository</a>
+        </p>
+    </footer>
 
 </body>
 
