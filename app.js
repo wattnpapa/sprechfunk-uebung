@@ -1,14 +1,11 @@
 let teilnehmerListe = [
     "Heros Oldenburg 16/11",
+    "Heros Oldenburg 17/12",
     "Heros Oldenburg 18/13",
-    "Heros Oldenburg 86/25",
-    "Florian Wesermarsch 14/23/4",
-    "Akkon Oldenburg 12/67",
-    "Rotkreuz Schortens 32/54",
-    "Heros Wilhemshaven 22/51",
-    "Heros Wilhemshaven 21/10",
+    "Heros Jever 21/10",
     "Heros Leer 21/10",
-    "Heros Emden 21/10"
+    "Heros Emden 21/10",
+    "Heros Wilhemshaven 21/10"
 ];
 
 const predefinedLoesungswoerter = [
@@ -214,7 +211,7 @@ function startUebung() {
     }
 
     document.getElementById("output-container").style.display = "block";
-    document.getElementById("footer").style.display = "block";
+    //document.getElementById("footer").style.display = "block";
 }
 
 /**
