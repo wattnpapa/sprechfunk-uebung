@@ -19,7 +19,7 @@ const predefinedLoesungswoerter = [
     "Wellenlänge", "Übertragung", "Ausfallsicherheit", "Rescue", "Einsatzwagen"
 ].map(word => word.toUpperCase());
 
-let spruecheProTeilnehmer = 50;
+let spruecheProTeilnehmer = 10;
 
 let spruecheAnAlle = 3;
 let spruecheAnMehrere = 2;
@@ -1057,6 +1057,90 @@ function berechneVerteilungUndZeigeDiagramm() {
 // Funktion zum Starten der Berechnung und Anzeige des Diagramms
 function startVerteilung() {
     berechneVerteilungUndZeigeDiagramm();
+}
+
+function generateNachrichtenvordruckPDFs() {
+    const { jsPDF } = window.jspdf;
+
+    // URL der PNG-Vorlage
+    const templateImageUrl = 'assets/nachrichtenvordruck4fach.png'; // Pfad zur PNG-Datei
+
+    // Maximale Textbreite (in mm)
+    const maxWidth = 110;
+    const maxWidthAnschrift = 70; // Maximale Breite für Anschrift
+    const maxWidthRufname = 70; // Maximale Breite für Rufname der Gegenstelle
+
+    // Iteriere durch alle Übungsdaten und generiere PDFs
+    jsonUebungsDaten.forEach(uebung => {
+        let teilnehmer = uebung.teilnehmer;
+        
+        let nachrichten = uebung.nachrichten; // Alle Nachrichten des Teilnehmers
+
+        // Erstelle eine neue PDF für den Teilnehmer
+        let participantPdf = new jsPDF('p', 'mm', 'a5'); // A5 Hochformat
+
+        // Füge jede Nachricht des Teilnehmers als neue Seite hinzu
+        nachrichten.forEach((nachricht, index) => {
+            // Füge das Hintergrundbild (Vorlage) auf jeder Seite hinzu
+            participantPdf.addImage(templateImageUrl, 'PNG', 0, 0, 148, 210); // A5-Seite (148mm x 210mm)
+
+            // Füge Text (Teilnehmername, Nachricht, Empfänger) hinzu
+            participantPdf.setFontSize(12);
+            
+            // Absender
+            participantPdf.text(`${teilnehmer}`, 46, 153); 
+
+            // Nachricht (Umbrechen)
+            const messageLines = participantPdf.splitTextToSize(nachricht.nachricht, maxWidth);
+            participantPdf.text(messageLines, 22, 77); 
+
+
+            let empfaengerText;
+            // Wenn Empfänger "Alle" ist, an alle Empfänger zählen
+            if (nachricht.empfaenger.includes("Alle")) {
+                empfaengerText = "Alle"
+
+            } else {
+                empfaengerText = `${nachricht.empfaenger.join(", ")}`;
+            }
+            // Anpassung für "Anschrift" - Schriftgröße anpassen, wenn der Text zu lang ist
+            adjustTextForWidth(participantPdf, empfaengerText, maxWidthAnschrift, 66, 48);
+
+            // Anpassung für "Rufname der Gegenstelle" - Schriftgröße anpassen, wenn der Text zu lang ist
+            adjustTextForWidth(participantPdf, empfaengerText, maxWidthRufname, 46, 65);
+
+            // Wenn es nicht die letzte Nachricht ist, füge eine neue Seite hinzu
+            if (index < nachrichten.length - 1) {
+                participantPdf.addPage();
+                participantPdf.addImage(templateImageUrl, 'PNG', 0, 0, 148, 210); // A5-Seite (148mm x 210mm)
+            }
+        });
+
+        // Speichere die PDF für den Teilnehmer
+        participantPdf.save(`Nachrichtenvordruck_${teilnehmer}.pdf`);
+
+    });
+
+    alert("Nachrichtenvordruck PDF für den ausgewählten Teilnehmer wurde erfolgreich erstellt!");
+}
+
+
+/**
+ * Funktion zum Anpassen der Textgröße, damit der Text in die angegebene Breite passt
+ */
+function adjustTextForWidth(pdf, text, maxWidth, xPos, yPos) {
+    let fontSize = 12; // Anfangsschriftgröße
+    let textWidth = pdf.getTextWidth(text);
+
+    // Wenn der Text zu lang ist, die Schriftgröße verringern
+    while (textWidth > maxWidth && fontSize > 5) {
+        fontSize -= 0.5;
+        pdf.setFontSize(fontSize);
+        textWidth = pdf.getTextWidth(text);
+    }
+
+    // Text mit angepasster Größe hinzufügen
+    pdf.text(text, xPos, yPos);
 }
 
 renderInitData();

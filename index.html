@@ -19,6 +19,7 @@
     <!-- Chart.js CDN für das Balkendiagramm -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
+
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -277,16 +278,23 @@
                 <div class="card-header">
                     <h5><i class="fas fa-file-alt"></i> Vorschau der generierten Seiten</h5>
                 </div>
-                <div class="card-body text-center">
+                <div class="card-body text-center" style="margin-bottom: 20px;">
                     <button class="btn btn-secondary" onclick="changePage(-1)">⬅ Zurück</button>
                     <span id="current-page">Seite 1 / 1</span>
                     <button class="btn btn-secondary" onclick="changePage(1)">Weiter ➡</button>
                     <button class="btn btn-danger" onclick="generatePDFs()">
                         <i class="fas fa-file-pdf"></i> Teilnehmer PDFs generieren
                     </button>
+                    <button class="btn btn-warning" onclick="generateNachrichtenvordruckPDFs()">
+                        <i class="fas fa-file-pdf"></i> Nachrichtenvordruck PDFs generieren
+                    </button>
                     <button class="btn btn-info" onclick="generateInstructorPDF()">
                         <i class="fas fa-user-tie"></i> Übungsleitung PDF erzeugen
                     </button>
+                </div>
+            
+                <!-- Abstand zum iframe hinzufügen -->
+                <div class="card-body text-center" style="margin-top: 20px;">
                     <iframe id="resultFrame" style="width: 100%; height: 400px; border: 1px solid #ccc;"></iframe>
                 </div>
             </div>
