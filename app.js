@@ -19,6 +19,19 @@ const predefinedLoesungswoerter = [
     "Wellenlänge", "Übertragung", "Ausfallsicherheit", "Rescue", "Einsatzwagen"
 ].map(word => word.toUpperCase());
 
+// Beispiel für die Vorlagen (anzeigetext und dateiname)
+const templatesFunksprueche = {
+    vorlage1: {
+        text: "Kurze Funksprüche",
+        filename: "funksprueche_normal.txt"
+    },
+    vorlage2: {
+        text: "Lange Funksprüche",
+        filename: "funksprueche_lang.txt"
+    }
+};
+
+
 let spruecheProTeilnehmer = 10;
 
 let spruecheAnAlle = 3;
@@ -150,9 +163,10 @@ function toggleFunkspruchInput() {
 }
 
 function startUebung() {
-    const useCustomList = document.getElementById("useCustomList").checked;
-    const file = document.getElementById("funksprueche").files[0];
+    const selectedTemplate = document.getElementById("funkspruchVorlage").value; // Die ausgewählte Vorlage
+    const file = document.getElementById("funksprueche").files[0] ?? ""; // Die manuell hochgeladene Datei, falls vorhanden
 
+    // Berechnungen und weitere Funktionen wie vorher...
     spruecheProTeilnehmer = Number(document.getElementById("spruecheProTeilnehmer").value);
     spruecheAnAlle = Number(document.getElementById("spruecheAnAlle").value);
     spruecheAnMehrere = Number(document.getElementById("spruecheAnMehrere").value);
@@ -163,36 +177,30 @@ function startUebung() {
     datum = new Date(document.getElementById("datum").value + "T00:00:00");
     natoDate = formatNATODate(datum, false);
 
-    // **Lösungswörter beim Start auslesen**
-    loesungswoerter = {}; // Zurücksetzen
 
-    let option = document.querySelector('input[name="loesungswortOption"]:checked')?.id || "keineLoesungswoerter";
+    // Wenn eine Vorlage aus der select-Box ausgewählt wurde (nicht "Manuelle Datei hochladen")
+    if (selectedTemplate !== "upload") {
+        // Holen Sie sich die Vorlage basierend auf dem Auswahlwert
+        const template = templatesFunksprueche[selectedTemplate];
 
-    if (option === "zentralLoesungswort") {
-        let zentralesWort = document.getElementById("zentralLoesungswortInput").value.trim();
-        if (!zentralesWort) {
-            // Falls leer, zufälliges Wort wählen
-            zentralesWort = predefinedLoesungswoerter[Math.floor(Math.random() * predefinedLoesungswoerter.length)];
-            document.getElementById("zentralLoesungswortInput").value = zentralesWort;
+        if (template) {
+            console.log(`Verwende Vorlage: ${template.text}`);
+            // Hier können wir die Vorlage weiter verwenden, z.B. um Funksprüche zu generieren
+            // Falls notwendig, laden Sie die Datei, wenn sie benötigt wird
+
+            fetch(template.filename)
+                .then(response => response.text())
+                .then(data => {
+                    // Wenn die Datei erfolgreich geladen wurde, rufen wir `generateAllPages` auf
+                    let funksprueche = data.split("\n").filter(s => s.trim() !== "").sort(() => Math.random() - 0.5);
+                    generateAllPages(funksprueche);  // Übergebe die geladenen Funksprüche an generateAllPages
+                })
+                .catch(error => console.error('Fehler beim Laden der Vorlage:', error));
+        } else {
+            console.error("Vorlage nicht gefunden.");
         }
-        teilnehmerListe.forEach(teilnehmer => {
-            loesungswoerter[teilnehmer] = zentralesWort;
-        });
-    } 
-    else if (option === "individuelleLoesungswoerter") {
-        teilnehmerListe.forEach((teilnehmer, index) => {
-            let individuellesWort = document.getElementById(`loesungswort-${index}`)?.value.trim() || "";
-            loesungswoerter[teilnehmer] = individuellesWort;
-        });
-    }
-
-    if (useCustomList) {
-        // Falls der Nutzer eine eigene Datei hochlädt
-        if (!file) {
-            alert("Bitte eine Funkspruch-Datei hochladen!");
-            return;
-        }
-
+    } else if (selectedTemplate == "upload" && file) {
+        // Wenn die benutzerdefinierte Funkspruch-Liste aktiviert ist und eine Datei hochgeladen wurde
         const reader = new FileReader();
         reader.onload = function (event) {
             let funksprueche = event.target.result.split("\n").filter(s => s.trim() !== "").sort(() => Math.random() - 0.5);
@@ -200,18 +208,13 @@ function startUebung() {
         };
         reader.readAsText(file);
     } else {
-        // Falls der Nutzer die Standard-Liste nutzen will
-        fetch("funksprueche.txt") // Datei vom Server laden
-            .then(response => response.text())
-            .then(data => {
-                let funksprueche = data.split("\n").filter(s => s.trim() !== "").sort(() => Math.random() - 0.5);
-                generateAllPages(funksprueche);
-            })
-            .catch(error => console.error("Fehler beim Laden der Funkspruchliste:", error));
+        // Fehlerbehandlung, wenn keine Datei hochgeladen wurde und keine Vorlage ausgewählt wurde
+        console.error("Bitte wählen Sie eine Vorlage oder laden Sie eine benutzerdefinierte Funkspruchliste hoch.");
+        alert("Bitte wählen Sie eine Vorlage oder laden Sie eine benutzerdefinierte Funkspruchliste hoch.");
     }
 
+
     document.getElementById("output-container").style.display = "block";
-    //document.getElementById("footer").style.display = "block";
 }
 
 /**
@@ -1142,5 +1145,89 @@ function adjustTextForWidth(pdf, text, maxWidth, xPos, yPos) {
     // Text mit angepasster Größe hinzufügen
     pdf.text(text, xPos, yPos);
 }
+
+
+// Funktion zum Befüllen der Select-Box mit den Vorlagen
+function populateTemplateSelectBox() {
+    const selectBox = document.getElementById("funkspruchVorlage");
+
+    // Iteriere durch die Vorlagen und füge sie der Select-Box hinzu
+    for (const [key, value] of Object.entries(templatesFunksprueche)) {
+        const option = document.createElement("option");
+        option.value = key;
+        option.textContent = `${value.text}`; // Hier kannst du den anzuzeigenden Text anpassen
+        selectBox.appendChild(option);
+    }
+
+    const option = document.createElement("option");
+    option.value = "upload";
+    option.textContent = `Manuelle Datei hochladen`; // Hier kannst du den anzuzeigenden Text anpassen
+    selectBox.appendChild(option);
+}
+
+// Funktion zur Anzeige des Datei-Upload-Feldes
+function toggleFileUpload() {
+    const selectedValue = document.getElementById("funkspruchVorlage").value;
+    const fileUploadContainer = document.getElementById("fileUploadContainer");
+
+    if (selectedValue === "upload") {
+        fileUploadContainer.style.display = "block"; // Zeige Datei-Upload-Feld an
+    } else {
+        fileUploadContainer.style.display = "none"; // Verstecke Datei-Upload-Feld
+        loadTemplate(selectedValue); // Lade die ausgewählte Vorlage
+    }
+}
+
+// Funktion zum Laden der Vorlage
+function loadTemplate(templateName) {
+    const selectedTemplate = templatesFunksprueche[templateName];
+    if (selectedTemplate) {
+        // Zum Testen: Zeige den Text der Vorlage (dies kann an anderer Stelle verwendet werden)
+        console.log(`Vorlage geladen: ${selectedTemplate.text}`);
+
+        // Hier kannst du den Text der Vorlage verwenden, z.B. beim Generieren der Funksprüche
+        // Falls du die Datei laden möchtest, kannst du die `filename`-Eigenschaft verwenden
+        loadFile(selectedTemplate.filename);
+    }
+}
+
+// Funktion zum Laden einer Datei
+function loadFile(filename) {
+    console.log(`Lade die Datei: ${filename}`);
+
+    // Wenn es sich um eine vordefinierte Datei handelt, holen wir sie vom Server
+    if (filename && templates[filename]) {
+        fetch(`path/to/files/${filename}`)
+            .then(response => response.text())  // Die Datei als Text laden
+            .then(data => {
+                // Die geladenen Daten zurückgeben oder weiterverarbeiten
+                console.log("Dateiinhalt:", data);
+                // Hier kannst du die Daten weiterverwenden oder an eine andere Funktion übergeben
+                processLoadedFile(data); // Zum Beispiel die Daten verarbeiten
+            })
+            .catch(error => {
+                console.error("Fehler beim Laden der Datei:", error);
+            });
+    }
+    // Falls es sich um eine manuell hochgeladene Datei handelt
+    else if (filename === "upload" && document.getElementById("funksprueche").files.length > 0) {
+        const file = document.getElementById("funksprueche").files[0];
+        const reader = new FileReader();
+        reader.onload = function(event) {
+            const fileContent = event.target.result;  // Der Inhalt der hochgeladenen Datei
+            console.log("Manuell hochgeladene Datei:", fileContent);
+            processLoadedFile(fileContent); // Die Datei weiterverarbeiten
+        };
+        reader.onerror = function(error) {
+            console.error("Fehler beim Lesen der Datei:", error);
+        };
+        reader.readAsText(file);  // Die Datei als Text lesen
+    } else {
+        console.error("Keine Datei ausgewählt oder ungültige Vorlage.");
+    }
+}
+
+// Rufe beim Laden der Seite die Funktion auf, um die Select-Box zu füllen
+populateTemplateSelectBox();
 
 renderInitData();

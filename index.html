@@ -182,16 +182,12 @@
                         </div>
 
                         <div class="mb-3">
-                            <label class="form-label">Funksprüche verwenden:</label>
-                            <div class="form-check">
-                                <input class="form-check-input" type="checkbox" id="useCustomList"
-                                    onchange="toggleFunkspruchInput()">
-                                <label class="form-check-label" for="useCustomList">
-                                    Eigene Funkspruchliste hochladen
-                                </label>
-                            </div>
+                            <label for="funkspruchVorlage" class="form-label">Funkspruch-Vorlage auswählen:</label>
+                            <select class="form-control" id="funkspruchVorlage" onchange="toggleFileUpload()">
+                            </select>
                         </div>
-
+                        
+                        <!-- Container für den Datei-Upload -->
                         <div class="mb-3" id="fileUploadContainer" style="display: none;">
                             <label class="form-label">Funksprüche hochladen:</label>
                             <input type="file" class="form-control" id="funksprueche" accept=".txt">
@@ -241,6 +237,8 @@
                         <div class="row" id="teilnehmer-container">
                             <!-- Hier wird per JS die Tabelle eingefügt -->
                         </div>
+                        <!-- Teilnehmer hinzufügen Button -->
+                        <button class="btn btn-success mt-3" onclick="addTeilnehmer()">Teilnehmer hinzufügen</button>
                     </div>
                 </div>
             </div>
