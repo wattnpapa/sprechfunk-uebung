@@ -442,7 +442,8 @@ function generateAllPages(funksprueche) {
     if (htmlUebungsDaten.length > 0) {
         displayPage(currentPageIndex);
 
-    zeigeUebungsdauer()
+        zeigeUebungsdauer();
+        startVerteilung();
     }
 }
 
@@ -965,6 +966,100 @@ function zeigeUebungsdauer() {
     document.getElementById("dauerLangsamMinuten").innerText = `${minutenSchelcht.toFixed()} Min`;
     document.getElementById("dauerLangsamStundenMinuten").innerText = `${schlechtFormatted.stunden} Std ${schlechtFormatted.minuten.toFixed(0)} Min`;
     document.getElementById("durchschnittLangsam").innerText = `${durchschnittSchlecht.toFixed(2)} Sek`;
+}
+
+function berechneVerteilungUndZeigeDiagramm() {
+    const labels = [];
+    const messageCounts = []; // Hier speichern wir die empfangenen Nachrichten
+    const nachrichtenVerteilung = {}; // Hier speichern wir die Verteilung der Nachrichten pro Teilnehmer
+
+    // Iteriere über alle Übungsdaten und berechne die empfangenen Nachrichten
+    jsonUebungsDaten.forEach(uebung => {
+        let teilnehmer = uebung.teilnehmer;
+        if (teilnehmer !== leitung) {  // Übungsleitung wird ignoriert
+            labels.push(teilnehmer);  // Füge Teilnehmer zur Labels-Liste hinzu
+
+            // Initialisiere die Zählung für diesen Teilnehmer
+            if (!nachrichtenVerteilung[teilnehmer]) {
+                nachrichtenVerteilung[teilnehmer] = 0;
+            }
+        }
+    });
+
+    // Iteriere über alle Übungsdaten und berechne die empfangenen Nachrichten
+    jsonUebungsDaten.forEach(uebung => {
+        let teilnehmer = uebung.teilnehmer;
+        if (teilnehmer !== leitung) {  // Übungsleitung wird ignoriert
+            
+            // Iteriere über alle Nachrichten der Übung
+            uebung.nachrichten.forEach(nachricht => {
+                // Wenn die Nachricht an "Alle" gesendet wurde, wird sie zu jedem Empfänger gezählt
+                nachricht.empfaenger.forEach(empfaenger => {
+                    if(empfaenger === "Alle"){
+                        teilnehmerListe.forEach(teilnehmerAlle => {
+                            if(teilnehmerAlle !== teilnehmer){
+                                nachrichtenVerteilung[teilnehmerAlle]++;
+                            }
+                        })
+                    } else {
+                        nachrichtenVerteilung[empfaenger]++;
+                    }
+                });
+                if (nachricht.empfaenger.includes(teilnehmer)) {
+                    nachrichtenVerteilung[teilnehmer]++;
+                }
+            });
+        }
+    });
+
+    // Bereite die Daten für das Diagramm vor
+    labels.forEach(teilnehmer => {
+        messageCounts.push(nachrichtenVerteilung[teilnehmer] || 0); // Wenn keine Nachrichten für den Teilnehmer gezählt wurden, setze 0
+    });
+
+    // Überprüfen, ob bereits ein Chart existiert und zerstören, falls nötig
+    if (window.chart) {
+        window.chart.destroy();
+    }
+
+    // Erstelle das Balkendiagramm mit Chart.js
+    window.chart = new Chart(document.getElementById("distributionChart"), {
+        type: 'bar',
+        data: {
+            labels: labels,  // Die Teilnehmernamen
+            datasets: [{
+                label: 'Empfangene Nachrichten',
+                data: messageCounts, // Anzahl der empfangenen Nachrichten
+                backgroundColor: '#4CAF50', // Balkenfarbe
+                borderColor: '#388E3C', // Randfarbe der Balken
+                borderWidth: 1
+            }]
+        },
+        options: {
+            responsive: true,
+            scales: {
+                x: {
+                    beginAtZero: true,
+                    title: {
+                        display: true,
+                        text: 'Teilnehmer'
+                    }
+                },
+                y: {
+                    beginAtZero: true,
+                    title: {
+                        display: true,
+                        text: 'Anzahl der Nachrichten'
+                    }
+                }
+            }
+        }
+    });
+}
+
+// Funktion zum Starten der Berechnung und Anzeige des Diagramms
+function startVerteilung() {
+    berechneVerteilungUndZeigeDiagramm();
 }
 
 renderInitData();
