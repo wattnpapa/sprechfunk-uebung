@@ -1289,6 +1289,16 @@ function loadFile(filename) {
     }
 }
 
+// Funktion, um das aktuelle Datum im Datumsfeld vorzufüllen
+function setDefaultDate() {
+    const today = new Date();
+    const formattedDate = today.toISOString().split('T')[0]; // Format: YYYY-MM-DD
+    document.getElementById("datum").value = formattedDate;
+}
+
+// Rufe die Funktion beim Laden der Seite auf
+document.addEventListener("DOMContentLoaded", setDefaultDate);
+
 // Rufe beim Laden der Seite die Funktion auf, um die Select-Box zu füllen
 populateTemplateSelectBox();
 
