@@ -1127,6 +1127,68 @@ function generateNachrichtenvordruckPDFs() {
     alert("Nachrichtenvordruck PDF für den ausgewählten Teilnehmer wurde erfolgreich erstellt!");
 }
 
+function generateMeldevordruckPDFs() {
+    const { jsPDF } = window.jspdf;
+
+    // URL der PNG-Vorlage
+    const templateImageUrl = 'assets/meldevordruck.png'; // Pfad zur PNG-Datei
+
+    // Maximale Textbreite (in mm)
+    const maxWidth = 110;
+    const maxWidthAnschrift = 70; // Maximale Breite für Anschrift
+    const maxWidthRufname = 70; // Maximale Breite für Rufname der Gegenstelle
+
+    // Iteriere durch alle Übungsdaten und generiere PDFs
+    jsonUebungsDaten.forEach(uebung => {
+        let teilnehmer = uebung.teilnehmer;
+        
+        let nachrichten = uebung.nachrichten; // Alle Nachrichten des Teilnehmers
+
+        // Erstelle eine neue PDF für den Teilnehmer
+        let participantPdf = new jsPDF('p', 'mm', 'a5'); // A5 Hochformat
+
+        // Füge jede Nachricht des Teilnehmers als neue Seite hinzu
+        nachrichten.forEach((nachricht, index) => {
+            // Füge das Hintergrundbild (Vorlage) auf jeder Seite hinzu
+            participantPdf.addImage(templateImageUrl, 'PNG', 0, 0, 148, 210); // A5-Seite (148mm x 210mm)
+
+            // Füge Text (Teilnehmername, Nachricht, Empfänger) hinzu
+            participantPdf.setFontSize(12);
+            
+            // Absender
+            participantPdf.text(`${teilnehmer}`, 37, 42); 
+
+                        let empfaengerText;
+            // Wenn Empfänger "Alle" ist, an alle Empfänger zählen
+            if (nachricht.empfaenger.includes("Alle")) {
+                empfaengerText = "Alle"
+
+            } else {
+                empfaengerText = `${nachricht.empfaenger.join(", ")}`;
+            }
+            // Anpassung für "Anschrift" - Schriftgröße anpassen, wenn der Text zu lang ist
+            adjustTextForWidth(participantPdf, empfaengerText, maxWidthAnschrift, 37, 55);
+
+            // Nachricht (Umbrechen)
+            participantPdf.setFontSize(11.5);
+            const messageLines = participantPdf.splitTextToSize(nachricht.nachricht, maxWidth);
+            participantPdf.text(messageLines, 19, 70); 
+
+            // Wenn es nicht die letzte Nachricht ist, füge eine neue Seite hinzu
+            if (index < nachrichten.length - 1) {
+                participantPdf.addPage();
+                participantPdf.addImage(templateImageUrl, 'PNG', 0, 0, 148, 210); // A5-Seite (148mm x 210mm)
+            }
+        });
+
+        // Speichere die PDF für den Teilnehmer
+        participantPdf.save(`Nachrichtenvordruck_${teilnehmer}.pdf`);
+
+    });
+
+    alert("Nachrichtenvordruck PDF für den ausgewählten Teilnehmer wurde erfolgreich erstellt!");
+}
+
 
 /**
  * Funktion zum Anpassen der Textgröße, damit der Text in die angegebene Breite passt
