@@ -1,21 +1,13 @@
 import pdfGenerator from './pdfGenerator.js';
 import { DateFormatter } from "./DateFormatter.js";
+import { FunkUebung } from "./FunkUebung.js";
 
 export class AppController {
 
     constructor() {
         console.log("📌 AppController wurde initialisiert");
 
-        // Initialisiere Teilnehmerliste
-        this.teilnehmerListe = [
-            "Heros Oldenburg 16/11",
-            "Heros Oldenburg 17/12",
-            "Heros Oldenburg 18/13",
-            "Heros Jever 21/10",
-            "Heros Leer 21/10",
-            "Heros Emden 21/10",
-            "Heros Wilhemshaven 21/10"
-        ];
+        this.funkUebung = new FunkUebung();
 
         // Initialisiere Lösungswörter (in Uppercase)
         this.predefinedLoesungswoerter = [
@@ -35,20 +27,9 @@ export class AppController {
             vorlage2: { text: "Lange Funksprüche", filename: "funksprueche_lang.txt" }
         };
 
-        // Initiale Übungseinstellungen
-        this.spruecheProTeilnehmer = 50;
-        this.spruecheAnAlle = 3;
-        this.spruecheAnMehrere = 2;
-        this.leitung = "Heros Wind 10";
-        this.rufgruppe = "T_OL_GOLD-1";
-        this.nameDerUebung = "Sprechfunkübung Blauer Wind 2025";
-
         // Weitere Variablen für die Übung
-        this.datum = null;
         this.natoDate = null;
         this.jsonUebungsDaten = [];
-        this.htmlUebungsDaten = [];
-        this.loesungswoerter = {};
         this.jsonKompletteUebung = {};
         this.currentPageIndex = 0;
 
@@ -84,12 +65,12 @@ export class AppController {
     }
 
     renderInitData() {
-        document.getElementById("spruecheProTeilnehmer").value = this.spruecheProTeilnehmer;
-        document.getElementById("spruecheAnAlle").value = this.spruecheAnAlle;
-        document.getElementById("spruecheAnMehrere").value = this.spruecheAnMehrere;
-        document.getElementById("leitung").value = this.leitung;
-        document.getElementById("rufgruppe").value = this.rufgruppe;
-        document.getElementById("nameDerUebung").value = this.nameDerUebung;
+        document.getElementById("spruecheProTeilnehmer").value = this.funkUebung.spruecheProTeilnehmer;
+        document.getElementById("spruecheAnAlle").value = this.funkUebung.spruecheAnAlle;
+        document.getElementById("spruecheAnMehrere").value = this.funkUebung.spruecheAnMehrere;
+        document.getElementById("leitung").value = this.funkUebung.leitung;
+        document.getElementById("rufgruppe").value = this.funkUebung.rufgruppe;
+        document.getElementById("nameDerUebung").value = this.funkUebung.name;
 
         this.renderTeilnehmer();
     }
@@ -131,12 +112,12 @@ export class AppController {
         }
 
         // **Füge die Teilnehmer als Tabellenzeilen hinzu**
-        this.teilnehmerListe.forEach((teilnehmer, index) => {
+        this.funkUebung.teilnehmerListe.forEach((teilnehmer, index) => {
             const row = document.createElement("tr");
 
             let loesungswortInput = "";
             if (isIndividuell) {
-                let wort = loesungswoerter[teilnehmer] || "";
+                let wort = this.funkUebung.loesungswoerter[teilnehmer] || "";
                 loesungswortInput = `<td><input type="text" class="form-control" id="loesungswort-${index}" value="${wort}" placeholder="Lösungswort" readonly></td>`;
             }
 
@@ -155,17 +136,17 @@ export class AppController {
     }
 
     updateTeilnehmer(index, value) {
-        teilnehmerListe[index] = value;
+        this.funkUebung.teilnehmerListe[index] = value;
     }
 
     addTeilnehmer() {
-        teilnehmerListe.push("");
-        renderTeilnehmer();
+        this.funkUebung.teilnehmerListe.push("");
+        this.renderTeilnehmer();
     }
 
     removeTeilnehmer(index) {
-        teilnehmerListe.splice(index, 1);
-        renderTeilnehmer();
+        this.funkUebung.teilnehmerListe.splice(index, 1);
+        this.renderTeilnehmer();
     }
 
     toggleFunkspruchInput() {
@@ -178,15 +159,15 @@ export class AppController {
         const file = document.getElementById("funksprueche").files[0] ?? ""; // Die manuell hochgeladene Datei, falls vorhanden
 
         // Berechnungen und weitere Funktionen wie vorher...
-        this.spruecheProTeilnehmer = Number(document.getElementById("spruecheProTeilnehmer").value);
-        this.spruecheAnAlle = Number(document.getElementById("spruecheAnAlle").value);
-        this.spruecheAnMehrere = Number(document.getElementById("spruecheAnMehrere").value);
-        this.leitung = document.getElementById("leitung").value;
-        this.rufgruppe = document.getElementById("rufgruppe").value;
-        this.nameDerUebung = document.getElementById("nameDerUebung").value;
+        this.funkUebung.spruecheProTeilnehmer = Number(document.getElementById("spruecheProTeilnehmer").value);
+        this.funkUebung.spruecheAnAlle = Number(document.getElementById("spruecheAnAlle").value);
+        this.funkUebung.spruecheAnMehrere = Number(document.getElementById("spruecheAnMehrere").value);
+        this.funkUebung.leitung = document.getElementById("leitung").value;
+        this.funkUebung.rufgruppe = document.getElementById("rufgruppe").value;
+        this.funkUebung.name = document.getElementById("nameDerUebung").value;
 
-        this.datum = new Date(document.getElementById("datum").value + "T00:00:00");
-        this.natoDate = DateFormatter.formatNATODate(this.datum, false);
+        this.funkUebung.datum = new Date(document.getElementById("datum").value + "T00:00:00");
+        this.natoDate = DateFormatter.formatNATODate(this.funkUebung.datum, false);
 
         this.jsonKompletteUebung = this.generateExerciseJSON();
         console.log(this.jsonKompletteUebung)
@@ -324,21 +305,21 @@ export class AppController {
     }
 
     generiereUebung(funksprueche) {
-        this.spruecheProTeilnehmer--;
+        this.funkUebung.spruecheProTeilnehmer--;
 
         // Generiere Übung ohne Lösungsbuchstaben
-        let uebungsDaten = this.teilnehmerListe.map(teilnehmer => {
+        let uebungsDaten = this.funkUebung.teilnehmerListe.map(teilnehmer => {
             return {
                 teilnehmer,
                 kopfdaten: {
                     datum: this.natoDate,
-                    nameDerUebung: this.nameDerUebung,
-                    leitung: this.leitung,
-                    teilnehmer: this.teilnehmerListe,
-                    rufgruppe: this.rufgruppe
+                    nameDerUebung: this.funkUebung.name,
+                    leitung: this.funkUebung.leitung,
+                    teilnehmer: this.funkUebung.teilnehmerListe,
+                    rufgruppe: this.funkUebung.rufgruppe
                 },
-                nachrichten: this.generiereNachrichten(this.teilnehmer, funksprueche),
-                loesungswort: this.loesungswoerter[teilnehmer] || "" // Speichere das Lösungswort mit ab
+                nachrichten: this.generiereNachrichten(teilnehmer, funksprueche),
+                loesungswort: this.funkUebung.loesungswoerter[teilnehmer] || "" // Speichere das Lösungswort mit ab
             };
         });
 
@@ -353,7 +334,7 @@ export class AppController {
      */
     generiereNachrichten(teilnehmer, funksprueche) {
         let gemischteFunksprueche = [...funksprueche].sort(() => 0.5 - Math.random());
-        let nachrichtenVerteilung = this.verteileNachrichten(this.spruecheProTeilnehmer, this.spruecheAnAlle, this.spruecheAnMehrere);
+        let nachrichtenVerteilung = this.verteileNachrichten(this.funkUebung.spruecheProTeilnehmer, this.funkUebung.spruecheAnAlle, this.funkUebung.spruecheAnMehrere);
 
         let nachrichten = [];
 
@@ -361,10 +342,10 @@ export class AppController {
         nachrichten.push({
             id: 1,
             nachricht: "Ich melde mich in Ihrem Sprechfunkverkehrskreis an.",
-            empfaenger: [this.leitung]
+            empfaenger: [this.funkUebung.leitung]
         });
 
-        for (let i = 0; i < this.spruecheProTeilnehmer; i++) {
+        for (let i = 0; i < this.funkUebung.spruecheProTeilnehmer; i++) {
             let nachricht = {};
             nachricht.id = i + 2;
             nachricht.nachricht = gemischteFunksprueche[i];
@@ -372,9 +353,9 @@ export class AppController {
             if (nachrichtenVerteilung.alle.includes(i)) {
                 nachricht.empfaenger = ["Alle"];
             } else if (nachrichtenVerteilung.mehrere.includes(i)) {
-                nachricht.empfaenger = this.getRandomSubsetOfOthers(this.teilnehmerListe, teilnehmer);
+                nachricht.empfaenger = this.getRandomSubsetOfOthers(this.funkUebung.teilnehmerListe, teilnehmer);
             } else {
-                nachricht.empfaenger = [this.getRandomOther(this.teilnehmerListe, teilnehmer)];
+                nachricht.empfaenger = [this.getRandomOther(this.funkUebung.teilnehmerListe, teilnehmer)];
             }
             nachrichten.push(nachricht);
         }
@@ -450,13 +431,13 @@ export class AppController {
      */
     generateAllPages(funksprueche) {
         this.jsonUebungsDaten = this.generiereUebung(funksprueche);
-        this.htmlUebungsDaten = this.jsonUebungsDaten.map(data => this.generateHTMLPage(data));
+        this.funkUebung.htmlSeitenTeilnehmer = this.jsonUebungsDaten.map(data => this.generateHTMLPage(data));
         this.currentPageIndex = 0;
         this.jsonKompletteUebung.uebungsDaten = this.jsonUebungsDaten;
         this.jsonKompletteUebung.checksumme = this.generateMD5Hash(this.jsonKompletteUebung);
 
 
-        if (this.htmlUebungsDaten.length > 0) {
+        if (this.funkUebung.htmlSeitenTeilnehmer.length > 0) {
             this.displayPage(this.currentPageIndex);
 
             this.zeigeUebungsdauer();
@@ -468,12 +449,12 @@ export class AppController {
      * Zeigt die aktuelle Seite im iframe an.
      */
     displayPage(index) {
-        if (index < 0 || index >= this.htmlUebungsDaten.length) return;
+        if (index < 0 || index >= this.funkUebung.htmlSeitenTeilnehmer.length) return;
 
         const iframe = document.getElementById("resultFrame");
-        iframe.srcdoc = this.htmlUebungsDaten[index]; // Lädt den HTML-Code direkt in das iframe
+        iframe.srcdoc = this.funkUebung.htmlSeitenTeilnehmer[index]; // Lädt den HTML-Code direkt in das iframe
 
-        document.getElementById("current-page").textContent = `Seite ${index + 1} / ${this.htmlUebungsDaten.length}`;
+        document.getElementById("current-page").textContent = `Seite ${index + 1} / ${this.funkUebung.htmlSeitenTeilnehmer.length}`;
     }
 
     /**
@@ -481,10 +462,10 @@ export class AppController {
      * @param {number} step - 1 für weiter, -1 für zurück
      */
     changePage(step) {
-        const newIndex = currentPageIndex + step;
-        if (newIndex >= 0 && newIndex < this.htmlUebungsDaten.length) {
-            currentPageIndex = newIndex;
-            displayPage(currentPageIndex);
+        const newIndex = this.currentPageIndex + step;
+        if (newIndex >= 0 && newIndex < this.funkUebung.htmlSeitenTeilnehmer.length) {
+            this.currentPageIndex = newIndex;
+            this.displayPage(this.currentPageIndex);
         }
     }
 
@@ -589,7 +570,7 @@ export class AppController {
         document.getElementById("loesungswortColumn").style.display = option === "individuell" ? "table-cell" : "none";
 
         // Aktualisiert die Teilnehmerliste mit Lösungswörtern (falls benötigt)
-        renderTeilnehmer();
+        this.renderTeilnehmer();
     }
 
     generateInstructorPDF() {
@@ -604,15 +585,15 @@ export class AppController {
 
         if (isKeine) {
             // Lösungswörter zurücksetzen
-            loesungswoerter = {};
+            this.funkUebung.loesungswoerter = {};
             document.getElementById("zentralLoesungswortInput").disabled = true;
             document.getElementById("zentralLoesungswortInput").value = "";
             document.getElementById("shuffleButton").disabled = true;
         } else if (isZentral) {
             // Zentrales Lösungswort setzen
             let zentralesWort = document.getElementById("zentralLoesungswortInput").value;
-            teilnehmerListe.forEach(teilnehmer => {
-                loesungswoerter[teilnehmer] = zentralesWort;
+            this.funkUebung.teilnehmerListe.forEach(teilnehmer => {
+                this.funkUebung.loesungswoerter[teilnehmer] = zentralesWort;
             });
 
             // Eingabefeld aktivieren
@@ -620,7 +601,7 @@ export class AppController {
             document.getElementById("shuffleButton").disabled = true;
         } else if (isIndividuell) {
             // Individuelle Wörter zuweisen
-            assignRandomLoesungswoerter();
+            this.assignRandomLoesungswoerter();
             document.getElementById("zentralLoesungswortInput").disabled = true;
             document.getElementById("shuffleButton").disabled = false;
         }
@@ -630,10 +611,10 @@ export class AppController {
 
     assignRandomLoesungswoerter() {
         // Shuffle-Algorithmus für zufällige Verteilung
-        let shuffledWords = [...predefinedLoesungswoerter].sort(() => Math.random() - 0.5);
+        let shuffledWords = [...this.predefinedLoesungswoerter].sort(() => Math.random() - 0.5);
 
-        teilnehmerListe.forEach((teilnehmer, index) => {
-            loesungswoerter[teilnehmer] = shuffledWords[index % shuffledWords.length];
+        this.funkUebung.teilnehmerListe.forEach((teilnehmer, index) => {
+            this.funkUebung.loesungswoerter[teilnehmer] = shuffledWords[index % shuffledWords.length];
         });
     }
 
@@ -642,13 +623,13 @@ export class AppController {
         const isIndividuell = document.getElementById("individuelleLoesungswoerter").checked;
 
         if (isZentral) {
-            let zentralesWort = predefinedLoesungswoerter[Math.floor(Math.random() * predefinedLoesungswoerter.length)];
+            let zentralesWort = this.predefinedLoesungswoerter[Math.floor(Math.random() * this.predefinedLoesungswoerter.length)];
             document.getElementById("zentralLoesungswortInput").value = zentralesWort;
-            teilnehmerListe.forEach(teilnehmer => {
-                loesungswoerter[teilnehmer] = zentralesWort;
+            this.funkUebung.teilnehmerListe.forEach(teilnehmer => {
+                this.funkUebung.loesungswoerter[teilnehmer] = zentralesWort;
             });
         } else if (isIndividuell) {
-            assignRandomLoesungswoerter();
+            this.assignRandomLoesungswoerter();
         }
 
         this.renderTeilnehmer(false); // WICHTIG: Setze `triggerShuffle = false`, um Endlosschleife zu vermeiden
@@ -765,7 +746,7 @@ export class AppController {
                     // Wenn die Nachricht an "Alle" gesendet wurde, wird sie zu jedem Empfänger gezählt
                     nachricht.empfaenger.forEach(empfaenger => {
                         if (empfaenger === "Alle") {
-                            this.teilnehmerListe.forEach(teilnehmerAlle => {
+                            this.funkUebung.teilnehmerListe.forEach(teilnehmerAlle => {
                                 if (teilnehmerAlle !== teilnehmer) {
                                     nachrichtenVerteilung[teilnehmerAlle]++;
                                 }
@@ -968,7 +949,7 @@ export class AppController {
                 zentralLoesungswort: document.getElementById("zentralLoesungswortInput")?.value || null,
                 individuelleLoesungswoerter: { ...this.loesungswoerter }
             },
-            teilnehmer: [...this.teilnehmerListe],
+            teilnehmer: [...this.funkUebung.teilnehmerListe],
             uebungsDaten: {} // Hier sind die generierten Funksprüche enthalten
         };
 

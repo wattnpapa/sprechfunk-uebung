@@ -5,6 +5,27 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Sprechfunk Übungsgenerator</title>
+    <!-- Favicon -->
+    <link rel="icon" type="image/png" href="assets/favicon.png">
+
+    <!-- Titel & Beschreibung -->
+    <title>Sprechfunk Übungsgenerator</title>
+    <meta name="description" content="Erstelle realistische Sprechfunk-Übungen für Ausbildung und Training mit dem Sprechfunk Übungsgenerator.">
+    <meta name="keywords" content="Sprechfunk, BOS-Funk, Funkübung, THW, Feuerwehr, Katastrophenschutz, Kommunikationstraining">
+    <meta name="author" content="Johannes Rudolph">
+
+    <!-- Open Graph für Social Media (Facebook, LinkedIn) -->
+    <meta property="og:title" content="Sprechfunk Übungsgenerator">
+    <meta property="og:description" content="Erstelle realistische Sprechfunk-Übungen für Ausbildung und Training mit dem Sprechfunk Übungsgenerator.">
+    <!--<meta property="og:image" content="https://yourdomain.com/assets/preview-image.png">-->
+    <meta property="og:url" content="https://yourdomain.com">
+    <meta property="og:type" content="website">
+    
+    <!-- Twitter Card für Twitter Vorschau -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="Sprechfunk Übungsgenerator">
+    <meta name="twitter:description" content="Erstelle realistische Sprechfunk-Übungen für Ausbildung und Training mit dem Sprechfunk Übungsgenerator.">
+    <!--<meta name="twitter:image" content="https://yourdomain.com/assets/preview-image.png">-->
 
     <script src="https://cdn.jsdelivr.net/npm/showdown@1.9.1/dist/showdown.min.js"></script>
     <!-- Bootstrap für Styling -->
@@ -209,7 +230,7 @@
                             <div class="col-md-6 mb-3">
                                 <label class="form-label">Funksprüche pro Teilnehmer:</label>
                                 <input type="number" class="form-control" id="spruecheProTeilnehmer" min="1" value="50"
-                                    oninput="updateVerteilung()">
+                                    oninput="app.updateVerteilung()">
                             </div>
 
                             <!-- Nachrichten an alle -->
@@ -217,7 +238,7 @@
                                 <label class="form-label">% an Alle:</label>
                                 <div class="input-group">
                                     <input type="number" class="form-control" id="prozentAnAlle" min="0" max="100"
-                                        value="10" oninput="updateAbsolute('alle')">
+                                        value="10" oninput="app.updateAbsolute('alle')">
                                     <span class="input-group-text">%</span>
                                 </div>
                                 <small class="text-muted">Ergibt <span id="calcAnAlle">5</span> Nachrichten</small>
@@ -229,7 +250,7 @@
                                 <label class="form-label">% an Mehrere:</label>
                                 <div class="input-group">
                                     <input type="number" class="form-control" id="prozentAnMehrere" min="0" max="100"
-                                        value="5" oninput="updateAbsolute('mehrere')">
+                                        value="5" oninput="app.updateAbsolute('mehrere')">
                                     <span class="input-group-text">%</span>
                                 </div>
                                 <small class="text-muted">Ergibt <span id="calcAnMehrere">2</span> Nachrichten</small>
@@ -239,7 +260,7 @@
 
                         <div class="mb-3">
                             <label for="funkspruchVorlage" class="form-label">Funkspruch-Vorlage auswählen:</label>
-                            <select class="form-control" id="funkspruchVorlage" onchange="toggleFileUpload()">
+                            <select class="form-control" id="funkspruchVorlage" onchange="app.toggleFileUpload()">
                             </select>
                         </div>
 
@@ -254,17 +275,17 @@
                             <label class="form-label">Lösungswörter:</label>
                             <div class="form-check">
                                 <input class="form-check-input" type="radio" id="keineLoesungswoerter"
-                                    name="loesungswortOption" checked onclick="renderTeilnehmer()">
+                                    name="loesungswortOption" checked onclick="app.renderTeilnehmer()">
                                 <label class="form-check-label" for="keineLoesungswoerter">Keine Lösungswörter</label>
                             </div>
                             <div class="form-check">
                                 <input class="form-check-input" type="radio" id="zentralLoesungswort"
-                                    name="loesungswortOption" onclick="renderTeilnehmer()">
+                                    name="loesungswortOption" onclick="app.renderTeilnehmer()">
                                 <label class="form-check-label" for="zentralLoesungswort">Zentrales Lösungswort</label>
                             </div>
                             <div class="form-check">
                                 <input class="form-check-input" type="radio" id="individuelleLoesungswoerter"
-                                    name="loesungswortOption" onclick="renderTeilnehmer()">
+                                    name="loesungswortOption" onclick="app.renderTeilnehmer()">
                                 <label class="form-check-label" for="individuelleLoesungswoerter">Individuelle
                                     Lösungswörter</label>
                             </div>
@@ -274,7 +295,7 @@
                             </div>
                         </div>
 
-                        <button id="shuffleButton" class="btn btn-primary" onclick="shuffleLoesungswoerter()"
+                        <button id="shuffleButton" class="btn btn-primary" onclick="app.shuffleLoesungswoerter()"
                             style="display: none;">
                             🔀 Lösungswörter Zufällig neu zuweisen
                         </button>
@@ -294,7 +315,7 @@
                             <!-- Hier wird per JS die Tabelle eingefügt -->
                         </div>
                         <!-- Teilnehmer hinzufügen Button -->
-                        <button class="btn btn-success mt-3" onclick="addTeilnehmer()">Teilnehmer hinzufügen</button>
+                        <button class="btn btn-success mt-3" onclick="app.addTeilnehmer()">Teilnehmer hinzufügen</button>
                     </div>
                 </div>
             </div>
