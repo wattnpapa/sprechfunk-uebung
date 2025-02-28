@@ -47,6 +47,7 @@ let natoDate;
 let jsonUebungsDaten;
 let htmlUebungsDaten = [];
 let loesungswoerter = {};
+let jsonKompletteUebung = {};
 
 let currentPageIndex = 0;
 
@@ -177,6 +178,8 @@ function startUebung() {
     datum = new Date(document.getElementById("datum").value + "T00:00:00");
     natoDate = formatNATODate(datum, false);
 
+    jsonKompletteUebung = generateExerciseJSON();
+    console.log(jsonKompletteUebung)
 
     // Wenn eine Vorlage aus der select-Box ausgewählt wurde (nicht "Manuelle Datei hochladen")
     if (selectedTemplate !== "upload") {
@@ -438,6 +441,9 @@ function generateAllPages(funksprueche) {
     jsonUebungsDaten = generiereUebung(funksprueche);
     htmlUebungsDaten = jsonUebungsDaten.map(data => generateHTMLPage(data));
     currentPageIndex = 0;
+    jsonKompletteUebung.uebungsDaten = jsonUebungsDaten;
+    jsonKompletteUebung.checksumme = generateMD5Hash(jsonKompletteUebung);
+
 
     if (htmlUebungsDaten.length > 0) {
         displayPage(currentPageIndex);
@@ -1294,6 +1300,37 @@ function setDefaultDate() {
     const today = new Date();
     const formattedDate = today.toISOString().split('T')[0]; // Format: YYYY-MM-DD
     document.getElementById("datum").value = formattedDate;
+}
+
+function generateExerciseJSON() {
+    let exerciseData = {
+        meta: {
+            datum: document.getElementById("datum").value,
+            nameDerUebung: document.getElementById("nameDerUebung").value,
+            rufgruppe: document.getElementById("rufgruppe").value,
+            leitung: document.getElementById("leitung").value
+        },
+        einstellungen: {
+            spruecheProTeilnehmer: Number(document.getElementById("spruecheProTeilnehmer").value),
+            spruecheAnAlle: Number(document.getElementById("spruecheAnAlle").value),
+            spruecheAnMehrere: Number(document.getElementById("spruecheAnMehrere").value),
+            funkspruchVorlage: document.getElementById("funkspruchVorlage").value,
+            benutzerdefinierteDatei: document.getElementById("funksprueche").files.length > 0
+        },
+        loesungswoerter: {
+            modus: document.querySelector('input[name="loesungswortOption"]:checked')?.id || "keine",
+            zentralLoesungswort: document.getElementById("zentralLoesungswortInput")?.value || null,
+            individuelleLoesungswoerter: { ...loesungswoerter }
+        },
+        teilnehmer: [...teilnehmerListe],
+        uebungsDaten: {} // Hier sind die generierten Funksprüche enthalten
+    };
+
+    return exerciseData;
+}
+
+function generateMD5Hash(input) {
+    return CryptoJS.MD5(input).toString();
 }
 
 // Rufe die Funktion beim Laden der Seite auf
