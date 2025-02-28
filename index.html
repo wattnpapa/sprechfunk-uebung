@@ -355,7 +355,7 @@
             </div>
         </div>
 
-        <button class="btn btn-success w-100 mt-4" onclick="startUebung()">
+        <button class="btn btn-success w-100 mt-4" onclick="app.startUebung()">
             <i class="fas fa-cogs"></i> Übung generieren
         </button>
 
@@ -403,19 +403,19 @@
                     <h5><i class="fas fa-file-alt"></i> Vorschau der generierten Seiten</h5>
                 </div>
                 <div class="card-body text-center" style="margin-bottom: 20px;">
-                    <button class="btn btn-secondary" onclick="changePage(-1)">⬅ Zurück</button>
+                    <button class="btn btn-secondary" onclick="app.changePage(-1)">⬅ Zurück</button>
                     <span id="current-page">Seite 1 / 1</span>
-                    <button class="btn btn-secondary" onclick="changePage(1)">Weiter ➡</button>
-                    <button class="btn btn-danger" onclick="generatePDFs()">
+                    <button class="btn btn-secondary" onclick="app.changePage(1)">Weiter ➡</button>
+                    <button class="btn btn-danger" onclick="app.generatePDFs()">
                         <i class="fas fa-file-pdf"></i> Teilnehmer PDFs generieren
                     </button>
-                    <button class="btn btn-warning" onclick="generateNachrichtenvordruckPDFs()">
+                    <button class="btn btn-warning" onclick="app.generateNachrichtenvordruckPDFs()">
                         <i class="fas fa-file-pdf"></i> Nachrichtenvordruck PDFs generieren
                     </button>
-                    <button class="btn btn-warning" onclick="generateMeldevordruckPDFs()">
+                    <button class="btn btn-warning" onclick="app.generateMeldevordruckPDFs()">
                         <i class="fas fa-file-pdf"></i> Meldevordruck PDFs generieren
                     </button>
-                    <button class="btn btn-info" onclick="generateInstructorPDF()">
+                    <button class="btn btn-info" onclick="app.generateInstructorPDF()">
                         <i class="fas fa-user-tie"></i> Übungsleitung PDF erzeugen
                     </button>
                 </div>
@@ -447,7 +447,7 @@
                 target="_blank">GitHub-Repository</a></strong>
     </footer>
 
-    <script src="app.js"></script>
+    <script type="module" src="app.js"></script>
     <script src="help.js"></script>
     <script src="track.js"></script>
 </body>
