@@ -1,0 +1,64 @@
+body {
+    font-family: Arial, sans-serif;
+    margin: 20px;
+}
+
+.container {
+    max-width: 98%;
+    margin: auto;
+}
+
+.table th,
+.table td {
+    text-align: left;
+    vertical-align: middle;
+}
+
+.underline {
+    text-decoration: underline;
+    font-weight: bold;
+}
+
+.github-badge {
+    position: fixed;
+    top: 10px;
+    right: 10px;
+    background-color: #24292e;
+    color: white;
+    padding: 10px 15px;
+    border-radius: 5px;
+    font-size: 14px;
+    font-weight: bold;
+    display: flex;
+    align-items: center;
+    text-decoration: none;
+    transition: background-color 0.3s ease;
+}
+
+.github-badge img {
+    width: 20px;
+    height: 20px;
+    margin-right: 8px;
+}
+
+.github-badge:hover {
+    background-color: #444c56;
+}
+
+.card {
+    margin-bottom: 20px;
+}
+
+.row {
+    display: flex;
+    justify-content: space-between;
+}
+
+/* Stil für das Formular der Teilnehmerverwaltung */
+.card-body {
+    padding: 20px;
+}
+
+.form-label {
+    font-weight: bold;
+}
