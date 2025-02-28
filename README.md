@@ -134,6 +134,8 @@ Super! **Pull Requests sind willkommen!** 🎉
 
 # 👨‍💻 Über den Autor  
 
+![Johannes Rudolph](https://www.gravatar.com/avatar/b4d8c8a87a392586b9caee287180163b?s=200)  
+
 👋 **Johannes Rudolph**  
 💼 **Master of Client Adventures** bei **DIA Connecting Software GmbH & Co. KG**  
 📍 **B2B eCommerce, Digitalisierung & IT-Strategie**  
