@@ -1,6 +1,7 @@
 import pdfGenerator from './pdfGenerator.js';
 import { DateFormatter } from "./DateFormatter.js";
 import { FunkUebung } from "./FunkUebung.js";
+import { UebungHTMLGenerator } from './UebungHTMLGenerator.js';
 
 export class AppController {
 
@@ -31,6 +32,7 @@ export class AppController {
         this.natoDate = null;
         this.jsonUebungsDaten = [];
         this.jsonKompletteUebung = {};
+        this.htmlSeitenTeilnehmer = [];
         this.currentPageIndex = 0;
 
         // Rufe die Funktion beim Laden der Seite auf
@@ -169,16 +171,13 @@ export class AppController {
         this.funkUebung.datum = new Date(document.getElementById("datum").value + "T00:00:00");
         this.natoDate = DateFormatter.formatNATODate(this.funkUebung.datum, false);
 
-        this.jsonKompletteUebung = this.generateExerciseJSON();
-        console.log(this.jsonKompletteUebung)
-
         // Wenn eine Vorlage aus der select-Box ausgewählt wurde (nicht "Manuelle Datei hochladen")
         if (selectedTemplate !== "upload") {
             // Holen Sie sich die Vorlage basierend auf dem Auswahlwert
             const template = this.templatesFunksprueche[selectedTemplate];
 
             if (template) {
-                console.log(`Verwende Vorlage: ${template.text}`);
+                //console.log(`Verwende Vorlage: ${template.text}`);
                 // Hier können wir die Vorlage weiter verwenden, z.B. um Funksprüche zu generieren
                 // Falls notwendig, laden Sie die Datei, wenn sie benötigt wird
 
@@ -186,8 +185,10 @@ export class AppController {
                     .then(response => response.text())
                     .then(data => {
                         // Wenn die Datei erfolgreich geladen wurde, rufen wir `generateAllPages` auf
-                        let funksprueche = data.split("\n").filter(s => s.trim() !== "").sort(() => Math.random() - 0.5);
-                        this.generateAllPages(funksprueche);  // Übergebe die geladenen Funksprüche an generateAllPages
+                        this.funkUebung.funksprueche = data.split("\n").filter(s => s.trim() !== "");
+                        //.sort(() => Math.random() - 0.5);
+                        
+                        this.generateAllPages();  // Übergebe die geladenen Funksprüche an generateAllPages
                     })
                     .catch(error => console.error('Fehler beim Laden der Vorlage:', error));
             } else {
@@ -197,8 +198,9 @@ export class AppController {
             // Wenn die benutzerdefinierte Funkspruch-Liste aktiviert ist und eine Datei hochgeladen wurde
             const reader = new FileReader();
             reader.onload = function (event) {
-                let funksprueche = event.target.result.split("\n").filter(s => s.trim() !== "").sort(() => Math.random() - 0.5);
-                this.generateAllPages(funksprueche);
+                this.funkUebung.funksprueche = data.split("\n").filter(s => s.trim() !== "");
+    
+                this.generateAllPages();
             };
             reader.readAsText(file);
         } else {
@@ -249,118 +251,6 @@ export class AppController {
             mehrere: nachrichtenFuerMehrere,
             einfach: nachrichtenEinfach
         };
-    }
-
-    /**
-     * Gibt eine zufällige Liste anderer Teilnehmer zurück (mind. 2).
-     * 
-     * @param {string[]} teilnehmerListe - Gesamte Teilnehmerliste
-     * @param {string} aktuellerTeilnehmer - Der Teilnehmer, der "sich selbst" nicht erhalten darf
-     * @returns {string[]} Zufälliges Teil-Array (mindestens 2 Teilnehmer)
-     */
-    getRandomSubsetOfOthers(teilnehmerListe, aktuellerTeilnehmer) {
-        // 1) Filter: Wer ist "nicht ich"?
-        const andere = teilnehmerListe.filter(t => t !== aktuellerTeilnehmer);
-        const gesamtTeilnehmer = andere.length;
-
-        // 2) Durchmischen
-        const gemischt = [...andere].sort(() => Math.random() - 0.5);
-
-        // 3) Gewichtete Wahrscheinlichkeitsverteilung für Gruppengröße
-        const minGroesse = 2;
-        const maxGroesse = gesamtTeilnehmer;
-
-        // Berechnung einer zufälligen Größe mit einer gewichteten Verteilung:
-        // Wahrscheinlichkeit für kleine Gruppen ist höher, größere Gruppen sind seltener.
-        let zufallsGroesse;
-
-        if (Math.random() < 0.7) {
-            // 70% Wahrscheinlichkeit für eine Gruppe bis maximal Hälfte der Teilnehmer
-            zufallsGroesse = Math.floor(Math.random() * (Math.ceil(gesamtTeilnehmer / 2) - minGroesse + 1)) + minGroesse;
-        } else {
-            // 30% Wahrscheinlichkeit für eine größere Gruppe bis zur gesamten Liste
-            zufallsGroesse = Math.floor(Math.random() * (maxGroesse - minGroesse + 1)) + minGroesse;
-        }
-
-        // 4) Den „vorderen“ Teil (z. B. 2, 3, …) zurückgeben
-        return gemischt.slice(0, zufallsGroesse);
-    }
-
-    /**
-     * Gibt einen zufälligen "anderen" Teilnehmer zurück.
-     *
-     * @param {string[]} teilnehmerListe     - Gesamte Liste aller Teilnehmer
-     * @param {string} aktuellerTeilnehmer   - Der Teilnehmer, der sich selbst nicht enthalten darf
-     * @returns {string} Ein zufälliger anderer Teilnehmer
-     */
-    getRandomOther(teilnehmerListe, aktuellerTeilnehmer) {
-        // 1) Filter: Wer ist "nicht ich"?
-        const andere = teilnehmerListe.filter(t => t !== aktuellerTeilnehmer);
-
-        // 2) Zufälligen Index bestimmen
-        const randomIndex = Math.floor(Math.random() * andere.length);
-
-        // 3) Zurückgeben
-        return andere[randomIndex];
-    }
-
-    generiereUebung(funksprueche) {
-        this.funkUebung.spruecheProTeilnehmer--;
-
-        // Generiere Übung ohne Lösungsbuchstaben
-        let uebungsDaten = this.funkUebung.teilnehmerListe.map(teilnehmer => {
-            return {
-                teilnehmer,
-                kopfdaten: {
-                    datum: this.natoDate,
-                    nameDerUebung: this.funkUebung.name,
-                    leitung: this.funkUebung.leitung,
-                    teilnehmer: this.funkUebung.teilnehmerListe,
-                    rufgruppe: this.funkUebung.rufgruppe
-                },
-                nachrichten: this.generiereNachrichten(teilnehmer, funksprueche),
-                loesungswort: this.funkUebung.loesungswoerter[teilnehmer] || "" // Speichere das Lösungswort mit ab
-            };
-        });
-
-        // Jetzt die Lösungsbuchstaben verteilen
-        this.verteileLoesungswoerter(uebungsDaten);
-
-        return uebungsDaten;
-    }
-
-    /**
-     * Generiert alle Nachrichten für einen Teilnehmer.
-     */
-    generiereNachrichten(teilnehmer, funksprueche) {
-        let gemischteFunksprueche = [...funksprueche].sort(() => 0.5 - Math.random());
-        let nachrichtenVerteilung = this.verteileNachrichten(this.funkUebung.spruecheProTeilnehmer, this.funkUebung.spruecheAnAlle, this.funkUebung.spruecheAnMehrere);
-
-        let nachrichten = [];
-
-        // Erste Nachricht: Anmeldung
-        nachrichten.push({
-            id: 1,
-            nachricht: "Ich melde mich in Ihrem Sprechfunkverkehrskreis an.",
-            empfaenger: [this.funkUebung.leitung]
-        });
-
-        for (let i = 0; i < this.funkUebung.spruecheProTeilnehmer; i++) {
-            let nachricht = {};
-            nachricht.id = i + 2;
-            nachricht.nachricht = gemischteFunksprueche[i];
-
-            if (nachrichtenVerteilung.alle.includes(i)) {
-                nachricht.empfaenger = ["Alle"];
-            } else if (nachrichtenVerteilung.mehrere.includes(i)) {
-                nachricht.empfaenger = this.getRandomSubsetOfOthers(this.funkUebung.teilnehmerListe, teilnehmer);
-            } else {
-                nachricht.empfaenger = [this.getRandomOther(this.funkUebung.teilnehmerListe, teilnehmer)];
-            }
-            nachrichten.push(nachricht);
-        }
-
-        return nachrichten;
     }
 
     /**
@@ -426,16 +316,17 @@ export class AppController {
 
     /**
      * Erstellt HTML-Seiten und zeigt sie im iframe mit Paginierung an.
-     * 
-     * @param {Array} funksprueche - JSON-Array mit den Funksprüchen
      */
-    generateAllPages(funksprueche) {
-        this.jsonUebungsDaten = this.generiereUebung(funksprueche);
-        this.funkUebung.htmlSeitenTeilnehmer = this.jsonUebungsDaten.map(data => this.generateHTMLPage(data));
-        this.currentPageIndex = 0;
-        this.jsonKompletteUebung.uebungsDaten = this.jsonUebungsDaten;
-        this.jsonKompletteUebung.checksumme = this.generateMD5Hash(this.jsonKompletteUebung);
+    generateAllPages() {
+        this.funkUebung.erstelle();
+        this.funkUebung.teilnehmerListe.map(teilnehmer => {
+            this.htmlSeitenTeilnehmer.push(UebungHTMLGenerator.generateHTMLPage(teilnehmer,this.funkUebung) )
+        });
 
+        this.displayPage(this.currentPageIndex);
+        this.zeigeUebungsdauer();
+        this.startVerteilung();
+        return;
 
         if (this.funkUebung.htmlSeitenTeilnehmer.length > 0) {
             this.displayPage(this.currentPageIndex);
@@ -449,12 +340,12 @@ export class AppController {
      * Zeigt die aktuelle Seite im iframe an.
      */
     displayPage(index) {
-        if (index < 0 || index >= this.funkUebung.htmlSeitenTeilnehmer.length) return;
+        if (index < 0 || index >= this.htmlSeitenTeilnehmer.length) return;
 
         const iframe = document.getElementById("resultFrame");
-        iframe.srcdoc = this.funkUebung.htmlSeitenTeilnehmer[index]; // Lädt den HTML-Code direkt in das iframe
+        iframe.srcdoc = this.htmlSeitenTeilnehmer[index]; // Lädt den HTML-Code direkt in das iframe
 
-        document.getElementById("current-page").textContent = `Seite ${index + 1} / ${this.funkUebung.htmlSeitenTeilnehmer.length}`;
+        document.getElementById("current-page").textContent = `Seite ${index + 1} / ${this.htmlSeitenTeilnehmer.length}`;
     }
 
     /**
@@ -463,101 +354,14 @@ export class AppController {
      */
     changePage(step) {
         const newIndex = this.currentPageIndex + step;
-        if (newIndex >= 0 && newIndex < this.funkUebung.htmlSeitenTeilnehmer.length) {
+        if (newIndex >= 0 && newIndex < this.htmlSeitenTeilnehmer.length) {
             this.currentPageIndex = newIndex;
             this.displayPage(this.currentPageIndex);
         }
     }
 
-    /**
-     * Erstellt die HTML-Struktur für eine einzelne Übungsseite.
-     * 
-     * @param {Object} teilnehmerDaten - JSON-Objekt für einen Teilnehmer
-     * @returns {string} - HTML-Code als String
-     */
-    generateHTMLPage(teilnehmerDaten) {
-        const { teilnehmer, kopfdaten, nachrichten, loesungswort } = teilnehmerDaten;
-
-        const teilnehmerListeHTML = kopfdaten.teilnehmer
-            .map(name => "<tr><td>" + name + "</td></tr>")
-            .join("");
-
-        const nachrichtenHTML = nachrichten
-            .map(n =>
-                "<tr>" +
-                "<td>" + n.id + "</td>" +
-                "<td>" + n.empfaenger.join("<br/>").replace(/ /g, "&nbsp;") + "</td>" +
-                "<td>" + n.nachricht + "</td>" +
-                "</tr>")
-            .join("");
-
-        return "<!DOCTYPE html>" +
-            "<html lang='de'>" +
-            "<head>" +
-            "<meta charset='UTF-8'>" +
-            "<meta name='viewport' content='width=device-width, initial-scale=1.0'>" +
-            "<title>Sprechfunkübung - " + teilnehmer + "</title>" +
-            "<style>" +
-            "body { font-family: Arial, sans-serif; margin: 20px; }" +
-            ".container { max-width: 100%; margin: auto; }" +
-            "h1, h2 { text-align: center; }" +
-            "h1 { font-size: 22px; font-weight: bold; }" +
-            "h2 { font-size: 18px; font-weight: bold; }" +
-            "table { width: 100%; border-collapse: collapse; margin-top: 20px; }" +
-            "th, td { border: 1px solid black; padding: 8px; text-align: left; }" +
-            "th { background-color: #f2f2f2; }" +
-            ".row { display: flex; justify-content: space-between; margin-top: 20px; }" +
-            ".col { width: 48%; }" +
-            "@media (max-width: 768px) {" +
-            ".row { flex-direction: column; }" +
-            ".col { width: 100%; margin-bottom: 15px; }" +
-            "}" +
-            "</style>" +
-            "</head>" +
-            "<body>" +
-            "<div class='container'>" +
-            "<h1>Sprechfunkübung " + kopfdaten.nameDerUebung + "</h1>" +
-            "<h2>Eigener Funkrufname: " + teilnehmer + "</h2>" +
-
-            "<div class='row'>" +
-            "<div class='col'>" +
-            "<h3>Kopfdaten</h3>" +
-            "<table>" +
-            "<tr><th>Datum</th><td>" + kopfdaten.datum + "</td></tr>" +
-            "<tr><th>Rufgruppe</th><td>" + kopfdaten.rufgruppe + "</td></tr>" +
-            "<tr><th>Betriebsleitung</th><td>" + kopfdaten.leitung + "</td></tr>" +
-            "<tr><th>Lösungswort</th><td>" + loesungswort + "</td></tr>" +
-            "</table>" +
-            "</div>" +
-
-            "<div class='col'>" +
-            "<h3>Teilnehmer</h3>" +
-            "<table>" +
-            teilnehmerListeHTML +
-            "</table>" +
-            "</div>" +
-            "</div>" +
-
-            "<h3>Folgende Nachrichten sind zu übermitteln:</h3>" +
-            "<table>" +
-            "<thead>" +
-            "<tr>" +
-            "<th style='width: 10%;'>Nr.</th>" +
-            "<th style='width: 20%;'>Empfänger</th>" +
-            "<th style='width: 70%;'>Nachrichtentext</th>" +
-            "</tr>" +
-            "</thead>" +
-            "<tbody>" +
-            nachrichtenHTML +
-            "</tbody>" +
-            "</table>" +
-            "</div>" +
-            "</body>" +
-            "</html>";
-    }
-
     generatePDFs() {
-        pdfGenerator.generateTeilnehmerPDFs(this.jsonUebungsDaten);
+        pdfGenerator.generateTeilnehmerPDFs(this.funkUebung);
     }
 
     // Funktion zum Umschalten der Lösungswort-Optionen
@@ -574,7 +378,7 @@ export class AppController {
     }
 
     generateInstructorPDF() {
-        pdfGenerator.generateInstructorPDF(this.jsonUebungsDaten);
+        pdfGenerator.generateInstructorPDF(this.funkUebung);
     }
 
 
@@ -582,7 +386,7 @@ export class AppController {
         const isKeine = document.getElementById("keineLoesungswoerter").checked;
         const isZentral = document.getElementById("zentralLoesungswort").checked;
         const isIndividuell = document.getElementById("individuelleLoesungswoerter").checked;
-
+        
         if (isKeine) {
             // Lösungswörter zurücksetzen
             this.funkUebung.loesungswoerter = {};
@@ -698,8 +502,9 @@ export class AppController {
 
     // Integration der Daueranzeige
     zeigeUebungsdauer() {
-        let uebungsDauer = this.berechneUebungsdauer(this.jsonUebungsDaten.flatMap(t => t.nachrichten));
-
+        let uebungsDauer = this.berechneUebungsdauer(
+            Object.values(this.funkUebung.nachrichten).flat()
+        );
         // Umrechnung der Zeiten in Stunden und Minuten
         const optimalFormatted = this.formatDuration(uebungsDauer.optimal);
         const schlechtFormatted = this.formatDuration(uebungsDauer.schlecht);
@@ -724,8 +529,7 @@ export class AppController {
         const nachrichtenVerteilung = {}; // Hier speichern wir die Verteilung der Nachrichten pro Teilnehmer
 
         // Iteriere über alle Übungsdaten und berechne die empfangenen Nachrichten
-        this.jsonUebungsDaten.forEach(uebung => {
-            let teilnehmer = uebung.teilnehmer;
+        this.funkUebung.teilnehmerListe.forEach(teilnehmer => {
             if (teilnehmer !== leitung) {  // Übungsleitung wird ignoriert
                 labels.push(teilnehmer);  // Füge Teilnehmer zur Labels-Liste hinzu
 
@@ -737,12 +541,11 @@ export class AppController {
         });
 
         // Iteriere über alle Übungsdaten und berechne die empfangenen Nachrichten
-        this.jsonUebungsDaten.forEach(uebung => {
-            let teilnehmer = uebung.teilnehmer;
+        this.funkUebung.teilnehmerListe.forEach(teilnehmer => {
             if (teilnehmer !== leitung) {  // Übungsleitung wird ignoriert
 
                 // Iteriere über alle Nachrichten der Übung
-                uebung.nachrichten.forEach(nachricht => {
+                this.funkUebung.nachrichten[teilnehmer].forEach(nachricht => {
                     // Wenn die Nachricht an "Alle" gesendet wurde, wird sie zu jedem Empfänger gezählt
                     nachricht.empfaenger.forEach(empfaenger => {
                         if (empfaenger === "Alle") {
@@ -813,15 +616,12 @@ export class AppController {
     }
 
     generateNachrichtenvordruckPDFs() {
-        const templateImageUrl = 'assets/nachrichtenvordruck4fach.png';
-        pdfGenerator.generateNachrichtenvordruckPDFs(this.jsonUebungsDaten, templateImageUrl);
+        pdfGenerator.generateNachrichtenvordruckPDFs(this.funkUebung);
     }
 
     generateMeldevordruckPDFs() {
-        const templateImageUrl = 'assets/meldevordruck.png';
-        pdfGenerator.generateMeldevordruckPDFs(this.jsonUebungsDaten, templateImageUrl);
+        pdfGenerator.generateMeldevordruckPDFs(this.funkUebung);
     }
-
 
     /**
      * Funktion zum Anpassen der Textgröße, damit der Text in die angegebene Breite passt
@@ -927,33 +727,6 @@ export class AppController {
         const today = new Date();
         const formattedDate = today.toISOString().split('T')[0]; // Format: YYYY-MM-DD
         document.getElementById("datum").value = formattedDate;
-    }
-
-    generateExerciseJSON() {
-        let exerciseData = {
-            meta: {
-                datum: document.getElementById("datum").value,
-                nameDerUebung: document.getElementById("nameDerUebung").value,
-                rufgruppe: document.getElementById("rufgruppe").value,
-                leitung: document.getElementById("leitung").value
-            },
-            einstellungen: {
-                spruecheProTeilnehmer: Number(document.getElementById("spruecheProTeilnehmer").value),
-                spruecheAnAlle: Number(document.getElementById("spruecheAnAlle").value),
-                spruecheAnMehrere: Number(document.getElementById("spruecheAnMehrere").value),
-                funkspruchVorlage: document.getElementById("funkspruchVorlage").value,
-                benutzerdefinierteDatei: document.getElementById("funksprueche").files.length > 0
-            },
-            loesungswoerter: {
-                modus: document.querySelector('input[name="loesungswortOption"]:checked')?.id || "keine",
-                zentralLoesungswort: document.getElementById("zentralLoesungswortInput")?.value || null,
-                individuelleLoesungswoerter: { ...this.loesungswoerter }
-            },
-            teilnehmer: [...this.funkUebung.teilnehmerListe],
-            uebungsDaten: {} // Hier sind die generierten Funksprüche enthalten
-        };
-
-        return exerciseData;
     }
 
     generateMD5Hash(input) {

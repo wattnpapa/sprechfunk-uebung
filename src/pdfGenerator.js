@@ -9,13 +9,13 @@ class PDFGenerator {
     /**
      * Erstellt die Teilnehmer PDFs.
      */
-    generateTeilnehmerPDFs(jsonUebungsDaten) {
+    generateTeilnehmerPDFs(funkUebung) {
         const softwareVersion = "1.0.0"; // Versionsnummer hier anpassen
         const generierungszeit = DateFormatter.formatNATODate(new Date()); // NATO-Datum für Fußzeile
-        jsonUebungsDaten.forEach(uebung => {
-            const teilnehmerDaten = uebung;
-            const participant = this.fixEncoding(teilnehmerDaten.teilnehmer);
-            const kopfdaten = teilnehmerDaten.kopfdaten;
+        
+        funkUebung.teilnehmerListe.forEach(teilnehmer => {
+
+            let nachrichten = funkUebung.nachrichten[teilnehmer]
     
             let pdf = new this.jsPDF({ orientation: "landscape", unit: "mm", format: "a4" });
     
@@ -26,30 +26,31 @@ class PDFGenerator {
             const secondPageTableTopMargin = 30; // **Garantierter Abstand für die Tabelle auf Seite 2+**
     
             // **1. Kopfzeile für erste Seite**
-            this.drawFirstPageHeader(pdf, kopfdaten, participant, pdfWidth);
+            this.drawFirstPageHeader(pdf, funkUebung, teilnehmer, pdfWidth);
     
             // **2. Kopfdaten-Tabelle (links)**
             let kopfdatenWidth = (pdfWidth - 2 * pageMargin) * 0.35;
-            this.drawKopfdatenTable(pdf, kopfdaten, firstTableStartY, pageMargin, kopfdatenWidth);
+            this.drawKopfdatenTable(pdf, funkUebung, firstTableStartY, pageMargin, kopfdatenWidth);
     
             // **3. Teilnehmerliste (rechts)**
             let teilnehmerWidth = (pdfWidth - 2 * pageMargin) * 0.60;
-            this.drawTeilnehmerTable(pdf, kopfdaten, firstTableStartY, pdfWidth - pageMargin - teilnehmerWidth, teilnehmerWidth);
+            this.drawTeilnehmerTable(pdf, funkUebung, firstTableStartY, pdfWidth - pageMargin - teilnehmerWidth, teilnehmerWidth);
     
             // **4. Nachrichten-Tabelle**
             let tableStartY = Math.max(pdf.lastAutoTable.finalY + 10, 75);
-            this.drawNachrichtenTable(pdf, teilnehmerDaten, tableStartY, pageMargin, pdfWidth, secondPageTableTopMargin);
+
+            this.drawNachrichtenTable(pdf, nachrichten, tableStartY, pageMargin, pdfWidth, secondPageTableTopMargin);
     
             // **5. Setze Kopfzeilen & Seitenzahlen auf allen Seiten**
             let totalPages = pdf.internal.getNumberOfPages();
             for (let j = 1; j <= totalPages; j++) {
                 pdf.setPage(j);
-                this.drawHeader(pdf, participant, j, pdfWidth, pageMargin, kopfdaten);
+                this.drawHeader(pdf, teilnehmer, j, pdfWidth, pageMargin, funkUebung);
                 this.drawFooter(pdf, generierungszeit, softwareVersion, j, totalPages, pdfWidth, pdfHeight, pageMargin);
             }
     
             // **6. PDF speichern**
-            pdf.save(`${participant}.pdf`);
+            pdf.save(`${teilnehmer}.pdf`);
         });
 
         alert("Alle Teilnehmer PDFs wurden erfolgreich erstellt!");
@@ -58,17 +59,17 @@ class PDFGenerator {
     /**
      * Erstellt die Teilnehmerliste-Tabelle.
      */
-    drawTeilnehmerTable(pdf, kopfdaten, startY, marginLeft, width) {
+    drawTeilnehmerTable(pdf, funkUebung, startY, marginLeft, width) {
         let teilnehmerColumns = 2;
-        let teilnehmerRows = Math.ceil(kopfdaten.teilnehmer.length / teilnehmerColumns);
+        let teilnehmerRows = Math.ceil(funkUebung.teilnehmerListe.length / teilnehmerColumns);
         let teilnehmerTable = [];
 
         for (let r = 0; r < teilnehmerRows; r++) {
             let row = [];
             for (let c = 0; c < teilnehmerColumns; c++) {
                 let index = r + c * teilnehmerRows;
-                if (index < kopfdaten.teilnehmer.length) {
-                    row.push(kopfdaten.teilnehmer[index]);
+                if (index < funkUebung.teilnehmerListe.length) {
+                    row.push(funkUebung.teilnehmerListe[index]);
                 } else {
                     row.push("");
                 }
@@ -91,7 +92,7 @@ class PDFGenerator {
     /**
      * Erstellt die Nachrichten-Tabelle.
      */
-    drawNachrichtenTable(pdf, teilnehmerDaten, startY, marginLeft, pdfWidth, secondPageTableTopMargin) {
+    drawNachrichtenTable(pdf, nachrichten, startY, marginLeft, pdfWidth, secondPageTableTopMargin) {
         let tableWidth = pdfWidth - 2 * marginLeft;
         let empfaengerWidth = tableWidth * 0.20;
         let lfdnrWidth = 12;
@@ -99,7 +100,7 @@ class PDFGenerator {
 
         pdf.autoTable({
             head: [["Nr.", "Empfänger", "Nachrichtentext"]],
-            body: teilnehmerDaten.nachrichten.map(n => [n.id, n.empfaenger.join("\n"), n.nachricht]),
+            body: nachrichten.map(n => [n.id, n.empfaenger.join("\n"), n.nachricht]),
             startY: startY,
             theme: "grid",
             margin: { left: marginLeft, top: secondPageTableTopMargin },
@@ -122,25 +123,25 @@ class PDFGenerator {
     /**
      * Erstellt die Kopfzeile der ersten Seite (größer & fett).
      */
-    drawFirstPageHeader(pdf, kopfdaten, participant, pdfWidth) {
+    drawFirstPageHeader(pdf, funkUebung, teilnehmer, pdfWidth) {
         pdf.setFont("helvetica", "bold");
         pdf.setFontSize(16);
-        pdf.text(`${kopfdaten.nameDerUebung}`, pdfWidth / 2, 15, { align: "center" });
+        pdf.text(`${funkUebung.name}`, pdfWidth / 2, 15, { align: "center" });
 
         pdf.setFontSize(14);
-        pdf.text(`${participant}`, pdfWidth / 2, 20, { align: "center" });
+        pdf.text(`${teilnehmer}`, pdfWidth / 2, 20, { align: "center" });
     }
 
     /**
      * Erstellt die Kopfdaten-Tabelle.
      */
-    drawKopfdatenTable(pdf, kopfdaten, startY, marginLeft, width) {
+    drawKopfdatenTable(pdf, funkUebung, startY, marginLeft, width) {
         pdf.autoTable({
             head: [["Beschreibung", "Wert"]],
             body: [
-                ["Datum", kopfdaten.datum],
-                ["Rufgruppe", kopfdaten.rufgruppe],
-                ["Betriebsleitung", kopfdaten.leitung]
+                ["Datum", DateFormatter.formatNATODate(funkUebung.datum,false)],
+                ["Rufgruppe", funkUebung.rufgruppe],
+                ["Betriebsleitung", funkUebung.leitung]
             ],
             startY: startY,
             margin: { left: marginLeft },
@@ -155,16 +156,16 @@ class PDFGenerator {
     /**
      * Erstellt die Kopfzeile auf Seite 2+.
      */
-    drawHeader(pdf, participant, pageNumber, pdfWidth, pageMargin, kopfdaten) {
+    drawHeader(pdf, teilnehmer, pageNumber, pdfWidth, pageMargin, funkUebung) {
         if (pageNumber > 1) {
             pdf.setFont("helvetica", "normal");
             pdf.setFontSize(10);
 
             // **Links: Funkrufname**
-            pdf.text(`Eigener Funkrufname: ${participant}`, pageMargin, 20);
+            pdf.text(`Eigener Funkrufname: ${teilnehmer}`, pageMargin, 20);
 
             // **Rechts: Name der Übung**
-            let rightText = kopfdaten.nameDerUebung + " " + kopfdaten.datum
+            let rightText = funkUebung.name + " " + funkUebung.datum
             let nameWidth = pdf.getTextWidth(rightText);
             pdf.text(rightText, pdfWidth - pageMargin - nameWidth, 20);
 
@@ -194,10 +195,10 @@ class PDFGenerator {
     /**
      * Erstellt die Nachrichtenvordruck PDFs.
      */
-    generateNachrichtenvordruckPDFs(jsonUebungsDaten, templateImageUrl) {
-        jsonUebungsDaten.forEach(uebung => {
-            let teilnehmer = uebung.teilnehmer;
-            let nachrichten = uebung.nachrichten;
+    generateNachrichtenvordruckPDFs(funkUebung) {
+        const templateImageUrl = 'assets/nachrichtenvordruck4fach.png';
+        funkUebung.teilnehmerListe.forEach(teilnehmer => {
+            let nachrichten = funkUebung.nachrichten[teilnehmer];
 
             let pdf = new this.jsPDF("p", "mm", "a5");
 
@@ -217,14 +218,14 @@ class PDFGenerator {
     /**
      * Erstellt die Meldevordruck PDFs für alle Teilnehmer.
      */
-    generateMeldevordruckPDFs(jsonUebungsDaten, templateImageUrl) {
+    generateMeldevordruckPDFs(funkUebung) {
+        const templateImageUrl = 'assets/meldevordruck.png';
         const maxWidth = 110; // Maximale Breite für die Nachricht
         const maxWidthAnschrift = 70; // Maximale Breite für Anschrift
         const maxWidthRufname = 70; // Maximale Breite für Rufname der Gegenstelle
 
-        jsonUebungsDaten.forEach(uebung => {
-            let teilnehmer = uebung.teilnehmer;
-            let nachrichten = uebung.nachrichten;
+        funkUebung.teilnehmerListe.forEach(teilnehmer => {
+            let nachrichten = funkUebung.nachrichten[teilnehmer];
 
             let pdf = new this.jsPDF('p', 'mm', 'a5'); // A5 Hochformat
 
@@ -280,7 +281,7 @@ class PDFGenerator {
     /**
      * Erstellt das PDF für die Übungsleitung.
      */
-    generateInstructorPDF(jsonUebungsDaten) {
+    generateInstructorPDF(funkUebung) {
         let pdf = new this.jsPDF({ orientation: "landscape", unit: "mm", format: "a4" });
     
         const pdfWidth = pdf.internal.pageSize.getWidth();
@@ -292,22 +293,22 @@ class PDFGenerator {
         const generierungszeit = DateFormatter.formatNATODate(new Date());
     
         // **1. Kopfzeile für erste Seite**
-        this.drawFirstPageHeader(pdf, jsonUebungsDaten[0].kopfdaten, "Übungsleitung", pdfWidth);
+        this.drawFirstPageHeader(pdf, funkUebung, "Übungsleitung", pdfWidth);
     
         // **2. Kopfdaten-Tabelle**
-        this.drawKopfdatenTable(pdf, jsonUebungsDaten[0].kopfdaten, firstTableStartY, pageMargin, ((pdfWidth - 2 * pageMargin) / 2));
+        this.drawKopfdatenTable(pdf, funkUebung, firstTableStartY, pageMargin, ((pdfWidth - 2 * pageMargin) / 2));
     
         // **3. Teilnehmer-Tabelle**
         let tableStartY = Math.max(pdf.lastAutoTable.finalY + 10, 75);
     
-        let tableBody = jsonUebungsDaten.map(t => [
-            t.teilnehmer,
+        let tableBody = funkUebung.teilnehmerListe.map(teilnehmer => [
+            teilnehmer,
             "", // Platz für Anmeldezeitpunkt
-            t.loesungswort ? t.loesungswort : "", // Falls es ein Lösungswort gibt
+            funkUebung.loesungswoerter[teilnehmer] ? funkUebung.loesungswoerter[teilnehmer] : "", // Falls es ein Lösungswort gibt
             "" // Bemerkungen (handschriftlich eintragbar)
         ]);
     
-        let columnWidths = [40, 35, 50, 150]; // Anpassung für saubere Darstellung
+        let columnWidths = [60, 35, 60, 120]; // Anpassung für saubere Darstellung
     
         pdf.autoTable({
             head: [["Teilnehmer", "Anmeldung", "Lösungswort", "Bemerkungen"]],
@@ -330,7 +331,7 @@ class PDFGenerator {
         let totalPages = pdf.internal.getNumberOfPages();
         for (let j = 1; j <= totalPages; j++) {
             pdf.setPage(j);
-            this.drawHeader(pdf, "Übungsleitung", j, pdfWidth, pageMargin, jsonUebungsDaten[0].kopfdaten);
+            this.drawHeader(pdf, "Übungsleitung", j, pdfWidth, pageMargin, funkUebung);
             this.drawFooter(pdf, generierungszeit, softwareVersion, j, totalPages, pdfWidth, pdfHeight, pageMargin);
         }
     

@@ -11,7 +11,7 @@ export class DateFormatter {
         let tag = String(date.getDate()).padStart(2, "0");  // Tag zweistellig
         let stunde = String(date.getHours()).padStart(2, "0"); // Stunden zweistellig
         let minute = String(date.getMinutes()).padStart(2, "0"); // Minuten zweistellig
-        let monat = monate[date.getMonth()].toUpperCase(); // Monat in Großbuchstaben
+        let monat = monate[date.getMonth()]; // Monat in Großbuchstaben
         let jahr = String(date.getFullYear()).slice(-2); // Zweistellige Jahreszahl
 
         if (withTime) {
