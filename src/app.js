@@ -80,57 +80,69 @@ export class AppController {
     renderTeilnehmer(triggerShuffle = true) {
         const container = document.getElementById("teilnehmer-container");
         container.innerHTML = ""; // Vorherigen Inhalt leeren
-
+    
         let option = document.querySelector('input[name="loesungswortOption"]:checked')?.id;
         let isZentral = option === "zentralLoesungswort";
         let isIndividuell = option === "individuelleLoesungswoerter";
-
-        // Zeige/verstecke das zentrale Lösungswort-Eingabefeld
+    
         document.getElementById("zentralLoesungswortContainer").style.display = isZentral ? "block" : "none";
-
-        // Zeige/verstecke den Button für zufällige Verteilung
         document.getElementById("shuffleButton").style.display = (isZentral || isIndividuell) ? "block" : "none";
-
-        // **Erstelle die Tabelle mit dynamischer Spalte für Lösungswörter**
+    
         container.innerHTML = `
-        <table class="table table-bordered">
-            <thead class="table-dark">
-                <tr>
-                    <th>Teilnehmer</th>
-                    ${isIndividuell ? "<th id='loesungswortHeader'>Lösungswort</th>" : ""}
-                    <th style="width: 50px;">Aktion</th>
-                </tr>
-            </thead>
-            <tbody id="teilnehmer-body"></tbody>
-        </table>
-    `;
-
-        // **Jetzt erst das `tbody` abrufen**
+            <table class="table table-bordered">
+                <thead class="table-dark">
+                    <tr>
+                        <th>Teilnehmer</th>
+                        ${isIndividuell ? "<th id='loesungswortHeader'>Lösungswort</th>" : ""}
+                        <th style="width: 50px;">Aktion</th>
+                    </tr>
+                </thead>
+                <tbody id="teilnehmer-body"></tbody>
+            </table>
+        `;
+    
         const tbody = document.getElementById("teilnehmer-body");
-
         if (!tbody) {
             console.error("Fehler: tbody-Element konnte nicht gefunden werden!");
             return;
         }
-
-        // **Füge die Teilnehmer als Tabellenzeilen hinzu**
+    
+        // **Jeden Teilnehmer rendern**
         this.funkUebung.teilnehmerListe.forEach((teilnehmer, index) => {
             const row = document.createElement("tr");
-
+    
             let loesungswortInput = "";
             if (isIndividuell) {
                 let wort = this.funkUebung.loesungswoerter[teilnehmer] || "";
-                loesungswortInput = `<td><input type="text" class="form-control" id="loesungswort-${index}" value="${wort}" placeholder="Lösungswort" readonly></td>`;
+                loesungswortInput = `<td><input type="text" class="form-control loesungswort-input" id="loesungswort-${index}" value="${wort}" placeholder="Lösungswort" readonly></td>`;
             }
-
+    
             row.innerHTML = `
-            <td><input type="text" class="form-control" value="${teilnehmer}" oninput="updateTeilnehmer(${index}, this.value)"></td>
-            ${loesungswortInput}
-            <td><button class="btn btn-danger btn-sm" onclick="removeTeilnehmer(${index})"><i class="fas fa-trash"></i></button></td>
-        `;
+                <td>
+                    <input type="text" class="form-control teilnehmer-input" data-index="${index}" value="${teilnehmer}">
+                </td>
+                ${loesungswortInput}
+                <td><button class="btn btn-danger btn-sm delete-teilnehmer" data-index="${index}"><i class="fas fa-trash"></i></button></td>
+            `;
             tbody.appendChild(row);
         });
-
+    
+        // **Event-Listener für Änderungen an Teilnehmernamen**
+        document.querySelectorAll(".teilnehmer-input").forEach(input => {
+            input.addEventListener("input", (event) => {
+                let index = event.target.dataset.index;
+                this.funkUebung.teilnehmerListe[index] = event.target.value;
+            });
+        });
+    
+        // **Event-Listener für das Entfernen von Teilnehmern**
+        document.querySelectorAll(".delete-teilnehmer").forEach(button => {
+            button.addEventListener("click", (event) => {
+                let index = event.target.closest("button").dataset.index;
+                this.removeTeilnehmer(index);
+            });
+        });
+    
         // Falls `renderTeilnehmer` von einer Benutzerinteraktion kommt, neu verteilen
         if (triggerShuffle) {
             this.shuffleLoesungswoerter();
