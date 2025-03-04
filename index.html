@@ -10,21 +10,25 @@
 
     <!-- Titel & Beschreibung -->
     <title>Sprechfunk Übungsgenerator</title>
-    <meta name="description" content="Erstelle realistische Sprechfunk-Übungen für Ausbildung und Training mit dem Sprechfunk Übungsgenerator.">
-    <meta name="keywords" content="Sprechfunk, BOS-Funk, Funkübung, THW, Feuerwehr, Katastrophenschutz, Kommunikationstraining">
+    <meta name="description"
+        content="Erstelle realistische Sprechfunk-Übungen für Ausbildung und Training mit dem Sprechfunk Übungsgenerator.">
+    <meta name="keywords"
+        content="Sprechfunk, BOS-Funk, Funkübung, THW, Feuerwehr, Katastrophenschutz, Kommunikationstraining">
     <meta name="author" content="Johannes Rudolph">
 
     <!-- Open Graph für Social Media (Facebook, LinkedIn) -->
     <meta property="og:title" content="Sprechfunk Übungsgenerator">
-    <meta property="og:description" content="Erstelle realistische Sprechfunk-Übungen für Ausbildung und Training mit dem Sprechfunk Übungsgenerator.">
+    <meta property="og:description"
+        content="Erstelle realistische Sprechfunk-Übungen für Ausbildung und Training mit dem Sprechfunk Übungsgenerator.">
     <!--<meta property="og:image" content="https://yourdomain.com/assets/preview-image.png">-->
     <meta property="og:url" content="https://yourdomain.com">
     <meta property="og:type" content="website">
-    
+
     <!-- Twitter Card für Twitter Vorschau -->
     <meta name="twitter:card" content="summary_large_image">
     <meta name="twitter:title" content="Sprechfunk Übungsgenerator">
-    <meta name="twitter:description" content="Erstelle realistische Sprechfunk-Übungen für Ausbildung und Training mit dem Sprechfunk Übungsgenerator.">
+    <meta name="twitter:description"
+        content="Erstelle realistische Sprechfunk-Übungen für Ausbildung und Training mit dem Sprechfunk Übungsgenerator.">
     <!--<meta name="twitter:image" content="https://yourdomain.com/assets/preview-image.png">-->
 
     <script src="https://cdn.jsdelivr.net/npm/showdown@1.9.1/dist/showdown.min.js"></script>
@@ -315,7 +319,8 @@
                             <!-- Hier wird per JS die Tabelle eingefügt -->
                         </div>
                         <!-- Teilnehmer hinzufügen Button -->
-                        <button class="btn btn-success mt-3" onclick="app.addTeilnehmer()">Teilnehmer hinzufügen</button>
+                        <button class="btn btn-success mt-3" onclick="app.addTeilnehmer()">Teilnehmer
+                            hinzufügen</button>
                     </div>
                 </div>
             </div>
@@ -325,105 +330,119 @@
             <i class="fas fa-cogs"></i> Übung generieren
         </button>
 
-        <div id="output-container" style="display: none;">
+        <div id="output-container" style="display: none; margin-top: 20px;">
+            <!-- Geschätzte Dauer der Übung -->
 
-            <div class="card mt-3">
+            <!-- Vorschau der generierten Seiten -->
+            <div class="card mb-3">
                 <div class="card-header">
-                    <h5>⏳ Geschätzte Dauer der Übung</h5>
+                    <h5 class="d-flex justify-content-between align-items-center">
+                        <span><i class="fas fa-file-alt"></i> Vorschau der generierten Seiten</span>
+                        <button class="btn btn-sm btn-outline-secondary" data-bs-toggle="collapse"
+                            data-bs-target="#collapseVorschau">
+                            <i class="fas fa-chevron-down"></i>
+                        </button>
+                    </h5>
                 </div>
-                <div class="card-body">
-                    <table class="table table-bordered">
-                        <thead class="table-dark">
-                            <tr>
-                                <th></th>
-                                <th>Dauer in Minuten</th>
-                                <th>Dauer in Stunden und Minuten</th>
-                                <th>Durchschnittliche Zeit pro Funkspruch (Sek.)</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr>
-                                <td>Optimal</td>
-                                <td id="dauerOptimalMinuten">- Min</td>
-                                <td id="dauerOptimalStundenMinuten">- Std - Min</td>
-                                <td id="durchschnittOptimal">- Sek</td>
-                            </tr>
-                            <tr>
-                                <td>Langsam</td>
-                                <td id="dauerLangsamMinuten">- Min</td>
-                                <td id="dauerLangsamStundenMinuten">- Std - Min</td>
-                                <td id="durchschnittLangsam">- Sek</td>
-                            </tr>
-                        </tbody>
-                    </table>
-                    <div class="mt-3">
-                        <p><strong>Erklärung zur Berechnung der geschätzten Dauer:</strong></p>
-                        <p>Die geschätzte Dauer der Übung wird basierend auf der Anzahl der Funksprüche, der Anzahl der
-                            Empfänger pro Nachricht und der Geschwindigkeit des Verbindungsaufbaus berechnet. Die
-                            Berechnung geht davon aus, dass jeder Funkspruch eine gewisse Zeit in Anspruch nimmt, die
-                            durch die Nachrichtenerstellung, den Verbindungsaufbau und den Empfang der Nachricht
-                            beeinflusst wird. Der Schätzwert berücksichtigt sowohl den optimalen Verlauf der Übung als
-                            auch einen langsameren Verlauf aufgrund von Verbindungsproblemen oder anderen Verzögerungen.
-                        </p>
-                        <p>Die "Optimale" Dauer geht davon aus, dass die Übung unter idealen Bedingungen verläuft,
-                            während die "Langsame" Dauer Verzögerungen und Wiederholungen von Nachrichten
-                            berücksichtigt.</p>
+                <div id="collapseVorschau" class="collapse show">
+                    <div class="card-body text-center">
+                        <button class="btn btn-secondary" onclick="app.changePage(-1)">⬅ Zurück</button>
+                        <span id="current-page">Seite 1 / 1</span>
+                        <button class="btn btn-secondary" onclick="app.changePage(1)">Weiter ➡</button>
+                        <button class="btn btn-danger" onclick="app.generatePDFs()">
+                            <i class="fas fa-file-pdf"></i> Teilnehmer PDFs generieren
+                        </button>
+                        <button class="btn btn-warning" onclick="app.generateNachrichtenvordruckPDFs()">
+                            <i class="fas fa-file-pdf"></i> Nachrichtenvordruck PDFs generieren
+                        </button>
+                        <button class="btn btn-warning" onclick="app.generateMeldevordruckPDFs()">
+                            <i class="fas fa-file-pdf"></i> Meldevordruck PDFs generieren
+                        </button>
+                        <button class="btn btn-info" onclick="app.generateInstructorPDF()">
+                            <i class="fas fa-user-tie"></i> Übungsleitung PDF erzeugen
+                        </button>
+                        <iframe id="resultFrame" style="width: 100%; height: 400px; border: 1px solid #ccc; margin-top: 20px;"></iframe>
                     </div>
                 </div>
             </div>
 
-            <div class="card mb-4">
-                <div class="card-header">
-                    <h5><i class="fas fa-file-alt"></i> Vorschau der generierten Seiten</h5>
-                </div>
-                <div class="card-body text-center" style="margin-bottom: 20px;">
-                    <button class="btn btn-secondary" onclick="app.changePage(-1)">⬅ Zurück</button>
-                    <span id="current-page">Seite 1 / 1</span>
-                    <button class="btn btn-secondary" onclick="app.changePage(1)">Weiter ➡</button>
-                    <button class="btn btn-danger" onclick="app.generatePDFs()">
-                        <i class="fas fa-file-pdf"></i> Teilnehmer PDFs generieren
-                    </button>
-                    <button class="btn btn-warning" onclick="app.generateNachrichtenvordruckPDFs()">
-                        <i class="fas fa-file-pdf"></i> Nachrichtenvordruck PDFs generieren
-                    </button>
-                    <button class="btn btn-warning" onclick="app.generateMeldevordruckPDFs()">
-                        <i class="fas fa-file-pdf"></i> Meldevordruck PDFs generieren
-                    </button>
-                    <button class="btn btn-info" onclick="app.generateInstructorPDF()">
-                        <i class="fas fa-user-tie"></i> Übungsleitung PDF erzeugen
-                    </button>
-                </div>
 
-                <!-- Abstand zum iframe hinzufügen -->
-                <div class="card-body text-center" style="margin-top: 20px;">
-                    <iframe id="resultFrame" style="width: 100%; height: 400px; border: 1px solid #ccc;"></iframe>
+            <!-- Nachrichtenverteilung -->
+            <div class="card mb-3">
+                <div class="card-header">
+                    <h5 class="d-flex justify-content-between align-items-center">
+                        <span><i class="fas fa-chart-bar"></i> Nachrichtenverteilung</span>
+                        <button class="btn btn-sm btn-outline-secondary" data-bs-toggle="collapse"
+                            data-bs-target="#collapseDiagramm">
+                            <i class="fas fa-chevron-down"></i>
+                        </button>
+                    </h5>
+                </div>
+                <div id="collapseDiagramm" class="collapse show">
+                    <div class="card-body">
+                        <canvas id="distributionChart"></canvas>
+                    </div>
                 </div>
             </div>
 
-            <!-- Balkendiagramm zur Nachrichtenverteilung -->
-            <div class="card mb-4">
+
+            <!-- Dauer der Übung-->
+            <div class="card mb-3">
                 <div class="card-header">
-                    <h5><i class="fas fa-chart-bar"></i> Nachrichtenverteilung - Balkendiagramm</h5>
+                    <h5 class="d-flex justify-content-between align-items-center">
+                        <span><i class="fas fa-clock"></i> Geschätzte Dauer der Übung</span>
+                        <button class="btn btn-sm btn-outline-secondary" data-bs-toggle="collapse"
+                            data-bs-target="#collapseDauer">
+                            <i class="fas fa-chevron-down"></i>
+                        </button>
+                    </h5>
                 </div>
-                <div class="card-body">
-                    <canvas id="distributionChart"></canvas>
+                <div id="collapseDauer" class="collapse show">
+                    <div class="card-body">
+                        <table class="table table-bordered">
+                            <thead class="table-dark">
+                                <tr>
+                                    <th></th>
+                                    <th>Dauer in Minuten</th>
+                                    <th>Dauer in Stunden und Minuten</th>
+                                    <th>Durchschnittliche Zeit pro Funkspruch (Sek.)</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>Optimal</td>
+                                    <td id="dauerOptimalMinuten">- Min</td>
+                                    <td id="dauerOptimalStundenMinuten">- Std - Min</td>
+                                    <td id="durchschnittOptimal">- Sek</td>
+                                </tr>
+                                <tr>
+                                    <td>Langsam</td>
+                                    <td id="dauerLangsamMinuten">- Min</td>
+                                    <td id="dauerLangsamStundenMinuten">- Std - Min</td>
+                                    <td id="durchschnittLangsam">- Sek</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
             </div>
-        </div>
-    </div>
 
-    <footer class="main-footer">
-        <div class="float-right d-none d-sm-block">
-            <b>Version</b> 1.0.0
         </div>
-        <strong>© Johannes Rudolph | <a href="https://wattnpapa.github.io/sprechfunk-uebung/"
-                target="_blank">Generator</a> | <a href="https://github.com/wattnpapa/sprechfunk-uebung"
-                target="_blank">GitHub-Repository</a></strong>
-    </footer>
 
-    <script type="module" src="src/app.js"></script>
-    <script src="help.js"></script>
-    <script src="track.js"></script>
+
+
+        <footer class="main-footer">
+            <div class="float-right d-none d-sm-block">
+                <b>Version</b> 1.0.0
+            </div>
+            <strong>© Johannes Rudolph | <a href="https://wattnpapa.github.io/sprechfunk-uebung/"
+                    target="_blank">Generator</a> | <a href="https://github.com/wattnpapa/sprechfunk-uebung"
+                    target="_blank">GitHub-Repository</a></strong>
+        </footer>
+
+        <script type="module" src="src/app.js"></script>
+        <script src="help.js"></script>
+        <script src="track.js"></script>
 </body>
 
 </html>

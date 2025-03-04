@@ -45,15 +45,15 @@ export class AppController {
     }
 
     updateVerteilung() {
-        updateAbsolute('alle');
-        updateAbsolute('mehrere');
+        this.updateAbsolute('alle');
+        this.updateAbsolute('mehrere');
     }
 
     updateAbsolute(type) {
         let total = Number(document.getElementById("spruecheProTeilnehmer").value);
-        let percentInput = document.getElementById(`prozentAn${capitalize(type)}`);
-        let calcSpan = document.getElementById(`calcAn${capitalize(type)}`);
-        let hiddenInput = document.getElementById(`spruecheAn${capitalize(type)}`);
+        let percentInput = document.getElementById(`prozentAn${this.capitalize(type)}`);
+        let calcSpan = document.getElementById(`calcAn${this.capitalize(type)}`);
+        let hiddenInput = document.getElementById(`spruecheAn${this.capitalize(type)}`);
 
         let percentageValue = Number(percentInput.value);
         let absoluteValue = Math.round((percentageValue / 100) * total);
@@ -318,6 +318,7 @@ export class AppController {
      * Erstellt HTML-Seiten und zeigt sie im iframe mit Paginierung an.
      */
     generateAllPages() {
+        this.htmlSeitenTeilnehmer = [];
         this.funkUebung.erstelle();
         this.funkUebung.teilnehmerListe.map(teilnehmer => {
             this.htmlSeitenTeilnehmer.push(UebungHTMLGenerator.generateHTMLPage(teilnehmer,this.funkUebung) )
@@ -327,13 +328,6 @@ export class AppController {
         this.zeigeUebungsdauer();
         this.startVerteilung();
         return;
-
-        if (this.funkUebung.htmlSeitenTeilnehmer.length > 0) {
-            this.displayPage(this.currentPageIndex);
-
-            this.zeigeUebungsdauer();
-            this.startVerteilung();
-        }
     }
 
     /**
