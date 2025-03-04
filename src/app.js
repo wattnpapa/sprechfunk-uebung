@@ -213,45 +213,6 @@ export class AppController {
         document.getElementById("output-container").style.display = "block";
     }
 
-    /**
-     * Verteilt zufällig Nachrichten an "ALLE" und "MEHRERE", ohne Überschneidung.
-     *
-     * @param {number} totalMessages - Gesamtanzahl verfügbarer Nachrichten (z.B. 0..totalMessages-1)
-     * @param {number} anzahlAlle    - Wie viele Nachrichten sollen an "ALLE" gehen?
-     * @param {number} anzahlMehrere - Wie viele Nachrichten sollen an "MEHRERE" gehen?
-     *
-     * @returns {{ alle: number[], mehrere: number[] }}
-     *    - `alle`: Array mit den Nachrichtennummern, die an "ALLE" gehen
-     *    - `mehrere`: Array mit den Nachrichtennummern, die an "MEHRERE" gehen
-     */
-    verteileNachrichten(totalMessages, anzahlAlle, anzahlMehrere) {
-        // 1) Validierung: Reicht die Gesamtanzahl für die gewünschten Mengen aus?
-        if (anzahlAlle + anzahlMehrere > totalMessages) {
-            throw new Error(
-                "Die gewünschte Anzahl für 'ALLE' und 'MEHRERE' übersteigt die Gesamtanzahl an Nachrichten."
-            );
-        }
-
-
-        // 2) Array aller möglichen Nachrichtennummern (0, 1, 2, ..., totalMessages - 1)
-        const alleNachrichten = [...Array(Number(totalMessages)).keys()];
-
-        // 3) Zufällig mischen
-        alleNachrichten.sort(() => Math.random() - 0.5);
-        alleNachrichten.sort(() => Math.random() - 0.5);
-        alleNachrichten.sort(() => Math.random() - 0.5);
-
-        // 4) Aufteilen in "ALLE" und "MEHRERE", ohne Überschneidung
-        const nachrichtenFuerAlle = alleNachrichten.slice(0, anzahlAlle);
-        const nachrichtenFuerMehrere = alleNachrichten.slice(anzahlAlle, anzahlAlle + anzahlMehrere);
-        const nachrichtenEinfach = alleNachrichten.slice(anzahlAlle + anzahlMehrere);
-
-        return {
-            alle: nachrichtenFuerAlle,
-            mehrere: nachrichtenFuerMehrere,
-            einfach: nachrichtenEinfach
-        };
-    }
 
     /**
      * Verteilt die Lösungsbuchstaben zufällig auf Nachrichten an den Empfänger,

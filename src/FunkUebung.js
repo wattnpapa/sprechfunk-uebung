@@ -50,9 +50,155 @@ export class FunkUebung {
     }
 
     erstelle() {
-        this.teilnehmerListe.map(teilnehmer => {
+        /*this.teilnehmerListe.map(teilnehmer => {
             this.nachrichten[teilnehmer] = this.generiereNachrichten(teilnehmer);
+        });*/
+
+        this.nachrichten = this.verteileNachrichtenFair();
+    }
+
+    verteileNachrichtenFair() {
+        let totalTeilnehmer = this.teilnehmerListe.length;
+        let totalMessages = this.spruecheProTeilnehmer * totalTeilnehmer; // Gesamtanzahl inkl. Anmeldung
+        let anzahlAnmeldung = totalTeilnehmer; // Jede Anmeldung wird als Nachricht gezählt
+        let anzahlAlle = Math.floor(this.spruecheAnAlle * totalTeilnehmer);
+        let anzahlMehrere = Math.floor(this.spruecheAnMehrere * totalTeilnehmer);
+        let anzahlEinfach = totalMessages - anzahlAnmeldung - anzahlAlle - anzahlMehrere;
+    
+        let nachrichtenVerteilung = {};
+        let empfangsZaehler = {}; // Zählt, wie viele Nachrichten jeder Teilnehmer bekommt
+        let letzteEmpfaenger = {}; // Speichert die letzten Empfänger pro Sender (Blacklist)
+        let alleNachrichten = []; // Speichert alle Nachrichten für das Mischen
+    
+        // **Initialisiere die Zähler und Blacklist**
+        this.teilnehmerListe.forEach(teilnehmer => {
+            nachrichtenVerteilung[teilnehmer] = [];
+            empfangsZaehler[teilnehmer] = 0;
+            letzteEmpfaenger[teilnehmer] = new Set(); // Letzte Empfänger speichern
         });
+    
+        let gemischteTeilnehmer = [...this.teilnehmerListe].sort(() => Math.random() - 0.5);
+    
+        // 1️⃣ **Anmeldung zur Übungsleitung als erste Nachricht**
+        this.teilnehmerListe.forEach(teilnehmer => {
+            nachrichtenVerteilung[teilnehmer].push({
+                id: 1,
+                nachricht: "Ich melde mich in Ihrem Sprechfunkverkehrskreis an.",
+                empfaenger: [this.leitung]
+            });
+        });
+    
+        // **Initiale Nachrichtenzählung für ID-Vergabe**
+        let nachrichtenIDs = {};
+        this.teilnehmerListe.forEach(teilnehmer => nachrichtenIDs[teilnehmer] = 2);
+    
+        // 2️⃣ **Nachrichten an "Alle" verteilen**
+        for (let i = 0; i < anzahlAlle; i++) {
+            let sender = gemischteTeilnehmer[i % totalTeilnehmer];
+            let nachricht = {
+                id: nachrichtenIDs[sender]++,
+                nachricht: this.funksprueche[i % this.funksprueche.length],
+                empfaenger: ["Alle"]
+            };
+    
+            alleNachrichten.push({ sender, nachricht });
+    
+            // Erhöhe die Empfangszähler für alle außer dem Sender
+            this.teilnehmerListe.forEach(t => {
+                if (t !== sender) empfangsZaehler[t]++;
+            });
+        }
+    
+        // 3️⃣ **Nachrichten an "Mehrere" gezielt verteilen**
+        for (let i = 0; i < anzahlMehrere; i++) {
+            let sender = gemischteTeilnehmer[i % totalTeilnehmer];
+    
+            let empfaengerGruppe = this.getFairSubsetOfOthers(this.teilnehmerListe, sender, empfangsZaehler, letzteEmpfaenger[sender]);
+            empfaengerGruppe.forEach(empf => empfangsZaehler[empf]++);
+    
+            let nachricht = {
+                id: nachrichtenIDs[sender]++,
+                nachricht: this.funksprueche[(anzahlAlle + i) % this.funksprueche.length],
+                empfaenger: empfaengerGruppe
+            };
+    
+            // Update Blacklist für den Sender
+            letzteEmpfaenger[sender] = new Set(empfaengerGruppe);
+    
+            alleNachrichten.push({ sender, nachricht });
+        }
+    
+        // 4️⃣ **Nachrichten an Einzelne gezielt verteilen**
+        for (let i = 0; i < anzahlEinfach; i++) {
+            let sender = gemischteTeilnehmer[i % totalTeilnehmer];
+    
+            let empfaenger = this.getFairOther(this.teilnehmerListe, sender, empfangsZaehler, letzteEmpfaenger[sender]);
+            empfangsZaehler[empfaenger]++;
+    
+            let nachricht = {
+                id: nachrichtenIDs[sender]++,
+                nachricht: this.funksprueche[(anzahlAlle + anzahlMehrere + i) % this.funksprueche.length],
+                empfaenger: [empfaenger]
+            };
+    
+            // Update Blacklist für den Sender
+            letzteEmpfaenger[sender] = new Set([empfaenger]);
+    
+            alleNachrichten.push({ sender, nachricht });
+        }
+    
+        // **🔀 Finales Mischen der Nachrichten für zufällige Reihenfolge**
+        alleNachrichten = this.shuffleArray(alleNachrichten);
+        alleNachrichten = this.shuffleArray(alleNachrichten);
+        alleNachrichten = this.shuffleArray(alleNachrichten);
+        alleNachrichten = this.shuffleArray(alleNachrichten);
+        alleNachrichten = this.shuffleArray(alleNachrichten);
+    
+        // 5️⃣ **Anmeldungen müssen als erste Nachricht bleiben**
+        this.teilnehmerListe.forEach(teilnehmer => {
+            let anmeldung = nachrichtenVerteilung[teilnehmer][0]; // Die erste Nachricht ist immer die Anmeldung
+            let gefilterteNachrichten = alleNachrichten.filter(n => n.sender === teilnehmer).map(n => n.nachricht);
+    
+            // **📌 Nach dem Mischen NEU nummerieren**
+            gefilterteNachrichten.forEach((msg, index) => {
+                msg.id = index + 2; // Die Anmeldung bleibt ID=1, alle anderen fangen bei 2 an
+            });
+    
+            nachrichtenVerteilung[teilnehmer] = [anmeldung, ...gefilterteNachrichten];
+        });
+    
+        return nachrichtenVerteilung;
+    }
+    
+    /**
+     * Mischt ein Array zufällig durch.
+     */
+    shuffleArray(array) {
+        return array.sort(() => Math.random() - 0.5);
+    }
+    
+    getFairSubsetOfOthers(teilnehmerListe, sender, empfangsZaehler, blacklist) {
+        let andere = teilnehmerListe.filter(t => t !== sender && !blacklist.has(t));
+        
+        // Sortiere nach Anzahl empfangener Nachrichten, um weniger Bevorzugte zu priorisieren
+        andere.sort((a, b) => empfangsZaehler[a] - empfangsZaehler[b]);
+    
+        // Gruppengröße zufällig auswählen, aber bevorzugt aus denjenigen mit wenig Nachrichten
+        let zufallsGroesse = Math.random() < 0.8 ? 2 + Math.floor(Math.random() * 2) : 4 + Math.floor(Math.random() * (Math.ceil(andere.length / 2) - 4));
+        
+        return andere.slice(0, zufallsGroesse);
+    }
+    
+    /**
+     * Wählt gezielt einen Empfänger, der noch nicht genug Nachrichten erhalten hat.
+     */
+    getFairOther(teilnehmerListe, sender, empfangsZaehler, blacklist) {
+        let andere = teilnehmerListe.filter(t => t !== sender && !blacklist.has(t));
+        
+        // Sortiere nach Anzahl empfangener Nachrichten, um weniger Bevorzugte zu priorisieren
+        andere.sort((a, b) => empfangsZaehler[a] - empfangsZaehler[b]);
+    
+        return andere.length > 0 ? andere[0] : teilnehmerListe.filter(t => t !== sender)[0]; // Notfall: Falls keine Alternative verfügbar
     }
 
     generiereNachrichten(teilnehmer) {
@@ -98,26 +244,36 @@ export class FunkUebung {
         // 1) Filter: Wer ist "nicht ich"?
         const andere = teilnehmerListe.filter(t => t !== aktuellerTeilnehmer);
         const gesamtTeilnehmer = andere.length;
-
-        // 2) Durchmischen
+    
+        // 2) Durchmischen für Zufälligkeit
         const gemischt = [...andere].sort(() => Math.random() - 0.5);
-
-        // 3) Gewichtete Wahrscheinlichkeitsverteilung für Gruppengröße
-        const minGroesse = 2;
-        const maxGroesse = gesamtTeilnehmer;
-
-        // Berechnung einer zufälligen Größe mit einer gewichteten Verteilung:
-        // Wahrscheinlichkeit für kleine Gruppen ist höher, größere Gruppen sind seltener.
+    
+        // 3) Wahrscheinlichkeitsverteilung für Gruppengröße
         let zufallsGroesse;
-
-        if (Math.random() < 0.7) {
-            // 70% Wahrscheinlichkeit für eine Gruppe bis maximal Hälfte der Teilnehmer
-            zufallsGroesse = Math.floor(Math.random() * (Math.ceil(gesamtTeilnehmer / 2) - minGroesse + 1)) + minGroesse;
+    
+        let zufallsWert = Math.random();
+    
+        if (zufallsWert < 0.8) {
+            // 80% Wahrscheinlichkeit für eine kleine Gruppe (2 oder 3 Teilnehmer)
+            zufallsGroesse = Math.floor(Math.random() * 2) + 2; // 2 oder 3
+        } else if (zufallsWert < 0.9) {
+            // 10% Wahrscheinlichkeit für eine mittlere Gruppe (4 bis max 50% der Teilnehmer)
+            let maxHaelfte = Math.ceil(gesamtTeilnehmer / 2);
+            zufallsGroesse = Math.floor(Math.random() * (maxHaelfte - 4 + 1)) + 4;
+        } else if (zufallsWert < 0.95) {
+            // 5% Wahrscheinlichkeit für eine große Gruppe (50-75% der Teilnehmer)
+            let minFiftyPercent = Math.ceil(gesamtTeilnehmer * 0.5);
+            let maxSeventyFivePercent = Math.ceil(gesamtTeilnehmer * 0.75);
+            zufallsGroesse = Math.floor(Math.random() * (maxSeventyFivePercent - minFiftyPercent + 1)) + minFiftyPercent;
         } else {
-            // 30% Wahrscheinlichkeit für eine größere Gruppe bis zur gesamten Liste
-            zufallsGroesse = Math.floor(Math.random() * (maxGroesse - minGroesse + 1)) + minGroesse;
+            // 5% Wahrscheinlichkeit für eine sehr große Gruppe (maximal 85% der Teilnehmer, aber nie alle)
+            let maxAchtzigFuenfPercent = Math.ceil(gesamtTeilnehmer * 0.85);
+            zufallsGroesse = Math.floor(Math.random() * (maxAchtzigFuenfPercent - gesamtTeilnehmer + 1)) + gesamtTeilnehmer;
         }
-
+    
+        // Sicherstellen, dass die Größe innerhalb des gültigen Bereichs liegt
+        zufallsGroesse = Math.min(zufallsGroesse, gesamtTeilnehmer);
+    
         // 4) Den „vorderen“ Teil (z. B. 2, 3, …) zurückgeben
         return gemischt.slice(0, zufallsGroesse);
     }
