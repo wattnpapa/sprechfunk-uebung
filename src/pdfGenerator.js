@@ -197,6 +197,9 @@ class PDFGenerator {
      */
     generateNachrichtenvordruckPDFs(funkUebung) {
         const templateImageUrl = 'assets/nachrichtenvordruck4fach.png';
+        const maxWidth = 110; // Maximale Breite für die Nachricht
+        const maxWidthAnschrift = 70; // Maximale Breite für Anschrift
+        const maxWidthRufname = 70; // Maximale Breite für Rufname der Gegenstelle
         funkUebung.teilnehmerListe.forEach(teilnehmer => {
             let nachrichten = funkUebung.nachrichten[teilnehmer];
 
@@ -204,8 +207,34 @@ class PDFGenerator {
 
             nachrichten.forEach((nachricht, index) => {
                 pdf.addImage(templateImageUrl, "PNG", 0, 0, 148, 210);
-                this.addNachrichtText(pdf, nachricht, teilnehmer);
+                
 
+                //FM Zentrale ausfüllen
+                pdf.setFontSize(16);
+                pdf.text("x", 22, 21) // "x" Funk
+
+                pdf.setFontSize(12);
+                pdf.text(`${nachricht.id}`, 127.5, 28.5); //TBB Nummer
+
+                //Ausgang
+                pdf.setFontSize(16);
+                pdf.text("x", 121.5, 38.5) // "x" Funk
+
+                pdf.setFontSize(12);               
+                pdf.text(`${teilnehmer}`, 46, 153);
+                //pdf.text(`${nachricht.nachricht}`, 22, 77);
+
+                let empfaengerText = nachricht.empfaenger.includes("Alle") ? "Alle" : nachricht.empfaenger.join(", ");
+                this.adjustTextForWidth(pdf, empfaengerText, maxWidthRufname, 46, 65);
+                this.adjustTextForWidth(pdf, empfaengerText, maxWidthAnschrift, 66, 48);              
+
+
+                // Nachricht (Umbrechen)
+                pdf.setFontSize(11.5);
+                const messageLines = pdf.splitTextToSize(nachricht.nachricht, maxWidth);
+                pdf.text(messageLines, 22, 77);
+
+                
                 if (index < nachrichten.length - 1) pdf.addPage();
             });
 
@@ -378,18 +407,6 @@ class PDFGenerator {
         });
     }
 
-    /**
-     * Fügt die Nachricht in den Nachrichtenvordruck ein.
-     */
-    addNachrichtText(pdf, nachricht, teilnehmer) {
-        pdf.setFontSize(12);
-        pdf.text(`${teilnehmer}`, 46, 153);
-        pdf.text(`${nachricht.nachricht}`, 22, 77);
-
-        let empfaengerText = nachricht.empfaenger.includes("Alle") ? "Alle" : nachricht.empfaenger.join(", ");
-        pdf.text(empfaengerText, 66, 48);
-        pdf.text(empfaengerText, 46, 65);
-    }
 }
 
 // Instanz der Klasse exportieren
