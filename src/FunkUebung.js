@@ -18,11 +18,11 @@ export class FunkUebung {
 
         this.teilnehmerListe = [
             "Heros Oldenburg 16/11",
-            //"Heros Oldenburg 17/12",
-            //"Heros Oldenburg 18/13",
+            "Heros Oldenburg 17/12",
+            "Heros Oldenburg 18/13",
             "Heros Jever 21/10",
-            //"Heros Leer 21/10",
-            //"Heros Emden 21/10",
+            "Heros Leer 21/10",
+            "Heros Emden 21/10",
             "Heros Wilhemshaven 21/10"
         ];
 
@@ -112,8 +112,14 @@ export class FunkUebung {
         // 3️⃣ **Nachrichten an "Mehrere" gezielt verteilen**
         for (let i = 0; i < anzahlMehrere; i++) {
             let sender = gemischteTeilnehmer[i % totalTeilnehmer];
-    
+
             let empfaengerGruppe = this.getFairSubsetOfOthers(this.teilnehmerListe, sender, empfangsZaehler, letzteEmpfaenger[sender]);
+            
+            // Sicherstellen, dass mindestens ein Empfänger vorhanden ist
+            if (empfaengerGruppe.length === 0) {
+                empfaengerGruppe = [this.getFairOther(this.teilnehmerListe, sender, empfangsZaehler, new Set())];
+            }
+
             empfaengerGruppe.forEach(empf => empfangsZaehler[empf]++);
     
             let nachricht = {
@@ -131,8 +137,14 @@ export class FunkUebung {
         // 4️⃣ **Nachrichten an Einzelne gezielt verteilen**
         for (let i = 0; i < anzahlEinfach; i++) {
             let sender = gemischteTeilnehmer[i % totalTeilnehmer];
-    
+
             let empfaenger = this.getFairOther(this.teilnehmerListe, sender, empfangsZaehler, letzteEmpfaenger[sender]);
+
+            // Sicherstellen, dass es einen gültigen Empfänger gibt
+            if (!empfaenger) {
+                empfaenger = this.teilnehmerListe.find(t => t !== sender) || sender;
+            }
+
             empfangsZaehler[empfaenger]++;
     
             let nachricht = {
