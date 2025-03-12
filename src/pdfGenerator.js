@@ -1,4 +1,4 @@
-import { DateFormatter } from "./DateFormatter.js";
+import dateFormatter, { DateFormatter } from "./DateFormatter.js";
 
 // pdfGenerator.js
 class PDFGenerator {
@@ -103,14 +103,14 @@ class PDFGenerator {
             body: nachrichten.map(n => [n.id, n.empfaenger.join("\n"), n.nachricht]),
             startY: startY,
             theme: "grid",
-            margin: { left: marginLeft, top: secondPageTableTopMargin },
+            margin: { left: marginLeft, top: secondPageTableTopMargin, bottom: 20},
             tableWidth: tableWidth,
             columnStyles: {
                 0: { cellWidth: columnWidths[0] },
                 1: { cellWidth: columnWidths[1] },
                 2: { cellWidth: columnWidths[2] }
             },
-            styles: { fontSize: 10, cellPadding: 3, lineWidth: 0.5 },
+            styles: { fontSize: 10, cellPadding: 1.5, lineWidth: 0.5 },
             headStyles: { fillColor: [200, 200, 200] }
         });
     }
@@ -165,7 +165,7 @@ class PDFGenerator {
             pdf.text(`Eigener Funkrufname: ${teilnehmer}`, pageMargin, 20);
 
             // **Rechts: Name der Übung**
-            let rightText = funkUebung.name + " " + funkUebung.datum
+            let rightText = funkUebung.name + " - " + DateFormatter.formatNATODate(funkUebung.datum,false)
             let nameWidth = pdf.getTextWidth(rightText);
             pdf.text(rightText, pdfWidth - pageMargin - nameWidth, 20);
 
@@ -181,6 +181,10 @@ class PDFGenerator {
     drawFooter(pdf, generierungszeit, softwareVersion, pageNumber, totalPages, pdfWidth, pdfHeight, pageMargin) {
         pdf.setFont("helvetica", "normal");
         pdf.setFontSize(10);
+
+         // **Trennlinie unter der Kopfzeile**
+         pdf.setDrawColor(0);
+         pdf.line(pageMargin, pdfHeight - 15, pdfWidth - pageMargin, pdfHeight - 15);
 
         // **Seitenzahl bleibt auf allen Seiten gleich formatiert**
         let pageNumberText = `Seite ${pageNumber} von ${totalPages}`;
