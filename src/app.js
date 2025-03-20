@@ -114,7 +114,7 @@ export class AppController {
             let loesungswortInput = "";
             if (isIndividuell) {
                 let wort = this.funkUebung.loesungswoerter[teilnehmer] || "";
-                loesungswortInput = `<td><input type="text" class="form-control loesungswort-input" id="loesungswort-${index}" value="${wort}" placeholder="Lösungswort" readonly></td>`;
+                loesungswortInput = `<td><input type="text" class="form-control loesungswort-input" id="loesungswort-${index}" value="${wort}" placeholder="Lösungswort"></td>`;
             }
     
             row.innerHTML = `
@@ -182,6 +182,8 @@ export class AppController {
 
         this.funkUebung.datum = new Date(document.getElementById("datum").value + "T00:00:00");
         this.natoDate = DateFormatter.formatNATODate(this.funkUebung.datum, false);
+
+        this.readLoesungswoerter();
 
         // Wenn eine Vorlage aus der select-Box ausgewählt wurde (nicht "Manuelle Datei hochladen")
         if (selectedTemplate !== "upload") {
@@ -698,6 +700,23 @@ export class AppController {
 
     generateMD5Hash(input) {
         return CryptoJS.MD5(input).toString();
+    }
+
+    readLoesungswoerter() {
+        this.funkUebung.loesungswoerter = {};
+        const isZentral = document.getElementById("zentralLoesungswort").checked;
+        const zentralesWort = document.getElementById("zentralLoesungswortInput")?.value.trim().toUpperCase() || "";
+
+        this.funkUebung.teilnehmerListe.forEach((teilnehmer, index) => {
+            if (isZentral && zentralesWort) {
+                this.funkUebung.loesungswoerter[teilnehmer] = zentralesWort;
+            } else {
+                const input = document.getElementById(`loesungswort-${index}`);
+                if (input) {
+                    this.funkUebung.loesungswoerter[teilnehmer] = input.value.trim().toUpperCase();
+                }
+            }
+        });
     }
 }
 
