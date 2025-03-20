@@ -55,131 +55,172 @@ export class FunkUebung {
         });*/
 
         this.nachrichten = this.verteileNachrichtenFair();
+        this.verteileLoesungswoerterMitIndex();
+    }
+
+    getBalancedSubsetOfOthers(teilnehmerListe, sender, empfangsZaehler, letzteEmpfaenger, empfaengerHistory) {
+        let andere = teilnehmerListe.filter(t => t !== sender && !letzteEmpfaenger.has(t));
+    
+        // Falls alle ausgeschlossen sind, nehmen wir alle außer dem Sender
+        if (andere.length === 0) {
+            andere = teilnehmerListe.filter(t => t !== sender);
+        }
+    
+        // Sortiere nach Anzahl empfangener Nachrichten, um weniger Bevorzugte zu priorisieren
+        andere.sort((a, b) => empfangsZaehler[a] - empfangsZaehler[b]);
+    
+        // Entferne Teilnehmer, die kürzlich Empfänger waren, falls möglich
+        let bevorzugteEmpfaenger = andere.filter(empf => !empfaengerHistory.includes(empf));
+        if (bevorzugteEmpfaenger.length > 0) {
+            andere = bevorzugteEmpfaenger;
+        }
+    
+        // Gruppengröße basierend auf Wahrscheinlichkeiten
+        let zufallsGroesse;
+        let zufallsWert = Math.random();
+    
+        if (zufallsWert < 0.8) {
+            zufallsGroesse = Math.floor(Math.random() * 2) + 2; // 2 oder 3 Teilnehmer
+        } else if (zufallsWert < 0.9) {
+            let maxHaelfte = Math.ceil(andere.length / 2);
+            zufallsGroesse = Math.floor(Math.random() * (maxHaelfte - 4 + 1)) + 4;
+        } else if (zufallsWert < 0.95) {
+            let minFiftyPercent = Math.ceil(andere.length * 0.5);
+            let maxSeventyFivePercent = Math.ceil(andere.length * 0.75);
+            zufallsGroesse = Math.floor(Math.random() * (maxSeventyFivePercent - minFiftyPercent + 1)) + minFiftyPercent;
+        } else {
+            let maxAchtzigFuenfPercent = Math.ceil(andere.length * 0.85);
+            zufallsGroesse = Math.floor(Math.random() * (maxAchtzigFuenfPercent - andere.length + 1)) + andere.length;
+        }
+    
+        zufallsGroesse = Math.min(zufallsGroesse, andere.length);
+    
+        return andere.slice(0, zufallsGroesse);
+    }
+    
+    getBalancedOther(teilnehmerListe, sender, empfangsZaehler, letzteEmpfaenger, empfaengerHistory) {
+        let andere = teilnehmerListe.filter(t => t !== sender && !letzteEmpfaenger.has(t));
+    
+        // Falls keine Empfänger übrig bleiben, alle Teilnehmer außer dem Sender verwenden
+        if (andere.length === 0) {
+            andere = teilnehmerListe.filter(t => t !== sender);
+        }
+    
+        // Sortiere nach Anzahl empfangener Nachrichten, um Teilnehmer mit weniger Nachrichten zu bevorzugen
+        andere.sort((a, b) => empfangsZaehler[a] - empfangsZaehler[b]);
+    
+        // Entferne Teilnehmer, die kürzlich Empfänger waren, falls möglich
+        let bevorzugteEmpfaenger = andere.filter(empf => !empfaengerHistory.includes(empf));
+        if (bevorzugteEmpfaenger.length > 0) {
+            andere = bevorzugteEmpfaenger;
+        }
+    
+        return andere.length > 0 ? andere[0] : teilnehmerListe.find(t => t !== sender) || sender;
+    }
+
+    verteileEmpfaengerFair() {
+        const totalTeilnehmer = this.teilnehmerListe.length;
+        const totalEinzelNachrichten = (this.spruecheProTeilnehmer - this.spruecheAnAlle - this.spruecheAnMehrere) * totalTeilnehmer;
+
+        const empfaengerVerteilung = {};
+        const empfangsZaehler = {};
+        const empfaengerHistory = [];
+        const maxHistory = 2; // Verhindert, dass Teilnehmer mehrfach hintereinander Empfänger werden
+
+        // Initialisierung
+        this.teilnehmerListe.forEach(teilnehmer => {
+            empfaengerVerteilung[teilnehmer] = [];
+            empfangsZaehler[teilnehmer] = 0;
+        });
+
+        // Erstelle pro Sender eine Liste der noch "zu besuchenden" Empfänger
+        const empfaengerToVisit = {};
+        this.teilnehmerListe.forEach(sender => {
+            empfaengerToVisit[sender] = this.teilnehmerListe.filter(t => t !== sender);
+        });
+
+        let versuch = 0;
+        while (versuch < totalEinzelNachrichten * 3) { // Schleife mit mehreren Versuchen
+            const sender = this.teilnehmerListe[versuch % totalTeilnehmer];
+            let moeglicheEmpfaenger = empfaengerToVisit[sender].filter(
+                empfaenger => !empfaengerHistory.includes(empfaenger)
+            );
+
+            // Wenn leer, befülle ToVisit-Liste wieder
+            if (moeglicheEmpfaenger.length === 0) {
+                empfaengerToVisit[sender] = this.teilnehmerListe.filter(t => t !== sender);
+                moeglicheEmpfaenger = [...empfaengerToVisit[sender]];
+            }
+
+            // Sortiere nach Empfangszaehler, um schwächere Empfänger zu bevorzugen
+            moeglicheEmpfaenger.sort((a, b) => empfangsZaehler[a] - empfangsZaehler[b]);
+
+            const empfaenger = moeglicheEmpfaenger[0];
+            empfaengerVerteilung[sender].push(empfaenger);
+            empfangsZaehler[empfaenger]++;
+
+            // Entferne aus der ToVisit Liste
+            empfaengerToVisit[sender] = empfaengerToVisit[sender].filter(e => e !== empfaenger);
+
+            empfaengerHistory.push(empfaenger);
+            if (empfaengerHistory.length > maxHistory) empfaengerHistory.shift();
+
+            versuch++;
+        }
+
+        return empfaengerVerteilung;
     }
 
     verteileNachrichtenFair() {
-        let totalTeilnehmer = this.teilnehmerListe.length;
-        let totalMessages = this.spruecheProTeilnehmer * totalTeilnehmer; // Gesamtanzahl inkl. Anmeldung
-        let anzahlAnmeldung = totalTeilnehmer; // Jede Anmeldung wird als Nachricht gezählt
-        let anzahlAlle = Math.floor(this.spruecheAnAlle * totalTeilnehmer);
-        let anzahlMehrere = Math.floor(this.spruecheAnMehrere * totalTeilnehmer);
-        let anzahlEinfach = totalMessages - anzahlAnmeldung - anzahlAlle - anzahlMehrere;
-    
-        let nachrichtenVerteilung = {};
-        let empfangsZaehler = {}; // Zählt, wie viele Nachrichten jeder Teilnehmer bekommt
-        let letzteEmpfaenger = {}; // Speichert die letzten Empfänger pro Sender (Blacklist)
-        let alleNachrichten = []; // Speichert alle Nachrichten für das Mischen
-    
-        // **Initialisiere die Zähler und Blacklist**
-        this.teilnehmerListe.forEach(teilnehmer => {
-            nachrichtenVerteilung[teilnehmer] = [];
-            empfangsZaehler[teilnehmer] = 0;
-            letzteEmpfaenger[teilnehmer] = new Set(); // Letzte Empfänger speichern
+    let nachrichtenVerteilung = {};
+    let nachrichtenIndex = 0;
+ 
+    // Berechne feste Verteilung
+    const anAlle = this.spruecheAnAlle;
+    const anMehrere = this.spruecheAnMehrere;
+    const anEinzeln = this.spruecheProTeilnehmer - 1 - anAlle - anMehrere;
+ 
+    this.teilnehmerListe.forEach(teilnehmer => {
+        nachrichtenVerteilung[teilnehmer] = [];
+ 
+        // Anmeldungsnachricht
+        nachrichtenVerteilung[teilnehmer].push({
+            id: 1,
+            nachricht: "Ich melde mich in Ihrem Sprechfunkverkehrskreis an.",
+            empfaenger: [this.leitung]
         });
-    
-        let gemischteTeilnehmer = [...this.teilnehmerListe].sort(() => Math.random() - 0.5);
-    
-        // 1️⃣ **Anmeldung zur Übungsleitung als erste Nachricht**
-        this.teilnehmerListe.forEach(teilnehmer => {
+ 
+        // Nachrichten an 'Alle'
+        for (let i = 0; i < anAlle; i++) {
             nachrichtenVerteilung[teilnehmer].push({
-                id: 1,
-                nachricht: "Ich melde mich in Ihrem Sprechfunkverkehrskreis an.",
-                empfaenger: [this.leitung]
-            });
-        });
-    
-        // **Initiale Nachrichtenzählung für ID-Vergabe**
-        let nachrichtenIDs = {};
-        this.teilnehmerListe.forEach(teilnehmer => nachrichtenIDs[teilnehmer] = 2);
-    
-        // 2️⃣ **Nachrichten an "Alle" verteilen**
-        for (let i = 0; i < anzahlAlle; i++) {
-            let sender = gemischteTeilnehmer[i % totalTeilnehmer];
-            let nachricht = {
-                id: nachrichtenIDs[sender]++,
-                nachricht: this.funksprueche[i % this.funksprueche.length],
+                id: nachrichtenVerteilung[teilnehmer].length + 1,
+                nachricht: this.funksprueche[nachrichtenIndex++ % this.funksprueche.length],
                 empfaenger: ["Alle"]
-            };
-    
-            alleNachrichten.push({ sender, nachricht });
-    
-            // Erhöhe die Empfangszähler für alle außer dem Sender
-            this.teilnehmerListe.forEach(t => {
-                if (t !== sender) empfangsZaehler[t]++;
             });
         }
-    
-        // 3️⃣ **Nachrichten an "Mehrere" gezielt verteilen**
-        for (let i = 0; i < anzahlMehrere; i++) {
-            let sender = gemischteTeilnehmer[i % totalTeilnehmer];
-
-            let empfaengerGruppe = this.getFairSubsetOfOthers(this.teilnehmerListe, sender, empfangsZaehler, letzteEmpfaenger[sender]);
-            
-            // Sicherstellen, dass mindestens ein Empfänger vorhanden ist
-            if (empfaengerGruppe.length === 0) {
-                empfaengerGruppe = [this.getFairOther(this.teilnehmerListe, sender, empfangsZaehler, new Set())];
-            }
-
-            empfaengerGruppe.forEach(empf => empfangsZaehler[empf]++);
-    
-            let nachricht = {
-                id: nachrichtenIDs[sender]++,
-                nachricht: this.funksprueche[(anzahlAlle + i) % this.funksprueche.length],
+ 
+        // Nachrichten an 'Mehrere'
+        for (let i = 0; i < anMehrere; i++) {
+            const empfaengerGruppe = this.getRandomSubsetOfOthers(this.teilnehmerListe, teilnehmer);
+            nachrichtenVerteilung[teilnehmer].push({
+                id: nachrichtenVerteilung[teilnehmer].length + 1,
+                nachricht: this.funksprueche[nachrichtenIndex++ % this.funksprueche.length],
                 empfaenger: empfaengerGruppe
-            };
-    
-            // Update Blacklist für den Sender
-            letzteEmpfaenger[sender] = new Set(empfaengerGruppe);
-    
-            alleNachrichten.push({ sender, nachricht });
-        }
-    
-        // 4️⃣ **Nachrichten an Einzelne gezielt verteilen**
-        for (let i = 0; i < anzahlEinfach; i++) {
-            let sender = gemischteTeilnehmer[i % totalTeilnehmer];
-
-            let empfaenger = this.getFairOther(this.teilnehmerListe, sender, empfangsZaehler, letzteEmpfaenger[sender]);
-
-            // Sicherstellen, dass es einen gültigen Empfänger gibt
-            if (!empfaenger) {
-                empfaenger = this.teilnehmerListe.find(t => t !== sender) || sender;
-            }
-
-            empfangsZaehler[empfaenger]++;
-    
-            let nachricht = {
-                id: nachrichtenIDs[sender]++,
-                nachricht: this.funksprueche[(anzahlAlle + anzahlMehrere + i) % this.funksprueche.length],
-                empfaenger: [empfaenger]
-            };
-    
-            // Update Blacklist für den Sender
-            letzteEmpfaenger[sender] = new Set([empfaenger]);
-    
-            alleNachrichten.push({ sender, nachricht });
-        }
-    
-        // **🔀 Finales Mischen der Nachrichten für zufällige Reihenfolge**
-        alleNachrichten = this.shuffleArray(alleNachrichten);
-        alleNachrichten = this.shuffleArray(alleNachrichten);
-        alleNachrichten = this.shuffleArray(alleNachrichten);
-        alleNachrichten = this.shuffleArray(alleNachrichten);
-        alleNachrichten = this.shuffleArray(alleNachrichten);
-    
-        // 5️⃣ **Anmeldungen müssen als erste Nachricht bleiben**
-        this.teilnehmerListe.forEach(teilnehmer => {
-            let anmeldung = nachrichtenVerteilung[teilnehmer][0]; // Die erste Nachricht ist immer die Anmeldung
-            let gefilterteNachrichten = alleNachrichten.filter(n => n.sender === teilnehmer).map(n => n.nachricht);
-    
-            // **📌 Nach dem Mischen NEU nummerieren**
-            gefilterteNachrichten.forEach((msg, index) => {
-                msg.id = index + 2; // Die Anmeldung bleibt ID=1, alle anderen fangen bei 2 an
             });
-    
-            nachrichtenVerteilung[teilnehmer] = [anmeldung, ...gefilterteNachrichten];
-        });
-    
-        return nachrichtenVerteilung;
+        }
+ 
+        // Einzel-Nachrichten
+        for (let i = 0; i < anEinzeln; i++) {
+            const empfaenger = this.getRandomOther(this.teilnehmerListe, teilnehmer);
+            nachrichtenVerteilung[teilnehmer].push({
+                id: nachrichtenVerteilung[teilnehmer].length + 1,
+                nachricht: this.funksprueche[nachrichtenIndex++ % this.funksprueche.length],
+                empfaenger: [empfaenger]
+            });
+        }
+    });
+ 
+    return nachrichtenVerteilung;
     }
     
     /**
@@ -187,6 +228,34 @@ export class FunkUebung {
      */
     shuffleArray(array) {
         return array.sort(() => Math.random() - 0.5);
+    }
+
+    shuffleSmart(nachrichtenListe) {
+        let maxVersuche = 100;
+        let durchmischteListe = [...nachrichtenListe];
+        let istGueltig = false;
+    
+        for (let versuch = 0; versuch < maxVersuche; versuch++) {
+            durchmischteListe.sort(() => Math.random() - 0.5);
+    
+            istGueltig = true;
+            for (let i = 1; i < durchmischteListe.length; i++) {
+                let aktuelleEmpfaenger = new Set(durchmischteListe[i].nachricht.empfaenger);
+                let vorherigeEmpfaenger = new Set(durchmischteListe[i - 1].nachricht.empfaenger);
+    
+                if ([...aktuelleEmpfaenger].some(empf => vorherigeEmpfaenger.has(empf))) {
+                    istGueltig = false;
+                    break;
+                }
+            }
+    
+            if (istGueltig) {
+                return durchmischteListe;
+            }
+        }
+    
+        console.warn("⚠ Konnte keine perfekte Verteilung finden. Nutze beste Lösung.");
+        return durchmischteListe;
     }
     
     getFairSubsetOfOthers(teilnehmerListe, sender, empfangsZaehler, blacklist) {
@@ -346,6 +415,48 @@ export class FunkUebung {
             mehrere: nachrichtenFuerMehrere,
             einfach: nachrichtenEinfach
         };
+    }
+
+    verteileLoesungswoerterMitIndex() {
+        // Wir gehen alle Teilnehmer durch
+        Object.entries(this.loesungswoerter).forEach(([empfaenger, loesungswort]) => {
+            if (loesungswort && loesungswort.length > 0) {
+                const buchstabenMitIndex = loesungswort
+                    .split("")
+                    .map((buchstabe, index) => `${index + 1}${buchstabe}`);
+ 
+                // Finde alle Nachrichten, die an den Empfänger gerichtet sind (von verschiedenen Absendern)
+                let nachrichtenFuerEmpfaenger = [];
+                Object.entries(this.nachrichten).forEach(([absender, nachrichtenListe]) => {
+                    if (absender !== empfaenger) {
+                        nachrichtenListe.forEach(nachricht => {
+                            if (nachricht.empfaenger.includes(empfaenger) && nachricht.empfaenger.length === 1) {
+                                nachrichtenFuerEmpfaenger.push(nachricht);
+                            }
+                        });
+                    }
+                });
+ 
+                // Sortiere die Nachrichten chronologisch
+                nachrichtenFuerEmpfaenger.sort((a, b) => a.id - b.id);
+ 
+                // Bevorzuge die erste Hälfte der Nachrichten
+                const ersteHaelfte = nachrichtenFuerEmpfaenger.slice(0, Math.ceil(nachrichtenFuerEmpfaenger.length / 2));
+ 
+                // Mische die Buchstaben
+                buchstabenMitIndex.sort(() => Math.random() - 0.5);
+ 
+                // Weise die Buchstaben in der ersten Hälfte der Nachrichten zu
+                buchstabenMitIndex.forEach((buchstabeMitIndex, i) => {
+                    if (i < ersteHaelfte.length) {
+                        ersteHaelfte[i].nachricht += ` ${buchstabeMitIndex}`;
+                    } else {
+                        // Falls mehr Buchstaben als Nachrichten, verteilen wir den Rest in der gesamten Liste
+                        nachrichtenFuerEmpfaenger[i % nachrichtenFuerEmpfaenger.length].nachricht += ` ${buchstabeMitIndex}`;
+                    }
+                });
+            }
+        });
     }
 
 }
