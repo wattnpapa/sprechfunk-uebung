@@ -180,19 +180,24 @@ class PDFGenerator {
      */
     drawFooter(pdf, generierungszeit, softwareVersion, pageNumber, totalPages, pdfWidth, pdfHeight, pageMargin) {
         pdf.setFont("helvetica", "normal");
+        pdf.setFontSize(8);
+
+        // Hinweis über der Linie
+        pdf.text("Wörter in GROSSBUCHSTABEN müssen buchstabiert werden.", pageMargin, pdfHeight - 20);
+
+        // Trennlinie unter dem Hinweis
+        pdf.setDrawColor(0);
+        pdf.line(pageMargin, pdfHeight - 15, pdfWidth - pageMargin, pdfHeight - 15);
+
+        // Seitenzahl
         pdf.setFontSize(10);
-
-         // **Trennlinie unter der Kopfzeile**
-         pdf.setDrawColor(0);
-         pdf.line(pageMargin, pdfHeight - 15, pdfWidth - pageMargin, pdfHeight - 15);
-
-        // **Seitenzahl bleibt auf allen Seiten gleich formatiert**
         let pageNumberText = `Seite ${pageNumber} von ${totalPages}`;
         let pageNumberWidth = pdf.getTextWidth(pageNumberText);
         pdf.text(pageNumberText, pdfWidth - pageMargin - pageNumberWidth, pdfHeight - 10);
 
-        // **Link und Copyright-Infos linksbündig**
-        let leftText = `© Johannes Rudolph | Version ${softwareVersion} | Generiert: ${generierungszeit} | Generator: wattnpapa.github.io/sprechfunk-uebung`;
+        // Link und Copyright-Infos linksbündig
+        pdf.setFontSize(6);
+        let leftText = `© Johannes Rudolph | Version ${softwareVersion} | Generiert: ${generierungszeit} | Generator: https://wattnpapa.github.io/sprechfunk-uebung`;
         pdf.textWithLink(leftText, pageMargin, pdfHeight - 10, { url: "https://wattnpapa.github.io/sprechfunk-uebung/" });
     }
 
