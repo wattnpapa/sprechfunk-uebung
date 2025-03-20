@@ -172,55 +172,80 @@ export class FunkUebung {
     }
 
     verteileNachrichtenFair() {
-    let nachrichtenVerteilung = {};
-    let nachrichtenIndex = 0;
- 
-    // Berechne feste Verteilung
-    const anAlle = this.spruecheAnAlle;
-    const anMehrere = this.spruecheAnMehrere;
-    const anEinzeln = this.spruecheProTeilnehmer - 1 - anAlle - anMehrere;
- 
-    this.teilnehmerListe.forEach(teilnehmer => {
-        nachrichtenVerteilung[teilnehmer] = [];
- 
-        // Anmeldungsnachricht
-        nachrichtenVerteilung[teilnehmer].push({
-            id: 1,
-            nachricht: "Ich melde mich in Ihrem Sprechfunkverkehrskreis an.",
-            empfaenger: [this.leitung]
+        let nachrichtenVerteilung = {};
+        let nachrichtenIndex = 0;
+
+        // Berechne Verteilungen
+        const anAlle = this.spruecheAnAlle;
+        const anMehrere = this.spruecheAnMehrere;
+        const anEinzeln = this.spruecheProTeilnehmer - 1 - anAlle - anMehrere;
+
+        // Erstelle einen Pool für alle Nachrichten
+        let alleNachrichten = [];
+
+        this.teilnehmerListe.forEach(teilnehmer => {
+            nachrichtenVerteilung[teilnehmer] = [];
+
+            // Anmeldungsnachricht
+            nachrichtenVerteilung[teilnehmer].push({
+                id: 1,
+                nachricht: "Ich melde mich in Ihrem Sprechfunkverkehrskreis an.",
+                empfaenger: [this.leitung]
+            });
+
+            // Nachrichten an 'Alle'
+            for (let i = 0; i < anAlle; i++) {
+                alleNachrichten.push({
+                    sender: teilnehmer,
+                    nachricht: {
+                        text: this.funksprueche[nachrichtenIndex++ % this.funksprueche.length],
+                        empfaenger: ["Alle"]
+                    }
+                });
+            }
+
+            // Nachrichten an 'Mehrere'
+            for (let i = 0; i < anMehrere; i++) {
+                const empfaengerGruppe = this.getRandomSubsetOfOthers(this.teilnehmerListe, teilnehmer);
+                alleNachrichten.push({
+                    sender: teilnehmer,
+                    nachricht: {
+                        text: this.funksprueche[nachrichtenIndex++ % this.funksprueche.length],
+                        empfaenger: empfaengerGruppe
+                    }
+                });
+            }
+
+            // Einzel-Nachrichten
+            for (let i = 0; i < anEinzeln; i++) {
+                const empfaenger = this.getRandomOther(this.teilnehmerListe, teilnehmer);
+                alleNachrichten.push({
+                    sender: teilnehmer,
+                    nachricht: {
+                        text: this.funksprueche[nachrichtenIndex++ % this.funksprueche.length],
+                        empfaenger: [empfaenger]
+                    }
+                });
+            }
         });
- 
-        // Nachrichten an 'Alle'
-        for (let i = 0; i < anAlle; i++) {
-            nachrichtenVerteilung[teilnehmer].push({
-                id: nachrichtenVerteilung[teilnehmer].length + 1,
-                nachricht: this.funksprueche[nachrichtenIndex++ % this.funksprueche.length],
-                empfaenger: ["Alle"]
+
+        // Mische alle Nachrichten
+        alleNachrichten.sort(() => Math.random() - 0.5);
+
+        // Weisen die Nachrichten wieder zu
+        let tempCounters = {};
+        this.teilnehmerListe.forEach(teilnehmer => tempCounters[teilnehmer] = 2);
+
+        alleNachrichten.forEach(entry => {
+            const { sender, nachricht } = entry;
+            nachrichtenVerteilung[sender].push({
+                id: tempCounters[sender]++,
+                nachricht: nachricht.text,
+                empfaenger: nachricht.empfaenger
             });
-        }
- 
-        // Nachrichten an 'Mehrere'
-        for (let i = 0; i < anMehrere; i++) {
-            const empfaengerGruppe = this.getRandomSubsetOfOthers(this.teilnehmerListe, teilnehmer);
-            nachrichtenVerteilung[teilnehmer].push({
-                id: nachrichtenVerteilung[teilnehmer].length + 1,
-                nachricht: this.funksprueche[nachrichtenIndex++ % this.funksprueche.length],
-                empfaenger: empfaengerGruppe
-            });
-        }
- 
-        // Einzel-Nachrichten
-        for (let i = 0; i < anEinzeln; i++) {
-            const empfaenger = this.getRandomOther(this.teilnehmerListe, teilnehmer);
-            nachrichtenVerteilung[teilnehmer].push({
-                id: nachrichtenVerteilung[teilnehmer].length + 1,
-                nachricht: this.funksprueche[nachrichtenIndex++ % this.funksprueche.length],
-                empfaenger: [empfaenger]
-            });
-        }
-    });
- 
-    return nachrichtenVerteilung;
+        });
+
+        return nachrichtenVerteilung;
     }
     
     /**
