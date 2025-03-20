@@ -231,6 +231,8 @@ export class FunkUebung {
 
         // Mische alle Nachrichten
         alleNachrichten.sort(() => Math.random() - 0.5);
+        // Smarte Durchmischung, sodass Nachrichten an "Alle" oder "Mehrere" nicht hintereinander stehen
+        alleNachrichten = this.shuffleSmart(alleNachrichten);
 
         // Weisen die Nachrichten wieder zu
         let tempCounters = {};
@@ -265,13 +267,17 @@ export class FunkUebung {
     
             istGueltig = true;
             for (let i = 1; i < durchmischteListe.length; i++) {
-                let aktuelleEmpfaenger = new Set(durchmischteListe[i].nachricht.empfaenger);
-                let vorherigeEmpfaenger = new Set(durchmischteListe[i - 1].nachricht.empfaenger);
-    
-                if ([...aktuelleEmpfaenger].some(empf => vorherigeEmpfaenger.has(empf))) {
-                    istGueltig = false;
-                    break;
-                }
+            let aktuelleEmpfaenger = durchmischteListe[i].nachricht.empfaenger;
+            let vorherigeEmpfaenger = durchmischteListe[i - 1].nachricht.empfaenger;
+
+            const beideSindAlleOderMehrere = 
+                (aktuelleEmpfaenger.length > 1 || aktuelleEmpfaenger[0] === "Alle") &&
+                (vorherigeEmpfaenger.length > 1 || vorherigeEmpfaenger[0] === "Alle");
+
+            if (beideSindAlleOderMehrere) {
+                istGueltig = false;
+                break;
+            }
             }
     
             if (istGueltig) {
