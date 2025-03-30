@@ -20,12 +20,14 @@ export class AppController {
             .then(data => {
                 console.log(data);
                 buildInfo = data.buildDate + "-" + data.runNumber + "-" + data.commit;
-                document.getElementById(`version`).innerHTML = buildInfo;
-                this.funkUebung.buildVersion = buildInfo;
+                
 
             })
             .catch(() => {
                 console.warn("⚠️ Build-Info nicht gefunden, setze 'dev'");
+            }).finally(() => {
+                document.getElementById(`version`).innerHTML = buildInfo;
+                this.funkUebung.buildVersion = buildInfo;
             });
 
 
