@@ -19,11 +19,11 @@ export class FunkUebung {
         this.teilnehmerListe = [
             "Heros Oldenburg 16/11",
             "Heros Oldenburg 17/12",
-            "Heros Oldenburg 18/13",
+            /*"Heros Oldenburg 18/13",
             "Heros Jever 21/10",
             "Heros Leer 21/10",
             "Heros Emden 21/10",
-            "Heros Wilhemshaven 21/10"
+            "Heros Wilhemshaven 21/10"*/
         ];
 
         this.htmlSeitenTeilnehmer = [];
