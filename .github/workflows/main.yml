@@ -1,46 +1,44 @@
-name: Generate Build Number
+# Simple workflow for deploying static content to GitHub Pages
+name: Deploy static content to Pages
 
 on:
   push:
-    branches:
-      - main
+    branches: ["main"]
+
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: "pages"
+  cancel-in-progress: false
 
 jobs:
-  update-build-number:
+  deploy:
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
     runs-on: ubuntu-latest
-
     steps:
-      - name: Checkout Repo
-        uses: actions/checkout@v3
+      - name: Checkout
+        uses: actions/checkout@v4
 
-      - name: Set up Node.js
-        uses: actions/setup-node@v3
-        with:
-          node-version: '20'
-
-      - name: Install dependencies
-        run: npm install
-
-      - name: Generate Build Number
+      - name: Create build.json
         run: |
-          echo "🔢 Generating build number"
-          BUILD_NUMBER=$(date +%Y%m%d%H%M%S)
-          echo "{\"build\": \"$BUILD_NUMBER\"}" > public/build.json
-          cat public/build.json
+          echo "📦 Erzeuge build.json mit aktuellem Zeitstempel"
+          echo "{\"build\": \"$(date +%Y%m%d%H%M%S)\"}" > build.json
 
-      - name: Commit and Push Build Number
-        run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add public/build.json
-          git commit -m "🔄 Update build number"
-          git push
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Setup Pages
+        uses: actions/configure-pages@v5
 
-      - name: Deploy to GitHub Pages (optional)
-        if: ${{ success() }}
-        uses: peaceiris/actions-gh-pages@v3
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v3
         with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: ./dist  # Falls du z. B. mit Vite/React arbeitest
+          path: '.'
+
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
