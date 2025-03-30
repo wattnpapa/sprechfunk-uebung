@@ -3,17 +3,6 @@ import { DateFormatter } from "./DateFormatter.js";
 import { FunkUebung } from "./FunkUebung.js";
 import { UebungHTMLGenerator } from './UebungHTMLGenerator.js';
 
-let buildInfo = { build: "dev" };
-
-fetch("build.json")
-  .then(res => res.json())
-  .then(data => {
-    buildInfo = data.buildDate + " " + data.runNumber + " " + data.commit;
-    document.getElementById(`version`).innerHTML = buildInfo;
-  })
-  .catch(() => {
-    console.warn("⚠️ Build-Info nicht gefunden, setze 'dev'");
-  });
 
 
 
@@ -22,7 +11,25 @@ export class AppController {
     constructor() {
         console.log("📌 AppController wurde initialisiert");
 
-        this.funkUebung = new FunkUebung();
+        let buildInfo = "dev";
+
+        this.funkUebung = new FunkUebung(buildInfo);
+
+        fetch("build.json")
+            .then(res => res.json())
+            .then(data => {
+                console.log(data);
+                buildInfo = data.buildDate + "-" + data.runNumber + "-" + data.commit;
+                document.getElementById(`version`).innerHTML = buildInfo;
+                this.funkUebung.buildVersion = buildInfo;
+
+            })
+            .catch(() => {
+                console.warn("⚠️ Build-Info nicht gefunden, setze 'dev'");
+            });
+
+
+        
 
         // Initialisiere Lösungswörter (in Uppercase)
         this.predefinedLoesungswoerter = [
@@ -94,14 +101,14 @@ export class AppController {
     renderTeilnehmer(triggerShuffle = true) {
         const container = document.getElementById("teilnehmer-container");
         container.innerHTML = ""; // Vorherigen Inhalt leeren
-    
+
         let option = document.querySelector('input[name="loesungswortOption"]:checked')?.id;
         let isZentral = option === "zentralLoesungswort";
         let isIndividuell = option === "individuelleLoesungswoerter";
-    
+
         document.getElementById("zentralLoesungswortContainer").style.display = isZentral ? "block" : "none";
         document.getElementById("shuffleButton").style.display = (isZentral || isIndividuell) ? "block" : "none";
-    
+
         container.innerHTML = `
             <table class="table table-bordered">
                 <thead class="table-dark">
@@ -114,23 +121,23 @@ export class AppController {
                 <tbody id="teilnehmer-body"></tbody>
             </table>
         `;
-    
+
         const tbody = document.getElementById("teilnehmer-body");
         if (!tbody) {
             console.error("Fehler: tbody-Element konnte nicht gefunden werden!");
             return;
         }
-    
+
         // **Jeden Teilnehmer rendern**
         this.funkUebung.teilnehmerListe.forEach((teilnehmer, index) => {
             const row = document.createElement("tr");
-    
+
             let loesungswortInput = "";
             if (isIndividuell) {
                 let wort = this.funkUebung.loesungswoerter[teilnehmer] || "";
                 loesungswortInput = `<td><input type="text" class="form-control loesungswort-input" id="loesungswort-${index}" value="${wort}" placeholder="Lösungswort"></td>`;
             }
-    
+
             row.innerHTML = `
                 <td>
                     <input type="text" class="form-control teilnehmer-input" data-index="${index}" value="${teilnehmer}">
@@ -140,7 +147,7 @@ export class AppController {
             `;
             tbody.appendChild(row);
         });
-    
+
         // **Event-Listener für Änderungen an Teilnehmernamen**
         document.querySelectorAll(".teilnehmer-input").forEach(input => {
             input.addEventListener("input", (event) => {
@@ -148,7 +155,7 @@ export class AppController {
                 this.funkUebung.teilnehmerListe[index] = event.target.value;
             });
         });
-    
+
         // **Event-Listener für das Entfernen von Teilnehmern**
         document.querySelectorAll(".delete-teilnehmer").forEach(button => {
             button.addEventListener("click", (event) => {
@@ -156,7 +163,7 @@ export class AppController {
                 this.removeTeilnehmer(index);
             });
         });
-    
+
         // Falls `renderTeilnehmer` von einer Benutzerinteraktion kommt, neu verteilen
         if (triggerShuffle) {
             this.shuffleLoesungswoerter();
@@ -215,7 +222,7 @@ export class AppController {
                         // Wenn die Datei erfolgreich geladen wurde, rufen wir `generateAllPages` auf
                         this.funkUebung.funksprueche = data.split("\n").filter(s => s.trim() !== "");
                         //.sort(() => Math.random() - 0.5);
-                        
+
                         this.generateAllPages();  // Übergebe die geladenen Funksprüche an generateAllPages
                     })
                     .catch(error => console.error('Fehler beim Laden der Vorlage:', error));
@@ -227,7 +234,7 @@ export class AppController {
             const reader = new FileReader();
             reader.onload = function (event) {
                 this.funkUebung.funksprueche = data.split("\n").filter(s => s.trim() !== "");
-    
+
                 this.generateAllPages();
             };
             reader.readAsText(file);
@@ -310,7 +317,7 @@ export class AppController {
         this.htmlSeitenTeilnehmer = [];
         this.funkUebung.erstelle();
         this.funkUebung.teilnehmerListe.map(teilnehmer => {
-            this.htmlSeitenTeilnehmer.push(UebungHTMLGenerator.generateHTMLPage(teilnehmer,this.funkUebung) )
+            this.htmlSeitenTeilnehmer.push(UebungHTMLGenerator.generateHTMLPage(teilnehmer, this.funkUebung))
         });
 
         this.displayPage(this.currentPageIndex);
@@ -369,7 +376,7 @@ export class AppController {
         const isKeine = document.getElementById("keineLoesungswoerter").checked;
         const isZentral = document.getElementById("zentralLoesungswort").checked;
         const isIndividuell = document.getElementById("individuelleLoesungswoerter").checked;
-        
+
         if (isKeine) {
             // Lösungswörter zurücksetzen
             this.funkUebung.loesungswoerter = {};

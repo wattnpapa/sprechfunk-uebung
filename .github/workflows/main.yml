@@ -28,7 +28,7 @@ jobs:
 
       - name: Create build.json with commit SHA and run number
         run: |
-          BUILD_DATE=$(date +%Y%m%d%H%M%S)
+          BUILD_DATE=$(date +%Y%m%d)
           BUILD_TIME=$(date +%H%M%S)
           COMMIT_SHA=$(git rev-parse --short HEAD)
           BUILD_NR=${{ github.run_number }}

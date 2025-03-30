@@ -1,10 +1,11 @@
 export class FunkUebung {
-    constructor() {
+    constructor(buildVersion) {
         
         this.datum = new Date();
         this.name = "Sprechfunkübung Blauer Wind 2025";
         this.rufgruppe = "T_OL_GOLD-1";
         this.leitung = "Heros Wind 10";
+        this.buildVersion = buildVersion;
 
         this.funksprueche = [];
 

@@ -10,7 +10,6 @@ class PDFGenerator {
      * Erstellt die Teilnehmer PDFs.
      */
     generateTeilnehmerPDFs(funkUebung) {
-        const softwareVersion = "1.0.0"; // Versionsnummer hier anpassen
         const generierungszeit = DateFormatter.formatNATODate(new Date()); // NATO-Datum für Fußzeile
 
         funkUebung.teilnehmerListe.forEach(teilnehmer => {
@@ -46,7 +45,7 @@ class PDFGenerator {
             for (let j = 1; j <= totalPages; j++) {
                 pdf.setPage(j);
                 this.drawHeader(pdf, teilnehmer, j, pdfWidth, pageMargin, funkUebung);
-                this.drawFooter(pdf, generierungszeit, softwareVersion, j, totalPages, pdfWidth, pdfHeight, pageMargin);
+                this.drawFooter(pdf, generierungszeit, funkUebung.buildVersion, j, totalPages, pdfWidth, pdfHeight, pageMargin);
             }
 
             // **6. PDF speichern**
@@ -350,7 +349,6 @@ class PDFGenerator {
         const pageMargin = 10;
         const firstTableStartY = 30;
         const secondPageTableTopMargin = 30; // **Garantierter Abstand für Tabellen auf Seite 2+**
-        const softwareVersion = "1.0.0";
         const generierungszeit = DateFormatter.formatNATODate(new Date());
 
         // **1. Kopfzeile für erste Seite**
@@ -393,7 +391,7 @@ class PDFGenerator {
         for (let j = 1; j <= totalPages; j++) {
             pdf.setPage(j);
             this.drawHeader(pdf, "Übungsleitung", j, pdfWidth, pageMargin, funkUebung);
-            this.drawFooter(pdf, generierungszeit, softwareVersion, j, totalPages, pdfWidth, pdfHeight, pageMargin);
+            this.drawFooter(pdf, generierungszeit, funkUebung.buildVersion, j, totalPages, pdfWidth, pdfHeight, pageMargin);
         }
 
         pdf.save("Uebungsleitung.pdf");
