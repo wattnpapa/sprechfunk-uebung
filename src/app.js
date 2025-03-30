@@ -9,6 +9,7 @@ fetch("build.json")
   .then(res => res.json())
   .then(data => {
     buildInfo = data;
+    console.log(buildInfo);
   })
   .catch(() => {
     console.warn("⚠️ Build-Info nicht gefunden, setze 'dev'");
