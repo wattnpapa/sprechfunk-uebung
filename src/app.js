@@ -3,6 +3,19 @@ import { DateFormatter } from "./DateFormatter.js";
 import { FunkUebung } from "./FunkUebung.js";
 import { UebungHTMLGenerator } from './UebungHTMLGenerator.js';
 
+let buildInfo = { build: "dev" };
+
+fetch("build.json")
+  .then(res => res.json())
+  .then(data => {
+    buildInfo = data;
+  })
+  .catch(() => {
+    console.warn("⚠️ Build-Info nicht gefunden, setze 'dev'");
+  });
+
+document.getElementById(`version`).innerHTML = buildInfo.build;
+
 export class AppController {
 
     constructor() {

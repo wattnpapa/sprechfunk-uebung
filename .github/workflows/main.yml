@@ -1,0 +1,3 @@
+- name: Generate build info
+  run: |
+    echo "{\"build\":\"${{ github.run_number }}\",\"date\":\"$(date -u +'%Y-%m-%dT%H:%M:%SZ')\"}" > ./public/build.json
