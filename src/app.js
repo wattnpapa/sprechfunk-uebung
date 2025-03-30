@@ -9,13 +9,13 @@ fetch("build.json")
   .then(res => res.json())
   .then(data => {
     buildInfo = data;
-    console.log(buildInfo);
+    document.getElementById(`version`).innerHTML = buildInfo.build;
   })
   .catch(() => {
     console.warn("⚠️ Build-Info nicht gefunden, setze 'dev'");
   });
 
-document.getElementById(`version`).innerHTML = buildInfo.build;
+
 
 export class AppController {
 
