@@ -8,8 +8,8 @@ let buildInfo = { build: "dev" };
 fetch("build.json")
   .then(res => res.json())
   .then(data => {
-    buildInfo = data;
-    document.getElementById(`version`).innerHTML = buildInfo.build;
+    buildInfo = data.buildDate + " " + data.runNumber + " " + data.commit;
+    document.getElementById(`version`).innerHTML = buildInfo;
   })
   .catch(() => {
     console.warn("⚠️ Build-Info nicht gefunden, setze 'dev'");

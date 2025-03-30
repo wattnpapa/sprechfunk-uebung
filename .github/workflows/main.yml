@@ -26,10 +26,14 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Create build.json
+      - name: Create build.json with commit SHA and run number
         run: |
-          echo "📦 Erzeuge build.json mit aktuellem Zeitstempel"
-          echo "{\"build\": \"$(date +%Y%m%d%H%M%S)\"}" > build.json
+          BUILD_DATE=$(date +%Y%m%d%H%M%S)
+          BUILD_TIME=$(date +%H%M%S)
+          COMMIT_SHA=$(git rev-parse --short HEAD)
+          BUILD_NR=${{ github.run_number }}
+          echo "📦 Generiere build.json"
+          echo "{\"buildDate\":\"$BUILD_DATE\",\"buildTime\":\"$BUILD_TIME\",\"commit\":\"$COMMIT_SHA\",\"runNumber\":$BUILD_NR}" > build.json
 
       - name: Setup Pages
         uses: actions/configure-pages@v5
