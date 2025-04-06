@@ -6,11 +6,29 @@ class PDFGenerator {
         this.jsPDF = window.jspdf.jsPDF; // Zugriff auf jsPDF
     }
 
+    generateTeilnehmerPDFs(funkUebung) {
+        this.generateTeilnehmerPDFsBlob(funkUebung).then(blobMap => {
+            blobMap.forEach((blob, teilnehmer) => {
+                const fileName = `${teilnehmer}.pdf`;
+                const link = document.createElement("a");
+                link.href = URL.createObjectURL(blob);
+                link.download = fileName;
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+                URL.revokeObjectURL(link.href);
+            });
+    
+            alert("Alle Teilnehmer PDFs wurden erfolgreich erstellt!");
+        });
+    }
+
     /**
      * Erstellt die Teilnehmer PDFs.
      */
-    generateTeilnehmerPDFs(funkUebung) {
+    async generateTeilnehmerPDFsBlob(funkUebung) {
         const generierungszeit = DateFormatter.formatNATODate(new Date()); // NATO-Datum für Fußzeile
+        const blobMap = new Map();
 
         funkUebung.teilnehmerListe.forEach(teilnehmer => {
 
@@ -49,10 +67,11 @@ class PDFGenerator {
             }
 
             // **6. PDF speichern**
-            pdf.save(`${teilnehmer}.pdf`);
+            const blob = pdf.output("blob");
+            blobMap.set(teilnehmer, blob);
         });
 
-        alert("Alle Teilnehmer PDFs wurden erfolgreich erstellt!");
+        return blobMap;
     }
 
     /**
@@ -200,14 +219,32 @@ class PDFGenerator {
         pdf.textWithLink(leftText, pageMargin, pdfHeight - 10, { url: "https://wattnpapa.github.io/sprechfunk-uebung/" });
     }
 
+    generateNachrichtenvordruckPDFs(funkUebung) {
+        this.generateNachrichtenvordruckPDFsBlob(funkUebung).then(blobMap => {
+            blobMap.forEach((blob, teilnehmer) => {
+                const fileName = `Nachrichtenvordruck_${teilnehmer}.pdf`;
+                const link = document.createElement("a");
+                link.href = URL.createObjectURL(blob);
+                link.download = fileName;
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+                URL.revokeObjectURL(link.href);
+            });
+    
+            alert("Alle Nachrichtenvordruck PDFs wurden erfolgreich erstellt!");
+        });
+    }
+
     /**
      * Erstellt die Nachrichtenvordruck PDFs.
      */
-    generateNachrichtenvordruckPDFs(funkUebung) {
+    async generateNachrichtenvordruckPDFsBlob(funkUebung) {
         const templateImageUrl = 'assets/nachrichtenvordruck4fach.png';
         const maxWidth = 120; // Maximale Breite für die Nachricht
         const maxWidthAnschrift = 70; // Maximale Breite für Anschrift
         const maxWidthRufname = 70; // Maximale Breite für Rufname der Gegenstelle
+        const blobMap = new Map();
         funkUebung.teilnehmerListe.forEach(teilnehmer => {
             let nachrichten = funkUebung.nachrichten[teilnehmer];
 
@@ -255,21 +292,39 @@ class PDFGenerator {
                 if (index < nachrichten.length - 1) pdf.addPage();
             });
 
-            pdf.save(`Nachrichtenvordruck_${teilnehmer}.pdf`);
+            const blob = pdf.output("blob");
+            blobMap.set(teilnehmer, blob);
         });
 
-        alert("Alle Nachrichtenvordruck PDFs wurden erfolgreich erstellt!");
+        return blobMap;
+    }
+
+    generateMeldevordruckPDFs(funkUebung) {
+        this.generateMeldevordruckPDFsBlob(funkUebung).then(blobMap => {
+            blobMap.forEach((blob, teilnehmer) => {
+                const fileName = `Meldevordruck_${teilnehmer}.pdf`;
+                const link = document.createElement("a");
+                link.href = URL.createObjectURL(blob);
+                link.download = fileName;
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+                URL.revokeObjectURL(link.href);
+            });
+    
+            alert("Alle Meldevorduck PDFs wurden erfolgreich erstellt!");
+        });
     }
 
     /**
      * Erstellt die Meldevordruck PDFs für alle Teilnehmer.
      */
-    generateMeldevordruckPDFs(funkUebung) {
+    async generateMeldevordruckPDFsBlob(funkUebung) {
         const templateImageUrl = 'assets/meldevordruck.png';
         const maxWidth = 120; // Maximale Breite für die Nachricht
         const maxWidthAnschrift = 70; // Maximale Breite für Anschrift
         const maxWidthRufname = 70; // Maximale Breite für Rufname der Gegenstelle
-
+        const blobMap = new Map();
         funkUebung.teilnehmerListe.forEach(teilnehmer => {
             let nachrichten = funkUebung.nachrichten[teilnehmer];
 
@@ -316,10 +371,11 @@ class PDFGenerator {
                 }
             });
 
-            pdf.save(`Meldevordruck_${teilnehmer}.pdf`);
+            const blob = pdf.output("blob");
+            blobMap.set(teilnehmer, blob);
         });
 
-        alert("Meldevordruck PDFs wurden erfolgreich erstellt!");
+        return blobMap;
     }
 
     /**
@@ -338,10 +394,22 @@ class PDFGenerator {
         pdf.text(text, x, y);
     }
 
+
+    generateInstructorPDF(funkUebung) {
+        const blob = this.generateInstructorPDFBlob(funkUebung);
+        const link = document.createElement("a");
+        link.href = URL.createObjectURL(blob);
+        link.download = `Uebungsleitung.pdf`;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        URL.revokeObjectURL(link.href);
+    }
+
     /**
      * Erstellt das PDF für die Übungsleitung.
      */
-    generateInstructorPDF(funkUebung) {
+    generateInstructorPDFBlob(funkUebung) {
         let pdf = new this.jsPDF({ orientation: "landscape", unit: "mm", format: "a4" });
 
         const pdfWidth = pdf.internal.pageSize.getWidth();
@@ -453,7 +521,6 @@ class PDFGenerator {
                             data.doc.setDrawColor(0);
                             data.doc.setLineWidth(0.75); // Dicker als Standard
                             data.doc.line(startX, lineY, endX, lineY);
-                            console.log((startX, lineY, endX, lineY));
                         }
                     }
                 }
@@ -468,7 +535,7 @@ class PDFGenerator {
             this.drawFooter(pdf, generierungszeit, funkUebung.buildVersion, j, totalPages, pdfWidth, pdfHeight, pageMargin);
         }
 
-        pdf.save("Uebungsleitung.pdf");
+        return pdf.output("blob");
     }
 
     /**
@@ -509,6 +576,46 @@ class PDFGenerator {
             theme: "grid",
             styles: { fontSize: 10 }
         });
+    }
+
+    sanitizeFileName(name) {
+        return name.replace(/[\/\\:*?"<>|]/g, "-");
+    }
+
+    async generateAllPDFsAsZip(funkUebung) {
+        const zip = new JSZip();
+
+        // Teilnehmer-PDFs
+        const teilnehmerBlobs = await this.generateTeilnehmerPDFsBlob(funkUebung);
+        teilnehmerBlobs.forEach((blob, teilnehmer) => {
+            zip.file(`Teilnehmer/${this.sanitizeFileName(teilnehmer)}.pdf`, blob);
+        });
+
+        // Instructor PDF
+        const instructorBlob = this.generateInstructorPDFBlob(funkUebung);
+        zip.file(`Uebungsleitung.pdf`, instructorBlob);
+
+        // Nachrichtenvordrucke
+        const nachrichtenvordruckBlobs = await this.generateNachrichtenvordruckPDFsBlob(funkUebung);
+        nachrichtenvordruckBlobs.forEach((blob, teilnehmer) => {
+            zip.file(`Teilnehmer/Nachrichtenvordruck/${this.sanitizeFileName(teilnehmer)}.pdf`, blob);
+        });
+
+        // Meldevordrucke
+        const meldevordruckBlobs = await this.generateMeldevordruckPDFsBlob(funkUebung);
+        meldevordruckBlobs.forEach((blob, teilnehmer) => {
+            zip.file(`Teilnehmer/Meldevordruck/${this.sanitizeFileName(teilnehmer)}.pdf`, blob);
+        });
+
+        const zipBlob = await zip.generateAsync({ type: "blob" });
+
+        const link = document.createElement("a");
+        link.href = URL.createObjectURL(zipBlob);
+        link.download = `sprechfunk-uebung_${DateFormatter.formatNATODate(new Date())}.zip`;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        URL.revokeObjectURL(link.href);
     }
 
 }

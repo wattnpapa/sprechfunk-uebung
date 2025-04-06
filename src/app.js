@@ -744,3 +744,4 @@ export class AppController {
 }
 
 window.app = new AppController();
+window.pdfGenerator = pdfGenerator;
