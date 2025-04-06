@@ -83,7 +83,7 @@ class PDFGenerator {
             margin: { left: marginLeft },
             tableWidth: width,
             theme: "grid",
-            styles: { fontSize: 10, cellPadding: 3, lineWidth: 0.5 },
+            styles: { fontSize: 10, cellPadding: 3, lineWidth: 0.1 , lineColor: [0, 0, 0] },
             headStyles: { fillColor: [200, 200, 200] }
         });
     }
@@ -109,7 +109,7 @@ class PDFGenerator {
                 1: { cellWidth: columnWidths[1] },
                 2: { cellWidth: columnWidths[2] }
             },
-            styles: { fontSize: 10, cellPadding: 1.5, lineWidth: 0.5 },
+            styles: { fontSize: 10, cellPadding: 1.5, lineWidth: 0.1 , lineColor: [0, 0, 0] },
             headStyles: { fillColor: [200, 200, 200] }
         });
     }
@@ -146,7 +146,7 @@ class PDFGenerator {
             margin: { left: marginLeft },
             tableWidth: width,
             theme: "grid",
-            styles: { fontSize: 10, cellPadding: 3, lineWidth: 0.5 },
+            styles: { fontSize: 10, cellPadding: 3, lineWidth: 0.1 , lineColor: [0, 0, 0] },
             headStyles: { fillColor: [200, 200, 200] }
         });
     }
@@ -350,6 +350,7 @@ class PDFGenerator {
         const firstTableStartY = 30;
         const secondPageTableTopMargin = 30; // **Garantierter Abstand für Tabellen auf Seite 2+**
         const generierungszeit = DateFormatter.formatNATODate(new Date());
+        const tableFontSize = 8;
 
         // **1. Kopfzeile für erste Seite**
         this.drawFirstPageHeader(pdf, funkUebung, "Übungsleitung", pdfWidth);
@@ -382,8 +383,81 @@ class PDFGenerator {
                 2: { cellWidth: columnWidths[2] },
                 3: { cellWidth: columnWidths[3] }
             },
-            styles: { fontSize: 10, cellPadding: 3, lineWidth: 0.5 },
+            styles: { fontSize: tableFontSize, cellPadding: 3, lineWidth: 0.1 , lineColor: [0, 0, 0] },
             headStyles: { fillColor: [200, 200, 200] }
+        });
+
+        //Funksprüche der Teilnehmer
+        // Funksprüche aller Teilnehmer sammeln
+        let alleNachrichten = [];
+        funkUebung.teilnehmerListe.forEach(sender => {
+            let nachrichten = funkUebung.nachrichten[sender];
+            if (!Array.isArray(nachrichten)) return;
+            nachrichten.forEach((nachricht, index) => {
+                alleNachrichten.push({
+                    nr: index + 1,
+                    sender,
+                    empfaenger: nachricht.empfaenger.join("\n"),
+                    nachricht: nachricht.nachricht
+                });
+            });
+        });
+
+        // Sortieren: zuerst nach Nr, dann Sender
+        alleNachrichten.sort((a, b) => a.nr - b.nr || a.sender.localeCompare(b.sender));
+
+        // Tabelle vorbereiten
+        const tableData = alleNachrichten.map(n => [n.nr, n.sender, n.empfaenger, n.nachricht, ""]);
+
+        let tableWidth = pdfWidth - 2 * pageMargin;
+        let empfaengerWidth = tableWidth * 0.20;
+        let lfdnrWidth = 12;
+        let withCheckBox = 12;
+        let columnWidthsAll = [lfdnrWidth, empfaengerWidth, empfaengerWidth, tableWidth - lfdnrWidth - (empfaengerWidth * 2)- withCheckBox];
+        
+        // Neuen Y-Startpunkt nach der Teilnehmer-Tabelle
+        pdf.addPage();
+        let nextTableStartY = secondPageTableTopMargin; 
+
+        let lastNrValue = null;
+
+        pdf.autoTable({
+            head: [["Nr", "Sender", "Empfänger", "Nachricht", "Zeit"]],
+            body: tableData,
+            startY: nextTableStartY,
+            theme: "grid",
+            margin: { left: pageMargin, top: secondPageTableTopMargin, bottom: 25 },
+            tableWidth: tableWidth,
+            columnStyles: {
+                0: { cellWidth: columnWidthsAll[0] },
+                1: { cellWidth: columnWidthsAll[1] },
+                2: { cellWidth: columnWidthsAll[2] },
+                3: { cellWidth: columnWidthsAll[3] },
+                4: { cellWidth: columnWidthsAll[4] }
+            },
+            styles: { fontSize: tableFontSize, cellPadding: 1.5, lineWidth: 0.1, lineColor: [0, 0, 0] },
+            headStyles: { fillColor: [200, 200, 200] },
+            didDrawCell: function (data) {
+                if (data.section === 'body' && data.column.index === 0) {
+                    const currentNr = data.cell.raw;
+            
+                    if (currentNr !== lastNrValue) {
+                        lastNrValue = currentNr;
+            
+                        const startX = data.cell.x;
+                        const endX = startX + data.cell.width + data.table.columns.slice(1).reduce((sum, col) => sum + col.width, 0);
+                        const y = data.cell.y;
+            
+                        if (typeof startX === "number" && typeof endX === "number" && typeof y === "number") {
+                            const lineY = y; // Linie direkt über der Zelle
+                            data.doc.setDrawColor(0);
+                            data.doc.setLineWidth(0.75); // Dicker als Standard
+                            data.doc.line(startX, lineY, endX, lineY);
+                            console.log((startX, lineY, endX, lineY));
+                        }
+                    }
+                }
+            }
         });
 
         // **4. Kopf- und Fußzeilen für alle Seiten**
