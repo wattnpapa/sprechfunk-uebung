@@ -47,8 +47,9 @@ export class AppController {
 
         // Vorlagen für Funksprüche
         this.templatesFunksprueche = {
-            vorlage1: { text: "Kurze Funksprüche", filename: "funksprueche_normal.txt" },
-            vorlage2: { text: "Lange Funksprüche", filename: "funksprueche_lang.txt" }
+            vorlage1: { text: "Kurze Funksprüche", filename: "assets/funksprueche/funksprueche_normal.txt" },
+            vorlage2: { text: "Lange Funksprüche", filename: "assets/funksprueche/funksprueche_lang.txt" },
+            vorlage3: { text: "Lustige Funksprüche", filename: "assets/funksprueche/funksprueche_lustig_kreativ.txt" }
         };
 
         // Weitere Variablen für die Übung
@@ -209,7 +210,26 @@ export class AppController {
         this.readLoesungswoerter();
 
         // Wenn eine Vorlage aus der select-Box ausgewählt wurde (nicht "Manuelle Datei hochladen")
-        if (selectedTemplate !== "upload") {
+        if (selectedTemplate === "mix_all") {
+            const allTemplates = Object.values(this.templatesFunksprueche);
+            const fetchPromises = allTemplates.map(tpl =>
+                fetch(tpl.filename).then(res => res.text())
+            );
+        
+            Promise.all(fetchPromises)
+                .then(results => {
+                    // Mische alle Zeilen aus allen Dateien
+                    this.funkUebung.funksprueche = results
+                        .flatMap(text => text.split("\n").filter(s => s.trim() !== ""))
+                        .sort(() => Math.random() - 0.5)
+                        .sort(() => Math.random() - 0.5);
+        
+                    this.generateAllPages();
+                })
+                .catch(error => console.error("Fehler beim Laden mehrerer Vorlagen:", error));
+        
+        }
+        else if (selectedTemplate !== "upload") {
             // Holen Sie sich die Vorlage basierend auf dem Auswahlwert
             const template = this.templatesFunksprueche[selectedTemplate];
 
@@ -637,6 +657,11 @@ export class AppController {
     // Funktion zum Befüllen der Select-Box mit den Vorlagen
     populateTemplateSelectBox() {
         const selectBox = document.getElementById("funkspruchVorlage");
+
+        const mixedOption = document.createElement("option");
+        mixedOption.value = "mix_all";
+        mixedOption.textContent = "Alle Vorlagen mischen";
+        selectBox.appendChild(mixedOption);
 
         // Iteriere durch die Vorlagen und füge sie der Select-Box hinzu
         for (const [key, value] of Object.entries(this.templatesFunksprueche)) {
