@@ -221,7 +221,7 @@ export class AppController {
                     // Mische alle Zeilen aus allen Dateien
                     this.funkUebung.funksprueche = results
                         .flatMap(text => text.split("\n").filter(s => s.trim() !== ""))
-                        .sort(() => Math.random() - 0.5)
+                        .sort(() => Math.random() - 0.5)    
                         .sort(() => Math.random() - 0.5);
         
                     this.generateAllPages();
