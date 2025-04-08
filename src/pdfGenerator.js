@@ -63,7 +63,7 @@ class PDFGenerator {
             for (let j = 1; j <= totalPages; j++) {
                 pdf.setPage(j);
                 this.drawHeader(pdf, teilnehmer, j, pdfWidth, pageMargin, funkUebung);
-                this.drawFooter(pdf, generierungszeit, funkUebung.buildVersion, j, totalPages, pdfWidth, pdfHeight, pageMargin);
+                this.drawFooter(pdf, generierungszeit, funkUebung, j, totalPages, pdfWidth, pdfHeight, pageMargin);
             }
 
             // **6. PDF speichern**
@@ -196,7 +196,7 @@ class PDFGenerator {
     /**
      * Erstellt die Fußzeile auf allen Seiten.
      */
-    drawFooter(pdf, generierungszeit, softwareVersion, pageNumber, totalPages, pdfWidth, pdfHeight, pageMargin) {
+    drawFooter(pdf, generierungszeit, funkUebung, pageNumber, totalPages, pdfWidth, pdfHeight, pageMargin) {
         pdf.setFont("helvetica", "normal");
         pdf.setFontSize(8);
 
@@ -215,7 +215,7 @@ class PDFGenerator {
 
         // Link und Copyright-Infos linksbündig
         pdf.setFontSize(6);
-        let leftText = `© Johannes Rudolph | Version ${softwareVersion} | Generiert: ${generierungszeit} | Generator: https://wattnpapa.github.io/sprechfunk-uebung`;
+        let leftText = `© Johannes Rudolph | Version ${funkUebung.buildVersion} | Übung ID: ${funkUebung.id} | Generiert: ${generierungszeit} | Generator: https://wattnpapa.github.io/sprechfunk-uebung`;
         pdf.textWithLink(leftText, pageMargin, pdfHeight - 10, { url: "https://wattnpapa.github.io/sprechfunk-uebung/" });
     }
 
@@ -532,7 +532,7 @@ class PDFGenerator {
         for (let j = 1; j <= totalPages; j++) {
             pdf.setPage(j);
             this.drawHeader(pdf, "Übungsleitung", j, pdfWidth, pageMargin, funkUebung);
-            this.drawFooter(pdf, generierungszeit, funkUebung.buildVersion, j, totalPages, pdfWidth, pdfHeight, pageMargin);
+            this.drawFooter(pdf, generierungszeit, funkUebung, j, totalPages, pdfWidth, pdfHeight, pageMargin);
         }
 
         return pdf.output("blob");

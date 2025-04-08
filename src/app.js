@@ -15,6 +15,8 @@ export class AppController {
 
         this.funkUebung = new FunkUebung(buildInfo);
 
+        document.getElementById("uebungsId").textContent = this.funkUebung.id;
+
         fetch("build.json")
             .then(res => res.json())
             .then(data => {
