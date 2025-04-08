@@ -1,6 +1,9 @@
+import { v4 as uuidv4 } from 'https://jspm.dev/uuid';
+
 export class FunkUebung {
     constructor(buildVersion) {
-        
+        this.id = uuidv4();
+
         this.datum = new Date();
         this.name = "Sprechfunkübung Blauer Wind 2025";
         this.rufgruppe = "T_OL_GOLD-1";
@@ -8,7 +11,6 @@ export class FunkUebung {
         this.buildVersion = buildVersion;
 
         this.funksprueche = [];
-
         this.nachrichten = [];
 
         this.spruecheProTeilnehmer = 10;
@@ -28,7 +30,6 @@ export class FunkUebung {
         ];
 
         this.htmlSeitenTeilnehmer = [];
-
         this.checksumme = "";
     }
 
@@ -38,16 +39,37 @@ export class FunkUebung {
             name: this.name,
             rufgruppe: this.rufgruppe,
             leitung: this.leitung,
-            funksprueche: this.funksprueche,
+            //funksprueche: this.funksprueche,
             spruecheProTeilnehmer: this.spruecheProTeilnehmer,
             spruecheAnAlle: this.spruecheAnAlle,
             spruecheAnMehrere: this.spruecheAnMehrere,
             loesungswoerter: this.loesungswoerter,
             teilnehmerListe: this.teilnehmerListe,
-            htmlSeitenTeilnehmer: this.htmlSeitenTeilnehmer
+            htmlSeitenTeilnehmer: this.htmlSeitenTeilnehmer,
+            nachrichten: this.nachrichten
         });
 
-        this.checksumme = md5(data);
+        this.checksumme = CryptoJS.MD5(data).toString();
+    }
+
+    toJson() {
+        this.updateChecksum();
+        return JSON.stringify({
+            id: this.id,
+            checksumme: this.checksumme,
+            name: this.name,
+            datum: this.datum,
+            rufgruppe: this.rufgruppe,
+            leitung: this.leitung,
+            buildVersion: this.buildVersion,
+            //funksprueche: this.funksprueche,
+            teilnehmerListe: this.teilnehmerListe,
+            nachrichten: this.nachrichten,
+            loesungswoerter: this.loesungswoerter,
+            spruecheProTeilnehmer: this.spruecheProTeilnehmer,
+            spruecheAnAlle: this.spruecheAnAlle,
+            spruecheAnMehrere: this.spruecheAnMehrere
+        }, null, 2); // Pretty Print
     }
 
     erstelle() {

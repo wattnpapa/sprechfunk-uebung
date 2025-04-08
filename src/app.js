@@ -766,6 +766,22 @@ export class AppController {
             }
         });
     }
+
+    exportUebungAsJSON() {    
+        document.getElementById("jsonOutput").textContent = this.funkUebung.toJson();
+    
+        const modal = new bootstrap.Modal(document.getElementById('jsonModal'));
+        modal.show();
+    }
+    
+    copyJSONToClipboard() {
+        const text = document.getElementById("jsonOutput").textContent;
+        navigator.clipboard.writeText(text).then(() => {
+            alert("✅ JSON wurde in die Zwischenablage kopiert!");
+        }).catch(err => {
+            alert("❌ Fehler beim Kopieren: " + err);
+        });
+    }
 }
 
 window.app = new AppController();
