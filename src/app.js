@@ -95,7 +95,7 @@ export class AppController {
         document.getElementById("spruecheProTeilnehmer").value = this.funkUebung.spruecheProTeilnehmer;
         document.getElementById("spruecheAnAlle").value = this.funkUebung.spruecheAnAlle;
         document.getElementById("spruecheAnMehrere").value = this.funkUebung.spruecheAnMehrere;
-        document.getElementById("spruecheBuchstabieren").value = this.funkUebung.buchstabierenAn;
+        document.getElementById("spruecheAnBuchstabieren").value = this.funkUebung.buchstabierenAn;
  
         // Prozentanzeige aktualisieren
         const total = this.funkUebung.spruecheProTeilnehmer * this.funkUebung.teilnehmerListe.length;
@@ -112,6 +112,22 @@ export class AppController {
         document.getElementById("nameDerUebung").value = this.funkUebung.name;
 
         this.renderTeilnehmer();
+
+        document.addEventListener("DOMContentLoaded", () => {
+            const inputBindings = [
+                { id: "spruecheProTeilnehmer", handler: () => this.updateVerteilung() },
+                { id: "prozentAnAlle", handler: () => this.updateAbsolute('alle') },
+                { id: "prozentAnMehrere", handler: () => this.updateAbsolute('mehrere') },
+                { id: "prozentAnBuchstabieren", handler: () => this.updateAbsolute('buchstabieren') }
+            ];
+        
+            inputBindings.forEach(({ id, handler }) => {
+                const el = document.getElementById(id);
+                if (el) {
+                    el.addEventListener("input", handler);
+                }
+            });
+        });
     }
 
     renderTeilnehmer(triggerShuffle = true) {

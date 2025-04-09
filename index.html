@@ -236,8 +236,7 @@
                             <!-- Anzahl Funksprüche pro Teilnehmer -->
                             <div class="col-md-6 mb-3">
                                 <label class="form-label">Funksprüche pro Teilnehmer:</label>
-                                <input type="number" class="form-control" id="spruecheProTeilnehmer" min="1" value="50"
-                                    oninput="app.updateVerteilung()">
+                                <input type="number" class="form-control" id="spruecheProTeilnehmer" min="1" value="50">
                             </div>
 
                             <!-- Nachrichten an alle -->
@@ -245,7 +244,7 @@
                                 <label class="form-label">% an Alle:</label>
                                 <div class="input-group">
                                     <input type="number" class="form-control" id="prozentAnAlle" min="0" max="100"
-                                        value="10" oninput="app.updateAbsolute('alle')">
+                                        value="10" >
                                     <span class="input-group-text">%</span>
                                 </div>
                                 <small class="text-muted">Ergibt <span id="calcAnAlle">5</span> Nachrichten</small>
@@ -256,7 +255,7 @@
                                 <label class="form-label">% an Mehrere:</label>
                                 <div class="input-group">
                                     <input type="number" class="form-control" id="prozentAnMehrere" min="0" max="100"
-                                        value="5" oninput="app.updateAbsolute('mehrere')">
+                                        value="5">
                                     <span class="input-group-text">%</span>
                                 </div>
                                 <small class="text-muted">Ergibt <span id="calcAnMehrere">2</span> Nachrichten</small>
@@ -267,11 +266,11 @@
                                 <label class="form-label">% Buchstabier-Aufgaben:</label>
                                 <div class="input-group">
                                     <input type="number" class="form-control" id="prozentAnBuchstabieren" min="0" max="100"
-                                        value="0" oninput="app.updateAbsolute('buchstabieren')">
+                                        value="0">
                                     <span class="input-group-text">%</span>
                                 </div>
                                 <small class="text-muted">Ergibt <span id="calcAnBuchstabieren">0</span> Nachrichten</small>
-                                <input type="hidden" id="spruecheBuchstabieren" value="0">
+                                <input type="hidden" id="spruecheAnBuchstabieren" value="0">
                             </div>
                         </div>
 
