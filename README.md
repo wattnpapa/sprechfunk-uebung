@@ -1,7 +1,7 @@
 # 📡 Sprechfunk Übungsgenerator
 
 [![GitHub](https://img.shields.io/badge/GitHub-Repository-blue?logo=github)](https://github.com/wattnpapa/sprechfunk-uebung)
-[![Live Demo](https://img.shields.io/badge/Demo-Online-green)](https://wattnpapa.github.io/sprechfunk-uebung/)
+[![Live Demo](https://img.shields.io/badge/Demo-Online-green)](https://sprechfunk-uebung.de//)
 
 Ein **Web-Tool zur automatischen Generierung von Sprechfunk-Übungen** mit individuellen Funksprüchen für jeden Teilnehmer.  
 Erstellt druckbare **PDF-Dokumente** für Teilnehmer inkl. Funknachrichten und exportiert sie direkt.
@@ -20,7 +20,7 @@ Erstellt druckbare **PDF-Dokumente** für Teilnehmer inkl. Funknachrichten und e
 ---
 
 ## 🖥 **Live-Version**
-👉 **[Hier ausprobieren](https://wattnpapa.github.io/sprechfunk-uebung/)**
+👉 **[Hier ausprobieren](https://sprechfunk-uebung.de//)**
 
 # 📖 Anleitung – Sprechfunk Übungsgenerator
 

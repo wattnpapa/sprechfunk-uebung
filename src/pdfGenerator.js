@@ -216,8 +216,8 @@ class PDFGenerator {
 
         // Link und Copyright-Infos linksbündig
         pdf.setFontSize(6);
-        let leftText = `© Johannes Rudolph | Version ${funkUebung.buildVersion} | Übung ID: ${funkUebung.id} | Generiert: ${generierungszeit} | Generator: https://wattnpapa.github.io/sprechfunk-uebung`;
-        pdf.textWithLink(leftText, pageMargin, pdfHeight - 10, { url: "https://wattnpapa.github.io/sprechfunk-uebung/" });
+        let leftText = `© Johannes Rudolph | Version ${funkUebung.buildVersion} | Übung ID: ${funkUebung.id} | Generiert: ${generierungszeit} | Generator: https://sprechfunk-uebung.de/`;
+        pdf.textWithLink(leftText, pageMargin, pdfHeight - 10, { url: "https://sprechfunk-uebung.de//" });
     }
 
     generateNachrichtenvordruckPDFs(funkUebung) {
@@ -603,7 +603,7 @@ class PDFGenerator {
         
         // Vertikaler Text (90° gedreht) an der rechten Seite (5 mm vom rechten Rand)
         pdf.setFontSize(6);
-        let rightText = `© Johannes Rudolph | Version ${funkUebung.buildVersion} | Übung ID: ${funkUebung.id} | Generiert: ${generierungszeit} | Generator: https://wattnpapa.github.io/sprechfunk-uebung`;
+        let rightText = `© Johannes Rudolph | Version ${funkUebung.buildVersion} | Übung ID: ${funkUebung.id} | Generiert: ${generierungszeit} | Generator: https://sprechfunk-uebung.de/`;
         pdf.text(rightText, pdfWidth - 3, pdfHeight-5, { angle: 90, align: "left" });
     }
 
