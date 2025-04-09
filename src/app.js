@@ -71,6 +71,7 @@ export class AppController {
     updateVerteilung() {
         this.updateAbsolute('alle');
         this.updateAbsolute('mehrere');
+        this.updateAbsolute('buchstabieren');
     }
 
     updateAbsolute(type) {
@@ -94,6 +95,18 @@ export class AppController {
         document.getElementById("spruecheProTeilnehmer").value = this.funkUebung.spruecheProTeilnehmer;
         document.getElementById("spruecheAnAlle").value = this.funkUebung.spruecheAnAlle;
         document.getElementById("spruecheAnMehrere").value = this.funkUebung.spruecheAnMehrere;
+        document.getElementById("spruecheBuchstabieren").value = this.funkUebung.buchstabierenAn;
+ 
+        // Prozentanzeige aktualisieren
+        const total = this.funkUebung.spruecheProTeilnehmer * this.funkUebung.teilnehmerListe.length;
+        document.getElementById("calcAnAlle").innerText = this.funkUebung.spruecheAnAlle;
+        document.getElementById("calcAnMehrere").innerText = this.funkUebung.spruecheAnMehrere;
+        document.getElementById("calcAnBuchstabieren").innerText = this.funkUebung.buchstabierenAn;
+ 
+        document.getElementById("prozentAnAlle").value = Math.round((this.funkUebung.spruecheAnAlle / this.funkUebung.spruecheProTeilnehmer) * 100);
+        document.getElementById("prozentAnMehrere").value = Math.round((this.funkUebung.spruecheAnMehrere / this.funkUebung.spruecheProTeilnehmer) * 100);
+        document.getElementById("prozentAnBuchstabieren").value = Math.round((this.funkUebung.buchstabierenAn / this.funkUebung.spruecheProTeilnehmer) * 100);
+ 
         document.getElementById("leitung").value = this.funkUebung.leitung;
         document.getElementById("rufgruppe").value = this.funkUebung.rufgruppe;
         document.getElementById("nameDerUebung").value = this.funkUebung.name;
@@ -373,7 +386,6 @@ export class AppController {
     }
 
     generatePDFs() {
-        console.log(this.funkUebung.datum)
         pdfGenerator.generateTeilnehmerPDFs(this.funkUebung);
     }
 

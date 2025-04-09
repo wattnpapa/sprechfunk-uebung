@@ -14,8 +14,9 @@ export class FunkUebung {
         this.nachrichten = [];
 
         this.spruecheProTeilnehmer = 10;
-        this.spruecheAnAlle = 3;
-        this.spruecheAnMehrere = 2;
+        this.spruecheAnAlle = 1;
+        this.spruecheAnMehrere = 3;
+        this.buchstabierenAn = 5;
 
         this.loesungswoerter = {};
 
@@ -42,6 +43,7 @@ export class FunkUebung {
             spruecheProTeilnehmer: this.spruecheProTeilnehmer,
             spruecheAnAlle: this.spruecheAnAlle,
             spruecheAnMehrere: this.spruecheAnMehrere,
+            buchstabierenAn: this.buchstabierenAn,
             loesungswoerter: this.loesungswoerter,
             teilnehmerListe: this.teilnehmerListe,
             htmlSeitenTeilnehmer: this.htmlSeitenTeilnehmer,
@@ -68,7 +70,8 @@ export class FunkUebung {
             loesungswoerter: this.loesungswoerter,
             spruecheProTeilnehmer: this.spruecheProTeilnehmer,
             spruecheAnAlle: this.spruecheAnAlle,
-            spruecheAnMehrere: this.spruecheAnMehrere
+            spruecheAnMehrere: this.spruecheAnMehrere,
+            buchstabierenAn: this.buchstabierenAn
         }, null, 2); // Pretty Print
     }
 
@@ -255,9 +258,42 @@ export class FunkUebung {
         alleNachrichten = this.shuffleSmart(alleNachrichten);
 
         // Weisen die Nachrichten wieder zu
+        // Hilfsfunktion zum Prüfen, ob eine Nachricht ein buchstabierwürdiges Wort enthält
+        function enthaeltBuchstabierwort(text) {
+            return text
+                .split(/\s+/)
+                .some(wort => wort.length > 4 && wort === wort.toUpperCase());
+        }
+        
+        // Sicherstellen, dass pro Teilnehmer genügend Buchstabieraufgaben vorhanden sind
+        this.teilnehmerListe.forEach(teilnehmer => {
+            const nachrichten = nachrichtenVerteilung[teilnehmer].slice(1); // Ohne Anmeldung
+            let aktuelleAnzahl = nachrichten.filter(n => enthaeltBuchstabierwort(n.nachricht)).length;
+
+            if (aktuelleAnzahl < this.buchstabierenAn) {
+                // Suche weitere geeignete Nachrichten im Pool
+                const restlicheNachrichten = this.funksprueche.filter(spruch =>
+                    enthaeltBuchstabierwort(spruch) &&
+                    !nachrichten.some(n => n.nachricht === spruch)
+                );
+
+                const benoetigt = this.buchstabierenAn - aktuelleAnzahl;
+                let ersetzt = 0;
+
+                for (let i = 0; i < nachrichten.length && ersetzt < benoetigt; i++) {
+                    const nachricht = nachrichten[i];
+                    if (!enthaeltBuchstabierwort(nachricht.nachricht) && restlicheNachrichten.length > 0) {
+                        const neuerSpruch = restlicheNachrichten.pop();
+                        nachricht.nachricht = neuerSpruch;
+                        ersetzt++;
+                    }
+                }
+            }
+        });
+
         let tempCounters = {};
         this.teilnehmerListe.forEach(teilnehmer => tempCounters[teilnehmer] = 2);
-
+    
         alleNachrichten.forEach(entry => {
             const { sender, nachricht } = entry;
             nachrichtenVerteilung[sender].push({

@@ -241,7 +241,7 @@
                             </div>
 
                             <!-- Nachrichten an alle -->
-                            <div class="col-md-3 mb-3">
+                            <div class="col-md-6 mb-6">
                                 <label class="form-label">% an Alle:</label>
                                 <div class="input-group">
                                     <input type="number" class="form-control" id="prozentAnAlle" min="0" max="100"
@@ -250,10 +250,9 @@
                                 </div>
                                 <small class="text-muted">Ergibt <span id="calcAnAlle">5</span> Nachrichten</small>
                                 <input type="hidden" id="spruecheAnAlle" value="5">
-                            </div>
-
+                            </div>  
                             <!-- Nachrichten an mehrere -->
-                            <div class="col-md-3 mb-3">
+                            <div class="col-md-6 mb-6">
                                 <label class="form-label">% an Mehrere:</label>
                                 <div class="input-group">
                                     <input type="number" class="form-control" id="prozentAnMehrere" min="0" max="100"
@@ -262,6 +261,17 @@
                                 </div>
                                 <small class="text-muted">Ergibt <span id="calcAnMehrere">2</span> Nachrichten</small>
                                 <input type="hidden" id="spruecheAnMehrere" value="2">
+                            </div>
+                            <!-- Buchstabieranteil -->
+                            <div class="col-md-6 mb-6">
+                                <label class="form-label">% Buchstabier-Aufgaben:</label>
+                                <div class="input-group">
+                                    <input type="number" class="form-control" id="prozentAnBuchstabieren" min="0" max="100"
+                                        value="0" oninput="app.updateAbsolute('buchstabieren')">
+                                    <span class="input-group-text">%</span>
+                                </div>
+                                <small class="text-muted">Ergibt <span id="calcAnBuchstabieren">0</span> Nachrichten</small>
+                                <input type="hidden" id="spruecheBuchstabieren" value="0">
                             </div>
                         </div>
 
@@ -364,7 +374,7 @@
                         <button class="btn btn-info" onclick="app.generateInstructorPDF()">
                             <i class="fas fa-user-tie"></i> Übungsleitung PDF erzeugen
                         </button>
-                        <button class="btn btn-outline-dark" onclick="app.exportUebungAsJSON()">
+                        <button class="btn btn-outline-dark" onclick="app.exportUebungAsJSON()" hidden>
                             <i class="fas fa-code"></i> Export als JSON
                           </button>
                         <button id="downloadZip" class="btn btn-primary" onclick="pdfGenerator.generateAllPDFsAsZip(window.app.funkUebung)">📦 Alle PDFs als ZIP herunterladen</button>
