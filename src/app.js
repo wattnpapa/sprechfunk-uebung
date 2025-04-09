@@ -22,8 +22,6 @@ export class AppController {
             .then(data => {
                 console.log(data);
                 buildInfo = data.buildDate + "-" + data.runNumber + "-" + data.commit;
-                
-
             })
             .catch(() => {
                 console.warn("⚠️ Build-Info nicht gefunden, setze 'dev'");
@@ -375,6 +373,7 @@ export class AppController {
     }
 
     generatePDFs() {
+        console.log(this.funkUebung.datum)
         pdfGenerator.generateTeilnehmerPDFs(this.funkUebung);
     }
 

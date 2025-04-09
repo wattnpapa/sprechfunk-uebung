@@ -4,7 +4,7 @@ export class FunkUebung {
     constructor(buildVersion) {
         this.id = uuidv4();
 
-        this.datum = new Date();
+        this.createDate = new Date();
         this.name = "Sprechfunkübung Blauer Wind 2025";
         this.rufgruppe = "T_OL_GOLD-1";
         this.leitung = "Heros Wind 10";
@@ -56,11 +56,13 @@ export class FunkUebung {
         return JSON.stringify({
             id: this.id,
             checksumme: this.checksumme,
+            createDate: this.createDate,
             name: this.name,
             datum: this.datum,
             rufgruppe: this.rufgruppe,
             leitung: this.leitung,
             buildVersion: this.buildVersion,
+            //funksprueche: this.funksprueche,
             teilnehmerListe: this.teilnehmerListe,
             nachrichten: this.nachrichten,
             loesungswoerter: this.loesungswoerter,
@@ -71,10 +73,7 @@ export class FunkUebung {
     }
 
     erstelle() {
-        /*this.teilnehmerListe.map(teilnehmer => {
-            this.nachrichten[teilnehmer] = this.generiereNachrichten(teilnehmer);
-        });*/
-
+        this.createDate = new Date();
         this.nachrichten = this.verteileNachrichtenFair();
         this.verteileLoesungswoerterMitIndex();
     }

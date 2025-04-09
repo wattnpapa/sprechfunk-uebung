@@ -27,7 +27,8 @@ class PDFGenerator {
      * Erstellt die Teilnehmer PDFs.
      */
     async generateTeilnehmerPDFsBlob(funkUebung) {
-        const generierungszeit = DateFormatter.formatNATODate(funkUebung.datum); // NATO-Datum für Fußzeile
+        console.log(funkUebung)
+        const generierungszeit = DateFormatter.formatNATODate(funkUebung.createDate, true); // NATO-Datum für Fußzeile
         const blobMap = new Map();
 
         funkUebung.teilnehmerListe.forEach(teilnehmer => {
@@ -295,7 +296,7 @@ class PDFGenerator {
             const totalPages = pdf.internal.getNumberOfPages();
             for (let j = 1; j <= totalPages; j++) {
                 pdf.setPage(j);
-                this.drawCompactFooter(pdf, funkUebung, DateFormatter.formatNATODate(funkUebung.datum), pdf.internal.pageSize.getWidth(), pdf.internal.pageSize.getHeight(), 10);
+                this.drawCompactFooter(pdf, funkUebung, DateFormatter.formatNATODate(funkUebung.createDate), pdf.internal.pageSize.getWidth(), pdf.internal.pageSize.getHeight(), 10);
             }
             
             const blob = pdf.output("blob");
@@ -380,7 +381,7 @@ class PDFGenerator {
             const totalPages = pdf.internal.getNumberOfPages();
             for (let j = 1; j <= totalPages; j++) {
                 pdf.setPage(j);
-                this.drawCompactFooter(pdf, funkUebung, DateFormatter.formatNATODate(funkUebung.datum), pdf.internal.pageSize.getWidth(), pdf.internal.pageSize.getHeight(), 10);
+                this.drawCompactFooter(pdf, funkUebung, DateFormatter.formatNATODate(funkUebung.createDate), pdf.internal.pageSize.getWidth(), pdf.internal.pageSize.getHeight(), 10);
             }
 
             const blob = pdf.output("blob");
@@ -429,7 +430,7 @@ class PDFGenerator {
         const pageMargin = 10;
         const firstTableStartY = 30;
         const secondPageTableTopMargin = 30; // **Garantierter Abstand für Tabellen auf Seite 2+**
-        const generierungszeit = DateFormatter.formatNATODate(funkUebung.datum);
+        const generierungszeit = DateFormatter.formatNATODate(funkUebung.createDate);
         const tableFontSize = 8;
 
         // **1. Kopfzeile für erste Seite**
