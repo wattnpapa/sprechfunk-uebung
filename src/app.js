@@ -4,7 +4,7 @@ import { FunkUebung } from "./FunkUebung.js";
 import { UebungHTMLGenerator } from './UebungHTMLGenerator.js';
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
 import { getFirestore } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
-import { doc, setDoc } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
+import { doc, setDoc, getDoc } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
 
 export class AppController {
 
@@ -18,17 +18,13 @@ export class AppController {
         measurementId: "G-H43JEZB768"
     };
 
-   constructor() {
+    constructor() {
         console.log("📌 AppController wurde initialisiert");
 
         const app = initializeApp(this.firebaseConfig);
         this.db = getFirestore(app);
 
         let buildInfo = "dev";
-
-        this.funkUebung = new FunkUebung(buildInfo);
-
-        document.getElementById("uebungsId").textContent = this.funkUebung.id;
 
         fetch("build.json")
             .then(res => res.json())
@@ -38,47 +34,70 @@ export class AppController {
             })
             .catch(() => {
                 console.warn("⚠️ Build-Info nicht gefunden, setze 'dev'");
-            }).finally(() => {
-                document.getElementById(`version`).innerHTML = buildInfo;
+            })
+            .finally(async () => {
+                const urlParams = new URLSearchParams(window.location.search);
+                const uebungId = urlParams.get("id");
+
+                if (uebungId) {
+                    const docRef = doc(this.db, "uebungen", uebungId);
+                    try {
+                        const docSnap = await getDoc(docRef);
+                        if (docSnap.exists()) {
+                            const data = docSnap.data();
+                            this.funkUebung = new FunkUebung(buildInfo);
+                            Object.assign(this.funkUebung, data);
+                            console.log("📦 Übung aus Datenbank geladen:", this.funkUebung.id);
+                        } else {
+                            console.warn("⚠️ Keine Übung mit dieser ID gefunden. Neue Übung wird erstellt.");
+                            this.funkUebung = new FunkUebung(buildInfo);
+                        }
+                    } catch (err) {
+                        console.error("❌ Fehler beim Laden der Übung:", err);
+                        this.funkUebung = new FunkUebung(buildInfo);
+                    }
+                } else {
+                    this.funkUebung = new FunkUebung(buildInfo);
+                }
+
+                document.getElementById("uebungsId").textContent = this.funkUebung.id;
+                document.getElementById("version").innerHTML = buildInfo;
                 this.funkUebung.buildVersion = buildInfo;
+                // Initialisiere Lösungswörter (in Uppercase)
+                this.predefinedLoesungswoerter = [
+                    "Funkverkehr", "Rettungswagen", "Notruf", "Blaulicht", "Funkdisziplin",
+                    "Einsatzleitung", "Mikrofon", "Durchsage", "Sprechgruppe", "Digitalfunk",
+                    "Frequenz", "Funkstille", "Antennenmast", "Feuerwehr", "Katastrophenschutz",
+                    "Alarmierung", "Fernmelder", "Kommunikation", "Verständigung", "Sicherheitszone",
+                    "Einsatzplan", "Koordination", "Funkgerät", "Signalstärke", "Verbindung",
+                    "Repeater", "Einsatzbesprechung", "Lautstärke", "Funkkanal", "Empfang",
+                    "Relaisstation", "Funkraum", "Gruppenruf", "Rückmeldung", "Einsatzgebiet",
+                    "Wellenlänge", "Übertragung", "Ausfallsicherheit", "Rescue", "Einsatzwagen"
+                ].map(word => word.toUpperCase());
+
+                // Vorlagen für Funksprüche
+                this.templatesFunksprueche = {
+                    vorlage1: { text: "Kurze Funksprüche", filename: "assets/funksprueche/funksprueche_normal.txt" },
+                    vorlage2: { text: "Lange Funksprüche", filename: "assets/funksprueche/funksprueche_lang.txt" },
+                    vorlage3: { text: "Lustige Funksprüche", filename: "assets/funksprueche/funksprueche_lustig_kreativ.txt" }
+                };
+
+                // Weitere Variablen für die Übung
+                this.natoDate = null;
+                this.jsonUebungsDaten = [];
+                this.jsonKompletteUebung = {};
+                this.htmlSeitenTeilnehmer = [];
+                this.currentPageIndex = 0;
+
+                // Rufe die Funktion beim Laden der Seite auf
+                document.addEventListener("DOMContentLoaded", this.setDefaultDate);
+
+                // Rufe beim Laden der Seite die Funktion auf, um die Select-Box zu füllen
+                this.populateTemplateSelectBox();
+
+                this.renderInitData();
             });
 
-
-
-
-        // Initialisiere Lösungswörter (in Uppercase)
-        this.predefinedLoesungswoerter = [
-            "Funkverkehr", "Rettungswagen", "Notruf", "Blaulicht", "Funkdisziplin",
-            "Einsatzleitung", "Mikrofon", "Durchsage", "Sprechgruppe", "Digitalfunk",
-            "Frequenz", "Funkstille", "Antennenmast", "Feuerwehr", "Katastrophenschutz",
-            "Alarmierung", "Fernmelder", "Kommunikation", "Verständigung", "Sicherheitszone",
-            "Einsatzplan", "Koordination", "Funkgerät", "Signalstärke", "Verbindung",
-            "Repeater", "Einsatzbesprechung", "Lautstärke", "Funkkanal", "Empfang",
-            "Relaisstation", "Funkraum", "Gruppenruf", "Rückmeldung", "Einsatzgebiet",
-            "Wellenlänge", "Übertragung", "Ausfallsicherheit", "Rescue", "Einsatzwagen"
-        ].map(word => word.toUpperCase());
-
-        // Vorlagen für Funksprüche
-        this.templatesFunksprueche = {
-            vorlage1: { text: "Kurze Funksprüche", filename: "assets/funksprueche/funksprueche_normal.txt" },
-            vorlage2: { text: "Lange Funksprüche", filename: "assets/funksprueche/funksprueche_lang.txt" },
-            vorlage3: { text: "Lustige Funksprüche", filename: "assets/funksprueche/funksprueche_lustig_kreativ.txt" }
-        };
-
-        // Weitere Variablen für die Übung
-        this.natoDate = null;
-        this.jsonUebungsDaten = [];
-        this.jsonKompletteUebung = {};
-        this.htmlSeitenTeilnehmer = [];
-        this.currentPageIndex = 0;
-
-        // Rufe die Funktion beim Laden der Seite auf
-        document.addEventListener("DOMContentLoaded", this.setDefaultDate);
-
-        // Rufe beim Laden der Seite die Funktion auf, um die Select-Box zu füllen
-        this.populateTemplateSelectBox();
-
-        this.renderInitData();
     }
 
     updateVerteilung() {
