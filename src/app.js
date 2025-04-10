@@ -2,14 +2,27 @@ import pdfGenerator from './pdfGenerator.js';
 import { DateFormatter } from "./DateFormatter.js";
 import { FunkUebung } from "./FunkUebung.js";
 import { UebungHTMLGenerator } from './UebungHTMLGenerator.js';
-
-
-
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
+import { getFirestore } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
+import { doc, setDoc } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
 
 export class AppController {
 
-    constructor() {
+    firebaseConfig = {
+        apiKey: "AIzaSyCXgZgEuWCHEiMBXE-cSXGkltDKcorEQL0",
+        authDomain: "sprechfunk-uebung.firebaseapp.com",
+        projectId: "sprechfunk-uebung",
+        storageBucket: "sprechfunk-uebung.firebasestorage.app",
+        messagingSenderId: "626900285631",
+        appId: "1:626900285631:web:7b79f5e121fb2255daee0a",
+        measurementId: "G-H43JEZB768"
+    };
+
+   constructor() {
         console.log("📌 AppController wurde initialisiert");
+
+        const app = initializeApp(this.firebaseConfig);
+        this.db = getFirestore(app);
 
         let buildInfo = "dev";
 
@@ -31,7 +44,7 @@ export class AppController {
             });
 
 
-        
+
 
         // Initialisiere Lösungswörter (in Uppercase)
         this.predefinedLoesungswoerter = [
@@ -96,17 +109,17 @@ export class AppController {
         document.getElementById("spruecheAnAlle").value = this.funkUebung.spruecheAnAlle;
         document.getElementById("spruecheAnMehrere").value = this.funkUebung.spruecheAnMehrere;
         document.getElementById("spruecheAnBuchstabieren").value = this.funkUebung.buchstabierenAn;
- 
+
         // Prozentanzeige aktualisieren
         const total = this.funkUebung.spruecheProTeilnehmer * this.funkUebung.teilnehmerListe.length;
         document.getElementById("calcAnAlle").innerText = this.funkUebung.spruecheAnAlle;
         document.getElementById("calcAnMehrere").innerText = this.funkUebung.spruecheAnMehrere;
         document.getElementById("calcAnBuchstabieren").innerText = this.funkUebung.buchstabierenAn;
- 
+
         document.getElementById("prozentAnAlle").value = Math.round((this.funkUebung.spruecheAnAlle / this.funkUebung.spruecheProTeilnehmer) * 100);
         document.getElementById("prozentAnMehrere").value = Math.round((this.funkUebung.spruecheAnMehrere / this.funkUebung.spruecheProTeilnehmer) * 100);
         document.getElementById("prozentAnBuchstabieren").value = Math.round((this.funkUebung.buchstabierenAn / this.funkUebung.spruecheProTeilnehmer) * 100);
- 
+
         document.getElementById("leitung").value = this.funkUebung.leitung;
         document.getElementById("rufgruppe").value = this.funkUebung.rufgruppe;
         document.getElementById("nameDerUebung").value = this.funkUebung.name;
@@ -120,7 +133,7 @@ export class AppController {
                 { id: "prozentAnMehrere", handler: () => this.updateAbsolute('mehrere') },
                 { id: "prozentAnBuchstabieren", handler: () => this.updateAbsolute('buchstabieren') }
             ];
-        
+
             inputBindings.forEach(({ id, handler }) => {
                 const el = document.getElementById(id);
                 if (el) {
@@ -244,19 +257,19 @@ export class AppController {
             const fetchPromises = allTemplates.map(tpl =>
                 fetch(tpl.filename).then(res => res.text())
             );
-        
+
             Promise.all(fetchPromises)
                 .then(results => {
                     // Mische alle Zeilen aus allen Dateien
                     this.funkUebung.funksprueche = results
                         .flatMap(text => text.split("\n").filter(s => s.trim() !== ""))
-                        .sort(() => Math.random() - 0.5)    
+                        .sort(() => Math.random() - 0.5)
                         .sort(() => Math.random() - 0.5);
-        
+
                     this.generateAllPages();
                 })
                 .catch(error => console.error("Fehler beim Laden mehrerer Vorlagen:", error));
-        
+
         }
         else if (selectedTemplate !== "upload") {
             // Holen Sie sich die Vorlage basierend auf dem Auswahlwert
@@ -367,6 +380,7 @@ export class AppController {
     generateAllPages() {
         this.htmlSeitenTeilnehmer = [];
         this.funkUebung.erstelle();
+        saveUebung(this.funkUebung, this.db);
         this.funkUebung.teilnehmerListe.map(teilnehmer => {
             this.htmlSeitenTeilnehmer.push(UebungHTMLGenerator.generateHTMLPage(teilnehmer, this.funkUebung))
         });
@@ -796,13 +810,13 @@ export class AppController {
         });
     }
 
-    exportUebungAsJSON() {    
+    exportUebungAsJSON() {
         document.getElementById("jsonOutput").textContent = this.funkUebung.toJson();
-    
+
         const modal = new bootstrap.Modal(document.getElementById('jsonModal'));
         modal.show();
     }
-    
+
     copyJSONToClipboard() {
         const text = document.getElementById("jsonOutput").textContent;
         navigator.clipboard.writeText(text).then(() => {
@@ -810,6 +824,17 @@ export class AppController {
         }).catch(err => {
             alert("❌ Fehler beim Kopieren: " + err);
         });
+    }
+
+}
+
+export async function saveUebung(funkUebung, db) {
+    const uebungRef = doc(db, "uebungen", funkUebung.id);
+    try {
+        await setDoc(uebungRef, JSON.parse(funkUebung.toJson()));
+        console.log("✅ Übung erfolgreich gespeichert:", funkUebung.id);
+    } catch (error) {
+        console.error("❌ Fehler beim Speichern der Übung:", error);
     }
 }
 

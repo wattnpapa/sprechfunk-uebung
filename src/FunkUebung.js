@@ -1,4 +1,5 @@
 import { v4 as uuidv4 } from 'https://jspm.dev/uuid';
+import { doc, setDoc } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
 
 export class FunkUebung {
     constructor(buildVersion) {
@@ -74,7 +75,7 @@ export class FunkUebung {
             buchstabierenAn: this.buchstabierenAn
         }, null, 2); // Pretty Print
     }
-
+ 
     erstelle() {
         this.createDate = new Date();
         this.nachrichten = this.verteileNachrichtenFair();
