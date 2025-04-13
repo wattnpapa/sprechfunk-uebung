@@ -5,16 +5,22 @@ import { UebungHTMLGenerator } from './UebungHTMLGenerator.js';
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
 import { firebaseConfig } from './firebase-config.js';
 import { getFirestore } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
-import { doc, setDoc, getDoc } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
+import { doc, setDoc, getDoc, getDocs, collection, query, orderBy, limit, startAfter } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
 
 export class AppController {
 
 
     constructor() {
         console.log("📌 AppController wurde initialisiert");
-
+ 
         const app = initializeApp(firebaseConfig);
         this.db = getFirestore(app);
+        this.pagination = {
+            pageSize: 25,
+            currentPage: 0,
+            lastVisible: null,
+            totalCount: 0
+        };
 
         let buildInfo = "dev";
 
@@ -89,6 +95,11 @@ export class AppController {
                 this.populateTemplateSelectBox();
 
                 this.renderInitData();
+
+                if (urlParams.get("admin") !== null) {
+                    console.log("ADDMINN MODE")
+                    this.ladeAlleUebungen();
+                }
             });
 
     }
@@ -853,6 +864,58 @@ export class AppController {
             linkElement.textContent = url;
             linkContainer.style.display = "block";
         }
+    }
+
+    async ladeAlleUebungen(direction = "initial") {
+        const uebungCol = collection(this.db, "uebungen");
+ 
+        // Zähle die Gesamtzahl
+        const allDocs = await getDocs(uebungCol);
+        this.pagination.totalCount = allDocs.size;
+ 
+        let q;
+        if (direction === "next" && this.pagination.lastVisible) {
+            q = query(uebungCol, orderBy("createDate", "desc"), startAfter(this.pagination.lastVisible), limit(this.pagination.pageSize));
+            this.pagination.currentPage++;
+        } else if (direction === "prev" && this.pagination.currentPage > 0) {
+            // Nicht implementiert ohne vorherige Snapshots
+            return;
+        } else {
+            q = query(uebungCol, orderBy("createDate", "desc"), limit(this.pagination.pageSize));
+            this.pagination.currentPage = 0;
+        }
+ 
+        const querySnapshot = await getDocs(q);
+        const tbody = document.getElementById("adminUebungslisteBody");
+        tbody.innerHTML = "";
+ 
+        let lastVisible = null;
+        querySnapshot.forEach((row, idx) => {
+            const uebung = row.data();
+            const tr = document.createElement("tr");
+            const teilnehmerTitel = (uebung.teilnehmerListe || []).join(", ");
+            tr.innerHTML = `
+                <td>${new Date(uebung.createDate).toLocaleString()}</td>
+                <td><a href="?id=${uebung.id}" target="_blank">${uebung.name}</a></td>
+                <td>${new Date(uebung.datum).toLocaleDateString()}</td>
+                <td title="${(uebung.teilnehmerListe || []).join('\n')}">${uebung.teilnehmerListe?.length ?? 0}</td>
+                <td>${uebung.id}</td>
+            `;
+            tbody.appendChild(tr);
+            lastVisible = row;
+        });
+ 
+        this.pagination.lastVisible = lastVisible;
+ 
+        // Anzeige aktualisieren
+        const info = document.getElementById("adminUebungslisteInfo");
+        if (info) {
+            const from = this.pagination.currentPage * this.pagination.pageSize + 1;
+            const to = from + querySnapshot.size - 1;
+            info.innerText = `Zeige ${from} - ${to} von ${this.pagination.totalCount}`;
+        }
+ 
+        document.getElementById("adminUebungsliste").style.display = "block";
     }
 
 }
