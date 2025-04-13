@@ -1,11 +1,16 @@
 import { v4 as uuidv4 } from 'https://jspm.dev/uuid';
+import { NAMENS_POOL } from './namen-funkuebungen.js';
 
 export class FunkUebung {
     constructor(buildVersion) {
         this.id = uuidv4();
 
         this.createDate = new Date();
-        this.name = "Sprechfunkübung Blauer Wind 2025";
+        
+        const jahr = new Date().getFullYear();
+        const zufallsName = name || `${NAMENS_POOL[Math.floor(Math.random() * NAMENS_POOL.length)]} ${jahr}`;
+        this.name = `Sprechfunkübung ${zufallsName}`;
+
         this.rufgruppe = "T_OL_GOLD-1";
         this.leitung = "Heros Wind 10";
         this.buildVersion = buildVersion;
