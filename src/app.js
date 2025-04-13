@@ -395,7 +395,7 @@ export class AppController {
      */
     generateAllPages() {
         this.funkUebung.erstelle();
-        //saveUebung(this.funkUebung, this.db);
+        saveUebung(this.funkUebung, this.db);
         this.renderUebung();
         return;
     }
