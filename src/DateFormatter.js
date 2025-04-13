@@ -6,6 +6,9 @@ export class DateFormatter {
      * @returns {string} - Das formatierte NATO-Datum.
      */
     static formatNATODate(date, withTime = true) {
+        if (typeof date === "string") {
+            date = new Date(date);
+        }
         const monate = ["jan", "feb", "mar", "apr", "may", "jun", "jul", "aug", "sep", "oct", "nov", "dec"];
 
         let tag = String(date.getDate()).padStart(2, "0");  // Tag zweistellig

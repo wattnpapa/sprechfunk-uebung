@@ -1,5 +1,4 @@
 import { v4 as uuidv4 } from 'https://jspm.dev/uuid';
-import { doc, setDoc } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
 
 export class FunkUebung {
     constructor(buildVersion) {
@@ -11,7 +10,6 @@ export class FunkUebung {
         this.leitung = "Heros Wind 10";
         this.buildVersion = buildVersion;
 
-        this.funksprueche = [];
         this.nachrichten = [];
 
         this.spruecheProTeilnehmer = 10;
@@ -31,7 +29,6 @@ export class FunkUebung {
             "Heros Wilhemshaven 21/10"
         ];
 
-        this.htmlSeitenTeilnehmer = [];
         this.checksumme = "";
     }
 
@@ -47,7 +44,6 @@ export class FunkUebung {
             buchstabierenAn: this.buchstabierenAn,
             loesungswoerter: this.loesungswoerter,
             teilnehmerListe: this.teilnehmerListe,
-            htmlSeitenTeilnehmer: this.htmlSeitenTeilnehmer,
             nachrichten: this.nachrichten
         });
 
@@ -65,7 +61,6 @@ export class FunkUebung {
             rufgruppe: this.rufgruppe,
             leitung: this.leitung,
             buildVersion: this.buildVersion,
-            //funksprueche: this.funksprueche,
             teilnehmerListe: this.teilnehmerListe,
             nachrichten: this.nachrichten,
             loesungswoerter: this.loesungswoerter,

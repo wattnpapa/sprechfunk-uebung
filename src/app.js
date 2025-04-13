@@ -45,9 +45,10 @@ export class AppController {
                         const docSnap = await getDoc(docRef);
                         if (docSnap.exists()) {
                             const data = docSnap.data();
-                            this.funkUebung = new FunkUebung(buildInfo);
+                            this.funkUebung = Object.assign(new FunkUebung(buildInfo), data);
                             Object.assign(this.funkUebung, data);
                             console.log("📦 Übung aus Datenbank geladen:", this.funkUebung.id);
+                            this.renderUebung();
                         } else {
                             console.warn("⚠️ Keine Übung mit dieser ID gefunden. Neue Übung wird erstellt.");
                             this.funkUebung = new FunkUebung(buildInfo);
@@ -86,7 +87,7 @@ export class AppController {
                 this.natoDate = null;
                 this.jsonUebungsDaten = [];
                 this.jsonKompletteUebung = {};
-                this.htmlSeitenTeilnehmer = [];
+                //this.htmlSeitenTeilnehmer = [];
                 this.currentPageIndex = 0;
 
                 // Rufe die Funktion beim Laden der Seite auf
@@ -295,7 +296,6 @@ export class AppController {
             const template = this.templatesFunksprueche[selectedTemplate];
 
             if (template) {
-                //console.log(`Verwende Vorlage: ${template.text}`);
                 // Hier können wir die Vorlage weiter verwenden, z.B. um Funksprüche zu generieren
                 // Falls notwendig, laden Sie die Datei, wenn sie benötigt wird
 
@@ -326,9 +326,6 @@ export class AppController {
             console.error("Bitte wählen Sie eine Vorlage oder laden Sie eine benutzerdefinierte Funkspruchliste hoch.");
             alert("Bitte wählen Sie eine Vorlage oder laden Sie eine benutzerdefinierte Funkspruchliste hoch.");
         }
-
-
-        document.getElementById("output-container").style.display = "block";
     }
 
 
@@ -397,17 +394,26 @@ export class AppController {
      * Erstellt HTML-Seiten und zeigt sie im iframe mit Paginierung an.
      */
     generateAllPages() {
-        this.htmlSeitenTeilnehmer = [];
         this.funkUebung.erstelle();
-        saveUebung(this.funkUebung, this.db);
-        this.funkUebung.teilnehmerListe.map(teilnehmer => {
-            this.htmlSeitenTeilnehmer.push(UebungHTMLGenerator.generateHTMLPage(teilnehmer, this.funkUebung))
-        });
+        //saveUebung(this.funkUebung, this.db);
+        this.renderUebung();
+        return;
+    }
 
+    renderUebung() {
+        this.currentPageIndex = 0;
+        this.htmlSeitenTeilnehmer = [];
+    
+        this.htmlSeitenTeilnehmer = this.funkUebung.teilnehmerListe.map(teilnehmer => {
+            const html = UebungHTMLGenerator.generateHTMLPage(teilnehmer, this.funkUebung);
+            return html;
+        });
+    
         this.displayPage(this.currentPageIndex);
         this.zeigeUebungsdauer();
         this.startVerteilung();
-        return;
+        this.updateUebungLinks()
+        document.getElementById("output-container").style.display = "block";
     }
 
     /**
@@ -843,6 +849,18 @@ export class AppController {
         }).catch(err => {
             alert("❌ Fehler beim Kopieren: " + err);
         });
+    }
+
+    updateUebungLinks() {
+        const linkContainer = document.getElementById("uebung-links");
+        const linkElement = document.getElementById("link-uebung-direkt");
+    
+        if (linkContainer && linkElement && this.funkUebung?.id) {
+            const url = `${window.location.origin}${window.location.pathname}?id=${this.funkUebung.id}`;
+            linkElement.href = url;
+            linkElement.textContent = url;
+            linkContainer.style.display = "block";
+        }
     }
 
 }
