@@ -37,16 +37,28 @@
     <!-- Richtige FontAwesome Einbindung -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
     <!-- jsPDF für PDF-Erstellung -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"
+        integrity="sha512-NuXb1lJD8TGXAJ0IFMCZK8QoP/GeShzF9U6GmUivblg5jOnu5xnXKrfnNZW2YzKoEo27bByOtx5xdXhMCJ3sDA=="
+        crossorigin="anonymous"></script>
     <!-- AutoTable für saubere Tabellen -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.23/jspdf.plugin.autotable.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.23/jspdf.plugin.autotable.min.js"
+        integrity="sha512-TZ8pF2O+H0Z1E0ZxWRnU/RoAfq+l9FGEY9VP2iO+TP8d8fwGCeUJ0fFPlGy6qIFctM4NqN6KjzKUxvATmqHzsg=="
+        crossorigin="anonymous"></script>
     <!-- html2canvas für HTML-to-Image-Rendering -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"
+        integrity="sha512-BNa5nke0i3LSyUiLZNeKmO7AKKX2PjRFP6RzrSgPphda/1Y7DJpBoBx0UnkPGiBi+04oVXxew8JIRGeY8nqzVA=="
+        crossorigin="anonymous"></script>
     <!-- Chart.js CDN für das Balkendiagramm -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"
+        integrity="sha512-W0vCMBUJ4yjsN/5BlzMQFiMp8pIbimrjQSS1uSK7rEx7Q+tdiP0wGBPVNq4Zj7XR9DKg6eS0f1+aHKoqL3yRKQ=="
+        crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"
+        integrity="sha512-TfmPFDUnOAfwJj7Zs+POhN99uMLa4EQdzQQZC+AZgdhxXYxpmEKgNNdyU6Uh4AzrbP6NIT09d9UbsOP8ZGb/qw=="
+        crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"
+        integrity="sha512-Fv/q+FyS9x+Tke8GS9dwAZRv+5MDWdnNNuIlrHnZpN6x0wQpFklVfKuViV9FZacH8bVGHgTIWDX4bL6xvxPzCg=="
+        crossorigin="anonymous"></script>
 
 
 
@@ -245,12 +257,12 @@
                                 <label class="form-label">% an Alle:</label>
                                 <div class="input-group">
                                     <input type="number" class="form-control" id="prozentAnAlle" min="0" max="100"
-                                        value="10" >
+                                        value="10">
                                     <span class="input-group-text">%</span>
                                 </div>
                                 <small class="text-muted">Ergibt <span id="calcAnAlle">5</span> Nachrichten</small>
                                 <input type="hidden" id="spruecheAnAlle" value="5">
-                            </div>  
+                            </div>
                             <!-- Nachrichten an mehrere -->
                             <div class="col-md-6 mb-6">
                                 <label class="form-label">% an Mehrere:</label>
@@ -266,11 +278,12 @@
                             <div class="col-md-6 mb-6">
                                 <label class="form-label">% Buchstabier-Aufgaben:</label>
                                 <div class="input-group">
-                                    <input type="number" class="form-control" id="prozentAnBuchstabieren" min="0" max="100"
-                                        value="0">
+                                    <input type="number" class="form-control" id="prozentAnBuchstabieren" min="0"
+                                        max="100" value="0">
                                     <span class="input-group-text">%</span>
                                 </div>
-                                <small class="text-muted">Ergibt <span id="calcAnBuchstabieren">0</span> Nachrichten</small>
+                                <small class="text-muted">Ergibt <span id="calcAnBuchstabieren">0</span>
+                                    Nachrichten</small>
                                 <input type="hidden" id="spruecheAnBuchstabieren" value="0">
                             </div>
                         </div>
@@ -346,15 +359,15 @@
         <div id="output-container" style="display: none; margin-top: 20px;">
             <div id="uebung-links" class="card mt-4" style="display: none;">
                 <div class="card-header bg-primary text-white">
-                  🔗 Links zur Übung
+                    🔗 Links zur Übung
                 </div>
                 <div class="card-body">
-                  <p class="card-text">
-                    Mit diesem Link kannst du die Übung jederzeit wieder aufrufen:
-                  </p>
-                  <a id="link-uebung-direkt" href="#" target="_blank" class="card-link text-break"></a>
+                    <p class="card-text">
+                        Mit diesem Link kannst du die Übung jederzeit wieder aufrufen:
+                    </p>
+                    <a id="link-uebung-direkt" href="#" target="_blank" class="card-link text-break"></a>
                 </div>
-              </div>
+            </div>
 
             <!-- Vorschau der generierten Seiten -->
             <div class="card mb-3">
@@ -386,9 +399,12 @@
                         </button>
                         <button class="btn btn-outline-dark" onclick="app.exportUebungAsJSON()" hidden>
                             <i class="fas fa-code"></i> Export als JSON
-                          </button>
-                        <button id="downloadZip" class="btn btn-primary" onclick="pdfGenerator.generateAllPDFsAsZip(window.app.funkUebung)">📦 Alle PDFs als ZIP herunterladen</button>
-                        <iframe id="resultFrame" style="width: 100%; height: 400px; border: 1px solid #ccc; margin-top: 20px;"></iframe>
+                        </button>
+                        <button id="downloadZip" class="btn btn-primary"
+                            onclick="pdfGenerator.generateAllPDFsAsZip(window.app.funkUebung)">📦 Alle PDFs als ZIP
+                            herunterladen</button>
+                        <iframe id="resultFrame"
+                            style="width: 100%; height: 400px; border: 1px solid #ccc; margin-top: 20px;"></iframe>
                     </div>
                 </div>
             </div>
@@ -396,19 +412,22 @@
             <!-- JSON Modal -->
             <div class="modal fade" id="jsonModal" tabindex="-1" aria-labelledby="jsonModalLabel" aria-hidden="true">
                 <div class="modal-dialog modal-lg modal-dialog-scrollable">
-                <div class="modal-content">
-                    <div class="modal-header">
-                    <h5 class="modal-title" id="jsonModalLabel">Übungsdaten als JSON</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Schließen"></button>
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title" id="jsonModalLabel">Übungsdaten als JSON</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal"
+                                aria-label="Schließen"></button>
+                        </div>
+                        <div class="modal-body">
+                            <pre id="jsonOutput"
+                                style="white-space: pre-wrap; word-wrap: break-word; background-color: #f8f9fa; padding: 1rem; border-radius: .3rem;"></pre>
+                        </div>
+                        <div class="modal-footer">
+                            <button class="btn btn-secondary" data-bs-dismiss="modal">Schließen</button>
+                            <button class="btn btn-primary" onclick="app.copyJSONToClipboard()">📋 In Zwischenablage
+                                kopieren</button>
+                        </div>
                     </div>
-                    <div class="modal-body">
-                    <pre id="jsonOutput" style="white-space: pre-wrap; word-wrap: break-word; background-color: #f8f9fa; padding: 1rem; border-radius: .3rem;"></pre>
-                    </div>
-                    <div class="modal-footer">
-                    <button class="btn btn-secondary" data-bs-dismiss="modal">Schließen</button>
-                    <button class="btn btn-primary" onclick="app.copyJSONToClipboard()">📋 In Zwischenablage kopieren</button>
-                    </div>
-                </div>
                 </div>
             </div>
 
@@ -472,22 +491,29 @@
                                 </table>
                                 <div class="mt-3">
                                     <h6>📘 Rechenformeln & Annahmen:</h6>
-                                    <p class="mb-1"><strong>Basis-Einheit:</strong> Alle Berechnungen basieren auf Sekunden.</p>
+                                    <p class="mb-1"><strong>Basis-Einheit:</strong> Alle Berechnungen basieren auf
+                                        Sekunden.</p>
                                     <p class="mb-1"><strong>Annahmen:</strong></p>
                                     <ul class="mb-2">
                                         <li>Wir schaffen es, <strong>1 Zeichen pro Sekunde</strong> mitzuschreiben.</li>
-                                        <li>Wir benötigen <strong>2 Zeichen pro Sekunde</strong>, um eine Nachricht zu übermitteln (sprechen).</li>
+                                        <li>Wir benötigen <strong>2 Zeichen pro Sekunde</strong>, um eine Nachricht zu
+                                            übermitteln (sprechen).</li>
                                     </ul>
-                                    <p class="mb-1"><strong>Optimale Dauer:</strong> <code>Sprechzeit + Mitschrift + Empfänger-Zeit + Verbindungsaufbau + Verbindungsabbau</code></p>
+                                    <p class="mb-1"><strong>Optimale Dauer:</strong>
+                                        <code>Sprechzeit + Mitschrift + Empfänger-Zeit + Verbindungsaufbau + Verbindungsabbau</code>
+                                    </p>
                                     <ul class="mb-2">
                                         <li><strong>Sprechzeit:</strong> Zeichenlänge / 2</li>
                                         <li><strong>Mitschrift:</strong> Zeichenlänge</li>
                                         <li><strong>Empfänger-Zeit:</strong> (Empfängerzahl - 1) × 2 Sekunden</li>
-                                        <li><strong>Verbindungsaufbau:</strong> 5 Sekunden + 3 Sekunden je zusätzlichem Empfänger</li>
+                                        <li><strong>Verbindungsaufbau:</strong> 5 Sekunden + 3 Sekunden je zusätzlichem
+                                            Empfänger</li>
                                         <li><strong>Verbindungsabbau:</strong> 3 Sekunden</li>
                                     </ul>
-                                    <p class="mb-1"><strong>Langsame Dauer:</strong> Optimale Dauer × 1.5 (wenn Wiederholung erforderlich)</p>
-                                    <p class="text-muted">Diese Formeln dienen zur realistischen Einschätzung der Gesamtdauer anhand der Nachrichteninhalte und Teilnehmeranzahl.</p>
+                                    <p class="mb-1"><strong>Langsame Dauer:</strong> Optimale Dauer × 1.5 (wenn
+                                        Wiederholung erforderlich)</p>
+                                    <p class="text-muted">Diese Formeln dienen zur realistischen Einschätzung der
+                                        Gesamtdauer anhand der Nachrichteninhalte und Teilnehmeranzahl.</p>
                                 </div>
                             </div>
                         </div>
@@ -501,7 +527,8 @@
             <div class="card-header">
                 <h5 class="d-flex justify-content-between align-items-center">
                     <span><i class="fas fa-database"></i> Gespeicherte Übungen</span>
-                    <button class="btn btn-sm btn-outline-secondary" data-bs-toggle="collapse" data-bs-target="#collapseAdminUebungen">
+                    <button class="btn btn-sm btn-outline-secondary" data-bs-toggle="collapse"
+                        data-bs-target="#collapseAdminUebungen">
                         <i class="fas fa-chevron-down"></i>
                     </button>
                 </h5>
@@ -526,10 +553,12 @@
                         <div class="d-flex justify-content-between align-items-center px-3 py-2">
                             <div id="adminUebungslisteInfo" class="small text-muted"></div>
                             <div>
-                              <button class="btn btn-sm btn-outline-secondary me-2" onclick="app.ladeAlleUebungen('prev')">← Vorherige</button>
-                              <button class="btn btn-sm btn-outline-secondary" onclick="app.ladeAlleUebungen('next')">Nächste →</button>
+                                <button class="btn btn-sm btn-outline-secondary me-2"
+                                    onclick="app.ladeAlleUebungen('prev')">← Vorherige</button>
+                                <button class="btn btn-sm btn-outline-secondary"
+                                    onclick="app.ladeAlleUebungen('next')">Nächste →</button>
                             </div>
-                          </div>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -541,9 +570,10 @@
             <div class="float-right d-none d-sm-block">
                 <b>Version</b> <span id="version">1.0.0</span> | <b>Übung ID:</b> <span id="uebungsId">-</span>
             </div>
-            <strong>© Johannes Rudolph (<a href="mailto:johannes.rudolph@thw-oldenburg.de">johannes.rudolph@thw-oldenburg.de</a>) | <a href="https://sprechfunk-uebung.de/"
-                    target="_blank">Generator</a> | <a href="https://github.com/wattnpapa/sprechfunk-uebung"
-                    target="_blank">GitHub-Repository</a></strong>
+            <strong>© Johannes Rudolph (<a
+                    href="mailto:johannes.rudolph@thw-oldenburg.de">johannes.rudolph@thw-oldenburg.de</a>) | <a
+                    href="https://sprechfunk-uebung.de/" target="_blank">Generator</a> | <a
+                    href="https://github.com/wattnpapa/sprechfunk-uebung" target="_blank">GitHub-Repository</a></strong>
         </footer>
 
         <script type="module" src="src/app.js"></script>
