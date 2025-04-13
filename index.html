@@ -415,62 +415,85 @@
                 </div>
             </div>
 
-            <!-- Nachrichtenverteilung -->
-            <div class="card mb-3">
-                <div class="card-header">
-                    <h5 class="d-flex justify-content-between align-items-center">
-                        <span><i class="fas fa-chart-bar"></i> Nachrichtenverteilung</span>
-                        <button class="btn btn-sm btn-outline-secondary" data-bs-toggle="collapse"
-                            data-bs-target="#collapseDiagramm">
-                            <i class="fas fa-chevron-down"></i>
-                        </button>
-                    </h5>
-                </div>
-                <div id="collapseDiagramm" class="collapse show">
-                    <div class="card-body">
-                        <canvas id="distributionChart"></canvas>
+            <div class="row">
+                <div class="col-md-6">
+                    <!-- Nachrichtenverteilung -->
+                    <div class="card mb-3">
+                        <div class="card-header">
+                            <h5 class="d-flex justify-content-between align-items-center">
+                                <span><i class="fas fa-chart-bar"></i> Nachrichtenverteilung</span>
+                                <button class="btn btn-sm btn-outline-secondary" data-bs-toggle="collapse"
+                                    data-bs-target="#collapseDiagramm">
+                                    <i class="fas fa-chevron-down"></i>
+                                </button>
+                            </h5>
+                        </div>
+                        <div id="collapseDiagramm" class="collapse show">
+                            <div class="card-body">
+                                <canvas id="distributionChart"></canvas>
+                            </div>
+                        </div>
                     </div>
                 </div>
-            </div>
-
-
-            <!-- Dauer der Übung-->
-            <div class="card mb-3">
-                <div class="card-header">
-                    <h5 class="d-flex justify-content-between align-items-center">
-                        <span><i class="fas fa-clock"></i> Geschätzte Dauer der Übung</span>
-                        <button class="btn btn-sm btn-outline-secondary" data-bs-toggle="collapse"
-                            data-bs-target="#collapseDauer">
-                            <i class="fas fa-chevron-down"></i>
-                        </button>
-                    </h5>
-                </div>
-                <div id="collapseDauer" class="collapse show">
-                    <div class="card-body">
-                        <table class="table table-bordered">
-                            <thead class="table-dark">
-                                <tr>
-                                    <th></th>
-                                    <th>Dauer in Minuten</th>
-                                    <th>Dauer in Stunden und Minuten</th>
-                                    <th>Durchschnittliche Zeit pro Funkspruch (Sek.)</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <tr>
-                                    <td>Optimal</td>
-                                    <td id="dauerOptimalMinuten">- Min</td>
-                                    <td id="dauerOptimalStundenMinuten">- Std - Min</td>
-                                    <td id="durchschnittOptimal">- Sek</td>
-                                </tr>
-                                <tr>
-                                    <td>Langsam</td>
-                                    <td id="dauerLangsamMinuten">- Min</td>
-                                    <td id="dauerLangsamStundenMinuten">- Std - Min</td>
-                                    <td id="durchschnittLangsam">- Sek</td>
-                                </tr>
-                            </tbody>
-                        </table>
+                <div class="col-md-6">
+                    <!-- Dauer der Übung-->
+                    <div class="card mb-3">
+                        <div class="card-header">
+                            <h5 class="d-flex justify-content-between align-items-center">
+                                <span><i class="fas fa-clock"></i> Geschätzte Dauer der Übung</span>
+                                <button class="btn btn-sm btn-outline-secondary" data-bs-toggle="collapse"
+                                    data-bs-target="#collapseDauer">
+                                    <i class="fas fa-chevron-down"></i>
+                                </button>
+                            </h5>
+                        </div>
+                        <div id="collapseDauer" class="collapse show">
+                            <div class="card-body">
+                                <table class="table table-bordered">
+                                    <thead class="table-dark">
+                                        <tr>
+                                            <th></th>
+                                            <th>Dauer in Minuten</th>
+                                            <th>Dauer in Stunden und Minuten</th>
+                                            <th>Durchschnittliche Zeit pro Funkspruch (Sek.)</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr>
+                                            <td>Optimal</td>
+                                            <td id="dauerOptimalMinuten">- Min</td>
+                                            <td id="dauerOptimalStundenMinuten">- Std - Min</td>
+                                            <td id="durchschnittOptimal">- Sek</td>
+                                        </tr>
+                                        <tr>
+                                            <td>Langsam</td>
+                                            <td id="dauerLangsamMinuten">- Min</td>
+                                            <td id="dauerLangsamStundenMinuten">- Std - Min</td>
+                                            <td id="durchschnittLangsam">- Sek</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                                <div class="mt-3">
+                                    <h6>📘 Rechenformeln & Annahmen:</h6>
+                                    <p class="mb-1"><strong>Basis-Einheit:</strong> Alle Berechnungen basieren auf Sekunden.</p>
+                                    <p class="mb-1"><strong>Annahmen:</strong></p>
+                                    <ul class="mb-2">
+                                        <li>Wir schaffen es, <strong>1 Zeichen pro Sekunde</strong> mitzuschreiben.</li>
+                                        <li>Wir benötigen <strong>2 Sekunden pro Zeichen</strong>, um eine Nachricht zu übermitteln (sprechen).</li>
+                                    </ul>
+                                    <p class="mb-1"><strong>Optimale Dauer:</strong> <code>Sprechzeit + Mitschrift + Empfänger-Zeit + Verbindungsaufbau + Verbindungsabbau</code></p>
+                                    <ul class="mb-2">
+                                        <li><strong>Sprechzeit:</strong> Zeichenlänge / 2</li>
+                                        <li><strong>Mitschrift:</strong> Zeichenlänge</li>
+                                        <li><strong>Empfänger-Zeit:</strong> (Empfängerzahl - 1) × 2 Sekunden</li>
+                                        <li><strong>Verbindungsaufbau:</strong> 5 Sekunden + 3 Sekunden je zusätzlichem Empfänger</li>
+                                        <li><strong>Verbindungsabbau:</strong> 3 Sekunden</li>
+                                    </ul>
+                                    <p class="mb-1"><strong>Langsame Dauer:</strong> Optimale Dauer × 1.5 (wenn Wiederholung erforderlich)</p>
+                                    <p class="text-muted">Diese Formeln dienen zur realistischen Einschätzung der Gesamtdauer anhand der Nachrichteninhalte und Teilnehmeranzahl.</p>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
