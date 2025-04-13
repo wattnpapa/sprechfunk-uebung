@@ -83,7 +83,18 @@ Dies ist ein Werkzeug zur Erstellung von Übungsszenarien für den Sprechfunk im
 - In diesem Fall werden keine Lösungswörter generiert oder angezeigt, und die Funksprüche werden ohne zusätzliche Daten erstellt.
 
 ### Wie funktioniert die Schätzzeit der Übung?
-- Die Schätzzeit basiert auf der Anzahl der Funksprüche, der Anzahl der Empfänger und einer angenommenen Zeit pro Funkspruch. Diese Schätzung berücksichtigt auch mögliche Verzögerungen aufgrund von Wiederholungen.
+ - Die Schätzzeit basiert auf der Anzahl der Funksprüche, der Anzahl der Empfänger und einer angenommenen Zeit pro Funkspruch. Diese Schätzung berücksichtigt auch mögliche Verzögerungen aufgrund von Wiederholungen.
+
+### Wie funktioniert die Schätzzeit der Übung?
+
+Die Schätzzeit basiert auf einem detaillierten Rechenmodell, das folgende Annahmen trifft:
+
+ - Die Berechnungen erfolgen auf Basis von **Sekunden**.
+ - Es wird angenommen, dass ein Teilnehmer **1 Zeichen pro Sekunde** mitschreiben kann.
+ - Die Übertragung erfolgt mit einer Rate von **2 Sekunden pro Zeichen**.
+ - Weitere Faktoren sind die Anzahl der Empfänger, Verbindungsaufbau- und Abbauzeiten sowie ein zufälliger Wiederholungsfaktor bei schwierigen Nachrichten.
+
+Diese Parameter fließen in eine Formel ein, die sowohl eine **optimale** als auch eine **verzögerte** Dauer berechnet.
 
 ---
 
