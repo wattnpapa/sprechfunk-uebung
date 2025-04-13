@@ -34,6 +34,19 @@ jobs:
           BUILD_NR=${{ github.run_number }}
           echo "📦 Generiere build.json"
           echo "{\"buildDate\":\"$BUILD_DATE\",\"buildTime\":\"$BUILD_TIME\",\"commit\":\"$COMMIT_SHA\",\"runNumber\":$BUILD_NR}" > build.json
+      
+      - name: Generate firebase-config.js from secrets
+        run: |
+          mkdir -p src
+          cat src/firebase-config.template.js | \
+          sed "s|\${FIREBASE_API_KEY}|${{ secrets.FIREBASE_API_KEY }}|g" | \
+          sed "s|\${FIREBASE_AUTH_DOMAIN}|${{ secrets.FIREBASE_AUTH_DOMAIN }}|g" | \
+          sed "s|\${FIREBASE_PROJECT_ID}|${{ secrets.FIREBASE_PROJECT_ID }}|g" | \
+          sed "s|\${FIREBASE_STORAGE_BUCKET}|${{ secrets.FIREBASE_STORAGE_BUCKET }}|g" | \
+          sed "s|\${FIREBASE_MESSAGING_SENDER_ID}|${{ secrets.FIREBASE_MESSAGING_SENDER_ID }}|g" | \
+          sed "s|\${FIREBASE_APP_ID}|${{ secrets.FIREBASE_APP_ID }}|g" | \
+          sed "s|\${FIREBASE_MEASUREMENT_ID}|${{ secrets.FIREBASE_MEASUREMENT_ID }}|g" \
+          > src/firebase-config.js
 
       - name: Setup Pages
         uses: actions/configure-pages@v5

@@ -3,25 +3,17 @@ import { DateFormatter } from "./DateFormatter.js";
 import { FunkUebung } from "./FunkUebung.js";
 import { UebungHTMLGenerator } from './UebungHTMLGenerator.js';
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
+import { firebaseConfig } from './firebase-config.js';
 import { getFirestore } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
 import { doc, setDoc, getDoc } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
 
 export class AppController {
 
-    firebaseConfig = {
-        apiKey: "AIzaSyCXgZgEuWCHEiMBXE-cSXGkltDKcorEQL0",
-        authDomain: "sprechfunk-uebung.firebaseapp.com",
-        projectId: "sprechfunk-uebung",
-        storageBucket: "sprechfunk-uebung.firebasestorage.app",
-        messagingSenderId: "626900285631",
-        appId: "1:626900285631:web:7b79f5e121fb2255daee0a",
-        measurementId: "G-H43JEZB768"
-    };
 
     constructor() {
         console.log("📌 AppController wurde initialisiert");
 
-        const app = initializeApp(this.firebaseConfig);
+        const app = initializeApp(firebaseConfig);
         this.db = getFirestore(app);
 
         let buildInfo = "dev";
