@@ -595,6 +595,9 @@ class PDFGenerator {
     drawCompactFooter(pdf, funkUebung, generierungszeit, pdfWidth, pdfHeight, pageMargin) {
         pdf.setFont("helvetica", "normal");
         pdf.setFontSize(8);
+
+
+        pdf.text(funkUebung.name, pdf.internal.pageSize.getWidth() / 2, 4, { align: "center" });
     
         // Hinweis ganz unten (5 mm Abstand vom unteren Rand)
         pdf.text("Wörter in GROSSBUCHSTABEN müssen buchstabiert werden.", pdfWidth / 2, pdfHeight - 1.5, { align: "center" });
