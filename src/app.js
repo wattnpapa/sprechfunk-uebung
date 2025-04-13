@@ -416,7 +416,21 @@ export class AppController {
         this.zeigeUebungsdauer();
         this.startVerteilung();
         this.updateUebungLinks()
+        this.renderInputFromUebung();
         document.getElementById("output-container").style.display = "block";
+    }
+
+    renderInputFromUebung() {
+        // 🔍 Erkenne automatisch, welcher Lösungswort-Modus aktiv ist
+        let zentraleWorte = new Set(Object.values(this.funkUebung.loesungswoerter));
+        if (Object.keys(this.funkUebung.loesungswoerter).length === 0) {
+            document.getElementById("keineLoesungswoerter").checked = true;
+        } else if (zentraleWorte.size === 1) {
+            document.getElementById("zentralLoesungswort").checked = true;
+            document.getElementById("zentralLoesungswortInput").value = [...zentraleWorte][0];
+        } else {
+            document.getElementById("individuelleLoesungswoerter").checked = true;
+        }
     }
 
     /**
