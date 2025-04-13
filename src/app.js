@@ -147,6 +147,11 @@ export class AppController {
         document.getElementById("rufgruppe").value = this.funkUebung.rufgruppe;
         document.getElementById("nameDerUebung").value = this.funkUebung.name;
 
+        // 📅 Datum
+        const date = new Date(this.funkUebung.datum);
+        const isoDate = date.toISOString().split("T")[0];
+        document.getElementById("datum").value = isoDate;
+
         this.renderTeilnehmer();
 
         document.addEventListener("DOMContentLoaded", () => {

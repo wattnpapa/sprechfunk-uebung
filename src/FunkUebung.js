@@ -6,7 +6,7 @@ export class FunkUebung {
         this.id = uuidv4();
 
         this.createDate = new Date();
-        
+
         const jahr = new Date().getFullYear();
         const zufallsName = name || `${NAMENS_POOL[Math.floor(Math.random() * NAMENS_POOL.length)]} ${jahr}`;
         this.name = `Sprechfunkübung ${zufallsName}`;
@@ -14,6 +14,7 @@ export class FunkUebung {
         this.rufgruppe = "T_OL_GOLD-1";
         this.leitung = "Heros Wind 10";
         this.buildVersion = buildVersion;
+        this.datum = new Date();
 
         this.nachrichten = [];
 
