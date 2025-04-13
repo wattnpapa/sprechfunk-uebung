@@ -8,7 +8,7 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: read
+  contents: write
   pages: write
   id-token: write
 
@@ -59,3 +59,12 @@ jobs:
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v4
+      
+      - name: Set Version Tag
+        run: |
+          BUILD_DATE=$(date +'%Y%m%d-%H%M')
+          TAG_NAME="v$BUILD_DATE"
+          git config user.name "github-actions"
+          git config user.email "github-actions@github.com"
+          git tag $TAG_NAME
+          git push origin $TAG_NAME
