@@ -331,6 +331,7 @@ class PDFGenerator {
         const maxWidth = 120; // Maximale Breite für die Nachricht
         const maxWidthAnschrift = 70; // Maximale Breite für Anschrift
         const maxWidthRufname = 70; // Maximale Breite für Rufname der Gegenstelle
+        const maxWidthVerfasser = 40; // Maximale Breite für Rufname der Gegenstelle
         const blobMap = new Map();
         funkUebung.teilnehmerListe.forEach(teilnehmer => {
             let nachrichten = funkUebung.nachrichten[teilnehmer];
@@ -359,7 +360,7 @@ class PDFGenerator {
 
                 //Verfasser        
                 pdf.setFontSize(12);                       
-                this.adjustTextForWidth(pdf, teilnehmer, maxWidthAnschrift, 37, 192);
+                this.adjustTextForWidth(pdf, teilnehmer, maxWidthVerfasser, 37, 192);
             
                 // Nachricht (Umbrechen)
                 pdf.setFontSize(11.5);

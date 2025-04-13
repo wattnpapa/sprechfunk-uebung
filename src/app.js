@@ -16,7 +16,7 @@ export class AppController {
         const app = initializeApp(firebaseConfig);
         this.db = getFirestore(app);
         this.pagination = {
-            pageSize: 25,
+            pageSize: 10,
             currentPage: 0,
             lastVisible: null,
             totalCount: 0
@@ -421,7 +421,7 @@ export class AppController {
     }
 
     renderInputFromUebung() {
-        // 🔍 Erkenne automatisch, welcher Lösungswort-Modus aktiv ist
+        // 🔍 Lösungswörter erkennen
         let zentraleWorte = new Set(Object.values(this.funkUebung.loesungswoerter));
         if (Object.keys(this.funkUebung.loesungswoerter).length === 0) {
             document.getElementById("keineLoesungswoerter").checked = true;
@@ -431,6 +431,36 @@ export class AppController {
         } else {
             document.getElementById("individuelleLoesungswoerter").checked = true;
         }
+    
+        // 📅 Datum
+        const date = new Date(this.funkUebung.datum);
+        const isoDate = date.toISOString().split("T")[0];
+        document.getElementById("datum").value = isoDate;
+    
+        // 📝 Weitere Texteingaben
+        document.getElementById("nameDerUebung").value = this.funkUebung.name || "";
+        document.getElementById("rufgruppe").value = this.funkUebung.rufgruppe || "";
+        document.getElementById("leitung").value = this.funkUebung.leitung || "";
+    
+        // 🔢 Funkspruch-Einstellungen
+        document.getElementById("spruecheProTeilnehmer").value = this.funkUebung.spruecheProTeilnehmer;
+    
+        // 📊 Prozentangaben aktualisieren
+        const proTeilnehmer = this.funkUebung.spruecheProTeilnehmer || 1;
+        const updateProzent = (idProzent, idAnzahl, wert) => {
+            const prozent = Math.round((wert / proTeilnehmer) * 100);
+            document.getElementById(idProzent).value = prozent;
+            document.getElementById(idAnzahl).value = wert;
+            const span = document.getElementById("calc" + idAnzahl.charAt(0).toUpperCase() + idAnzahl.slice(1));
+            if (span) span.textContent = wert;
+        };
+    
+        updateProzent("prozentAnAlle", "spruecheAnAlle", this.funkUebung.spruecheAnAlle || 0);
+        updateProzent("prozentAnMehrere", "spruecheAnMehrere", this.funkUebung.spruecheAnMehrere || 0);
+        updateProzent("prozentAnBuchstabieren", "spruecheAnBuchstabieren", this.funkUebung.buchstabierenAn || 0);
+    
+        // Teilnehmerliste inkl. Lösungswörter anzeigen
+        this.renderTeilnehmer(false);
     }
 
     /**
