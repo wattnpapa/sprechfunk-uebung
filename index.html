@@ -42,8 +42,8 @@
         crossorigin="anonymous"></script>
     <!-- AutoTable für saubere Tabellen -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.23/jspdf.plugin.autotable.min.js"
-    integrity="sha512-P3z5YHtqjIxRAu1AjkWiIPWmMwO9jApnCMsa5s0UTgiDDEjTBjgEqRK0Wn0Uo8Ku3IDa1oer1CIBpTWAvqbmCA=="
-    crossorigin="anonymous"></script>
+        integrity="sha512-P3z5YHtqjIxRAu1AjkWiIPWmMwO9jApnCMsa5s0UTgiDDEjTBjgEqRK0Wn0Uo8Ku3IDa1oer1CIBpTWAvqbmCA=="
+        crossorigin="anonymous"></script>
     <!-- html2canvas für HTML-to-Image-Rendering -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"
         integrity="sha512-BNaRQnYJYiPSqHHDb58B0yaPfCu+Wgds8Gp/gU33kqBtgNS4tSPHuGibyoeqMV/TJlSKda6FXzoEyYGjTe+vXA=="
@@ -53,10 +53,10 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"
         integrity="sha512-E8QSvWZ0eCLGk4km3hxSsNmGWbLtSCSUcewDQPQWZF6pEU8GlT8a5fF32wOl1i8ftdMhssTrF/OhyGWwonTcXA=="
         crossorigin="anonymous"></script>
-        <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"
         integrity="sha512-XMVd28F1oH/O71fzwBnV7HucLxVwtxf26XV8P4wPk26EDxuGZ91N8bsOttmnomcCD3CS5ZMRL50H0GgOHvegtg=="
         crossorigin="anonymous"></script>
-        <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"
         integrity="sha512-Qlv6VSKh1gDKGoJbnyA5RMXYcvnpIqhO++MhIM2fStMcGT9i2T//tSwYFlcyoRRDcDZ+TYHpH8azBBCyhpSeqw=="
         crossorigin="anonymous"></script>
 
@@ -522,8 +522,8 @@
             </div>
 
         </div>
-
-        <div class="card mt-4" id="adminUebungsliste" style="display: none;">
+    <div id="adminArea" style="display: none;">
+        <div class="card mt-4" id="adminUebungsliste">
             <div class="card-header">
                 <h5 class="d-flex justify-content-between align-items-center">
                     <span><i class="fas fa-database"></i> Gespeicherte Übungen</span>
@@ -554,9 +554,9 @@
                             <div id="adminUebungslisteInfo" class="small text-muted"></div>
                             <div>
                                 <button class="btn btn-sm btn-outline-secondary me-2"
-                                    onclick="app.ladeAlleUebungen('prev')">← Vorherige</button>
+                                    onclick="admin.ladeAlleUebungen('prev')">← Vorherige</button>
                                 <button class="btn btn-sm btn-outline-secondary"
-                                    onclick="app.ladeAlleUebungen('next')">Nächste →</button>
+                                    onclick="admin.ladeAlleUebungen('next')">Nächste →</button>
                             </div>
                         </div>
                     </div>
@@ -564,6 +564,24 @@
             </div>
         </div>
 
+        <div class="card mt-4" id="adminDashboardStats">
+            <div class="card-header">
+                <h5 class="d-flex justify-content-between align-items-center">
+                    <span><i class="fas fa-chart-line"></i> Statistik: Übungen pro Zeit</span>
+                    <button class="btn btn-sm btn-outline-secondary" data-bs-toggle="collapse"
+                        data-bs-target="#collapseAdminStats">
+                        <i class="fas fa-chevron-down"></i>
+                    </button>
+                </h5>
+            </div>
+            <div id="collapseAdminStats" class="collapse show">
+                <div class="card-body">
+                    <canvas id="chartUebungenProTag"></canvas>
+                    <small class="text-muted">Anzahl gespeicherter Übungen nach Tag, Woche oder Monat</small>
+                </div>
+            </div>
+        </div>
+    </div>
 
 
         <footer class="main-footer">
