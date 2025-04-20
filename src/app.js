@@ -274,6 +274,7 @@ export class AppController {
         this.funkUebung.spruecheProTeilnehmer = Number(document.getElementById("spruecheProTeilnehmer").value);
         this.funkUebung.spruecheAnAlle = Number(document.getElementById("spruecheAnAlle").value);
         this.funkUebung.spruecheAnMehrere = Number(document.getElementById("spruecheAnMehrere").value);
+        this.funkUebung.buchstabierenAn = Number(document.getElementById("spruecheAnBuchstabieren").value);
         this.funkUebung.leitung = document.getElementById("leitung").value;
         this.funkUebung.rufgruppe = document.getElementById("rufgruppe").value;
         this.funkUebung.name = document.getElementById("nameDerUebung").value;
@@ -472,6 +473,23 @@ export class AppController {
         this.renderTeilnehmer(false);
     }
 
+    /* 
+     * Berechne Aktualisierung nach Änderung Prozentwerte Nachrichtentypen
+     */ 
+    calcMsgCount() {
+        const updateMsgCount = (idCalcTextResult,  idCalcValueResult, idProzentVariable, idSpruecheProTeilnehmer) => {
+            const spruecheProTeilnehmer = document.getElementById(idSpruecheProTeilnehmer).value;
+            const prozent = document.getElementById(idProzentVariable).value;
+            const msgCount = Math.round(  spruecheProTeilnehmer *  prozent / 100);
+            document.getElementById(idCalcTextResult).textContent = msgCount;
+            document.getElementById(idCalcValueResult).value = msgCount;
+        }
+
+        updateMsgCount("calcAnAlle","spruecheAnAlle","prozentAnAlle","spruecheProTeilnehmer");
+        updateMsgCount("calcAnMehrere","spruecheAnMehrere","prozentAnMehrere","spruecheProTeilnehmer");
+        updateMsgCount("calcAnBuchstabieren","spruecheAnBuchstabieren","prozentAnBuchstabieren","spruecheProTeilnehmer");
+    }
+    
     /**
      * Zeigt die aktuelle Seite im iframe an.
      */
