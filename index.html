@@ -249,14 +249,14 @@
                             <!-- Anzahl Funksprüche pro Teilnehmer -->
                             <div class="col-md-6 mb-3">
                                 <label class="form-label">Funksprüche pro Teilnehmer:</label>
-                                <input type="number" class="form-control" id="spruecheProTeilnehmer" min="1" value="50">
+                                <input type="number" class="form-control" id="spruecheProTeilnehmer" onchange="app.calcMsgCount()" min="1" value="50">
                             </div>
 
                             <!-- Nachrichten an alle -->
                             <div class="col-md-6 mb-6">
                                 <label class="form-label">% an Alle:</label>
                                 <div class="input-group">
-                                    <input type="number" class="form-control" id="prozentAnAlle" min="0" max="100"
+                                    <input type="number" class="form-control" id="prozentAnAlle" onchange="app.calcMsgCount()" min="0" max="100"
                                         value="10">
                                     <span class="input-group-text">%</span>
                                 </div>
@@ -267,7 +267,7 @@
                             <div class="col-md-6 mb-6">
                                 <label class="form-label">% an Mehrere:</label>
                                 <div class="input-group">
-                                    <input type="number" class="form-control" id="prozentAnMehrere" min="0" max="100"
+                                    <input type="number" class="form-control" id="prozentAnMehrere" onchange="app.calcMsgCount()" min="0" max="100"
                                         value="5">
                                     <span class="input-group-text">%</span>
                                 </div>
@@ -278,7 +278,7 @@
                             <div class="col-md-6 mb-6">
                                 <label class="form-label">% Buchstabier-Aufgaben:</label>
                                 <div class="input-group">
-                                    <input type="number" class="form-control" id="prozentAnBuchstabieren" min="0"
+                                    <input type="number" class="form-control" id="prozentAnBuchstabieren" onchange="app.calcMsgCount()" min="0"
                                         max="100" value="0">
                                     <span class="input-group-text">%</span>
                                 </div>
