@@ -12,7 +12,7 @@ export class AppController {
 
     constructor() {
         console.log("📌 AppController wurde initialisiert");
- 
+
         const app = initializeApp(firebaseConfig);
         this.db = getFirestore(app);
         this.pagination = {
@@ -104,8 +104,22 @@ export class AppController {
                     admin.renderUebungsStatistik();
                     document.getElementById("adminArea").style.display = "block";
                 }
-            });
 
+                // --- Globaler Button-Click-Tracking-Listener nach DOMContentLoaded ---
+                document.addEventListener("click", (event) => {
+                    if (event.target.closest("button")) {
+                        const button = event.target.closest("button");
+                        const label = button.innerText.trim() || button.getAttribute("aria-label") || "Unbekannter Button";
+                        if (typeof gtag === "function") {
+                            gtag('event', 'button_click', {
+                                'event_category': 'Interaktion',
+                                'event_label': label
+                            });
+                        }
+                    }
+                });
+                // --------------------------------------------------------------
+            });
     }
 
     updateVerteilung() {
