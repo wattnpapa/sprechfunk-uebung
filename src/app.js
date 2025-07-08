@@ -326,14 +326,33 @@ export class AppController {
                 console.error("Vorlage nicht gefunden.");
             }
         } else if (selectedTemplate == "upload" && file) {
-            // Wenn die benutzerdefinierte Funkspruch-Liste aktiviert ist und eine Datei hochgeladen wurde
             const reader = new FileReader();
-            reader.onload = function (event) {
-                this.funkUebung.funksprueche = data.split("\n").filter(s => s.trim() !== "");
+            reader.onload = (event) => {
+                let buffer = event.target.result;
+                let text;
+
+                try {
+                    // Primärversuch: UTF-8 dekodieren
+                    text = new TextDecoder("utf-8", { fatal: false }).decode(new Uint8Array(buffer));
+
+                    // Wenn Ersatzzeichen vorhanden sind, versuche stattdessen Windows-1252
+                    if (text.includes("\uFFFD")) {
+                        console.warn("⚠️ UTF-8 enthält ungültige Zeichen – versuche Windows-1252 als Fallback");
+                        text = new TextDecoder("windows-1252", { fatal: false }).decode(new Uint8Array(buffer));
+                    }
+                } catch (err) {
+                    console.error("❌ Fehler bei der Kodierungserkennung:", err);
+                    alert("Die Datei konnte nicht als Text gelesen werden.");
+                    return;
+                }
+
+                this.funkUebung.funksprueche = text
+                    .split("\n")
+                    .filter(s => s.trim() !== "");
 
                 this.generateAllPages();
             };
-            reader.readAsText(file);
+            reader.readAsArrayBuffer(file);
         } else {
             // Fehlerbehandlung, wenn keine Datei hochgeladen wurde und keine Vorlage ausgewählt wurde
             console.error("Bitte wählen Sie eine Vorlage oder laden Sie eine benutzerdefinierte Funkspruchliste hoch.");
