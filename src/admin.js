@@ -1,4 +1,4 @@
-import { getDocs, collection, query, orderBy, limit, startAfter } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
+import { getDocs, collection, query, orderBy, limit, startAfter, doc, deleteDoc } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
 
 class Admin {
 
@@ -38,8 +38,15 @@ class Admin {
             <td>${new Date(uebung.createDate).toLocaleString()}</td>
             <td><a href="?id=${uebung.id}" target="_blank">${uebung.name}</a></td>
             <td>${new Date(uebung.datum).toLocaleDateString()}</td>
+            <td>${uebung.rufgruppe}</td>
+            <td>${uebung.leitung}</td>
             <td title="${(uebung.teilnehmerListe || []).join('\n')}">${uebung.teilnehmerListe?.length ?? 0}</td>
             <td>${uebung.id}</td>
+            <td>
+                <button class="btn btn-sm btn-danger" onclick="admin.loescheUebung('${uebung.id}')">
+                    <i class="fas fa-trash-alt"></i>
+                </button>
+            </td>
         `;
             tbody.appendChild(tr);
             lastVisible = row;
@@ -54,6 +61,19 @@ class Admin {
             info.innerText = `Zeige ${from} - ${to} von ${this.pagination.totalCount}`;
         }
     }
+
+    async loescheUebung (uebungId) {
+        if (!confirm("Möchtest du diese Übung wirklich löschen?")) return;
+
+        try {
+            await deleteDoc(doc(this.db, "uebungen", uebungId));
+            console.log("✅ Übung gelöscht:", uebungId);
+            this.ladeAlleUebungen(); // Ansicht aktualisieren
+        } catch (error) {
+            console.error("❌ Fehler beim Löschen der Übung:", error);
+            alert("Fehler beim Löschen der Übung.");
+        }
+        };
 
     async ladeUebungsStatistik() {
         const snapshot = await getDocs(collection(this.db, "uebungen"));

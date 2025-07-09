@@ -16,7 +16,7 @@ export class AppController {
         const app = initializeApp(firebaseConfig);
         this.db = getFirestore(app);
         this.pagination = {
-            pageSize: 10,
+            pageSize: 25,
             currentPage: 0,
             lastVisible: null,
             totalCount: 0
