@@ -80,7 +80,7 @@ export class AppController {
                 // Vorlagen für Funksprüche
                 this.templatesFunksprueche = {
                     vorlageTHW: { text: "Funksprüche THW", filename: "assets/funksprueche/thw_funksprueche.txt" },
-                    vorlageFeuerwehr: { text: "Funksprüche Feuerwehr", filename: "assets/funksprueche/feuerwher_funksprueche.txt" },
+                    vorlageFeuerwehr: { text: "Funksprüche Feuerwehr", filename: "assets/funksprueche/feuerwehr_funksprueche.txt" },
                     vorlageResttungsdienst: { text: "Funksprüche Feuerwehr", filename: "assets/funksprueche/rettungsdienst_funksprueche.txt" },
                     vorlageLustig: { text: "Lustige Funksprüche", filename: "assets/funksprueche/funksprueche_lustig_kreativ.txt" }
                 };
