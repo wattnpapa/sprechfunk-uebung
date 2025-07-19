@@ -761,7 +761,8 @@ class PDFGenerator {
 
         const link = document.createElement("a");
         link.href = URL.createObjectURL(zipBlob);
-        link.download = `sprechfunk-uebung_${DateFormatter.formatNATODate(new Date())}.zip`;
+        const zipName = `${this.sanitizeFileName(funkUebung.name)}_${DateFormatter.formatNATODate(new Date())}.zip`;
+        link.download = zipName
         document.body.appendChild(link);
         link.click();
         document.body.removeChild(link);
