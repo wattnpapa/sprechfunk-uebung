@@ -1,0 +1,500 @@
+Erreichen gerade Einsatzstelle GARTENSTRASSE, Brandbekämpfung läuft planmäßig. Schlauchleitung verlegt. Maßnahmen laufen ohne Probleme.
+Sind jetzt in HANNOVER eingetroffen, Rauchentwicklung weiterhin stark, Sicht eingeschränkt. Warten auf weiteres Material.
+Setzen Arbeiten an der HAUPTSTRASSE fort, Materialnachschub angefordert. Lage unter Kontrolle.
+Lagemeldung aus DRESDEN: Evakuierung der Anwohner durchgeführt. Hydrant angeschlossen und einsatzbereit. Wetterlage erschwert weitere Arbeiten.
+Setzen Arbeiten an der POSTSTRASSE fort, Verkehrsabsicherung eingerichtet. Drehleiter in Stellung gebracht. Maßnahmen laufen ohne Probleme.
+Lagemeldung aus BERLIN: Zusammenarbeit mit THW koordiniert. Bereiten nächste Schritte vor.
+Einsatzkräfte sammeln sich an der HAUPTSTRASSE, Gebäude derzeit nicht betretbar, Einsturzgefahr. Atemschutzgeräteträger im Einsatz. Wetterlage erschwert weitere Arbeiten.
+Bereitstellungsraum an der WIESENWEG eingerichtet, Wasserversorgung stabil. Lage unter Kontrolle.
+Bereitstellungsraum an der BERGSTRASSE eingerichtet, Zusammenarbeit mit THW koordiniert. Einsatzende vorerst nicht absehbar.
+Starten Erkundung in BERLIN, Brandbekämpfung läuft planmäßig. Schlauchleitung verlegt. Einsatzende vorerst nicht absehbar.
+Bereitstellungsraum an der MARKTPLATZ eingerichtet, Materialnachschub angefordert. Drehleiter in Stellung gebracht. Maßnahmen laufen ohne Probleme.
+Setzen Arbeiten in MÜNCHEN fort, Wasserversorgung stabil. Wasserförderung über lange Wegstrecke aufgebaut. Warten auf weiteres Material.
+Setzen Arbeiten in BERLIN fort, Unterstützung weiterer Einheiten auf Anfahrt. Situation weiter im Blick.
+Lagemeldung aus BOCHUM: Zusammenarbeit mit THW koordiniert. Einsatzende vorerst nicht absehbar.
+Einsatzstelle BONN aktuell gesichert, Materialnachschub angefordert. Rettungstrupp in Bereitstellung. Wetterlage erschwert weitere Arbeiten.
+Aktuelle Situation an der NEUSTRASSE: Brandbekämpfung läuft planmäßig. Riegelstellung aufgebaut. Situation weiter im Blick.
+Setzen Arbeiten in WUPPERTAL fort, Materialnachschub angefordert. Bereiten nächste Schritte vor.
+Aktuelle Situation in STUTTGART: Zusammenarbeit mit THW koordiniert. Maßnahmen laufen ohne Probleme.
+Erreichen gerade Einsatzstelle WILHELMSTRASSE, Verkehrsabsicherung eingerichtet. Situation weiter im Blick.
+Beginnen mit Einsatzmaßnahmen in der RINGSTRASSE, Materialnachschub angefordert. Wetterlage erschwert weitere Arbeiten.
+Aktuelle Situation an der HAUPTSTRASSE: Brandbekämpfung läuft planmäßig. Bereiten nächste Schritte vor.
+Einsatzkräfte sammeln sich in MÜNCHEN, Unterstützung weiterer Einheiten auf Anfahrt. Warten auf weiteres Material.
+Einsatzstelle BOCHUM aktuell gesichert, Wasserversorgung stabil. Rauchentwicklung stark rückläufig. Kräfte bleiben weiter in Bereitschaft.
+Sind jetzt in der LINDENSTRASSE eingetroffen, Zusammenarbeit mit THW koordiniert. Maßnahmen laufen ohne Probleme.
+Starten Erkundung in der PARKSTRASSE, Gebäude derzeit nicht betretbar, Einsturzgefahr. Brandschutz sichergestellt. Keine weiteren Kräfte benötigt.
+Setzen Arbeiten in HANNOVER fort, Evakuierung der Anwohner durchgeführt. Einsatzende vorerst nicht absehbar.
+Sind jetzt in der RINGSTRASSE eingetroffen, Evakuierung der Anwohner durchgeführt. Weitere Maßnahmen abgestimmt.
+Einsatzkräfte sammeln sich in DRESDEN, Verkehrsabsicherung eingerichtet. Keine weiteren Kräfte benötigt.
+Beginnen mit Einsatzmaßnahmen in BERLIN, Brandbekämpfung läuft planmäßig. Weitere Maßnahmen abgestimmt.
+Starten Erkundung in FRANKFURT, Brandbekämpfung läuft planmäßig. Warten auf weiteres Material.
+Erreichen gerade Einsatzstelle BERLIN, Unterstützung weiterer Einheiten auf Anfahrt. Maßnahmen laufen ohne Probleme.
+Einsatzstelle DORTMUND aktuell gesichert, Unterstützung weiterer Einheiten auf Anfahrt. Maßnahmen laufen ohne Probleme.
+Bereitstellungsraum in MÜNSTER eingerichtet, Wasserversorgung stabil. Wetterlage erschwert weitere Arbeiten.
+Setzen Arbeiten in FRANKFURT fort, Zusammenarbeit mit THW koordiniert. Hydrant angeschlossen und einsatzbereit. Kräfte bleiben weiter in Bereitschaft.
+Starten Erkundung in der SCHLOSSALLEE, Materialnachschub angefordert. Rauchentwicklung stark rückläufig. Bereiten nächste Schritte vor.
+Starten Erkundung in MÜNSTER, Gebäude derzeit nicht betretbar, Einsturzgefahr. Einsatzende vorerst nicht absehbar.
+Starten Erkundung in MÜNCHEN, Gebäude derzeit nicht betretbar, Einsturzgefahr. Einsatzende vorerst nicht absehbar.
+Bereitstellungsraum an der BERGSTRASSE eingerichtet, Evakuierung der Anwohner durchgeführt. Keine weiteren Kräfte benötigt.
+Setzen Arbeiten in NÜRNBERG fort, Zusammenarbeit mit THW koordiniert. Angriffstrupp im Innenangriff. Einsatzende vorerst nicht absehbar.
+Einsatzstelle KÖLN aktuell gesichert, Zusammenarbeit mit THW koordiniert. Schlauchleitung verlegt. Weitere Maßnahmen abgestimmt.
+Sind jetzt in der POSTSTRASSE eingetroffen, Sanitätsdienst am Einsatzort eingerichtet. Lage unter Kontrolle.
+Starten Erkundung in der MARKTPLATZ, Gebäude derzeit nicht betretbar, Einsturzgefahr. Wasserförderung über lange Wegstrecke aufgebaut. Einsatzende vorerst nicht absehbar.
+Starten Erkundung in DRESDEN, Wasserversorgung stabil. Wasserförderung über lange Wegstrecke aufgebaut. Weitere Maßnahmen abgestimmt.
+Einsatzkräfte sammeln sich in FRANKFURT, Materialnachschub angefordert. Atemschutzgeräteträger im Einsatz. Lage unter Kontrolle.
+Einsatzkräfte sammeln sich in BONN, Verkehrsabsicherung eingerichtet. Bereiten nächste Schritte vor.
+Setzen Arbeiten in NÜRNBERG fort, Sanitätsdienst am Einsatzort eingerichtet. Löschwasserversorgung sichergestellt. Bereiten nächste Schritte vor.
+Einsatzkräfte sammeln sich in HANNOVER, Verkehrsabsicherung eingerichtet. Keine weiteren Kräfte benötigt.
+Lagemeldung aus der BAHNHOFSTRASSE: Verkehrsabsicherung eingerichtet. Keine weiteren Kräfte benötigt.
+Einsatzkräfte sammeln sich an der MÜHLENWEG, Rauchentwicklung weiterhin stark, Sicht eingeschränkt. Einsatzende vorerst nicht absehbar.
+Setzen Arbeiten in LEIPZIG fort, Brandbekämpfung läuft planmäßig. Riegelstellung aufgebaut. Warten auf weiteres Material.
+Lagemeldung aus der GARTENSTRASSE: Zusammenarbeit mit THW koordiniert. Hydrant angeschlossen und einsatzbereit. Warten auf weiteres Material.
+Erreichen gerade Einsatzstelle NEUSTRASSE, Sanitätsdienst am Einsatzort eingerichtet. Warten auf weiteres Material.
+Lagemeldung aus ESSEN: Sanitätsdienst am Einsatzort eingerichtet. Weitere Maßnahmen abgestimmt.
+Einsatzstelle NEUSTRASSE aktuell gesichert, Gebäude derzeit nicht betretbar, Einsturzgefahr. Weitere Maßnahmen abgestimmt.
+Einsatzstelle KÖLN aktuell gesichert, Evakuierung der Anwohner durchgeführt. Kräfte bleiben weiter in Bereitschaft.
+Starten Erkundung in MÜNSTER, Unterstützung weiterer Einheiten auf Anfahrt. Wasserförderung über lange Wegstrecke aufgebaut. Lage unter Kontrolle.
+Einsatzkräfte sammeln sich in LEIPZIG, Zusammenarbeit mit THW koordiniert. Warten auf weiteres Material.
+Setzen Arbeiten an der POSTSTRASSE fort, Sanitätsdienst am Einsatzort eingerichtet. Rauchentwicklung stark rückläufig. Weitere Maßnahmen abgestimmt.
+Bereitstellungsraum in KÖLN eingerichtet, Evakuierung der Anwohner durchgeführt. Brandschutz sichergestellt. Keine weiteren Kräfte benötigt.
+Beginnen mit Einsatzmaßnahmen in DUISBURG, Materialnachschub angefordert. Bereiten nächste Schritte vor.
+Lagemeldung aus NÜRNBERG: Sanitätsdienst am Einsatzort eingerichtet. Weitere Maßnahmen abgestimmt.
+Setzen Arbeiten an der MÜHLENWEG fort, Materialnachschub angefordert. Brandschutz sichergestellt. Lage unter Kontrolle.
+Lagemeldung aus der BAHNHOFSTRASSE: Materialnachschub angefordert. Drehleiter in Stellung gebracht. Wetterlage erschwert weitere Arbeiten.
+Bereitstellungsraum an der HAUPTSTRASSE eingerichtet, Brandbekämpfung läuft planmäßig. Keine weiteren Kräfte benötigt.
+Bereitstellungsraum an der MARKTPLATZ eingerichtet, Unterstützung weiterer Einheiten auf Anfahrt. Maßnahmen laufen ohne Probleme.
+Setzen Arbeiten in HANNOVER fort, Wasserversorgung stabil. Wetterlage erschwert weitere Arbeiten.
+Einsatzkräfte sammeln sich an der BAHNHOFSTRASSE, Verkehrsabsicherung eingerichtet. Riegelstellung aufgebaut. Lage unter Kontrolle.
+Einsatzkräfte sammeln sich in WUPPERTAL, Sanitätsdienst am Einsatzort eingerichtet. Schlauchleitung verlegt. Situation weiter im Blick.
+Erreichen gerade Einsatzstelle GARTENSTRASSE, Unterstützung weiterer Einheiten auf Anfahrt. Brandschutz sichergestellt. Bereiten nächste Schritte vor.
+Sind jetzt in BREMEN eingetroffen, Zusammenarbeit mit THW koordiniert. Situation weiter im Blick.
+Sind jetzt in der MARKTPLATZ eingetroffen, Gebäude derzeit nicht betretbar, Einsturzgefahr. Wasserförderung über lange Wegstrecke aufgebaut. Situation weiter im Blick.
+Starten Erkundung in der GARTENSTRASSE, Materialnachschub angefordert. Bereiten nächste Schritte vor.
+Erreichen gerade Einsatzstelle KÖLN, Verkehrsabsicherung eingerichtet. Einsatzende vorerst nicht absehbar.
+Beginnen mit Einsatzmaßnahmen in der MARKTPLATZ, Verkehrsabsicherung eingerichtet. Keine weiteren Kräfte benötigt.
+Beginnen mit Einsatzmaßnahmen in der LINDENSTRASSE, Sanitätsdienst am Einsatzort eingerichtet. Situation weiter im Blick.
+Beginnen mit Einsatzmaßnahmen in der KIRCHWEG, Evakuierung der Anwohner durchgeführt. Drehleiter in Stellung gebracht. Keine weiteren Kräfte benötigt.
+Lagemeldung aus der NEUSTRASSE: Wasserversorgung stabil. Feuer unter Kontrolle. Lage unter Kontrolle.
+Aktuelle Situation in STUTTGART: Evakuierung der Anwohner durchgeführt. Drehleiter in Stellung gebracht. Warten auf weiteres Material.
+Einsatzkräfte sammeln sich an der SCHLOSSALLEE, Brandbekämpfung läuft planmäßig. Maßnahmen laufen ohne Probleme.
+Starten Erkundung in BIELEFELD, Wasserversorgung stabil. Kräfte bleiben weiter in Bereitschaft.
+Aktuelle Situation an der MÜHLENWEG: Gebäude derzeit nicht betretbar, Einsturzgefahr. Hydrant angeschlossen und einsatzbereit. Keine weiteren Kräfte benötigt.
+Sind jetzt in der WILHELMSTRASSE eingetroffen, Unterstützung weiterer Einheiten auf Anfahrt. Warten auf weiteres Material.
+Sind jetzt in DUISBURG eingetroffen, Wasserversorgung stabil. Brandschutz sichergestellt. Maßnahmen laufen ohne Probleme.
+Aktuelle Situation in FRANKFURT: Gebäude derzeit nicht betretbar, Einsturzgefahr. Nachlöscharbeiten laufen. Situation weiter im Blick.
+Einsatzkräfte sammeln sich an der MARKTPLATZ, Wasserversorgung stabil. Rettungstrupp in Bereitstellung. Lage unter Kontrolle.
+Beginnen mit Einsatzmaßnahmen in ESSEN, Rauchentwicklung weiterhin stark, Sicht eingeschränkt. Einsatzende vorerst nicht absehbar.
+Bereitstellungsraum in HAMBURG eingerichtet, Sanitätsdienst am Einsatzort eingerichtet. Nachlöscharbeiten laufen. Weitere Maßnahmen abgestimmt.
+Einsatzkräfte sammeln sich an der LINDENSTRASSE, Brandbekämpfung läuft planmäßig. Löschwasserversorgung sichergestellt. Situation weiter im Blick.
+Setzen Arbeiten in STUTTGART fort, Materialnachschub angefordert. Bereiten nächste Schritte vor.
+Lagemeldung aus der SCHLOSSALLEE: Brandbekämpfung läuft planmäßig. Maßnahmen laufen ohne Probleme.
+Aktuelle Situation in MÜNCHEN: Gebäude derzeit nicht betretbar, Einsturzgefahr. Einsatzende vorerst nicht absehbar.
+Erreichen gerade Einsatzstelle GARTENSTRASSE, Gebäude derzeit nicht betretbar, Einsturzgefahr. Hydrant angeschlossen und einsatzbereit. Wetterlage erschwert weitere Arbeiten.
+Aktuelle Situation an der RINGSTRASSE: Unterstützung weiterer Einheiten auf Anfahrt. Atemschutzgeräteträger im Einsatz. Kräfte bleiben weiter in Bereitschaft.
+Einsatzkräfte sammeln sich an der SCHULSTRASSE, Materialnachschub angefordert. Einsatzende vorerst nicht absehbar.
+Einsatzkräfte sammeln sich in KÖLN, Wasserversorgung stabil. Einsatzende vorerst nicht absehbar.
+Beginnen mit Einsatzmaßnahmen in der SCHULSTRASSE, Rauchentwicklung weiterhin stark, Sicht eingeschränkt. Angriffstrupp im Innenangriff. Kräfte bleiben weiter in Bereitschaft.
+Lagemeldung aus WUPPERTAL: Gebäude derzeit nicht betretbar, Einsturzgefahr. Feuer unter Kontrolle. Wetterlage erschwert weitere Arbeiten.
+Aktuelle Situation in KÖLN: Wasserversorgung stabil. Rettungstrupp in Bereitstellung. Kräfte bleiben weiter in Bereitschaft.
+Bereitstellungsraum an der INDUSTRIESTRASSE eingerichtet, Gebäude derzeit nicht betretbar, Einsturzgefahr. Keine weiteren Kräfte benötigt.
+Sind jetzt in NÜRNBERG eingetroffen, Materialnachschub angefordert. Rettungstrupp in Bereitstellung. Bereiten nächste Schritte vor.
+Einsatzkräfte sammeln sich in WUPPERTAL, Zusammenarbeit mit THW koordiniert. Atemschutzgeräteträger im Einsatz. Weitere Maßnahmen abgestimmt.
+Einsatzkräfte sammeln sich in STUTTGART, Gebäude derzeit nicht betretbar, Einsturzgefahr. Bereiten nächste Schritte vor.
+Lagemeldung aus der WILHELMSTRASSE: Verkehrsabsicherung eingerichtet. Hydrant angeschlossen und einsatzbereit. Warten auf weiteres Material.
+Setzen Arbeiten an der WIESENWEG fort, Wasserversorgung stabil. Lüftungsmaßnahmen eingeleitet. Wetterlage erschwert weitere Arbeiten.
+Starten Erkundung in ESSEN, Evakuierung der Anwohner durchgeführt. Nachlöscharbeiten laufen. Bereiten nächste Schritte vor.
+Erreichen gerade Einsatzstelle STUTTGART, Sanitätsdienst am Einsatzort eingerichtet. Wetterlage erschwert weitere Arbeiten.
+Aktuelle Situation in KÖLN: Zusammenarbeit mit THW koordiniert. Lage auf Sicht stabil. Bereiten nächste Schritte vor.
+Beginnen mit Einsatzmaßnahmen in der WIESENWEG, Evakuierung der Anwohner durchgeführt. Schlauchleitung verlegt. Wetterlage erschwert weitere Arbeiten.
+Einsatzstelle WILHELMSTRASSE aktuell gesichert, Evakuierung der Anwohner durchgeführt. Feuer unter Kontrolle. Wetterlage erschwert weitere Arbeiten.
+Beginnen mit Einsatzmaßnahmen in DRESDEN, Sanitätsdienst am Einsatzort eingerichtet. Hydrant angeschlossen und einsatzbereit. Situation weiter im Blick.
+Einsatzstelle BIELEFELD aktuell gesichert, Gebäude derzeit nicht betretbar, Einsturzgefahr. Angriffstrupp im Innenangriff. Wetterlage erschwert weitere Arbeiten.
+Erreichen gerade Einsatzstelle MÜNCHEN, Unterstützung weiterer Einheiten auf Anfahrt. Bereiten nächste Schritte vor.
+Einsatzstelle DRESDEN aktuell gesichert, Zusammenarbeit mit THW koordiniert. Riegelstellung aufgebaut. Weitere Maßnahmen abgestimmt.
+Setzen Arbeiten in WUPPERTAL fort, Unterstützung weiterer Einheiten auf Anfahrt. Atemschutzgeräteträger im Einsatz. Weitere Maßnahmen abgestimmt.
+Setzen Arbeiten an der RINGSTRASSE fort, Wasserversorgung stabil. Atemschutzgeräteträger im Einsatz. Situation weiter im Blick.
+Einsatzkräfte sammeln sich an der MARKTPLATZ, Brandbekämpfung läuft planmäßig. Rauchentwicklung stark rückläufig. Kräfte bleiben weiter in Bereitschaft.
+Bereitstellungsraum in DUISBURG eingerichtet, Gebäude derzeit nicht betretbar, Einsturzgefahr. Warten auf weiteres Material.
+Beginnen mit Einsatzmaßnahmen in der LINDENSTRASSE, Gebäude derzeit nicht betretbar, Einsturzgefahr. Maßnahmen laufen ohne Probleme.
+Beginnen mit Einsatzmaßnahmen in BOCHUM, Zusammenarbeit mit THW koordiniert. Atemschutzgeräteträger im Einsatz. Situation weiter im Blick.
+Aktuelle Situation an der MÜHLENWEG: Materialnachschub angefordert. Bereiten nächste Schritte vor.
+Einsatzstelle FRIEDRICHSTRASSE aktuell gesichert, Brandbekämpfung läuft planmäßig. Wetterlage erschwert weitere Arbeiten.
+Sind jetzt in der FRIEDRICHSTRASSE eingetroffen, Rauchentwicklung weiterhin stark, Sicht eingeschränkt. Angriffstrupp im Innenangriff. Keine weiteren Kräfte benötigt.
+Erreichen gerade Einsatzstelle BIELEFELD, Unterstützung weiterer Einheiten auf Anfahrt. Einsatzende vorerst nicht absehbar.
+Sind jetzt in WUPPERTAL eingetroffen, Materialnachschub angefordert. Bereiten nächste Schritte vor.
+Einsatzkräfte sammeln sich in ESSEN, Gebäude derzeit nicht betretbar, Einsturzgefahr. Schlauchleitung verlegt. Lage unter Kontrolle.
+Setzen Arbeiten an der WILHELMSTRASSE fort, Materialnachschub angefordert. Kräfte bleiben weiter in Bereitschaft.
+Beginnen mit Einsatzmaßnahmen in der LINDENSTRASSE, Gebäude derzeit nicht betretbar, Einsturzgefahr. Wasserförderung über lange Wegstrecke aufgebaut. Weitere Maßnahmen abgestimmt.
+Lagemeldung aus der MÜHLENWEG: Verkehrsabsicherung eingerichtet. Feuer unter Kontrolle. Keine weiteren Kräfte benötigt.
+Starten Erkundung in WUPPERTAL, Materialnachschub angefordert. Einsatzende vorerst nicht absehbar.
+Starten Erkundung in der BAHNHOFSTRASSE, Sanitätsdienst am Einsatzort eingerichtet. Maßnahmen laufen ohne Probleme.
+Einsatzstelle PARKSTRASSE aktuell gesichert, Wasserversorgung stabil. Feuer unter Kontrolle. Maßnahmen laufen ohne Probleme.
+Sind jetzt in ESSEN eingetroffen, Evakuierung der Anwohner durchgeführt. Brandschutz sichergestellt. Bereiten nächste Schritte vor.
+Erreichen gerade Einsatzstelle FRANKFURT, Evakuierung der Anwohner durchgeführt. Atemschutzgeräteträger im Einsatz. Wetterlage erschwert weitere Arbeiten.
+Sind jetzt in MÜNCHEN eingetroffen, Unterstützung weiterer Einheiten auf Anfahrt. Einsatzende vorerst nicht absehbar.
+Erreichen gerade Einsatzstelle MÜNCHEN, Materialnachschub angefordert. Wasserförderung über lange Wegstrecke aufgebaut. Lage unter Kontrolle.
+Erreichen gerade Einsatzstelle BREMEN, Materialnachschub angefordert. Lüftungsmaßnahmen eingeleitet. Weitere Maßnahmen abgestimmt.
+Setzen Arbeiten in HANNOVER fort, Unterstützung weiterer Einheiten auf Anfahrt. Rettungstrupp in Bereitstellung. Lage unter Kontrolle.
+Aktuelle Situation in BERLIN: Rauchentwicklung weiterhin stark, Sicht eingeschränkt. Rauchentwicklung stark rückläufig. Maßnahmen laufen ohne Probleme.
+Einsatzstelle DORTMUND aktuell gesichert, Evakuierung der Anwohner durchgeführt. Rettungstrupp in Bereitstellung. Maßnahmen laufen ohne Probleme.
+Erreichen gerade Einsatzstelle HANNOVER, Verkehrsabsicherung eingerichtet. Warten auf weiteres Material.
+Bereitstellungsraum an der LINDENSTRASSE eingerichtet, Evakuierung der Anwohner durchgeführt. Hydrant angeschlossen und einsatzbereit. Lage unter Kontrolle.
+Starten Erkundung in der BAHNHOFSTRASSE, Zusammenarbeit mit THW koordiniert. Kräfte bleiben weiter in Bereitschaft.
+Starten Erkundung in HANNOVER, Unterstützung weiterer Einheiten auf Anfahrt. Feuer unter Kontrolle. Weitere Maßnahmen abgestimmt.
+Setzen Arbeiten in DRESDEN fort, Rauchentwicklung weiterhin stark, Sicht eingeschränkt. Hydrant angeschlossen und einsatzbereit. Maßnahmen laufen ohne Probleme.
+Bereitstellungsraum an der BERGSTRASSE eingerichtet, Evakuierung der Anwohner durchgeführt. Rettungstrupp in Bereitstellung. Einsatzende vorerst nicht absehbar.
+Erreichen gerade Einsatzstelle GARTENSTRASSE, Rauchentwicklung weiterhin stark, Sicht eingeschränkt. Riegelstellung aufgebaut. Bereiten nächste Schritte vor.
+Starten Erkundung in der MARKTPLATZ, Materialnachschub angefordert. Bereiten nächste Schritte vor.
+Einsatzstelle MÜNSTER aktuell gesichert, Sanitätsdienst am Einsatzort eingerichtet. Weitere Maßnahmen abgestimmt.
+Beginnen mit Einsatzmaßnahmen in LEIPZIG, Gebäude derzeit nicht betretbar, Einsturzgefahr. Brandschutz sichergestellt. Wetterlage erschwert weitere Arbeiten.
+Starten Erkundung in der INDUSTRIESTRASSE, Rauchentwicklung weiterhin stark, Sicht eingeschränkt. Weitere Maßnahmen abgestimmt.
+Bereitstellungsraum in MÜNSTER eingerichtet, Brandbekämpfung läuft planmäßig. Einsatzende vorerst nicht absehbar.
+Sind jetzt in DUISBURG eingetroffen, Gebäude derzeit nicht betretbar, Einsturzgefahr. Hydrant angeschlossen und einsatzbereit. Weitere Maßnahmen abgestimmt.
+Einsatzkräfte sammeln sich an der FRIEDRICHSTRASSE, Wasserversorgung stabil. Riegelstellung aufgebaut. Maßnahmen laufen ohne Probleme.
+Beginnen mit Einsatzmaßnahmen in der POSTSTRASSE, Brandbekämpfung läuft planmäßig. Löschwasserversorgung sichergestellt. Situation weiter im Blick.
+Setzen Arbeiten in BONN fort, Unterstützung weiterer Einheiten auf Anfahrt. Rettungstrupp in Bereitstellung. Maßnahmen laufen ohne Probleme.
+Setzen Arbeiten an der INDUSTRIESTRASSE fort, Unterstützung weiterer Einheiten auf Anfahrt. Schlauchleitung verlegt. Maßnahmen laufen ohne Probleme.
+Beginnen mit Einsatzmaßnahmen in der WIESENWEG, Brandbekämpfung läuft planmäßig. Warten auf weiteres Material.
+Einsatzkräfte sammeln sich an der MARKTPLATZ, Unterstützung weiterer Einheiten auf Anfahrt. Schlauchleitung verlegt. Weitere Maßnahmen abgestimmt.
+Aktuelle Situation an der BAHNHOFSTRASSE: Evakuierung der Anwohner durchgeführt. Warten auf weiteres Material.
+Aktuelle Situation in BIELEFELD: Wasserversorgung stabil. Feuer unter Kontrolle. Keine weiteren Kräfte benötigt.
+Starten Erkundung in der FRIEDRICHSTRASSE, Evakuierung der Anwohner durchgeführt. Situation weiter im Blick.
+Aktuelle Situation in HAMBURG: Gebäude derzeit nicht betretbar, Einsturzgefahr. Löschwasserversorgung sichergestellt. Wetterlage erschwert weitere Arbeiten.
+Aktuelle Situation an der BERGSTRASSE: Materialnachschub angefordert. Weitere Maßnahmen abgestimmt.
+Einsatzkräfte sammeln sich in MÜNCHEN, Verkehrsabsicherung eingerichtet. Maßnahmen laufen ohne Probleme.
+Beginnen mit Einsatzmaßnahmen in der GARTENSTRASSE, Wasserversorgung stabil. Lage unter Kontrolle.
+Einsatzstelle MÜHLENWEG aktuell gesichert, Rauchentwicklung weiterhin stark, Sicht eingeschränkt. Atemschutzgeräteträger im Einsatz. Lage unter Kontrolle.
+Einsatzstelle HAMBURG aktuell gesichert, Verkehrsabsicherung eingerichtet. Lage auf Sicht stabil. Wetterlage erschwert weitere Arbeiten.
+Starten Erkundung in BONN, Wasserversorgung stabil. Lüftungsmaßnahmen eingeleitet. Bereiten nächste Schritte vor.
+Setzen Arbeiten an der LINDENSTRASSE fort, Gebäude derzeit nicht betretbar, Einsturzgefahr. Maßnahmen laufen ohne Probleme.
+Starten Erkundung in der RINGSTRASSE, Materialnachschub angefordert. Situation weiter im Blick.
+Lagemeldung aus DUISBURG: Brandbekämpfung läuft planmäßig. Warten auf weiteres Material.
+Starten Erkundung in DORTMUND, Evakuierung der Anwohner durchgeführt. Löschwasserversorgung sichergestellt. Situation weiter im Blick.
+Bereitstellungsraum an der BAHNHOFSTRASSE eingerichtet, Zusammenarbeit mit THW koordiniert. Bereiten nächste Schritte vor.
+Lagemeldung aus ESSEN: Evakuierung der Anwohner durchgeführt. Lage unter Kontrolle.
+Einsatzstelle KIRCHWEG aktuell gesichert, Wasserversorgung stabil. Maßnahmen laufen ohne Probleme.
+Bereitstellungsraum in DUISBURG eingerichtet, Unterstützung weiterer Einheiten auf Anfahrt. Situation weiter im Blick.
+Lagemeldung aus KÖLN: Unterstützung weiterer Einheiten auf Anfahrt. Brandschutz sichergestellt. Bereiten nächste Schritte vor.
+Starten Erkundung in der LINDENSTRASSE, Verkehrsabsicherung eingerichtet. Situation weiter im Blick.
+Erreichen gerade Einsatzstelle SCHLOSSALLEE, Materialnachschub angefordert. Riegelstellung aufgebaut. Weitere Maßnahmen abgestimmt.
+Aktuelle Situation an der SCHLOSSALLEE: Zusammenarbeit mit THW koordiniert. Bereiten nächste Schritte vor.
+Aktuelle Situation an der FRIEDRICHSTRASSE: Sanitätsdienst am Einsatzort eingerichtet. Bereiten nächste Schritte vor.
+Aktuelle Situation in STUTTGART: Sanitätsdienst am Einsatzort eingerichtet. Schlauchleitung verlegt. Kräfte bleiben weiter in Bereitschaft.
+Einsatzstelle INDUSTRIESTRASSE aktuell gesichert, Materialnachschub angefordert. Bereiten nächste Schritte vor.
+Lagemeldung aus DUISBURG: Unterstützung weiterer Einheiten auf Anfahrt. Riegelstellung aufgebaut. Weitere Maßnahmen abgestimmt.
+Aktuelle Situation in ESSEN: Gebäude derzeit nicht betretbar, Einsturzgefahr. Bereiten nächste Schritte vor.
+Einsatzstelle LEIPZIG aktuell gesichert, Sanitätsdienst am Einsatzort eingerichtet. Kräfte bleiben weiter in Bereitschaft.
+Bereitstellungsraum in HAMBURG eingerichtet, Materialnachschub angefordert. Schlauchleitung verlegt. Situation weiter im Blick.
+Einsatzkräfte sammeln sich in HANNOVER, Rauchentwicklung weiterhin stark, Sicht eingeschränkt. Drehleiter in Stellung gebracht. Kräfte bleiben weiter in Bereitschaft.
+Erreichen gerade Einsatzstelle KIRCHWEG, Wasserversorgung stabil. Schlauchleitung verlegt. Bereiten nächste Schritte vor.
+Beginnen mit Einsatzmaßnahmen in MÜNSTER, Gebäude derzeit nicht betretbar, Einsturzgefahr. Löschwasserversorgung sichergestellt. Weitere Maßnahmen abgestimmt.
+Bereitstellungsraum in DUISBURG eingerichtet, Zusammenarbeit mit THW koordiniert. Drehleiter in Stellung gebracht. Warten auf weiteres Material.
+Erreichen gerade Einsatzstelle LEIPZIG, Brandbekämpfung läuft planmäßig. Einsatzende vorerst nicht absehbar.
+Aktuelle Situation an der FRIEDRICHSTRASSE: Unterstützung weiterer Einheiten auf Anfahrt. Keine weiteren Kräfte benötigt.
+Aktuelle Situation an der MARKTPLATZ: Zusammenarbeit mit THW koordiniert. Rettungstrupp in Bereitstellung. Warten auf weiteres Material.
+Erreichen gerade Einsatzstelle RINGSTRASSE, Materialnachschub angefordert. Nachlöscharbeiten laufen. Weitere Maßnahmen abgestimmt.
+Erreichen gerade Einsatzstelle MÜNCHEN, Sanitätsdienst am Einsatzort eingerichtet. Weitere Maßnahmen abgestimmt.
+Beginnen mit Einsatzmaßnahmen in der SCHULSTRASSE, Rauchentwicklung weiterhin stark, Sicht eingeschränkt. Lage unter Kontrolle.
+Sind jetzt in ESSEN eingetroffen, Verkehrsabsicherung eingerichtet. Lage unter Kontrolle.
+Lagemeldung aus DUISBURG: Gebäude derzeit nicht betretbar, Einsturzgefahr. Weitere Maßnahmen abgestimmt.
+Einsatzkräfte sammeln sich in NÜRNBERG, Wasserversorgung stabil. Drehleiter in Stellung gebracht. Keine weiteren Kräfte benötigt.
+Sind jetzt in der RINGSTRASSE eingetroffen, Evakuierung der Anwohner durchgeführt. Rettungstrupp in Bereitstellung. Warten auf weiteres Material.
+Beginnen mit Einsatzmaßnahmen in HANNOVER, Unterstützung weiterer Einheiten auf Anfahrt. Weitere Maßnahmen abgestimmt.
+Einsatzkräfte sammeln sich an der INDUSTRIESTRASSE, Brandbekämpfung läuft planmäßig. Wasserförderung über lange Wegstrecke aufgebaut. Wetterlage erschwert weitere Arbeiten.
+Beginnen mit Einsatzmaßnahmen in STUTTGART, Zusammenarbeit mit THW koordiniert. Drehleiter in Stellung gebracht. Einsatzende vorerst nicht absehbar.
+Einsatzstelle HAUPTSTRASSE aktuell gesichert, Brandbekämpfung läuft planmäßig. Wasserförderung über lange Wegstrecke aufgebaut. Kräfte bleiben weiter in Bereitschaft.
+Starten Erkundung in der KIRCHWEG, Evakuierung der Anwohner durchgeführt. Riegelstellung aufgebaut. Weitere Maßnahmen abgestimmt.
+Einsatzstelle MÜNSTER aktuell gesichert, Sanitätsdienst am Einsatzort eingerichtet. Löschwasserversorgung sichergestellt. Situation weiter im Blick.
+Beginnen mit Einsatzmaßnahmen in FRANKFURT, Unterstützung weiterer Einheiten auf Anfahrt. Drehleiter in Stellung gebracht. Warten auf weiteres Material.
+Einsatzkräfte sammeln sich in MÜNSTER, Materialnachschub angefordert. Rauchentwicklung stark rückläufig. Einsatzende vorerst nicht absehbar.
+Einsatzstelle BAHNHOFSTRASSE aktuell gesichert, Verkehrsabsicherung eingerichtet. Rauchentwicklung stark rückläufig. Einsatzende vorerst nicht absehbar.
+Einsatzstelle LINDENSTRASSE aktuell gesichert, Zusammenarbeit mit THW koordiniert. Situation weiter im Blick.
+Aktuelle Situation in BOCHUM: Unterstützung weiterer Einheiten auf Anfahrt. Kräfte bleiben weiter in Bereitschaft.
+Aktuelle Situation in DRESDEN: Evakuierung der Anwohner durchgeführt. Riegelstellung aufgebaut. Wetterlage erschwert weitere Arbeiten.
+Beginnen mit Einsatzmaßnahmen in der SCHULSTRASSE, Wasserversorgung stabil. Warten auf weiteres Material.
+Sind jetzt in DUISBURG eingetroffen, Gebäude derzeit nicht betretbar, Einsturzgefahr. Kräfte bleiben weiter in Bereitschaft.
+Erreichen gerade Einsatzstelle MÜNCHEN, Zusammenarbeit mit THW koordiniert. Lage unter Kontrolle.
+Einsatzstelle ESSEN aktuell gesichert, Sanitätsdienst am Einsatzort eingerichtet. Drehleiter in Stellung gebracht. Weitere Maßnahmen abgestimmt.
+Aktuelle Situation an der HAUPTSTRASSE: Brandbekämpfung läuft planmäßig. Nachlöscharbeiten laufen. Kräfte bleiben weiter in Bereitschaft.
+Beginnen mit Einsatzmaßnahmen in WUPPERTAL, Brandbekämpfung läuft planmäßig. Atemschutzgeräteträger im Einsatz. Kräfte bleiben weiter in Bereitschaft.
+Starten Erkundung in HAMBURG, Zusammenarbeit mit THW koordiniert. Rettungstrupp in Bereitstellung. Lage unter Kontrolle.
+Setzen Arbeiten an der LINDENSTRASSE fort, Rauchentwicklung weiterhin stark, Sicht eingeschränkt. Einsatzende vorerst nicht absehbar.
+Einsatzstelle DORTMUND aktuell gesichert, Zusammenarbeit mit THW koordiniert. Situation weiter im Blick.
+Einsatzstelle GARTENSTRASSE aktuell gesichert, Brandbekämpfung läuft planmäßig. Bereiten nächste Schritte vor.
+Einsatzstelle BERLIN aktuell gesichert, Verkehrsabsicherung eingerichtet. Warten auf weiteres Material.
+Beginnen mit Einsatzmaßnahmen in der SCHULSTRASSE, Evakuierung der Anwohner durchgeführt. Nachlöscharbeiten laufen. Weitere Maßnahmen abgestimmt.
+Einsatzstelle PARKSTRASSE aktuell gesichert, Rauchentwicklung weiterhin stark, Sicht eingeschränkt. Einsatzende vorerst nicht absehbar.
+Beginnen mit Einsatzmaßnahmen in BIELEFELD, Materialnachschub angefordert. Kräfte bleiben weiter in Bereitschaft.
+Aktuelle Situation an der MARKTPLATZ: Unterstützung weiterer Einheiten auf Anfahrt. Einsatzende vorerst nicht absehbar.
+Sind jetzt in der NEUSTRASSE eingetroffen, Materialnachschub angefordert. Maßnahmen laufen ohne Probleme.
+Beginnen mit Einsatzmaßnahmen in DUISBURG, Brandbekämpfung läuft planmäßig. Lüftungsmaßnahmen eingeleitet. Warten auf weiteres Material.
+Lagemeldung aus BIELEFELD: Brandbekämpfung läuft planmäßig. Einsatzende vorerst nicht absehbar.
+Bereitstellungsraum an der FRIEDRICHSTRASSE eingerichtet, Gebäude derzeit nicht betretbar, Einsturzgefahr. Lüftungsmaßnahmen eingeleitet. Lage unter Kontrolle.
+Starten Erkundung in BREMEN, Verkehrsabsicherung eingerichtet. Maßnahmen laufen ohne Probleme.
+Starten Erkundung in DUISBURG, Materialnachschub angefordert. Lage unter Kontrolle.
+Beginnen mit Einsatzmaßnahmen in MÜNSTER, Evakuierung der Anwohner durchgeführt. Angriffstrupp im Innenangriff. Wetterlage erschwert weitere Arbeiten.
+Setzen Arbeiten an der BAHNHOFSTRASSE fort, Evakuierung der Anwohner durchgeführt. Wasserförderung über lange Wegstrecke aufgebaut. Keine weiteren Kräfte benötigt.
+Lagemeldung aus der HAUPTSTRASSE: Evakuierung der Anwohner durchgeführt. Kräfte bleiben weiter in Bereitschaft.
+Erreichen gerade Einsatzstelle ESSEN, Materialnachschub angefordert. Brandschutz sichergestellt. Wetterlage erschwert weitere Arbeiten.
+Bereitstellungsraum in DORTMUND eingerichtet, Evakuierung der Anwohner durchgeführt. Atemschutzgeräteträger im Einsatz. Maßnahmen laufen ohne Probleme.
+Starten Erkundung in STUTTGART, Sanitätsdienst am Einsatzort eingerichtet. Keine weiteren Kräfte benötigt.
+Sind jetzt in STUTTGART eingetroffen, Zusammenarbeit mit THW koordiniert. Kräfte bleiben weiter in Bereitschaft.
+Aktuelle Situation in BREMEN: Evakuierung der Anwohner durchgeführt. Lage unter Kontrolle.
+Beginnen mit Einsatzmaßnahmen in BIELEFELD, Rauchentwicklung weiterhin stark, Sicht eingeschränkt. Wetterlage erschwert weitere Arbeiten.
+Aktuelle Situation an der POSTSTRASSE: Sanitätsdienst am Einsatzort eingerichtet. Bereiten nächste Schritte vor.
+Einsatzkräfte sammeln sich in LEIPZIG, Wasserversorgung stabil. Hydrant angeschlossen und einsatzbereit. Einsatzende vorerst nicht absehbar.
+Beginnen mit Einsatzmaßnahmen in KÖLN, Rauchentwicklung weiterhin stark, Sicht eingeschränkt. Kräfte bleiben weiter in Bereitschaft.
+Sind jetzt in der INDUSTRIESTRASSE eingetroffen, Gebäude derzeit nicht betretbar, Einsturzgefahr. Situation weiter im Blick.
+Einsatzstelle RINGSTRASSE aktuell gesichert, Gebäude derzeit nicht betretbar, Einsturzgefahr. Lage unter Kontrolle.
+Erreichen gerade Einsatzstelle HAMBURG, Sanitätsdienst am Einsatzort eingerichtet. Lüftungsmaßnahmen eingeleitet. Maßnahmen laufen ohne Probleme.
+Einsatzstelle LINDENSTRASSE aktuell gesichert, Sanitätsdienst am Einsatzort eingerichtet. Atemschutzgeräteträger im Einsatz. Keine weiteren Kräfte benötigt.
+Erreichen gerade Einsatzstelle BIELEFELD, Gebäude derzeit nicht betretbar, Einsturzgefahr. Maßnahmen laufen ohne Probleme.
+Aktuelle Situation in MÜNSTER: Unterstützung weiterer Einheiten auf Anfahrt. Warten auf weiteres Material.
+Lagemeldung aus HAMBURG: Gebäude derzeit nicht betretbar, Einsturzgefahr. Maßnahmen laufen ohne Probleme.
+Sind jetzt in MÜNCHEN eingetroffen, Brandbekämpfung läuft planmäßig. Schlauchleitung verlegt. Kräfte bleiben weiter in Bereitschaft.
+Sind jetzt in der NEUSTRASSE eingetroffen, Wasserversorgung stabil. Atemschutzgeräteträger im Einsatz. Maßnahmen laufen ohne Probleme.
+Bereitstellungsraum an der SCHULSTRASSE eingerichtet, Wasserversorgung stabil. Wasserförderung über lange Wegstrecke aufgebaut. Bereiten nächste Schritte vor.
+Einsatzstelle HAMBURG aktuell gesichert, Unterstützung weiterer Einheiten auf Anfahrt. Lüftungsmaßnahmen eingeleitet. Lage unter Kontrolle.
+Einsatzstelle HAUPTSTRASSE aktuell gesichert, Evakuierung der Anwohner durchgeführt. Wasserförderung über lange Wegstrecke aufgebaut. Einsatzende vorerst nicht absehbar.
+Beginnen mit Einsatzmaßnahmen in HANNOVER, Zusammenarbeit mit THW koordiniert. Warten auf weiteres Material.
+Sind jetzt in der MARKTPLATZ eingetroffen, Brandbekämpfung läuft planmäßig. Keine weiteren Kräfte benötigt.
+Beginnen mit Einsatzmaßnahmen in der RINGSTRASSE, Unterstützung weiterer Einheiten auf Anfahrt. Lüftungsmaßnahmen eingeleitet. Wetterlage erschwert weitere Arbeiten.
+Starten Erkundung in der WILHELMSTRASSE, Brandbekämpfung läuft planmäßig. Lage auf Sicht stabil. Einsatzende vorerst nicht absehbar.
+Einsatzkräfte sammeln sich in BONN, Unterstützung weiterer Einheiten auf Anfahrt. Löschwasserversorgung sichergestellt. Lage unter Kontrolle.
+Bereitstellungsraum an der RINGSTRASSE eingerichtet, Sanitätsdienst am Einsatzort eingerichtet. Situation weiter im Blick.
+Einsatzstelle HAUPTSTRASSE aktuell gesichert, Materialnachschub angefordert. Atemschutzgeräteträger im Einsatz. Wetterlage erschwert weitere Arbeiten.
+Lagemeldung aus MÜNCHEN: Sanitätsdienst am Einsatzort eingerichtet. Nachlöscharbeiten laufen. Maßnahmen laufen ohne Probleme.
+Aktuelle Situation in NÜRNBERG: Rauchentwicklung weiterhin stark, Sicht eingeschränkt. Lage unter Kontrolle.
+Aktuelle Situation an der WILHELMSTRASSE: Unterstützung weiterer Einheiten auf Anfahrt. Situation weiter im Blick.
+Einsatzkräfte sammeln sich an der KIRCHWEG, Unterstützung weiterer Einheiten auf Anfahrt. Maßnahmen laufen ohne Probleme.
+Einsatzkräfte sammeln sich an der POSTSTRASSE, Unterstützung weiterer Einheiten auf Anfahrt. Angriffstrupp im Innenangriff. Keine weiteren Kräfte benötigt.
+Einsatzkräfte sammeln sich an der POSTSTRASSE, Wasserversorgung stabil. Wetterlage erschwert weitere Arbeiten.
+Beginnen mit Einsatzmaßnahmen in BIELEFELD, Brandbekämpfung läuft planmäßig. Feuer unter Kontrolle. Lage unter Kontrolle.
+Erreichen gerade Einsatzstelle POSTSTRASSE, Evakuierung der Anwohner durchgeführt. Warten auf weiteres Material.
+Einsatzkräfte sammeln sich in KÖLN, Gebäude derzeit nicht betretbar, Einsturzgefahr. Einsatzende vorerst nicht absehbar.
+Erreichen gerade Einsatzstelle BIELEFELD, Unterstützung weiterer Einheiten auf Anfahrt. Kräfte bleiben weiter in Bereitschaft.
+Bereitstellungsraum in ESSEN eingerichtet, Unterstützung weiterer Einheiten auf Anfahrt. Situation weiter im Blick.
+Einsatzstelle NÜRNBERG aktuell gesichert, Materialnachschub angefordert. Wetterlage erschwert weitere Arbeiten.
+Beginnen mit Einsatzmaßnahmen in MÜNCHEN, Brandbekämpfung läuft planmäßig. Kräfte bleiben weiter in Bereitschaft.
+Sind jetzt in WUPPERTAL eingetroffen, Verkehrsabsicherung eingerichtet. Nachlöscharbeiten laufen. Warten auf weiteres Material.
+Einsatzkräfte sammeln sich an der KIRCHWEG, Zusammenarbeit mit THW koordiniert. Bereiten nächste Schritte vor.
+Sind jetzt in der FRIEDRICHSTRASSE eingetroffen, Gebäude derzeit nicht betretbar, Einsturzgefahr. Kräfte bleiben weiter in Bereitschaft.
+Beginnen mit Einsatzmaßnahmen in der FRIEDRICHSTRASSE, Rauchentwicklung weiterhin stark, Sicht eingeschränkt. Feuer unter Kontrolle. Weitere Maßnahmen abgestimmt.
+Erreichen gerade Einsatzstelle KARLSRUHE, Wasserversorgung stabil. Feuer unter Kontrolle. Warten auf weiteres Material.
+Einsatzstelle RINGSTRASSE aktuell gesichert, Zusammenarbeit mit THW koordiniert. Angriffstrupp im Innenangriff. Wetterlage erschwert weitere Arbeiten.
+Erreichen gerade Einsatzstelle MÜHLENWEG, Evakuierung der Anwohner durchgeführt. Atemschutzgeräteträger im Einsatz. Einsatzende vorerst nicht absehbar.
+Setzen Arbeiten in FRANKFURT fort, Rauchentwicklung weiterhin stark, Sicht eingeschränkt. Drehleiter in Stellung gebracht. Kräfte bleiben weiter in Bereitschaft.
+Aktuelle Situation an der SCHLOSSALLEE: Brandbekämpfung läuft planmäßig. Lage auf Sicht stabil. Maßnahmen laufen ohne Probleme.
+Erreichen gerade Einsatzstelle WILHELMSTRASSE, Verkehrsabsicherung eingerichtet. Bereiten nächste Schritte vor.
+Einsatzstelle FRANKFURT aktuell gesichert, Rauchentwicklung weiterhin stark, Sicht eingeschränkt. Löschwasserversorgung sichergestellt. Situation weiter im Blick.
+Bereitstellungsraum in MÜNCHEN eingerichtet, Rauchentwicklung weiterhin stark, Sicht eingeschränkt. Lüftungsmaßnahmen eingeleitet. Warten auf weiteres Material.
+Einsatzstelle BAHNHOFSTRASSE aktuell gesichert, Verkehrsabsicherung eingerichtet. Rauchentwicklung stark rückläufig. Bereiten nächste Schritte vor.
+Lagemeldung aus der BERGSTRASSE: Rauchentwicklung weiterhin stark, Sicht eingeschränkt. Angriffstrupp im Innenangriff. Lage unter Kontrolle.
+Beginnen mit Einsatzmaßnahmen in BIELEFELD, Brandbekämpfung läuft planmäßig. Bereiten nächste Schritte vor.
+Einsatzkräfte sammeln sich in NÜRNBERG, Brandbekämpfung läuft planmäßig. Lage auf Sicht stabil. Situation weiter im Blick.
+Setzen Arbeiten in HAMBURG fort, Verkehrsabsicherung eingerichtet. Situation weiter im Blick.
+Aktuelle Situation in MÜNCHEN: Materialnachschub angefordert. Bereiten nächste Schritte vor.
+Bereitstellungsraum in KÖLN eingerichtet, Brandbekämpfung läuft planmäßig. Drehleiter in Stellung gebracht. Wetterlage erschwert weitere Arbeiten.
+Einsatzstelle MÜHLENWEG aktuell gesichert, Gebäude derzeit nicht betretbar, Einsturzgefahr. Drehleiter in Stellung gebracht. Warten auf weiteres Material.
+Einsatzkräfte sammeln sich an der RINGSTRASSE, Brandbekämpfung läuft planmäßig. Rettungstrupp in Bereitstellung. Weitere Maßnahmen abgestimmt.
+Setzen Arbeiten in DRESDEN fort, Rauchentwicklung weiterhin stark, Sicht eingeschränkt. Lüftungsmaßnahmen eingeleitet. Wetterlage erschwert weitere Arbeiten.
+Lagemeldung aus der PARKSTRASSE: Unterstützung weiterer Einheiten auf Anfahrt. Maßnahmen laufen ohne Probleme.
+Aktuelle Situation an der GARTENSTRASSE: Sanitätsdienst am Einsatzort eingerichtet. Feuer unter Kontrolle. Lage unter Kontrolle.
+Setzen Arbeiten an der WIESENWEG fort, Unterstützung weiterer Einheiten auf Anfahrt. Feuer unter Kontrolle. Situation weiter im Blick.
+Einsatzstelle NÜRNBERG aktuell gesichert, Verkehrsabsicherung eingerichtet. Riegelstellung aufgebaut. Warten auf weiteres Material.
+Beginnen mit Einsatzmaßnahmen in der POSTSTRASSE, Wasserversorgung stabil. Löschwasserversorgung sichergestellt. Maßnahmen laufen ohne Probleme.
+Aktuelle Situation an der BERGSTRASSE: Verkehrsabsicherung eingerichtet. Rauchentwicklung stark rückläufig. Weitere Maßnahmen abgestimmt.
+Erreichen gerade Einsatzstelle DUISBURG, Brandbekämpfung läuft planmäßig. Bereiten nächste Schritte vor.
+Lagemeldung aus der WIESENWEG: Brandbekämpfung läuft planmäßig. Lüftungsmaßnahmen eingeleitet. Kräfte bleiben weiter in Bereitschaft.
+Setzen Arbeiten in MÜNSTER fort, Zusammenarbeit mit THW koordiniert. Wetterlage erschwert weitere Arbeiten.
+Lagemeldung aus BIELEFELD: Brandbekämpfung läuft planmäßig. Weitere Maßnahmen abgestimmt.
+Bereitstellungsraum an der BERGSTRASSE eingerichtet, Zusammenarbeit mit THW koordiniert. Einsatzende vorerst nicht absehbar.
+Einsatzstelle DORTMUND aktuell gesichert, Evakuierung der Anwohner durchgeführt. Einsatzende vorerst nicht absehbar.
+Aktuelle Situation an der HAUPTSTRASSE: Unterstützung weiterer Einheiten auf Anfahrt. Lage unter Kontrolle.
+Beginnen mit Einsatzmaßnahmen in der FRIEDRICHSTRASSE, Materialnachschub angefordert. Atemschutzgeräteträger im Einsatz. Kräfte bleiben weiter in Bereitschaft.
+Erreichen gerade Einsatzstelle HAUPTSTRASSE, Verkehrsabsicherung eingerichtet. Löschwasserversorgung sichergestellt. Lage unter Kontrolle.
+Einsatzstelle HAUPTSTRASSE aktuell gesichert, Zusammenarbeit mit THW koordiniert. Bereiten nächste Schritte vor.
+Sind jetzt in der BAHNHOFSTRASSE eingetroffen, Brandbekämpfung läuft planmäßig. Angriffstrupp im Innenangriff. Kräfte bleiben weiter in Bereitschaft.
+Beginnen mit Einsatzmaßnahmen in der INDUSTRIESTRASSE, Gebäude derzeit nicht betretbar, Einsturzgefahr. Warten auf weiteres Material.
+Bereitstellungsraum in KARLSRUHE eingerichtet, Sanitätsdienst am Einsatzort eingerichtet. Weitere Maßnahmen abgestimmt.
+Erreichen gerade Einsatzstelle BERGSTRASSE, Materialnachschub angefordert. Nachlöscharbeiten laufen. Bereiten nächste Schritte vor.
+Einsatzstelle MÜHLENWEG aktuell gesichert, Wasserversorgung stabil. Wasserförderung über lange Wegstrecke aufgebaut. Warten auf weiteres Material.
+Lagemeldung aus BOCHUM: Verkehrsabsicherung eingerichtet. Weitere Maßnahmen abgestimmt.
+Starten Erkundung in LEIPZIG, Rauchentwicklung weiterhin stark, Sicht eingeschränkt. Lage unter Kontrolle.
+Bereitstellungsraum in WUPPERTAL eingerichtet, Gebäude derzeit nicht betretbar, Einsturzgefahr. Einsatzende vorerst nicht absehbar.
+Starten Erkundung in der GARTENSTRASSE, Brandbekämpfung läuft planmäßig. Lage unter Kontrolle.
+Einsatzkräfte sammeln sich an der POSTSTRASSE, Unterstützung weiterer Einheiten auf Anfahrt. Riegelstellung aufgebaut. Kräfte bleiben weiter in Bereitschaft.
+Sind jetzt in der INDUSTRIESTRASSE eingetroffen, Evakuierung der Anwohner durchgeführt. Bereiten nächste Schritte vor.
+Einsatzstelle KÖLN aktuell gesichert, Verkehrsabsicherung eingerichtet. Bereiten nächste Schritte vor.
+Starten Erkundung in der WILHELMSTRASSE, Wasserversorgung stabil. Warten auf weiteres Material.
+Einsatzstelle FRIEDRICHSTRASSE aktuell gesichert, Wasserversorgung stabil. Warten auf weiteres Material.
+Beginnen mit Einsatzmaßnahmen in DUISBURG, Unterstützung weiterer Einheiten auf Anfahrt. Bereiten nächste Schritte vor.
+Einsatzkräfte sammeln sich in BREMEN, Verkehrsabsicherung eingerichtet. Schlauchleitung verlegt. Bereiten nächste Schritte vor.
+Starten Erkundung in BOCHUM, Evakuierung der Anwohner durchgeführt. Angriffstrupp im Innenangriff. Bereiten nächste Schritte vor.
+Einsatzstelle HAUPTSTRASSE aktuell gesichert, Unterstützung weiterer Einheiten auf Anfahrt. Warten auf weiteres Material.
+Setzen Arbeiten an der MARKTPLATZ fort, Gebäude derzeit nicht betretbar, Einsturzgefahr. Schlauchleitung verlegt. Einsatzende vorerst nicht absehbar.
+Einsatzstelle FRANKFURT aktuell gesichert, Sanitätsdienst am Einsatzort eingerichtet. Warten auf weiteres Material.
+Aktuelle Situation an der INDUSTRIESTRASSE: Brandbekämpfung läuft planmäßig. Wetterlage erschwert weitere Arbeiten.
+Starten Erkundung in der SCHULSTRASSE, Verkehrsabsicherung eingerichtet. Löschwasserversorgung sichergestellt. Wetterlage erschwert weitere Arbeiten.
+Erreichen gerade Einsatzstelle BAHNHOFSTRASSE, Zusammenarbeit mit THW koordiniert. Bereiten nächste Schritte vor.
+Lagemeldung aus der POSTSTRASSE: Sanitätsdienst am Einsatzort eingerichtet. Maßnahmen laufen ohne Probleme.
+Einsatzkräfte sammeln sich in STUTTGART, Zusammenarbeit mit THW koordiniert. Drehleiter in Stellung gebracht. Kräfte bleiben weiter in Bereitschaft.
+Einsatzstelle BERGSTRASSE aktuell gesichert, Unterstützung weiterer Einheiten auf Anfahrt. Warten auf weiteres Material.
+Einsatzkräfte sammeln sich in DRESDEN, Unterstützung weiterer Einheiten auf Anfahrt. Kräfte bleiben weiter in Bereitschaft.
+Einsatzstelle NEUSTRASSE aktuell gesichert, Gebäude derzeit nicht betretbar, Einsturzgefahr. Lüftungsmaßnahmen eingeleitet. Lage unter Kontrolle.
+Bereitstellungsraum in STUTTGART eingerichtet, Rauchentwicklung weiterhin stark, Sicht eingeschränkt. Brandschutz sichergestellt. Wetterlage erschwert weitere Arbeiten.
+Setzen Arbeiten in BERLIN fort, Verkehrsabsicherung eingerichtet. Feuer unter Kontrolle. Situation weiter im Blick.
+Setzen Arbeiten in MÜNSTER fort, Gebäude derzeit nicht betretbar, Einsturzgefahr. Drehleiter in Stellung gebracht. Wetterlage erschwert weitere Arbeiten.
+Sind jetzt in BREMEN eingetroffen, Zusammenarbeit mit THW koordiniert. Schlauchleitung verlegt. Bereiten nächste Schritte vor.
+Setzen Arbeiten in STUTTGART fort, Evakuierung der Anwohner durchgeführt. Situation weiter im Blick.
+Sind jetzt in BERLIN eingetroffen, Evakuierung der Anwohner durchgeführt. Bereiten nächste Schritte vor.
+Aktuelle Situation in LEIPZIG: Rauchentwicklung weiterhin stark, Sicht eingeschränkt. Angriffstrupp im Innenangriff. Situation weiter im Blick.
+Erreichen gerade Einsatzstelle MÜHLENWEG, Materialnachschub angefordert. Bereiten nächste Schritte vor.
+Einsatzstelle MARKTPLATZ aktuell gesichert, Materialnachschub angefordert. Situation weiter im Blick.
+Bereitstellungsraum an der PARKSTRASSE eingerichtet, Unterstützung weiterer Einheiten auf Anfahrt. Löschwasserversorgung sichergestellt. Einsatzende vorerst nicht absehbar.
+Einsatzstelle KARLSRUHE aktuell gesichert, Gebäude derzeit nicht betretbar, Einsturzgefahr. Angriffstrupp im Innenangriff. Warten auf weiteres Material.
+Einsatzstelle MÜNCHEN aktuell gesichert, Verkehrsabsicherung eingerichtet. Rettungstrupp in Bereitstellung. Keine weiteren Kräfte benötigt.
+Starten Erkundung in der BAHNHOFSTRASSE, Rauchentwicklung weiterhin stark, Sicht eingeschränkt. Rettungstrupp in Bereitstellung. Bereiten nächste Schritte vor.
+Starten Erkundung in der MÜHLENWEG, Zusammenarbeit mit THW koordiniert. Rauchentwicklung stark rückläufig. Maßnahmen laufen ohne Probleme.
+Lagemeldung aus der POSTSTRASSE: Sanitätsdienst am Einsatzort eingerichtet. Maßnahmen laufen ohne Probleme.
+Setzen Arbeiten an der MARKTPLATZ fort, Brandbekämpfung läuft planmäßig. Situation weiter im Blick.
+Setzen Arbeiten in BIELEFELD fort, Sanitätsdienst am Einsatzort eingerichtet. Wetterlage erschwert weitere Arbeiten.
+Aktuelle Situation in KARLSRUHE: Sanitätsdienst am Einsatzort eingerichtet. Einsatzende vorerst nicht absehbar.
+Sind jetzt in DORTMUND eingetroffen, Brandbekämpfung läuft planmäßig. Brandschutz sichergestellt. Keine weiteren Kräfte benötigt.
+Einsatzstelle POSTSTRASSE aktuell gesichert, Unterstützung weiterer Einheiten auf Anfahrt. Wasserförderung über lange Wegstrecke aufgebaut. Situation weiter im Blick.
+Lagemeldung aus der RINGSTRASSE: Wasserversorgung stabil. Drehleiter in Stellung gebracht. Kräfte bleiben weiter in Bereitschaft.
+Starten Erkundung in DRESDEN, Rauchentwicklung weiterhin stark, Sicht eingeschränkt. Hydrant angeschlossen und einsatzbereit. Weitere Maßnahmen abgestimmt.
+Starten Erkundung in der KIRCHWEG, Gebäude derzeit nicht betretbar, Einsturzgefahr. Feuer unter Kontrolle. Bereiten nächste Schritte vor.
+Starten Erkundung in der INDUSTRIESTRASSE, Rauchentwicklung weiterhin stark, Sicht eingeschränkt. Lage unter Kontrolle.
+Beginnen mit Einsatzmaßnahmen in der MÜHLENWEG, Wasserversorgung stabil. Einsatzende vorerst nicht absehbar.
+Bereitstellungsraum in STUTTGART eingerichtet, Evakuierung der Anwohner durchgeführt. Weitere Maßnahmen abgestimmt.
+Aktuelle Situation an der SCHLOSSALLEE: Zusammenarbeit mit THW koordiniert. Weitere Maßnahmen abgestimmt.
+Sind jetzt in der BAHNHOFSTRASSE eingetroffen, Gebäude derzeit nicht betretbar, Einsturzgefahr. Lage unter Kontrolle.
+Erreichen gerade Einsatzstelle NÜRNBERG, Brandbekämpfung läuft planmäßig. Brandschutz sichergestellt. Wetterlage erschwert weitere Arbeiten.
+Beginnen mit Einsatzmaßnahmen in der GARTENSTRASSE, Rauchentwicklung weiterhin stark, Sicht eingeschränkt. Kräfte bleiben weiter in Bereitschaft.
+Einsatzstelle MÜNSTER aktuell gesichert, Brandbekämpfung läuft planmäßig. Kräfte bleiben weiter in Bereitschaft.
+Einsatzstelle GARTENSTRASSE aktuell gesichert, Unterstützung weiterer Einheiten auf Anfahrt. Rauchentwicklung stark rückläufig. Kräfte bleiben weiter in Bereitschaft.
+Bereitstellungsraum in HANNOVER eingerichtet, Evakuierung der Anwohner durchgeführt. Wetterlage erschwert weitere Arbeiten.
+Aktuelle Situation in FRANKFURT: Wasserversorgung stabil. Warten auf weiteres Material.
+Aktuelle Situation in KARLSRUHE: Sanitätsdienst am Einsatzort eingerichtet. Einsatzende vorerst nicht absehbar.
+Bereitstellungsraum an der FRIEDRICHSTRASSE eingerichtet, Evakuierung der Anwohner durchgeführt. Wetterlage erschwert weitere Arbeiten.
+Bereitstellungsraum an der KIRCHWEG eingerichtet, Rauchentwicklung weiterhin stark, Sicht eingeschränkt. Riegelstellung aufgebaut. Weitere Maßnahmen abgestimmt.
+Bereitstellungsraum an der RINGSTRASSE eingerichtet, Wasserversorgung stabil. Warten auf weiteres Material.
+Sind jetzt in der MÜHLENWEG eingetroffen, Sanitätsdienst am Einsatzort eingerichtet. Maßnahmen laufen ohne Probleme.
+Beginnen mit Einsatzmaßnahmen in BREMEN, Materialnachschub angefordert. Lage unter Kontrolle.
+Setzen Arbeiten in BOCHUM fort, Brandbekämpfung läuft planmäßig. Riegelstellung aufgebaut. Maßnahmen laufen ohne Probleme.
+Setzen Arbeiten an der NEUSTRASSE fort, Rauchentwicklung weiterhin stark, Sicht eingeschränkt. Lage unter Kontrolle.
+Bereitstellungsraum in KARLSRUHE eingerichtet, Sanitätsdienst am Einsatzort eingerichtet. Keine weiteren Kräfte benötigt.
+Beginnen mit Einsatzmaßnahmen in ESSEN, Verkehrsabsicherung eingerichtet. Wetterlage erschwert weitere Arbeiten.
+Lagemeldung aus HANNOVER: Rauchentwicklung weiterhin stark, Sicht eingeschränkt. Drehleiter in Stellung gebracht. Wetterlage erschwert weitere Arbeiten.
+Aktuelle Situation an der KIRCHWEG: Evakuierung der Anwohner durchgeführt. Angriffstrupp im Innenangriff. Warten auf weiteres Material.
+Erreichen gerade Einsatzstelle MÜNCHEN, Gebäude derzeit nicht betretbar, Einsturzgefahr. Keine weiteren Kräfte benötigt.
+Lagemeldung aus ESSEN: Gebäude derzeit nicht betretbar, Einsturzgefahr. Einsatzende vorerst nicht absehbar.
+Bereitstellungsraum an der NEUSTRASSE eingerichtet, Brandbekämpfung läuft planmäßig. Wetterlage erschwert weitere Arbeiten.
+Starten Erkundung in HAMBURG, Brandbekämpfung läuft planmäßig. Wasserförderung über lange Wegstrecke aufgebaut. Weitere Maßnahmen abgestimmt.
+Setzen Arbeiten an der SCHULSTRASSE fort, Materialnachschub angefordert. Atemschutzgeräteträger im Einsatz. Weitere Maßnahmen abgestimmt.
+Beginnen mit Einsatzmaßnahmen in der WIESENWEG, Verkehrsabsicherung eingerichtet. Kräfte bleiben weiter in Bereitschaft.
+Einsatzstelle NÜRNBERG aktuell gesichert, Unterstützung weiterer Einheiten auf Anfahrt. Lage unter Kontrolle.
+Starten Erkundung in DORTMUND, Verkehrsabsicherung eingerichtet. Weitere Maßnahmen abgestimmt.
+Aktuelle Situation in KARLSRUHE: Materialnachschub angefordert. Maßnahmen laufen ohne Probleme.
+Bereitstellungsraum in NÜRNBERG eingerichtet, Brandbekämpfung läuft planmäßig. Atemschutzgeräteträger im Einsatz. Weitere Maßnahmen abgestimmt.
+Starten Erkundung in der SCHULSTRASSE, Wasserversorgung stabil. Maßnahmen laufen ohne Probleme.
+Erreichen gerade Einsatzstelle STUTTGART, Evakuierung der Anwohner durchgeführt. Nachlöscharbeiten laufen. Einsatzende vorerst nicht absehbar.
+Einsatzstelle DORTMUND aktuell gesichert, Unterstützung weiterer Einheiten auf Anfahrt. Weitere Maßnahmen abgestimmt.
+Sind jetzt in LEIPZIG eingetroffen, Materialnachschub angefordert. Feuer unter Kontrolle. Weitere Maßnahmen abgestimmt.
+Starten Erkundung in NÜRNBERG, Zusammenarbeit mit THW koordiniert. Warten auf weiteres Material.
+Starten Erkundung in der MÜHLENWEG, Sanitätsdienst am Einsatzort eingerichtet. Riegelstellung aufgebaut. Bereiten nächste Schritte vor.
+Einsatzkräfte sammeln sich in BOCHUM, Materialnachschub angefordert. Warten auf weiteres Material.
+Starten Erkundung in NÜRNBERG, Wasserversorgung stabil. Drehleiter in Stellung gebracht. Wetterlage erschwert weitere Arbeiten.
+Bereitstellungsraum an der GARTENSTRASSE eingerichtet, Brandbekämpfung läuft planmäßig. Lage auf Sicht stabil. Lage unter Kontrolle.
+Beginnen mit Einsatzmaßnahmen in der MARKTPLATZ, Wasserversorgung stabil. Wasserförderung über lange Wegstrecke aufgebaut. Lage unter Kontrolle.
+Sind jetzt in der KIRCHWEG eingetroffen, Sanitätsdienst am Einsatzort eingerichtet. Hydrant angeschlossen und einsatzbereit. Bereiten nächste Schritte vor.
+Einsatzkräfte sammeln sich an der SCHULSTRASSE, Materialnachschub angefordert. Riegelstellung aufgebaut. Wetterlage erschwert weitere Arbeiten.
+Erreichen gerade Einsatzstelle HAMBURG, Rauchentwicklung weiterhin stark, Sicht eingeschränkt. Kräfte bleiben weiter in Bereitschaft.
+Erreichen gerade Einsatzstelle GARTENSTRASSE, Sanitätsdienst am Einsatzort eingerichtet. Maßnahmen laufen ohne Probleme.
+Lagemeldung aus MÜNCHEN: Materialnachschub angefordert. Rauchentwicklung stark rückläufig. Weitere Maßnahmen abgestimmt.
+Sind jetzt in der POSTSTRASSE eingetroffen, Verkehrsabsicherung eingerichtet. Warten auf weiteres Material.
+Einsatzstelle POSTSTRASSE aktuell gesichert, Sanitätsdienst am Einsatzort eingerichtet. Wasserförderung über lange Wegstrecke aufgebaut. Einsatzende vorerst nicht absehbar.
+Beginnen mit Einsatzmaßnahmen in der MARKTPLATZ, Gebäude derzeit nicht betretbar, Einsturzgefahr. Drehleiter in Stellung gebracht. Einsatzende vorerst nicht absehbar.
+Starten Erkundung in der RINGSTRASSE, Wasserversorgung stabil. Keine weiteren Kräfte benötigt.
+Starten Erkundung in der NEUSTRASSE, Gebäude derzeit nicht betretbar, Einsturzgefahr. Wasserförderung über lange Wegstrecke aufgebaut. Wetterlage erschwert weitere Arbeiten.
+Sind jetzt in DRESDEN eingetroffen, Unterstützung weiterer Einheiten auf Anfahrt. Kräfte bleiben weiter in Bereitschaft.
+Bereitstellungsraum in MÜNCHEN eingerichtet, Wasserversorgung stabil. Brandschutz sichergestellt. Keine weiteren Kräfte benötigt.
+Beginnen mit Einsatzmaßnahmen in DUISBURG, Sanitätsdienst am Einsatzort eingerichtet. Rettungstrupp in Bereitstellung. Maßnahmen laufen ohne Probleme.
+Aktuelle Situation in HAMBURG: Wasserversorgung stabil. Keine weiteren Kräfte benötigt.
+Lagemeldung aus der RINGSTRASSE: Zusammenarbeit mit THW koordiniert. Wetterlage erschwert weitere Arbeiten.
+Sind jetzt in der MARKTPLATZ eingetroffen, Unterstützung weiterer Einheiten auf Anfahrt. Weitere Maßnahmen abgestimmt.
+Setzen Arbeiten an der BAHNHOFSTRASSE fort, Materialnachschub angefordert. Hydrant angeschlossen und einsatzbereit. Einsatzende vorerst nicht absehbar.
+Starten Erkundung in WUPPERTAL, Sanitätsdienst am Einsatzort eingerichtet. Bereiten nächste Schritte vor.
+Lagemeldung aus LEIPZIG: Evakuierung der Anwohner durchgeführt. Wetterlage erschwert weitere Arbeiten.
+Einsatzstelle BREMEN aktuell gesichert, Zusammenarbeit mit THW koordiniert. Keine weiteren Kräfte benötigt.
+Sind jetzt in WUPPERTAL eingetroffen, Evakuierung der Anwohner durchgeführt. Atemschutzgeräteträger im Einsatz. Keine weiteren Kräfte benötigt.
+Beginnen mit Einsatzmaßnahmen in MÜNCHEN, Evakuierung der Anwohner durchgeführt. Bereiten nächste Schritte vor.
+Bereitstellungsraum in DUISBURG eingerichtet, Wasserversorgung stabil. Riegelstellung aufgebaut. Bereiten nächste Schritte vor.
+Einsatzkräfte sammeln sich an der RINGSTRASSE, Verkehrsabsicherung eingerichtet. Nachlöscharbeiten laufen. Maßnahmen laufen ohne Probleme.
+Einsatzstelle BONN aktuell gesichert, Brandbekämpfung läuft planmäßig. Kräfte bleiben weiter in Bereitschaft.
+Aktuelle Situation an der FRIEDRICHSTRASSE: Materialnachschub angefordert. Lage unter Kontrolle.
+Setzen Arbeiten in LEIPZIG fort, Brandbekämpfung läuft planmäßig. Feuer unter Kontrolle. Wetterlage erschwert weitere Arbeiten.
+Starten Erkundung in der HAUPTSTRASSE, Evakuierung der Anwohner durchgeführt. Riegelstellung aufgebaut. Wetterlage erschwert weitere Arbeiten.
+Starten Erkundung in DUISBURG, Materialnachschub angefordert. Wasserförderung über lange Wegstrecke aufgebaut. Bereiten nächste Schritte vor.
+Einsatzkräfte sammeln sich an der NEUSTRASSE, Zusammenarbeit mit THW koordiniert. Hydrant angeschlossen und einsatzbereit. Lage unter Kontrolle.
+Einsatzkräfte sammeln sich an der SCHLOSSALLEE, Verkehrsabsicherung eingerichtet. Warten auf weiteres Material.
+Lagemeldung aus MÜNCHEN: Unterstützung weiterer Einheiten auf Anfahrt. Brandschutz sichergestellt. Kräfte bleiben weiter in Bereitschaft.
+Einsatzkräfte sammeln sich an der PARKSTRASSE, Zusammenarbeit mit THW koordiniert. Schlauchleitung verlegt. Wetterlage erschwert weitere Arbeiten.
+Setzen Arbeiten in ESSEN fort, Materialnachschub angefordert. Wetterlage erschwert weitere Arbeiten.
+Erreichen gerade Einsatzstelle HAUPTSTRASSE, Sanitätsdienst am Einsatzort eingerichtet. Löschwasserversorgung sichergestellt. Kräfte bleiben weiter in Bereitschaft.
+Einsatzkräfte sammeln sich in HAMBURG, Evakuierung der Anwohner durchgeführt. Lage unter Kontrolle.
+Sind jetzt in der MÜHLENWEG eingetroffen, Rauchentwicklung weiterhin stark, Sicht eingeschränkt. Drehleiter in Stellung gebracht. Weitere Maßnahmen abgestimmt.
+Erreichen gerade Einsatzstelle KARLSRUHE, Sanitätsdienst am Einsatzort eingerichtet. Hydrant angeschlossen und einsatzbereit. Warten auf weiteres Material.
+Einsatzstelle NÜRNBERG aktuell gesichert, Unterstützung weiterer Einheiten auf Anfahrt. Lage auf Sicht stabil. Kräfte bleiben weiter in Bereitschaft.
+Einsatzkräfte sammeln sich an der NEUSTRASSE, Brandbekämpfung läuft planmäßig. Lage auf Sicht stabil. Keine weiteren Kräfte benötigt.
+Setzen Arbeiten in NÜRNBERG fort, Rauchentwicklung weiterhin stark, Sicht eingeschränkt. Brandschutz sichergestellt. Einsatzende vorerst nicht absehbar.
+Sind jetzt in der INDUSTRIESTRASSE eingetroffen, Rauchentwicklung weiterhin stark, Sicht eingeschränkt. Maßnahmen laufen ohne Probleme.
+Bereitstellungsraum an der RINGSTRASSE eingerichtet, Evakuierung der Anwohner durchgeführt. Schlauchleitung verlegt. Wetterlage erschwert weitere Arbeiten.
+Beginnen mit Einsatzmaßnahmen in BERLIN, Brandbekämpfung läuft planmäßig. Maßnahmen laufen ohne Probleme.
+Lagemeldung aus DRESDEN: Evakuierung der Anwohner durchgeführt. Lüftungsmaßnahmen eingeleitet. Einsatzende vorerst nicht absehbar.
+Setzen Arbeiten in MÜNCHEN fort, Rauchentwicklung weiterhin stark, Sicht eingeschränkt. Wetterlage erschwert weitere Arbeiten.
+Lagemeldung aus der HAUPTSTRASSE: Evakuierung der Anwohner durchgeführt. Lage auf Sicht stabil. Wetterlage erschwert weitere Arbeiten.
+Aktuelle Situation an der POSTSTRASSE: Materialnachschub angefordert. Feuer unter Kontrolle. Situation weiter im Blick.
+Starten Erkundung in DORTMUND, Materialnachschub angefordert. Schlauchleitung verlegt. Lage unter Kontrolle.
+Bereitstellungsraum in FRANKFURT eingerichtet, Verkehrsabsicherung eingerichtet. Rauchentwicklung stark rückläufig. Keine weiteren Kräfte benötigt.
+Einsatzstelle STUTTGART aktuell gesichert, Materialnachschub angefordert. Brandschutz sichergestellt. Situation weiter im Blick.
+Bereitstellungsraum an der BAHNHOFSTRASSE eingerichtet, Gebäude derzeit nicht betretbar, Einsturzgefahr. Atemschutzgeräteträger im Einsatz. Maßnahmen laufen ohne Probleme.
+Erreichen gerade Einsatzstelle PARKSTRASSE, Unterstützung weiterer Einheiten auf Anfahrt. Kräfte bleiben weiter in Bereitschaft.
+Lagemeldung aus STUTTGART: Zusammenarbeit mit THW koordiniert. Situation weiter im Blick.
+Bereitstellungsraum in STUTTGART eingerichtet, Wasserversorgung stabil. Situation weiter im Blick.
+Einsatzstelle MÜHLENWEG aktuell gesichert, Gebäude derzeit nicht betretbar, Einsturzgefahr. Situation weiter im Blick.
+Bereitstellungsraum an der KIRCHWEG eingerichtet, Materialnachschub angefordert. Drehleiter in Stellung gebracht. Warten auf weiteres Material.
+Lagemeldung aus der RINGSTRASSE: Materialnachschub angefordert. Maßnahmen laufen ohne Probleme.
+Aktuelle Situation an der SCHLOSSALLEE: Rauchentwicklung weiterhin stark, Sicht eingeschränkt. Bereiten nächste Schritte vor.
+Setzen Arbeiten an der PARKSTRASSE fort, Wasserversorgung stabil. Wetterlage erschwert weitere Arbeiten.
+Bereitstellungsraum an der FRIEDRICHSTRASSE eingerichtet, Sanitätsdienst am Einsatzort eingerichtet. Wasserförderung über lange Wegstrecke aufgebaut. Einsatzende vorerst nicht absehbar.
+Erreichen gerade Einsatzstelle DUISBURG, Verkehrsabsicherung eingerichtet. Warten auf weiteres Material.
+Setzen Arbeiten an der POSTSTRASSE fort, Zusammenarbeit mit THW koordiniert. Hydrant angeschlossen und einsatzbereit. Lage unter Kontrolle.
+Einsatzstelle POSTSTRASSE aktuell gesichert, Rauchentwicklung weiterhin stark, Sicht eingeschränkt. Atemschutzgeräteträger im Einsatz. Einsatzende vorerst nicht absehbar.
+Beginnen mit Einsatzmaßnahmen in der FRIEDRICHSTRASSE, Unterstützung weiterer Einheiten auf Anfahrt. Hydrant angeschlossen und einsatzbereit. Situation weiter im Blick.
+Einsatzstelle ESSEN aktuell gesichert, Rauchentwicklung weiterhin stark, Sicht eingeschränkt. Maßnahmen laufen ohne Probleme.
+Aktuelle Situation an der NEUSTRASSE: Sanitätsdienst am Einsatzort eingerichtet. Wasserförderung über lange Wegstrecke aufgebaut. Bereiten nächste Schritte vor.
+Aktuelle Situation an der FRIEDRICHSTRASSE: Zusammenarbeit mit THW koordiniert. Situation weiter im Blick.
+Setzen Arbeiten an der INDUSTRIESTRASSE fort, Gebäude derzeit nicht betretbar, Einsturzgefahr. Lage auf Sicht stabil. Bereiten nächste Schritte vor.
+Einsatzstelle WIESENWEG aktuell gesichert, Rauchentwicklung weiterhin stark, Sicht eingeschränkt. Bereiten nächste Schritte vor.
+Erreichen gerade Einsatzstelle KÖLN, Brandbekämpfung läuft planmäßig. Einsatzende vorerst nicht absehbar.
+Lagemeldung aus BOCHUM: Brandbekämpfung läuft planmäßig. Löschwasserversorgung sichergestellt. Einsatzende vorerst nicht absehbar.
+Aktuelle Situation in ESSEN: Unterstützung weiterer Einheiten auf Anfahrt. Kräfte bleiben weiter in Bereitschaft.
+Einsatzkräfte sammeln sich an der BAHNHOFSTRASSE, Brandbekämpfung läuft planmäßig. Rauchentwicklung stark rückläufig. Wetterlage erschwert weitere Arbeiten.
+Sind jetzt in DORTMUND eingetroffen, Materialnachschub angefordert. Situation weiter im Blick.
+Lagemeldung aus MÜNSTER: Materialnachschub angefordert. Warten auf weiteres Material.
+Einsatzkräfte sammeln sich an der GARTENSTRASSE, Verkehrsabsicherung eingerichtet. Drehleiter in Stellung gebracht. Keine weiteren Kräfte benötigt.
+Sind jetzt in HAMBURG eingetroffen, Gebäude derzeit nicht betretbar, Einsturzgefahr. Rauchentwicklung stark rückläufig. Weitere Maßnahmen abgestimmt.
+Bereitstellungsraum in KARLSRUHE eingerichtet, Sanitätsdienst am Einsatzort eingerichtet. Hydrant angeschlossen und einsatzbereit. Weitere Maßnahmen abgestimmt.
+Beginnen mit Einsatzmaßnahmen in der BAHNHOFSTRASSE, Brandbekämpfung läuft planmäßig. Weitere Maßnahmen abgestimmt.
+Beginnen mit Einsatzmaßnahmen in der KIRCHWEG, Materialnachschub angefordert. Maßnahmen laufen ohne Probleme.
+Einsatzstelle NÜRNBERG aktuell gesichert, Wasserversorgung stabil. Maßnahmen laufen ohne Probleme.
+Bereitstellungsraum in KÖLN eingerichtet, Evakuierung der Anwohner durchgeführt. Rettungstrupp in Bereitstellung. Weitere Maßnahmen abgestimmt.
+Beginnen mit Einsatzmaßnahmen in FRANKFURT, Evakuierung der Anwohner durchgeführt. Rauchentwicklung stark rückläufig. Warten auf weiteres Material.
+Einsatzstelle GARTENSTRASSE aktuell gesichert, Gebäude derzeit nicht betretbar, Einsturzgefahr. Maßnahmen laufen ohne Probleme.
+Sind jetzt in STUTTGART eingetroffen, Zusammenarbeit mit THW koordiniert. Weitere Maßnahmen abgestimmt.
+Erreichen gerade Einsatzstelle INDUSTRIESTRASSE, Evakuierung der Anwohner durchgeführt. Situation weiter im Blick.
+Erreichen gerade Einsatzstelle HAMBURG, Materialnachschub angefordert. Lage unter Kontrolle.
+Starten Erkundung in HAMBURG, Zusammenarbeit mit THW koordiniert. Wetterlage erschwert weitere Arbeiten.
+Einsatzstelle BIELEFELD aktuell gesichert, Unterstützung weiterer Einheiten auf Anfahrt. Atemschutzgeräteträger im Einsatz. Keine weiteren Kräfte benötigt.
