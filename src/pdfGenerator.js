@@ -76,6 +76,120 @@ class PDFGenerator {
     }
 
     /**
+     * Erstellt ein DIN A5 Deckblatt im Hochformat mit folgendem Aufbau:
+     *   Sprechfunkübung Bravo Meldung 2025
+     *   Heros Jever 21/10
+     *   19jul25
+     *
+     *   Übungsleitung:
+     *   Heros Wind 10
+     *
+     *   Teilnehmer
+     *   <Liste, kleiner & eng zeilenabständig>
+     */
+    async generateDeckblaetterA5Blob(funkUebung) {
+        // 1) Ein einziges jsPDF für alle Seiten
+        const pdf = new this.jsPDF({ orientation: "p", unit: "mm", format: "a5" });
+        const w = pdf.internal.pageSize.getWidth();
+        const h = pdf.internal.pageSize.getHeight();
+
+        // Generierungszeit für Footer
+        const generierungszeit = DateFormatter.formatNATODate(funkUebung.createDate, true);
+
+        // Hilfsfunktion: Zeichne ein einzelnes Deckblatt auf aktuelle Seite
+        const drawDeckblatt = (teilnehmer) => {
+            // Datum kurz z.B. "19jul25"
+            const dateLine = DateFormatter
+                .formatNATODate(funkUebung.datum, false)
+                .replace(/\s+/g, '')
+                .toLowerCase();
+
+            // Zeilenhöhen (angepasst)
+            const lh = {
+                title:       12,
+                date:        10,
+                owner:       10,
+                blank:       8,
+                hdrSection:  8,
+                Leitung:     10,
+                partEmpty:   10,
+                hdrTeil:     4,
+                teilnehmer:  4
+            };
+
+            // Berechne Blockhöhe
+            const n = funkUebung.teilnehmerListe.length;
+            const totalH = lh.title + lh.date + lh.owner + lh.blank
+                        + lh.hdrSection + lh.Leitung + lh.partEmpty
+                        + lh.hdrTeil + n*lh.teilnehmer;
+
+            // Starte vertikal zentriert
+            let y = (h - totalH)/2 + lh.title/2;
+            const centerX = txt => (w - pdf.getTextWidth(txt)) / 2;
+
+            // –– Zeichnungsschritte ––
+            // 1) Titel
+            pdf.setFont("helvetica", "bold").setFontSize(16);
+            pdf.text(funkUebung.name, centerX(funkUebung.name), y);
+            y += lh.title;
+
+            // 2) Datum
+            pdf.setFont("helvetica", "normal").setFontSize(14);
+            pdf.text(dateLine, centerX(dateLine), y);
+            y += lh.date;
+
+            // 3) Eigener Rufname
+            pdf.text(teilnehmer, centerX(teilnehmer), y);
+            y += lh.owner;
+
+            // 4) Leer
+            y += lh.blank;
+
+            // 5) Übungsleitung
+            pdf.setFont("helvetica", "bold").setFontSize(12);
+            pdf.text("Übungsleitung:", centerX("Übungsleitung:"), y);
+            y += lh.hdrSection;
+            pdf.setFont("helvetica", "normal").setFontSize(12);
+            pdf.text(funkUebung.leitung, centerX(funkUebung.leitung), y);
+            y += lh.Leitung;
+
+            // 6) Leer vor Teilnehmer
+            y += lh.partEmpty;
+
+            // 7) Teilnehmer-Header
+            pdf.setFont("helvetica", "bold").setFontSize(12);
+            pdf.text("Teilnehmer:", centerX("Teilnehmer:"), y);
+            y += lh.hdrTeil;
+
+            // 8) Teilnehmerliste (klein, eng)
+            pdf.setFont("helvetica", "normal").setFontSize(8);
+            funkUebung.teilnehmerListe.forEach(name => {
+                pdf.text(name, centerX(name), y);
+                y += lh.teilnehmer;
+            });
+
+            // 9) Zweizeiliger Footer
+            pdf.setFont("helvetica", "normal").setFontSize(6);
+            const line1 = `© Johannes Rudolph | Version ${funkUebung.buildVersion} | Übung ID: ${funkUebung.id}`;
+            const line2 = `Generiert: ${generierungszeit} | Generator: sprechfunk-uebung.de`;
+            const y2 = h - 10;
+            const y1 = y2 - 4;
+            pdf.textWithLink(line1, 10, y1, { url: "https://sprechfunk-uebung.de/" });
+            pdf.textWithLink(line2, 10, y2, { url: "https://sprechfunk-uebung.de/" });
+        };
+
+        // 2) Pro Teilnehmer eine Seite erzeugen
+        funkUebung.teilnehmerListe.forEach((teilnehmer, idx) => {
+            if (idx > 0) pdf.addPage();
+            drawDeckblatt(teilnehmer);
+        });
+
+        // 3) Einen einzigen Blob zurückgeben
+        return pdf.output("blob");
+    }
+ 
+
+    /**
      * Erstellt die Teilnehmerliste-Tabelle.
      */
     drawTeilnehmerTable(pdf, funkUebung, startY, marginLeft, width) {
@@ -639,6 +753,9 @@ class PDFGenerator {
         meldevordruckBlobs.forEach((blob, teilnehmer) => {
             zip.file(`Teilnehmer/Meldevordruck/${this.sanitizeFileName(teilnehmer)}.pdf`, blob);
         });
+
+        const deckblattBlob = await this.generateDeckblaetterA5Blob(funkUebung);
+        zip.file(`Teilnehmer/DeckblaetterA5.pdf`, deckblattBlob);
 
         const zipBlob = await zip.generateAsync({ type: "blob" });
 
