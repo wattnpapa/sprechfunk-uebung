@@ -1,4 +1,4 @@
-import { getDocs, collection, query, orderBy, limit, startAfter, doc, deleteDoc } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
+import { getDocs, collection, query, orderBy, limit, startAfter, doc, deleteDoc } from 'firebase/firestore';
 
 class Admin {
 

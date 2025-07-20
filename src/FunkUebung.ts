@@ -1,14 +1,35 @@
-import { v4 as uuidv4 } from 'https://jspm.dev/uuid';
+import { v4 as uuidv4 } from 'uuid';
 import { NAMENS_POOL } from './namen-funkuebungen.js';
+import type { Uebung } from './types/Uebung';
+import type { Nachricht } from './types/Nachricht';
+import CryptoJS from 'crypto-js';
 
-export class FunkUebung {
-    constructor(buildVersion) {
+export class FunkUebung implements Uebung {
+
+    id: string;
+    name: string;
+    datum: Date;
+    buildVersion: string;
+    leitung: string;
+    rufgruppe: string;
+    teilnehmerListe: string[];
+    nachrichten: Record<string, Nachricht[]>;
+    createDate: Date;
+    spruecheProTeilnehmer: number;
+    spruecheAnAlle: number;
+    spruecheAnMehrere: number;
+    buchstabierenAn: number;
+    loesungswoerter: Record<string, string>;
+    checksumme: string;
+    funksprueche: string[];
+
+    constructor(buildVersion: string) {
         this.id = uuidv4();
 
         this.createDate = new Date();
 
         const jahr = new Date().getFullYear();
-        const zufallsName = name || `${NAMENS_POOL[Math.floor(Math.random() * NAMENS_POOL.length)]} ${jahr}`;
+        const zufallsName = `${NAMENS_POOL[Math.floor(Math.random() * NAMENS_POOL.length)]} ${jahr}`;
         this.name = `Sprechfunkübung ${zufallsName}`;
 
         this.rufgruppe = "T_OL_GOLD-1";
@@ -16,7 +37,7 @@ export class FunkUebung {
         this.buildVersion = buildVersion;
         this.datum = new Date();
 
-        this.nachrichten = [];
+        this.nachrichten = {};
 
         this.spruecheProTeilnehmer = 10;
         this.spruecheAnAlle = 1;
@@ -36,6 +57,7 @@ export class FunkUebung {
         ];
 
         this.checksumme = "";
+        this.funksprueche = [];
     }
 
     updateChecksum() {
@@ -83,7 +105,13 @@ export class FunkUebung {
         this.verteileLoesungswoerterMitIndex();
     }
 
-    getBalancedSubsetOfOthers(teilnehmerListe, sender, empfangsZaehler, letzteEmpfaenger, empfaengerHistory) {
+    getBalancedSubsetOfOthers(
+      teilnehmerListe: string[],
+      sender: string,
+      empfangsZaehler: Record<string, number>,
+      letzteEmpfaenger: Set<string>,
+      empfaengerHistory: string[]
+    ): string[] {
         let andere = teilnehmerListe.filter(t => t !== sender && !letzteEmpfaenger.has(t));
     
         // Falls alle ausgeschlossen sind, nehmen wir alle außer dem Sender
@@ -123,7 +151,13 @@ export class FunkUebung {
         return andere.slice(0, zufallsGroesse);
     }
     
-    getBalancedOther(teilnehmerListe, sender, empfangsZaehler, letzteEmpfaenger, empfaengerHistory) {
+    getBalancedOther(
+      teilnehmerListe: string[],
+      sender: string,
+      empfangsZaehler: Record<string, number>,
+      letzteEmpfaenger: Set<string>,
+      empfaengerHistory: string[]
+    ): string {
         let andere = teilnehmerListe.filter(t => t !== sender && !letzteEmpfaenger.has(t));
     
         // Falls keine Empfänger übrig bleiben, alle Teilnehmer außer dem Sender verwenden
@@ -147,9 +181,9 @@ export class FunkUebung {
         const totalTeilnehmer = this.teilnehmerListe.length;
         const totalEinzelNachrichten = (this.spruecheProTeilnehmer - this.spruecheAnAlle - this.spruecheAnMehrere) * totalTeilnehmer;
 
-        const empfaengerVerteilung = {};
-        const empfangsZaehler = {};
-        const empfaengerHistory = [];
+        const empfaengerVerteilung: Record<string, string[]> = {};
+        const empfangsZaehler: Record<string, number> = {};
+        const empfaengerHistory: string[] = [];
         const maxHistory = 2; // Verhindert, dass Teilnehmer mehrfach hintereinander Empfänger werden
 
         // Initialisierung
@@ -159,7 +193,7 @@ export class FunkUebung {
         });
 
         // Erstelle pro Sender eine Liste der noch "zu besuchenden" Empfänger
-        const empfaengerToVisit = {};
+        const empfaengerToVisit: Record<string, string[]> = {};
         this.teilnehmerListe.forEach(sender => {
             empfaengerToVisit[sender] = this.teilnehmerListe.filter(t => t !== sender);
         });
@@ -196,17 +230,17 @@ export class FunkUebung {
         return empfaengerVerteilung;
     }
 
-    verteileNachrichtenFair() {
-        let nachrichtenVerteilung = {};
+    verteileNachrichtenFair(): Record<string, Nachricht[]> {
+        const nachrichtenVerteilung: Record<string, Nachricht[]> = {};
         let nachrichtenIndex = 0;
+        // Pool entries for shuffling
+        type PoolEntry = { sender: string; nachricht: { text: string; empfaenger: string[] } };
+        const alleNachrichten: PoolEntry[] = [];
 
         // Berechne Verteilungen
         const anAlle = this.spruecheAnAlle;
         const anMehrere = this.spruecheAnMehrere;
         const anEinzeln = this.spruecheProTeilnehmer - 1 - anAlle - anMehrere;
-
-        // Erstelle einen Pool für alle Nachrichten
-        let alleNachrichten = [];
 
         this.teilnehmerListe.forEach(teilnehmer => {
             nachrichtenVerteilung[teilnehmer] = [];
@@ -257,11 +291,11 @@ export class FunkUebung {
         // Mische alle Nachrichten
         alleNachrichten.sort(() => Math.random() - 0.5);
         // Smarte Durchmischung, sodass Nachrichten an "Alle" oder "Mehrere" nicht hintereinander stehen
-        alleNachrichten = this.shuffleSmart(alleNachrichten);
+        const gemischt = this.shuffleSmart(alleNachrichten);
 
         // Weisen die Nachrichten wieder zu
         // Hilfsfunktion zum Prüfen, ob eine Nachricht ein buchstabierwürdiges Wort enthält
-        function enthaeltBuchstabierwort(text) {
+        function enthaeltBuchstabierwort(text: string): boolean {
             return text
                 .split(/\s+/)
                 .some(wort => wort.length > 4 && wort === wort.toUpperCase());
@@ -286,17 +320,17 @@ export class FunkUebung {
                     const nachricht = nachrichten[i];
                     if (!enthaeltBuchstabierwort(nachricht.nachricht) && restlicheNachrichten.length > 0) {
                         const neuerSpruch = restlicheNachrichten.pop();
-                        nachricht.nachricht = neuerSpruch;
+                        nachricht.nachricht = neuerSpruch!;
                         ersetzt++;
                     }
                 }
             }
         });
 
-        let tempCounters = {};
+        const tempCounters: Record<string, number> = {};
         this.teilnehmerListe.forEach(teilnehmer => tempCounters[teilnehmer] = 2);
     
-        alleNachrichten.forEach(entry => {
+        gemischt.forEach(entry => {
             const { sender, nachricht } = entry;
             nachrichtenVerteilung[sender].push({
                 id: tempCounters[sender]++,
@@ -311,11 +345,11 @@ export class FunkUebung {
     /**
      * Mischt ein Array zufällig durch.
      */
-    shuffleArray(array) {
+    shuffleArray<T>(array: T[]): T[] {
         return array.sort(() => Math.random() - 0.5);
     }
 
-    shuffleSmart(nachrichtenListe) {
+    shuffleSmart(nachrichtenListe: any[]): any[] {
         let maxVersuche = 100;
         let durchmischteListe = [...nachrichtenListe];
         let istGueltig = false;
@@ -347,7 +381,12 @@ export class FunkUebung {
         return durchmischteListe;
     }
     
-    getFairSubsetOfOthers(teilnehmerListe, sender, empfangsZaehler, blacklist) {
+    getFairSubsetOfOthers(
+      teilnehmerListe: string[],
+      sender: string,
+      empfangsZaehler: Record<string, number>,
+      blacklist: Set<string>
+    ): string[] {
         let andere = teilnehmerListe.filter(t => t !== sender && !blacklist.has(t));
         
         // Sortiere nach Anzahl empfangener Nachrichten, um weniger Bevorzugte zu priorisieren
@@ -362,7 +401,12 @@ export class FunkUebung {
     /**
      * Wählt gezielt einen Empfänger, der noch nicht genug Nachrichten erhalten hat.
      */
-    getFairOther(teilnehmerListe, sender, empfangsZaehler, blacklist) {
+    getFairOther(
+        teilnehmerListe: string[],
+        sender: string,
+        empfangsZaehler: Record<string, number>,
+        blacklist: Set<string>
+    ): string {
         let andere = teilnehmerListe.filter(t => t !== sender && !blacklist.has(t));
         
         // Sortiere nach Anzahl empfangener Nachrichten, um weniger Bevorzugte zu priorisieren
@@ -371,11 +415,11 @@ export class FunkUebung {
         return andere.length > 0 ? andere[0] : teilnehmerListe.filter(t => t !== sender)[0]; // Notfall: Falls keine Alternative verfügbar
     }
 
-    generiereNachrichten(teilnehmer) {
-        let gemischteFunksprueche = [...this.funksprueche].sort(() => 0.5 - Math.random());
-        let nachrichtenVerteilung = this.verteileNachrichten(this.spruecheProTeilnehmer, this.spruecheAnAlle, this.spruecheAnMehrere);
+    generiereNachrichten(teilnehmer: string): Nachricht[] {
+        const gemischteFunksprueche: string[] = [...this.funksprueche].sort(() => 0.5 - Math.random());
+        const nachrichtenVerteilung = this.verteileNachrichten(this.spruecheProTeilnehmer, this.spruecheAnAlle, this.spruecheAnMehrere);
 
-        let nachrichten = [];
+        const nachrichten: Nachricht[] = [];
 
         // Erste Nachricht: Anmeldung
         nachrichten.push({
@@ -385,19 +429,19 @@ export class FunkUebung {
         });
 
         for (let i = 0; i < this.spruecheProTeilnehmer; i++) {
-            let nachricht = {};
-            nachricht.id = i + 2;
-            nachricht.nachricht = gemischteFunksprueche[i];
-
+            const nachrichtObj: Nachricht = {
+                id: i + 2,
+                nachricht: gemischteFunksprueche[i],
+                empfaenger: []
+            };
             if (nachrichtenVerteilung.alle.includes(i)) {
-                nachricht.empfaenger = ["Alle"];
+                nachrichtObj.empfaenger = ["Alle"];
             } else if (nachrichtenVerteilung.mehrere.includes(i)) {
-                nachricht.empfaenger = this.getRandomSubsetOfOthers(this.teilnehmerListe, teilnehmer);
+                nachrichtObj.empfaenger = this.getRandomSubsetOfOthers(this.teilnehmerListe, teilnehmer);
             } else {
-                nachricht.empfaenger = [this.getRandomOther(this.teilnehmerListe, teilnehmer)];
+                nachrichtObj.empfaenger = [this.getRandomOther(this.teilnehmerListe, teilnehmer)];
             }
-            
-            nachrichten.push(nachricht);
+            nachrichten.push(nachrichtObj);
         }
 
         return nachrichten;
@@ -410,7 +454,7 @@ export class FunkUebung {
      * @param {string} aktuellerTeilnehmer - Der Teilnehmer, der "sich selbst" nicht erhalten darf
      * @returns {string[]} Zufälliges Teil-Array (mindestens 2 Teilnehmer)
      */
-     getRandomSubsetOfOthers(teilnehmerListe, aktuellerTeilnehmer) {
+    getRandomSubsetOfOthers(teilnehmerListe: string[], aktuellerTeilnehmer: string): string[] {
         // 1) Filter: Wer ist "nicht ich"?
         const andere = teilnehmerListe.filter(t => t !== aktuellerTeilnehmer);
         const gesamtTeilnehmer = andere.length;
@@ -455,7 +499,7 @@ export class FunkUebung {
      * @param {string} aktuellerTeilnehmer   - Der Teilnehmer, der sich selbst nicht enthalten darf
      * @returns {string} Ein zufälliger anderer Teilnehmer
      */
-    getRandomOther(teilnehmerListe, aktuellerTeilnehmer) {
+    getRandomOther(teilnehmerListe: string[], aktuellerTeilnehmer: string): string {
         // 1) Filter: Wer ist "nicht ich"?
         const andere = teilnehmerListe.filter(t => t !== aktuellerTeilnehmer);
 
@@ -473,11 +517,16 @@ export class FunkUebung {
      * @param {number} anzahlAlle    - Wie viele Nachrichten sollen an "ALLE" gehen?
      * @param {number} anzahlMehrere - Wie viele Nachrichten sollen an "MEHRERE" gehen?
      *
-     * @returns {{ alle: number[], mehrere: number[] }}
+     * @returns {{ alle: number[], mehrere: number[], einfach: number[] }}
      *    - `alle`: Array mit den Nachrichtennummern, die an "ALLE" gehen
      *    - `mehrere`: Array mit den Nachrichtennummern, die an "MEHRERE" gehen
+     *    - `einfach`: Array mit den Nachrichtennummern, die an Einzel-Empfänger gehen
      */
-    verteileNachrichten(totalMessages, anzahlAlle, anzahlMehrere) {
+    verteileNachrichten(
+      totalMessages: number,
+      anzahlAlle: number,
+      anzahlMehrere: number
+    ): { alle: number[]; mehrere: number[]; einfach: number[] } {
         // 1) Validierung: Reicht die Gesamtanzahl für die gewünschten Mengen aus?
         if (anzahlAlle + anzahlMehrere > totalMessages) {
             throw new Error(
@@ -513,9 +562,9 @@ export class FunkUebung {
                 const buchstabenMitIndex = loesungswort
                     .split("")
                     .map((buchstabe, index) => `${index + 1}${buchstabe}`);
- 
+
                 // Finde alle Nachrichten, die an den Empfänger gerichtet sind (von verschiedenen Absendern)
-                let nachrichtenFuerEmpfaenger = [];
+                let nachrichtenFuerEmpfaenger: Nachricht[] = [];
                 Object.entries(this.nachrichten).forEach(([absender, nachrichtenListe]) => {
                     if (absender !== empfaenger) {
                         nachrichtenListe.forEach(nachricht => {
