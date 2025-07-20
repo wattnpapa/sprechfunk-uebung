@@ -661,8 +661,8 @@ class PDFGenerator {
             nachrichten.forEach((nachricht, index) => {
                 alleNachrichten.push({
                     nr: index + 1,
-                    sender,
                     empfaenger: nachricht.empfaenger.join("\n"),
+                    sender,
                     nachricht: nachricht.nachricht
                 });
             });
@@ -672,7 +672,7 @@ class PDFGenerator {
         alleNachrichten.sort((a, b) => a.nr - b.nr || a.sender.localeCompare(b.sender));
 
         // Tabelle vorbereiten
-        const tableData = alleNachrichten.map(n => [n.nr, n.sender, n.empfaenger, n.nachricht, ""]);
+        const tableData = alleNachrichten.map(n => [n.nr, n.empfaenger, n.sender, n.nachricht, ""]);
 
         let tableWidth = pdfWidth - 2 * pageMargin;
         let empfaengerWidth = tableWidth * 0.20;
@@ -687,7 +687,7 @@ class PDFGenerator {
         let lastNrValue = null;
 
         pdf.autoTable({
-            head: [["Nr", "Sender", "Empfänger", "Nachricht", "Zeit"]],
+            head: [["Nr", "Empfänger", "Sender", "Nachricht", "Zeit"]],
             body: tableData,
             startY: nextTableStartY,
             theme: "grid",
