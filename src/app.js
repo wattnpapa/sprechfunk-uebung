@@ -205,7 +205,7 @@ export class AppController {
             <table class="table table-bordered">
                 <thead class="table-dark">
                     <tr>
-                        <th>Teilnehmer</th>
+                        <th>Funkrufnamen</th>
                         ${isIndividuell ? "<th id='loesungswortHeader'>Lösungswort</th>" : ""}
                         <th style="width: 50px;">Aktion</th>
                     </tr>
