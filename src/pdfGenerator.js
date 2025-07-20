@@ -98,6 +98,72 @@ class PDFGenerator {
     }
 
     /**
+     * Zeichnet eine einzelne Nachrichtenvordruck-Seite für einen Teilnehmer.
+     */
+    drawNachrichtenvordruckPage(pdf, funkUebung, teilnehmer, nachricht) {
+        const templateImageUrl = 'assets/nachrichtenvordruck4fach.png';
+        const maxWidthRufname = 70;
+        const maxWidthAnschrift = 70;
+        // Hintergrundbild
+        pdf.addImage(templateImageUrl, 'PNG', 0, 0, 148, 210);
+        // FM Zentrale
+        pdf.setFontSize(16);
+        pdf.text('x', 15.4, 9);
+        pdf.setFontSize(10);
+        pdf.text(`${nachricht.id}`, 125.5, 17);
+        pdf.setFontSize(16);
+        pdf.text('x', 122.2, 27.5);
+        // Ausgang x
+        pdf.text('x', 18.6, 42.5);
+        // Absender
+        pdf.setFontSize(12);
+        pdf.text(`${teilnehmer}`, 44, 155);
+        // Empfänger und Anschrift
+        let empText = nachricht.empfaenger.includes('Alle') ? 'Alle' : nachricht.empfaenger.join(', ');
+        this.adjustTextForWidth(pdf, empText, maxWidthRufname, 58, 35);
+        this.adjustTextForWidth(pdf, empText, maxWidthAnschrift, 42, 55);
+        // Nachricht umbrochen
+        pdf.setFontSize(12);
+        const lineHeight = 6.5;
+        const msgLines = pdf.splitTextToSize(nachricht.nachricht, maxWidthAnschrift);
+        let startY = 77;
+        msgLines.forEach((line, i) => pdf.text(line, 17, startY + i * lineHeight));
+    }
+
+    /**
+     * Zeichnet eine einzelne Meldevordruck-Seite für einen Teilnehmer.
+     */
+    drawMeldevordruckPage(pdf, funkUebung, teilnehmer, nachricht) {
+        const templateImageUrl = 'assets/meldevordruck.png';
+        const maxWidthAnschrift = 70;
+        const maxWidthRufname = 70;
+        const maxWidthVerfasser = 40;
+        // Hintergrundbild
+        pdf.addImage(templateImageUrl, 'PNG', 0, 0, 148, 210);
+        // FM Zentrale
+        pdf.setFontSize(16);
+        pdf.text('x', 109.5, 10);
+        // Nr
+        pdf.setFontSize(12);
+        pdf.text(`${nachricht.id}`, 80, 12);
+        // Absender
+        pdf.setFontSize(16);
+        this.adjustTextForWidth(pdf, teilnehmer, maxWidthAnschrift, 22, 25);
+        // Empfänger
+        let empText = nachricht.empfaenger.includes('Alle') ? 'Alle' : nachricht.empfaenger.join(', ');
+        this.adjustTextForWidth(pdf, empText, maxWidthAnschrift, 22, 40);
+        // Verfasser
+        pdf.setFontSize(12);
+        this.adjustTextForWidth(pdf, teilnehmer, maxWidthVerfasser, 37, 192);
+        // Nachricht umbrochen
+        pdf.setFontSize(11.5);
+        const lineHeight = 5;
+        const msgLines = pdf.splitTextToSize(nachricht.nachricht, maxWidthAnschrift);
+        let startY = 55;
+        msgLines.forEach((line, i) => pdf.text(line, 20, startY + i * lineHeight));
+    }
+
+    /**
      * Zeichnet ein einzelnes A5-Deckblatt für einen Teilnehmer.
      */
     drawDeckblattPage(pdf, funkUebung, teilnehmer) {
@@ -356,10 +422,6 @@ class PDFGenerator {
      * Erstellt die Nachrichtenvordruck PDFs.
      */
     async generateNachrichtenvordruckPDFsBlob(funkUebung) {
-        const templateImageUrl = 'assets/nachrichtenvordruck4fach.png';
-        const maxWidth = 120; // Maximale Breite für die Nachricht
-        const maxWidthAnschrift = 70; // Maximale Breite für Anschrift
-        const maxWidthRufname = 70; // Maximale Breite für Rufname der Gegenstelle
         const blobMap = new Map();
         funkUebung.teilnehmerListe.forEach(teilnehmer => {
             let nachrichten = funkUebung.nachrichten[teilnehmer];
@@ -370,44 +432,7 @@ class PDFGenerator {
             pdf.addPage();
 
             nachrichten.forEach((nachricht, index) => {
-                pdf.addImage(templateImageUrl, "PNG", 0, 0, 148, 210);
-
-                //FM Zentrale ausfüllen
-                pdf.setFontSize(16);
-                pdf.text("x", 15.4, 9) // "x" Funk
-
-                pdf.setFontSize(10);
-                pdf.text(`${nachricht.id}`, 125.5, 17); //TBB Nummer
-                pdf.setFontSize(16);
-                pdf.text("x", 122.2, 27.5) // "x" Funk
-
-                //Ausgang
-                pdf.setFontSize(16);
-                pdf.text("x", 18.6, 42.5) // "x" Funk
-
-                pdf.setFontSize(12);
-                //Absender               
-                pdf.text(`${teilnehmer}`, 44, 155);
-
-
-                let empfaengerText = nachricht.empfaenger.includes("Alle") ? "Alle" : nachricht.empfaenger.join(", ");
-                //Rufname
-                this.adjustTextForWidth(pdf, empfaengerText, maxWidthRufname, 58, 35);
-                //Anschrift
-                this.adjustTextForWidth(pdf, empfaengerText, maxWidthAnschrift, 42, 55);
-
-
-                // Nachricht (Umbrechen)
-                pdf.setFontSize(12);
-                const lineHeight = 6.5; // z. B. 6pt Abstand
-                const messageLines = pdf.splitTextToSize(nachricht.nachricht, maxWidth);
-
-                let startY = 77;
-                messageLines.forEach((line, i) => {
-                    pdf.text(line, 17, startY + i * lineHeight);
-                });
-
-
+                this.drawNachrichtenvordruckPage(pdf, funkUebung, teilnehmer, nachricht);
                 if (index < nachrichten.length - 1) pdf.addPage();
             });
 
@@ -445,11 +470,6 @@ class PDFGenerator {
      * Erstellt die Meldevordruck PDFs für alle Teilnehmer.
      */
     async generateMeldevordruckPDFsBlob(funkUebung) {
-        const templateImageUrl = 'assets/meldevordruck.png';
-        const maxWidth = 120; // Maximale Breite für die Nachricht
-        const maxWidthAnschrift = 70; // Maximale Breite für Anschrift
-        const maxWidthRufname = 70; // Maximale Breite für Rufname der Gegenstelle
-        const maxWidthVerfasser = 40; // Maximale Breite für Rufname der Gegenstelle
         const blobMap = new Map();
         funkUebung.teilnehmerListe.forEach(teilnehmer => {
             let nachrichten = funkUebung.nachrichten[teilnehmer];
@@ -460,44 +480,8 @@ class PDFGenerator {
             pdf.addPage();
 
             nachrichten.forEach((nachricht, index) => {
-                // Füge das Hintergrundbild (Vorlage) auf jeder Seite hinzu
-                pdf.addImage(templateImageUrl, 'PNG', 0, 0, 148, 210);
-
-                //FM Zentrale ausfüllen
-                pdf.setFontSize(16);
-                pdf.text("x", 109.5, 10) // "x" Funk
-
-                pdf.setFontSize(12);
-                pdf.text(`${nachricht.id}`, 80, 12); //Nr
-
-                //Absender  
-                pdf.setFontSize(16);
-                this.adjustTextForWidth(pdf, teilnehmer, maxWidthAnschrift, 22, 25);
-
-                // Empfänger
-                pdf.setFontSize(16);
-                let empfaengerText = nachricht.empfaenger.includes("Alle") ? "Alle" : nachricht.empfaenger.join(", ");
-                this.adjustTextForWidth(pdf, empfaengerText, maxWidthAnschrift, 22, 40);
-
-                //Verfasser        
-                pdf.setFontSize(12);
-                this.adjustTextForWidth(pdf, teilnehmer, maxWidthVerfasser, 37, 192);
-
-                // Nachricht (Umbrechen)
-                pdf.setFontSize(11.5);
-                const lineHeight = 5; // z. B. 6pt Abstand
-                const messageLines = pdf.splitTextToSize(nachricht.nachricht, maxWidth);
-
-                let startY = 55;
-                messageLines.forEach((line, i) => {
-                    pdf.text(line, 20, startY + i * lineHeight);
-                });
-
-                // Falls nicht die letzte Nachricht, füge eine neue Seite hinzu
-                if (index < nachrichten.length - 1) {
-                    pdf.addPage();
-                    pdf.addImage(templateImageUrl, 'PNG', 0, 0, 148, 210);
-                }
+                this.drawMeldevordruckPage(pdf, funkUebung, teilnehmer, nachricht);
+                if (index < nachrichten.length - 1) pdf.addPage();
             });
 
             const totalPages = pdf.internal.getNumberOfPages();
