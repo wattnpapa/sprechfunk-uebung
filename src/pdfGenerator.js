@@ -813,39 +813,39 @@ class PDFGenerator {
         // Nachrichtenvordrucke
         const nachrichtenvordruckBlobs = await this.generateNachrichtenvordruckPDFsBlob(funkUebung);
         nachrichtenvordruckBlobs.forEach((blob, teilnehmer) => {
-            zip.file(`Teilnehmer/Nachrichtenvordruck/${this.sanitizeFileName(teilnehmer)}.pdf`, blob);
+            zip.file(`Nachrichtenvordruck/${this.sanitizeFileName(teilnehmer)}.pdf`, blob);
         });
 
         // Meldevordrucke
         const meldevordruckBlobs = await this.generateMeldevordruckPDFsBlob(funkUebung);
         meldevordruckBlobs.forEach((blob, teilnehmer) => {
-            zip.file(`Teilnehmer/Meldevordruck/${this.sanitizeFileName(teilnehmer)}.pdf`, blob);
+            zip.file(`Meldevordruck/${this.sanitizeFileName(teilnehmer)}.pdf`, blob);
         });
 
         // Druck-PDF mit allen Nachrichtenvordrucken
         const allMsgPrint = await this.generateAllNachrichtenvordruckPrintBlob(funkUebung);
         zip.file(
-            `Teilnehmer/Nachrichtenvordruck/Druck_Nachrichtenvordruck_A5.pdf`,
+            `Druck_Nachrichtenvordruck_A5.pdf`,
             allMsgPrint
         );
 
         // Druck-PDF mit allen Meldevordrucken
         const allMeldPrint = await this.generateAllMeldevordruckPrintBlob(funkUebung);
         zip.file(
-            `Teilnehmer/Meldevordruck/Druck_Meldevordruck_A5.pdf`,
+            `Druck_Meldevordruck_A5.pdf`,
             allMeldPrint
         );
 
         // A4-Druckvorlagen hinzufügen
         const allMsgPrintA4 = await this.generateAllNachrichtenvordruckPrintA4Blob(funkUebung);
         zip.file(
-            `Teilnehmer/Nachrichtenvordruck/Druck_Nachrichtenvordruck_A4.pdf`,
+            `Druck_Nachrichtenvordruck_A4.pdf`,
             allMsgPrintA4
         );
 
         const allMeldPrintA4 = await this.generateAllMeldevordruckPrintA4Blob(funkUebung);
         zip.file(
-            `Teilnehmer/Meldevordruck/Druck_Meldevordruck_A4.pdf`,
+            `Druck_Meldevordruck_A4.pdf`,
             allMeldPrintA4
         );
 
