@@ -365,6 +365,9 @@ class PDFGenerator {
             let nachrichten = funkUebung.nachrichten[teilnehmer];
 
             let pdf = new this.jsPDF("p", "mm", "a5");
+            // Deckblatt als erste Seite
+            this.drawDeckblattPage(pdf, funkUebung, teilnehmer);
+            pdf.addPage();
 
             nachrichten.forEach((nachricht, index) => {
                 pdf.addImage(templateImageUrl, "PNG", 0, 0, 148, 210);
@@ -409,7 +412,7 @@ class PDFGenerator {
             });
 
             const totalPages = pdf.internal.getNumberOfPages();
-            for (let j = 1; j <= totalPages; j++) {
+            for (let j = 2; j <= totalPages; j++) {
                 pdf.setPage(j);
                 this.drawCompactFooter(pdf, funkUebung, DateFormatter.formatNATODate(funkUebung.createDate), pdf.internal.pageSize.getWidth(), pdf.internal.pageSize.getHeight(), 10);
             }
@@ -452,6 +455,9 @@ class PDFGenerator {
             let nachrichten = funkUebung.nachrichten[teilnehmer];
 
             let pdf = new this.jsPDF('p', 'mm', 'a5'); // A5 Hochformat
+            // Deckblatt als erste Seite
+            this.drawDeckblattPage(pdf, funkUebung, teilnehmer);
+            pdf.addPage();
 
             nachrichten.forEach((nachricht, index) => {
                 // Füge das Hintergrundbild (Vorlage) auf jeder Seite hinzu
@@ -495,7 +501,7 @@ class PDFGenerator {
             });
 
             const totalPages = pdf.internal.getNumberOfPages();
-            for (let j = 1; j <= totalPages; j++) {
+            for (let j = 2; j <= totalPages; j++) {
                 pdf.setPage(j);
                 this.drawCompactFooter(pdf, funkUebung, DateFormatter.formatNATODate(funkUebung.createDate), pdf.internal.pageSize.getWidth(), pdf.internal.pageSize.getHeight(), 10);
             }
