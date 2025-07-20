@@ -15,7 +15,7 @@
   "type": "module",
   "main": "app.js",
   "scripts": {
-    "build": "rollup -c && mkdir -p dist && cp -r assets dist/ && cp src/index.html dist/index.html && cp src/style.css dist/style.css && cp src/firebase-config.js dist/firebase-config.js",
+    "build": "rollup -c && mkdir -p dist && cp -r assets dist/ && cp src/index.html dist/index.html && cp src/help.js dist/help.js && cp src/track.js dist/track.js && cp src/style.css dist/style.css && cp src/firebase-config.js dist/firebase-config.js",
     "watch": "rollup -c -w",
     "serve": "live-server dist --port=3000",
     "start": "npm run build && npm run serve"
