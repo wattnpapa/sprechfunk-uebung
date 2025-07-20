@@ -98,69 +98,149 @@ class PDFGenerator {
     }
 
     /**
-     * Zeichnet eine einzelne Nachrichtenvordruck-Seite für einen Teilnehmer.
+     * Zeichnet einen Nachrichtenvordruck (A5 oder A4-Hälfte).
+     * offsetX: 0 für volle A5-Seite oder linke A4-Hälfte, 148 für rechte A4-Hälfte.
      */
-    drawNachrichtenvordruckPage(pdf, funkUebung, teilnehmer, nachricht) {
+    drawNachrichtenvordruck(pdf, funkUebung, teilnehmer, nachricht, offsetX = 0) {
         const templateImageUrl = 'assets/nachrichtenvordruck4fach.png';
-        const maxWidthRufname = 70;
-        const maxWidthAnschrift = 70;
-        // Hintergrundbild
-        pdf.addImage(templateImageUrl, 'PNG', 0, 0, 148, 210);
+        const width = 148, height = 210;
+        // Hintergrundbild positionieren
+        pdf.addImage(templateImageUrl, 'PNG', offsetX, 0, width, height);
+
         // FM Zentrale
         pdf.setFontSize(16);
-        pdf.text('x', 15.4, 9);
+        pdf.text('x', offsetX + 15.4, 9);
         pdf.setFontSize(10);
-        pdf.text(`${nachricht.id}`, 125.5, 17);
+        pdf.text(`${nachricht.id}`, offsetX + 125.5, 17);
         pdf.setFontSize(16);
-        pdf.text('x', 122.2, 27.5);
-        // Ausgang x
-        pdf.text('x', 18.6, 42.5);
+        pdf.text('x', offsetX + 122.2, 27.5);
+        // Ausgang
+        pdf.text('x', offsetX + 18.6, 42.5);
+
         // Absender
         pdf.setFontSize(12);
-        pdf.text(`${teilnehmer}`, 44, 155);
+        pdf.text(`${teilnehmer}`, offsetX + 44, 155);
+
         // Empfänger und Anschrift
         let empText = nachricht.empfaenger.includes('Alle') ? 'Alle' : nachricht.empfaenger.join(', ');
-        this.adjustTextForWidth(pdf, empText, maxWidthRufname, 58, 35);
-        this.adjustTextForWidth(pdf, empText, maxWidthAnschrift, 42, 55);
+        this.adjustTextForWidth(pdf, empText, 70, offsetX + 58, 35);
+        this.adjustTextForWidth(pdf, empText, 70, offsetX + 42, 55);
+
         // Nachricht umbrochen
         pdf.setFontSize(12);
         const lineHeight = 6.5;
-        const msgLines = pdf.splitTextToSize(nachricht.nachricht, maxWidthAnschrift);
+        const msgLines = pdf.splitTextToSize(nachricht.nachricht, 70);
         let startY = 77;
-        msgLines.forEach((line, i) => pdf.text(line, 17, startY + i * lineHeight));
+        msgLines.forEach((line, i) => {
+            pdf.text(line, offsetX + 17, startY + i * lineHeight);
+        });
+
+        // Footer (compact)
+        const generierungszeit = DateFormatter.formatNATODate(funkUebung.createDate, true);
+        this.drawCompactFooter(
+            pdf,
+            funkUebung,
+            generierungszeit,
+            148,
+            210,
+            offsetX
+        );
     }
 
     /**
-     * Zeichnet eine einzelne Meldevordruck-Seite für einen Teilnehmer.
+     * Erstellt eine A4-Quer-PDF mit 2 Nachrichtenvordrucken pro Seite (paarweise Layout mit Deckblatt).
      */
-    drawMeldevordruckPage(pdf, funkUebung, teilnehmer, nachricht) {
-        const templateImageUrl = 'assets/meldevordruck.png';
-        const maxWidthAnschrift = 70;
-        const maxWidthRufname = 70;
-        const maxWidthVerfasser = 40;
+    async generateAllNachrichtenvordruckPrintA4Blob(funkUebung) {
+        const pdf = new this.jsPDF('l', 'mm', 'a4');
+        const parts = funkUebung.teilnehmerListe;
+        for (let i = 0; i < parts.length; i += 2) {
+            const left = parts[i];
+            const right = parts[i + 1];
+            // Deckblatt-Paarseite
+            if (i > 0) pdf.addPage();
+            this.drawDeckblattOnA4(pdf, funkUebung, left, 'left');
+            if (right) this.drawDeckblattOnA4(pdf, funkUebung, right, 'right');
+            // Nachrichtenvordrucke
+            const leftMsgs = funkUebung.nachrichten[left] || [];
+            const rightMsgs = right ? funkUebung.nachrichten[right] || [] : [];
+            const max = Math.max(leftMsgs.length, rightMsgs.length);
+            for (let j = 0; j < max; j++) {
+                pdf.addPage();
+                if (j < leftMsgs.length) this.drawNachrichtenvordruck(pdf, funkUebung, left, leftMsgs[j], 0);
+                if (right && j < rightMsgs.length) this.drawNachrichtenvordruck(pdf, funkUebung, right, rightMsgs[j], 148);
+            }
+        }
+        return pdf.output('blob');
+    }
+
+    /**
+     * Zeichnet einen Meldevordruck (A5 oder A4-Hälfte).
+     * offsetX: 0 für volle A5-Seite bzw. linke A4-Hälfte, 148 für rechte A4-Hälfte.
+     */
+    drawMeldevordruck(pdf, funkUebung, teilnehmer, nachricht, offsetX = 0) {
+        const template = 'assets/meldevordruck.png';
+        const w = 148, h = 210;
         // Hintergrundbild
-        pdf.addImage(templateImageUrl, 'PNG', 0, 0, 148, 210);
+        pdf.addImage(template, 'PNG', offsetX, 0, w, h);
+
         // FM Zentrale
         pdf.setFontSize(16);
-        pdf.text('x', 109.5, 10);
-        // Nr
+        pdf.text('x', offsetX + 109.5, 10);
+        // Nummer
         pdf.setFontSize(12);
-        pdf.text(`${nachricht.id}`, 80, 12);
+        pdf.text(`${nachricht.id}`, offsetX + 80, 12);
+
         // Absender
         pdf.setFontSize(16);
-        this.adjustTextForWidth(pdf, teilnehmer, maxWidthAnschrift, 22, 25);
+        this.adjustTextForWidth(pdf, teilnehmer, 70, offsetX + 22, 25);
+
         // Empfänger
-        let empText = nachricht.empfaenger.includes('Alle') ? 'Alle' : nachricht.empfaenger.join(', ');
-        this.adjustTextForWidth(pdf, empText, maxWidthAnschrift, 22, 40);
+        let emp = nachricht.empfaenger.includes('Alle') ? 'Alle' : nachricht.empfaenger.join(', ');
+        this.adjustTextForWidth(pdf, emp, 70, offsetX + 22, 40);
+
         // Verfasser
         pdf.setFontSize(12);
-        this.adjustTextForWidth(pdf, teilnehmer, maxWidthVerfasser, 37, 192);
+        this.adjustTextForWidth(pdf, teilnehmer, 40, offsetX + 37, 192);
+
         // Nachricht umbrochen
         pdf.setFontSize(11.5);
-        const lineHeight = 5;
-        const msgLines = pdf.splitTextToSize(nachricht.nachricht, maxWidthAnschrift);
-        let startY = 55;
-        msgLines.forEach((line, i) => pdf.text(line, 20, startY + i * lineHeight));
+        const lh = 5;
+        const lines = pdf.splitTextToSize(nachricht.nachricht, 70);
+        let y = 55;
+        lines.forEach((l, i) => pdf.text(l, offsetX + 20, y + i * lh));
+
+        // Footer
+        const genTime = DateFormatter.formatNATODate(funkUebung.createDate, true);
+        this.drawCompactFooter(
+            pdf, funkUebung, genTime,
+            148,
+            210,
+            offsetX
+        );
+    }
+
+    /**
+     * Erstellt eine A4-Quer-PDF mit 2 Meldevordrucken pro Seite (paarweise Layout mit Deckblatt).
+     */
+    async generateAllMeldevordruckPrintA4Blob(funkUebung) {
+        const pdf = new this.jsPDF('l', 'mm', 'a4');
+        const parts = funkUebung.teilnehmerListe;
+        for (let i = 0; i < parts.length; i += 2) {
+            const left = parts[i];
+            const right = parts[i + 1];
+            if (i > 0) pdf.addPage();
+            this.drawDeckblattOnA4(pdf, funkUebung, left, 'left');
+            if (right) this.drawDeckblattOnA4(pdf, funkUebung, right, 'right');
+            const leftMsgs = funkUebung.nachrichten[left] || [];
+            const rightMsgs = right ? funkUebung.nachrichten[right] || [] : [];
+            const max = Math.max(leftMsgs.length, rightMsgs.length);
+            for (let j = 0; j < max; j++) {
+                pdf.addPage();
+                if (j < leftMsgs.length) this.drawMeldevordruck(pdf, funkUebung, left, leftMsgs[j], 0);
+                if (right && j < rightMsgs.length) this.drawMeldevordruck(pdf, funkUebung, right, rightMsgs[j], 148);
+            }
+        }
+        return pdf.output('blob');
     }
 
     /**
@@ -175,23 +255,23 @@ class PDFGenerator {
 
         // Zeilenhöhen in mm
         const lh = {
-            date:       10,
-            title:      12,
-            owner:      10,
-            rufgruppe:  10,
-            blank:      8,
+            date: 10,
+            title: 12,
+            owner: 10,
+            rufgruppe: 10,
+            blank: 8,
             hdrSection: 8,
-            Leitung:    10,
-            partEmpty:  10,
-            hdrTeil:    4,
+            Leitung: 10,
+            partEmpty: 10,
+            hdrTeil: 4,
             teilnehmer: 4
         };
 
         // Gesamt-Höhe berechnen
         const n = funkUebung.teilnehmerListe.length;
         const totalH = lh.date + lh.title + lh.owner + lh.rufgruppe + lh.blank
-                     + lh.hdrSection + lh.Leitung + lh.partEmpty + lh.hdrTeil
-                     + n * lh.teilnehmer;
+            + lh.hdrSection + lh.Leitung + lh.partEmpty + lh.hdrTeil
+            + n * lh.teilnehmer;
 
         // Vertikal zentrieren
         const h = pdf.internal.pageSize.getHeight();
@@ -432,14 +512,13 @@ class PDFGenerator {
             pdf.addPage();
 
             nachrichten.forEach((nachricht, index) => {
-                this.drawNachrichtenvordruckPage(pdf, funkUebung, teilnehmer, nachricht);
+                this.drawNachrichtenvordruck(pdf, funkUebung, teilnehmer, nachricht);
                 if (index < nachrichten.length - 1) pdf.addPage();
             });
 
             const totalPages = pdf.internal.getNumberOfPages();
             for (let j = 2; j <= totalPages; j++) {
                 pdf.setPage(j);
-                this.drawCompactFooter(pdf, funkUebung, DateFormatter.formatNATODate(funkUebung.createDate), pdf.internal.pageSize.getWidth(), pdf.internal.pageSize.getHeight(), 10);
             }
 
             const blob = pdf.output("blob");
@@ -480,14 +559,13 @@ class PDFGenerator {
             pdf.addPage();
 
             nachrichten.forEach((nachricht, index) => {
-                this.drawMeldevordruckPage(pdf, funkUebung, teilnehmer, nachricht);
+                this.drawMeldevordruck(pdf, funkUebung, teilnehmer, nachricht);
                 if (index < nachrichten.length - 1) pdf.addPage();
             });
 
             const totalPages = pdf.internal.getNumberOfPages();
             for (let j = 2; j <= totalPages; j++) {
                 pdf.setPage(j);
-                this.drawCompactFooter(pdf, funkUebung, DateFormatter.formatNATODate(funkUebung.createDate), pdf.internal.pageSize.getWidth(), pdf.internal.pageSize.getHeight(), 10);
             }
 
             const blob = pdf.output("blob");
@@ -697,15 +775,14 @@ class PDFGenerator {
         });
     }
 
-    drawCompactFooter(pdf, funkUebung, generierungszeit, pdfWidth, pdfHeight, pageMargin) {
+    drawCompactFooter(pdf, funkUebung, generierungszeit, pdfWidth, pdfHeight, offsetX = 0) {
         pdf.setFont("helvetica", "normal");
         pdf.setFontSize(8);
 
-
-        pdf.text(funkUebung.name, pdf.internal.pageSize.getWidth() / 2, 4, { align: "center" });
+        pdf.text(funkUebung.name, offsetX + (pdfWidth / 2), 4, { align: "center" });
 
         // Hinweis ganz unten (5 mm Abstand vom unteren Rand)
-        pdf.text("Wörter in GROSSBUCHSTABEN müssen buchstabiert werden.", pdfWidth / 2, pdfHeight - 1.5, { align: "center" });
+        pdf.text("Wörter in GROSSBUCHSTABEN müssen buchstabiert werden.", offsetX + (pdfWidth / 2), pdfHeight - 1.5, { align: "center" });
 
         // Trennlinie direkt darüber (bei 7 mm Abstand vom unteren Rand)
         pdf.setDrawColor(0);
@@ -713,7 +790,7 @@ class PDFGenerator {
         // Vertikaler Text (90° gedreht) an der rechten Seite (5 mm vom rechten Rand)
         pdf.setFontSize(6);
         let rightText = `© Johannes Rudolph | Version ${funkUebung.buildVersion} | Übung ID: ${funkUebung.id} | Generiert: ${generierungszeit} | Generator: https://sprechfunk-uebung.de/`;
-        pdf.text(rightText, pdfWidth - 3, pdfHeight - 5, { angle: 90, align: "left" });
+        pdf.text(rightText, pdfWidth - 3 + offsetX, pdfHeight - 5, { angle: 90, align: "left" });
     }
 
     sanitizeFileName(name) {
@@ -748,15 +825,28 @@ class PDFGenerator {
         // Druck-PDF mit allen Nachrichtenvordrucken
         const allMsgPrint = await this.generateAllNachrichtenvordruckPrintBlob(funkUebung);
         zip.file(
-          `Teilnehmer/Nachrichtenvordruck/Druck_Nachrichtenvordruck_A5.pdf`,
-          allMsgPrint
+            `Teilnehmer/Nachrichtenvordruck/Druck_Nachrichtenvordruck_A5.pdf`,
+            allMsgPrint
         );
 
         // Druck-PDF mit allen Meldevordrucken
         const allMeldPrint = await this.generateAllMeldevordruckPrintBlob(funkUebung);
         zip.file(
-          `Teilnehmer/Meldevordruck/Druck_Meldevordruck_A5.pdf`,
-          allMeldPrint
+            `Teilnehmer/Meldevordruck/Druck_Meldevordruck_A5.pdf`,
+            allMeldPrint
+        );
+
+        // A4-Druckvorlagen hinzufügen
+        const allMsgPrintA4 = await this.generateAllNachrichtenvordruckPrintA4Blob(funkUebung);
+        zip.file(
+            `Teilnehmer/Nachrichtenvordruck/Druck_Nachrichtenvordruck_A4.pdf`,
+            allMsgPrintA4
+        );
+
+        const allMeldPrintA4 = await this.generateAllMeldevordruckPrintA4Blob(funkUebung);
+        zip.file(
+            `Teilnehmer/Meldevordruck/Druck_Meldevordruck_A4.pdf`,
+            allMeldPrintA4
         );
 
         const deckblattBlob = await this.generateDeckblaetterA5Blob(funkUebung);
@@ -786,7 +876,7 @@ class PDFGenerator {
             pdf.addPage();
             const nachrichten = funkUebung.nachrichten[teilnehmer] || [];
             nachrichten.forEach((nachricht, nIdx) => {
-                this.drawNachrichtenvordruckPage(pdf, funkUebung, teilnehmer, nachricht);
+                this.drawNachrichtenvordruck(pdf, funkUebung, teilnehmer, nachricht);
                 // add page if not last message of last participant
                 if (!(tIdx === funkUebung.teilnehmerListe.length - 1 && nIdx === nachrichten.length - 1)) {
                     pdf.addPage();
@@ -807,7 +897,7 @@ class PDFGenerator {
             pdf.addPage();
             const nachrichten = funkUebung.nachrichten[teilnehmer] || [];
             nachrichten.forEach((nachricht, nIdx) => {
-                this.drawMeldevordruckPage(pdf, funkUebung, teilnehmer, nachricht);
+                this.drawMeldevordruck(pdf, funkUebung, teilnehmer, nachricht);
                 if (!(tIdx === funkUebung.teilnehmerListe.length - 1 && nIdx === nachrichten.length - 1)) {
                     pdf.addPage();
                 }
@@ -816,6 +906,74 @@ class PDFGenerator {
         return pdf.output('blob');
     }
 
+
+
+    /**
+        * Zeichnet ein A5-Deckblatt auf A4 Quer (2x A5) links oder rechts.
+        */
+    drawDeckblattOnA4(pdf, funkUebung, teilnehmer, side) {
+        const offsetX = side === 'right' ? 148 : 0;
+        const halfWidth = 148;
+        const halfHeight = 210;
+        // Zeilenhöhen analog A5
+        const lh = {
+            date: 10,
+            title: 12,
+            owner: 10,
+            rufgruppe: 10,
+            blank: 8,
+            hdrSection: 8,
+            Leitung: 10,
+            partEmpty: 10,
+            hdrTeil: 4,
+            teilnehmer: 4
+        };
+        // Gesamt-Höhe analog A5
+        const n = funkUebung.teilnehmerListe.length;
+        const totalH = lh.date + lh.title + lh.owner + lh.rufgruppe + lh.blank
+            + lh.hdrSection + lh.Leitung + lh.partEmpty + lh.hdrTeil
+            + n * lh.teilnehmer;
+        let y = (halfHeight - totalH) / 2 + lh.date / 2;
+        const centerX = txt => offsetX + (halfWidth - pdf.getTextWidth(txt)) / 2;
+        // Datum
+        const dateLine = DateFormatter.formatNATODate(funkUebung.datum, false)
+            .replace(/\s+/g, '').toLowerCase();
+        pdf.setFont("helvetica", "normal").setFontSize(14);
+        pdf.text(dateLine, centerX(dateLine), y);
+        y += lh.date;
+        // Titel
+        pdf.setFont("helvetica", "bold").setFontSize(16);
+        pdf.text(funkUebung.name, centerX(funkUebung.name), y);
+        y += lh.title;
+        // Rufname
+        pdf.setFont("helvetica", "normal").setFontSize(14);
+        pdf.text(teilnehmer, centerX(teilnehmer), y);
+        y += lh.owner;
+        // Rufgruppe
+        pdf.text(funkUebung.rufgruppe, centerX(funkUebung.rufgruppe), y);
+        y += lh.rufgruppe;
+        // Leer
+        y += lh.blank;
+        // Übungsleitung
+        pdf.setFont("helvetica", "bold").setFontSize(12);
+        pdf.text("Übungsleitung:", centerX("Übungsleitung:"), y);
+        y += lh.hdrSection;
+        pdf.setFont("helvetica", "normal").setFontSize(12);
+        pdf.text(funkUebung.leitung, centerX(funkUebung.leitung), y);
+        y += lh.Leitung;
+        // Leer vor Teilnehmer
+        y += lh.partEmpty;
+        // Teilnehmer-Header
+        pdf.setFont("helvetica", "bold").setFontSize(12);
+        pdf.text("Teilnehmer:", centerX("Teilnehmer:"), y);
+        y += lh.hdrTeil;
+        // Teilnehmerliste
+        pdf.setFont("helvetica", "normal").setFontSize(8);
+        funkUebung.teilnehmerListe.forEach(name => {
+            pdf.text(name, centerX(name), y);
+            y += lh.teilnehmer;
+        });
+    }
 }
 
 // Instanz der Klasse exportieren
