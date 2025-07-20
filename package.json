@@ -1,0 +1,27 @@
+{
+  "name": "sprechfunk-uebung",
+  "version": "1.0.0",
+  "description": "[![GitHub](https://img.shields.io/badge/GitHub-Repository-blue?logo=github)](https://github.com/wattnpapa/sprechfunk-uebung) [![Live Demo](https://img.shields.io/badge/Demo-Online-green)](https://sprechfunk-uebung.de//)",
+  "homepage": "https://github.com/wattnpapa/sprechfunk-uebung#readme",
+  "bugs": {
+    "url": "https://github.com/wattnpapa/sprechfunk-uebung/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/wattnpapa/sprechfunk-uebung.git"
+  },
+  "license": "MIT",
+  "author": "Johannes Rudolph",
+  "type": "commonjs",
+  "main": "app.js",
+  "scripts": {
+    "build": "mkdir -p dist && cp -r assets dist/ && cp src/index.html dist/index.html && cp src/style.css dist/style.css && tsc",
+    "watch": "mkdir -p dist && cp -r assets dist/ && cp src/index.html dist/index.html && cp src/style.css dist/style.css && tsc -w",
+    "serve": "live-server dist --port=3000",
+    "start": "npm run build && npm run serve"
+  },
+  "devDependencies": {
+    "live-server": "^1.2.2",
+    "typescript": "^5.8.3"
+  }
+}

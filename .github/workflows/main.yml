@@ -26,6 +26,17 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build project
+        run: npm run build
+
       - name: Create build.json with commit SHA and run number
         run: |
           BUILD_DATE=$(date +%Y%m%d)
@@ -33,7 +44,7 @@ jobs:
           COMMIT_SHA=$(git rev-parse --short HEAD)
           BUILD_NR=${{ github.run_number }}
           echo "📦 Generiere build.json"
-          echo "{\"buildDate\":\"$BUILD_DATE\",\"buildTime\":\"$BUILD_TIME\",\"commit\":\"$COMMIT_SHA\",\"runNumber\":$BUILD_NR}" > build.json
+          echo "{\"buildDate\":\"$BUILD_DATE\",\"buildTime\":\"$BUILD_TIME\",\"commit\":\"$COMMIT_SHA\",\"runNumber\":$BUILD_NR}" > dist/build.json
       
       - name: Generate firebase-config.js from secrets
         run: |
@@ -46,7 +57,7 @@ jobs:
           sed "s|\${FIREBASE_MESSAGING_SENDER_ID}|${{ secrets.FIREBASE_MESSAGING_SENDER_ID }}|g" | \
           sed "s|\${FIREBASE_APP_ID}|${{ secrets.FIREBASE_APP_ID }}|g" | \
           sed "s|\${FIREBASE_MEASUREMENT_ID}|${{ secrets.FIREBASE_MEASUREMENT_ID }}|g" \
-          > src/firebase-config.js
+          > dist/firebase-config.js
 
       - name: Setup Pages
         uses: actions/configure-pages@v5
@@ -54,7 +65,7 @@ jobs:
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
-          path: '.'
+          path: 'dist'
 
       - name: Deploy to GitHub Pages
         id: deployment
