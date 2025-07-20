@@ -18,7 +18,7 @@ class PDFGenerator {
                 document.body.removeChild(link);
                 URL.revokeObjectURL(link.href);
             });
-    
+
             alert("Alle Teilnehmer PDFs wurden erfolgreich erstellt!");
         });
     }
@@ -88,64 +88,72 @@ class PDFGenerator {
      *   <Liste, kleiner & eng zeilenabständig>
      */
     async generateDeckblaetterA5Blob(funkUebung) {
-        // 1) Ein einziges jsPDF für alle Seiten
         const pdf = new this.jsPDF({ orientation: "p", unit: "mm", format: "a5" });
         const w = pdf.internal.pageSize.getWidth();
         const h = pdf.internal.pageSize.getHeight();
-
-        // Generierungszeit für Footer
         const generierungszeit = DateFormatter.formatNATODate(funkUebung.createDate, true);
 
-        // Hilfsfunktion: Zeichne ein einzelnes Deckblatt auf aktuelle Seite
         const drawDeckblatt = (teilnehmer) => {
-            // Datum kurz z.B. "19jul25"
+            // Kurzdatum z.B. "19jul25"
             const dateLine = DateFormatter
                 .formatNATODate(funkUebung.datum, false)
                 .replace(/\s+/g, '')
                 .toLowerCase();
 
-            // Zeilenhöhen (angepasst)
+            // Zeilenhöhen (jetzt: date ganz oben)
             const lh = {
-                title:       12,
-                date:        10,
-                owner:       10,
-                blank:       8,
-                hdrSection:  8,
-                Leitung:     10,
-                partEmpty:   10,
-                hdrTeil:     4,
-                teilnehmer:  4
+                date: 10,
+                title: 12,
+                owner: 10,
+                rufgruppe: 10,
+                blank: 8,
+                hdrSection: 8,
+                Leitung: 10,
+                partEmpty: 10,
+                hdrTeil: 4,
+                teilnehmer: 4
             };
 
-            // Berechne Blockhöhe
+            // Gesamt-Höhe in neuer Reihenfolge
             const n = funkUebung.teilnehmerListe.length;
-            const totalH = lh.title + lh.date + lh.owner + lh.blank
-                        + lh.hdrSection + lh.Leitung + lh.partEmpty
-                        + lh.hdrTeil + n*lh.teilnehmer;
+            const totalH = lh.date
+                + lh.title
+                + lh.owner
+                + lh.rufgruppe
+                + lh.blank
+                + lh.hdrSection
+                + lh.Leitung
+                + lh.partEmpty
+                + lh.hdrTeil
+                + n * lh.teilnehmer;
 
-            // Starte vertikal zentriert
-            let y = (h - totalH)/2 + lh.title/2;
+            // Vertikal zentrieren
+            let y = (h - totalH) / 2 + lh.date / 2;
             const centerX = txt => (w - pdf.getTextWidth(txt)) / 2;
 
-            // –– Zeichnungsschritte ––
-            // 1) Titel
-            pdf.setFont("helvetica", "bold").setFontSize(16);
-            pdf.text(funkUebung.name, centerX(funkUebung.name), y);
-            y += lh.title;
-
-            // 2) Datum
+            // 1) Datum
             pdf.setFont("helvetica", "normal").setFontSize(14);
             pdf.text(dateLine, centerX(dateLine), y);
             y += lh.date;
 
+            // 2) Titel
+            pdf.setFont("helvetica", "bold").setFontSize(16);
+            pdf.text(funkUebung.name, centerX(funkUebung.name), y);
+            y += lh.title;
+
             // 3) Eigener Rufname
+            pdf.setFont("helvetica", "normal").setFontSize(14);
             pdf.text(teilnehmer, centerX(teilnehmer), y);
             y += lh.owner;
 
-            // 4) Leer
+            // 4) Rufgruppe
+            pdf.text(funkUebung.rufgruppe, centerX(funkUebung.rufgruppe), y);
+            y += lh.rufgruppe;
+
+            // 5) Leerzeile
             y += lh.blank;
 
-            // 5) Übungsleitung
+            // 6) Übungsleitung
             pdf.setFont("helvetica", "bold").setFontSize(12);
             pdf.text("Übungsleitung:", centerX("Übungsleitung:"), y);
             y += lh.hdrSection;
@@ -153,22 +161,22 @@ class PDFGenerator {
             pdf.text(funkUebung.leitung, centerX(funkUebung.leitung), y);
             y += lh.Leitung;
 
-            // 6) Leer vor Teilnehmer
+            // 7) Leer vor Teilnehmer
             y += lh.partEmpty;
 
-            // 7) Teilnehmer-Header
+            // 8) Teilnehmer-Header
             pdf.setFont("helvetica", "bold").setFontSize(12);
             pdf.text("Teilnehmer:", centerX("Teilnehmer:"), y);
             y += lh.hdrTeil;
 
-            // 8) Teilnehmerliste (klein, eng)
+            // 9) Teilnehmerliste (klein & eng)
             pdf.setFont("helvetica", "normal").setFontSize(8);
             funkUebung.teilnehmerListe.forEach(name => {
                 pdf.text(name, centerX(name), y);
                 y += lh.teilnehmer;
             });
 
-            // 9) Zweizeiliger Footer
+            // 10) Zweizeiliger Footer
             pdf.setFont("helvetica", "normal").setFontSize(6);
             const line1 = `© Johannes Rudolph | Version ${funkUebung.buildVersion} | Übung ID: ${funkUebung.id}`;
             const line2 = `Generiert: ${generierungszeit} | Generator: sprechfunk-uebung.de`;
@@ -178,16 +186,15 @@ class PDFGenerator {
             pdf.textWithLink(line2, 10, y2, { url: "https://sprechfunk-uebung.de/" });
         };
 
-        // 2) Pro Teilnehmer eine Seite erzeugen
+        // Pro Teilnehmer eine Seite
         funkUebung.teilnehmerListe.forEach((teilnehmer, idx) => {
             if (idx > 0) pdf.addPage();
             drawDeckblatt(teilnehmer);
         });
 
-        // 3) Einen einzigen Blob zurückgeben
         return pdf.output("blob");
     }
- 
+
 
     /**
      * Erstellt die Teilnehmerliste-Tabelle.
@@ -217,7 +224,7 @@ class PDFGenerator {
             margin: { left: marginLeft },
             tableWidth: width,
             theme: "grid",
-            styles: { fontSize: 10, cellPadding: 3, lineWidth: 0.1 , lineColor: [0, 0, 0] },
+            styles: { fontSize: 10, cellPadding: 3, lineWidth: 0.1, lineColor: [0, 0, 0] },
             headStyles: { fillColor: [200, 200, 200] }
         });
     }
@@ -236,14 +243,14 @@ class PDFGenerator {
             body: nachrichten.map(n => [n.id, n.empfaenger.join("\n"), n.nachricht]),
             startY: startY,
             theme: "grid",
-            margin: { left: marginLeft, top: secondPageTableTopMargin, bottom: 20},
+            margin: { left: marginLeft, top: secondPageTableTopMargin, bottom: 20 },
             tableWidth: tableWidth,
             columnStyles: {
                 0: { cellWidth: columnWidths[0] },
                 1: { cellWidth: columnWidths[1] },
                 2: { cellWidth: columnWidths[2] }
             },
-            styles: { fontSize: 10, cellPadding: 1.5, lineWidth: 0.1 , lineColor: [0, 0, 0] },
+            styles: { fontSize: 10, cellPadding: 1.5, lineWidth: 0.1, lineColor: [0, 0, 0] },
             headStyles: { fillColor: [200, 200, 200] }
         });
     }
@@ -280,7 +287,7 @@ class PDFGenerator {
             margin: { left: marginLeft },
             tableWidth: width,
             theme: "grid",
-            styles: { fontSize: 10, cellPadding: 3, lineWidth: 0.1 , lineColor: [0, 0, 0] },
+            styles: { fontSize: 10, cellPadding: 3, lineWidth: 0.1, lineColor: [0, 0, 0] },
             headStyles: { fillColor: [200, 200, 200] }
         });
     }
@@ -298,7 +305,7 @@ class PDFGenerator {
             pdf.text(`Eigener Funkrufname: ${teilnehmer}`, pageMargin, 20);
 
             // **Rechts: Name der Übung**
-            let rightText = funkUebung.name + " - " + DateFormatter.formatNATODate(funkUebung.datum,false)
+            let rightText = funkUebung.name + " - " + DateFormatter.formatNATODate(funkUebung.datum, false)
             let nameWidth = pdf.getTextWidth(rightText);
             pdf.text(rightText, pdfWidth - pageMargin - nameWidth, 20);
 
@@ -346,7 +353,7 @@ class PDFGenerator {
                 document.body.removeChild(link);
                 URL.revokeObjectURL(link.href);
             });
-    
+
             alert("Alle Nachrichtenvordruck PDFs wurden erfolgreich erstellt!");
         });
     }
@@ -404,15 +411,15 @@ class PDFGenerator {
                 });
 
 
-            if (index < nachrichten.length - 1) pdf.addPage();
+                if (index < nachrichten.length - 1) pdf.addPage();
             });
-            
+
             const totalPages = pdf.internal.getNumberOfPages();
             for (let j = 1; j <= totalPages; j++) {
                 pdf.setPage(j);
                 this.drawCompactFooter(pdf, funkUebung, DateFormatter.formatNATODate(funkUebung.createDate), pdf.internal.pageSize.getWidth(), pdf.internal.pageSize.getHeight(), 10);
             }
-            
+
             const blob = pdf.output("blob");
             blobMap.set(teilnehmer, blob);
         });
@@ -432,7 +439,7 @@ class PDFGenerator {
                 document.body.removeChild(link);
                 URL.revokeObjectURL(link.href);
             });
-    
+
             alert("Alle Meldevorduck PDFs wurden erfolgreich erstellt!");
         });
     }
@@ -464,7 +471,7 @@ class PDFGenerator {
                 pdf.text(`${nachricht.id}`, 80, 12); //Nr
 
                 //Absender  
-                pdf.setFontSize(16);                             
+                pdf.setFontSize(16);
                 this.adjustTextForWidth(pdf, teilnehmer, maxWidthAnschrift, 22, 25);
 
                 // Empfänger
@@ -473,9 +480,9 @@ class PDFGenerator {
                 this.adjustTextForWidth(pdf, empfaengerText, maxWidthAnschrift, 22, 40);
 
                 //Verfasser        
-                pdf.setFontSize(12);                       
+                pdf.setFontSize(12);
                 this.adjustTextForWidth(pdf, teilnehmer, maxWidthVerfasser, 37, 192);
-            
+
                 // Nachricht (Umbrechen)
                 pdf.setFontSize(11.5);
                 const lineHeight = 5; // z. B. 6pt Abstand
@@ -579,7 +586,7 @@ class PDFGenerator {
                 2: { cellWidth: columnWidths[2] },
                 3: { cellWidth: columnWidths[3] }
             },
-            styles: { fontSize: tableFontSize, cellPadding: 3, lineWidth: 0.1 , lineColor: [0, 0, 0] },
+            styles: { fontSize: tableFontSize, cellPadding: 3, lineWidth: 0.1, lineColor: [0, 0, 0] },
             headStyles: { fillColor: [200, 200, 200] }
         });
 
@@ -609,11 +616,11 @@ class PDFGenerator {
         let empfaengerWidth = tableWidth * 0.20;
         let lfdnrWidth = 12;
         let withCheckBox = 12;
-        let columnWidthsAll = [lfdnrWidth, empfaengerWidth, empfaengerWidth, tableWidth - lfdnrWidth - (empfaengerWidth * 2)- withCheckBox];
-        
+        let columnWidthsAll = [lfdnrWidth, empfaengerWidth, empfaengerWidth, tableWidth - lfdnrWidth - (empfaengerWidth * 2) - withCheckBox];
+
         // Neuen Y-Startpunkt nach der Teilnehmer-Tabelle
         pdf.addPage();
-        let nextTableStartY = secondPageTableTopMargin; 
+        let nextTableStartY = secondPageTableTopMargin;
 
         let lastNrValue = null;
 
@@ -636,14 +643,14 @@ class PDFGenerator {
             didDrawCell: function (data) {
                 if (data.section === 'body' && data.column.index === 0) {
                     const currentNr = data.cell.raw;
-            
+
                     if (currentNr !== lastNrValue) {
                         lastNrValue = currentNr;
-            
+
                         const startX = data.cell.x;
                         const endX = startX + data.cell.width + data.table.columns.slice(1).reduce((sum, col) => sum + col.width, 0);
                         const y = data.cell.y;
-            
+
                         if (typeof startX === "number" && typeof endX === "number" && typeof y === "number") {
                             const lineY = y; // Linie direkt über der Zelle
                             data.doc.setDrawColor(0);
@@ -712,17 +719,17 @@ class PDFGenerator {
 
 
         pdf.text(funkUebung.name, pdf.internal.pageSize.getWidth() / 2, 4, { align: "center" });
-    
+
         // Hinweis ganz unten (5 mm Abstand vom unteren Rand)
         pdf.text("Wörter in GROSSBUCHSTABEN müssen buchstabiert werden.", pdfWidth / 2, pdfHeight - 1.5, { align: "center" });
-        
+
         // Trennlinie direkt darüber (bei 7 mm Abstand vom unteren Rand)
         pdf.setDrawColor(0);
-        
+
         // Vertikaler Text (90° gedreht) an der rechten Seite (5 mm vom rechten Rand)
         pdf.setFontSize(6);
         let rightText = `© Johannes Rudolph | Version ${funkUebung.buildVersion} | Übung ID: ${funkUebung.id} | Generiert: ${generierungszeit} | Generator: https://sprechfunk-uebung.de/`;
-        pdf.text(rightText, pdfWidth - 3, pdfHeight-5, { angle: 90, align: "left" });
+        pdf.text(rightText, pdfWidth - 3, pdfHeight - 5, { angle: 90, align: "left" });
     }
 
     sanitizeFileName(name) {
