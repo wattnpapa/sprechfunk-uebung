@@ -745,6 +745,20 @@ class PDFGenerator {
             zip.file(`Teilnehmer/Meldevordruck/${this.sanitizeFileName(teilnehmer)}.pdf`, blob);
         });
 
+        // Druck-PDF mit allen Nachrichtenvordrucken
+        const allMsgPrint = await this.generateAllNachrichtenvordruckPrintBlob(funkUebung);
+        zip.file(
+          `Teilnehmer/Nachrichtenvordruck/Druck_Nachrichtenvordruck_A5.pdf`,
+          allMsgPrint
+        );
+
+        // Druck-PDF mit allen Meldevordrucken
+        const allMeldPrint = await this.generateAllMeldevordruckPrintBlob(funkUebung);
+        zip.file(
+          `Teilnehmer/Meldevordruck/Druck_Meldevordruck_A5.pdf`,
+          allMeldPrint
+        );
+
         const deckblattBlob = await this.generateDeckblaetterA5Blob(funkUebung);
         zip.file(`Teilnehmer/DeckblaetterA5.pdf`, deckblattBlob);
 
@@ -758,6 +772,48 @@ class PDFGenerator {
         link.click();
         document.body.removeChild(link);
         URL.revokeObjectURL(link.href);
+    }
+
+    /**
+     * Erstellt eine Druck-PDF mit allen Nachrichtenvordrucken inkl. Deckblatt pro Teilnehmer.
+     */
+    async generateAllNachrichtenvordruckPrintBlob(funkUebung) {
+        const pdf = new this.jsPDF('p', 'mm', 'a5');
+        funkUebung.teilnehmerListe.forEach((teilnehmer, tIdx) => {
+            if (tIdx > 0) pdf.addPage();
+            // Deckblatt und dann Nachrichtenvordruck
+            this.drawDeckblattPage(pdf, funkUebung, teilnehmer);
+            pdf.addPage();
+            const nachrichten = funkUebung.nachrichten[teilnehmer] || [];
+            nachrichten.forEach((nachricht, nIdx) => {
+                this.drawNachrichtenvordruckPage(pdf, funkUebung, teilnehmer, nachricht);
+                // add page if not last message of last participant
+                if (!(tIdx === funkUebung.teilnehmerListe.length - 1 && nIdx === nachrichten.length - 1)) {
+                    pdf.addPage();
+                }
+            });
+        });
+        return pdf.output('blob');
+    }
+
+    /**
+     * Erstellt eine Druck-PDF mit allen Meldevordrucken inkl. Deckblatt pro Teilnehmer.
+     */
+    async generateAllMeldevordruckPrintBlob(funkUebung) {
+        const pdf = new this.jsPDF('p', 'mm', 'a5');
+        funkUebung.teilnehmerListe.forEach((teilnehmer, tIdx) => {
+            if (tIdx > 0) pdf.addPage();
+            this.drawDeckblattPage(pdf, funkUebung, teilnehmer);
+            pdf.addPage();
+            const nachrichten = funkUebung.nachrichten[teilnehmer] || [];
+            nachrichten.forEach((nachricht, nIdx) => {
+                this.drawMeldevordruckPage(pdf, funkUebung, teilnehmer, nachricht);
+                if (!(tIdx === funkUebung.teilnehmerListe.length - 1 && nIdx === nachrichten.length - 1)) {
+                    pdf.addPage();
+                }
+            });
+        });
+        return pdf.output('blob');
     }
 
 }
