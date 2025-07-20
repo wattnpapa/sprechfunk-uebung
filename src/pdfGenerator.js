@@ -129,7 +129,7 @@ class PDFGenerator {
         // Nachricht umbrochen
         pdf.setFontSize(12);
         const lineHeight = 6.5;
-        const msgLines = pdf.splitTextToSize(nachricht.nachricht, 70);
+        const msgLines = pdf.splitTextToSize(nachricht.nachricht, 120);
         let startY = 77;
         msgLines.forEach((line, i) => {
             pdf.text(line, offsetX + 17, startY + i * lineHeight);
@@ -205,7 +205,7 @@ class PDFGenerator {
         // Nachricht umbrochen
         pdf.setFontSize(11.5);
         const lh = 5;
-        const lines = pdf.splitTextToSize(nachricht.nachricht, 70);
+        const lines = pdf.splitTextToSize(nachricht.nachricht, 120);
         let y = 55;
         lines.forEach((l, i) => pdf.text(l, offsetX + 20, y + i * lh));
 
