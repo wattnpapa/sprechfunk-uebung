@@ -101,11 +101,11 @@ class PDFGenerator {
      * Zeichnet einen Nachrichtenvordruck (A5 oder A4-Hälfte).
      * offsetX: 0 für volle A5-Seite oder linke A4-Hälfte, 148 für rechte A4-Hälfte.
      */
-    drawNachrichtenvordruck(pdf, funkUebung, teilnehmer, nachricht, offsetX = 0) {
+    drawNachrichtenvordruck(pdf, funkUebung, teilnehmer, nachricht, offsetX = 0, hideBackground = false, hideFooter = false) {
         const templateImageUrl = 'assets/nachrichtenvordruck4fach.png';
         const width = 148, height = 210;
         // Hintergrundbild positionieren
-        pdf.addImage(templateImageUrl, 'PNG', offsetX, 0, width, height);
+        if (!hideBackground) pdf.addImage(templateImageUrl, 'PNG', offsetX, 0, width, height);
 
         // FM Zentrale
         pdf.setFontSize(16);
@@ -136,15 +136,17 @@ class PDFGenerator {
         });
 
         // Footer (compact)
-        const generierungszeit = DateFormatter.formatNATODate(funkUebung.createDate, true);
-        this.drawCompactFooter(
-            pdf,
-            funkUebung,
-            generierungszeit,
-            148,
-            210,
-            offsetX
-        );
+        if (!hideFooter) {
+            const generierungszeit = DateFormatter.formatNATODate(funkUebung.createDate, true);
+            this.drawCompactFooter(
+                pdf,
+                funkUebung,
+                generierungszeit,
+                148,
+                210,
+                offsetX
+            );
+        }
     }
 
     /**
@@ -177,11 +179,11 @@ class PDFGenerator {
      * Zeichnet einen Meldevordruck (A5 oder A4-Hälfte).
      * offsetX: 0 für volle A5-Seite bzw. linke A4-Hälfte, 148 für rechte A4-Hälfte.
      */
-    drawMeldevordruck(pdf, funkUebung, teilnehmer, nachricht, offsetX = 0) {
+    drawMeldevordruck(pdf, funkUebung, teilnehmer, nachricht, offsetX = 0, hideBackground = false, hideFooter = false) {
         const template = 'assets/meldevordruck.png';
         const w = 148, h = 210;
         // Hintergrundbild
-        pdf.addImage(template, 'PNG', offsetX, 0, w, h);
+        if (!hideBackground) pdf.addImage(template, 'PNG', offsetX, 0, w, h);
 
         // FM Zentrale
         pdf.setFontSize(16);
@@ -210,13 +212,15 @@ class PDFGenerator {
         lines.forEach((l, i) => pdf.text(l, offsetX + 20, y + i * lh));
 
         // Footer
-        const genTime = DateFormatter.formatNATODate(funkUebung.createDate, true);
-        this.drawCompactFooter(
-            pdf, funkUebung, genTime,
-            148,
-            210,
-            offsetX
-        );
+        if (!hideFooter) {
+            const genTime = DateFormatter.formatNATODate(funkUebung.createDate, true);
+            this.drawCompactFooter(
+                pdf, funkUebung, genTime,
+                148,
+                210,
+                offsetX
+            );
+        }
     }
 
     /**
@@ -797,6 +801,45 @@ class PDFGenerator {
         return name.replace(/[\/\\:*?"<>|]/g, "-");
     }
 
+    /**
+     * Erstellt ein A5-PDF mit allen Nachrichtenvordrucken (plain, ohne Hintergrund & Fußzeile),
+     * jeweils mit Deckblatt als Trennblatt.
+     */
+    async generatePlainNachrichtenvordruckPrintBlob(funkUebung) {
+        const pdf = new this.jsPDF({ orientation: "p", unit: "mm", format: "a5" });
+        funkUebung.teilnehmerListe.forEach((teilnehmer, tIdx) => {
+            if (tIdx > 0) pdf.addPage();
+            // Deckblatt als Trennblatt
+            this.drawDeckblattPage(pdf, funkUebung, teilnehmer);
+            pdf.addPage();
+            const msgs = funkUebung.nachrichten[teilnehmer] || [];
+            msgs.forEach((nachricht, nIdx) => {
+                this.drawNachrichtenvordruck(pdf, funkUebung, teilnehmer, nachricht, 0, true, true);
+                if (nIdx < msgs.length - 1) pdf.addPage();
+            });
+        });
+        return pdf.output("blob");
+    }
+
+    /**
+     * Erstellt ein A5-PDF mit allen Meldevordrucken (plain, ohne Hintergrund & Fußzeile),
+     * jeweils mit Deckblatt als Trennblatt.
+     */
+    async generatePlainMeldevordruckPrintBlob(funkUebung) {
+        const pdf = new this.jsPDF({ orientation: "p", unit: "mm", format: "a5" });
+        funkUebung.teilnehmerListe.forEach((teilnehmer, tIdx) => {
+            if (tIdx > 0) pdf.addPage();
+            this.drawDeckblattPage(pdf, funkUebung, teilnehmer);
+            pdf.addPage();
+            const msgs = funkUebung.nachrichten[teilnehmer] || [];
+            msgs.forEach((nachricht, nIdx) => {
+                this.drawMeldevordruck(pdf, funkUebung, teilnehmer, nachricht, 0, true, true);
+                if (nIdx < msgs.length - 1) pdf.addPage();
+            });
+        });
+        return pdf.output("blob");
+    }
+
     async generateAllPDFsAsZip(funkUebung) {
         const zip = new JSZip();
 
@@ -851,6 +894,19 @@ class PDFGenerator {
 
         const deckblattBlob = await this.generateDeckblaetterA5Blob(funkUebung);
         zip.file(`Teilnehmer/DeckblaetterA5.pdf`, deckblattBlob);
+
+        // Nadeldrucker: je ein A5-PDF mit allen Nachrichtenvordrucken
+        const plainNachrichtBlob = await this.generatePlainNachrichtenvordruckPrintBlob(funkUebung);
+        zip.file(
+            `Nadeldrucker/Plain_Nachrichtenvordruck_A5.pdf`,
+            plainNachrichtBlob
+        );
+        // Nadeldrucker: je ein A5-PDF mit allen Meldevordrucken
+        const plainMeldeBlob = await this.generatePlainMeldevordruckPrintBlob(funkUebung);
+        zip.file(
+            `Nadeldrucker/Plain_Meldevordruck_A5.pdf`,
+            plainMeldeBlob
+        );
 
         const zipBlob = await zip.generateAsync({ type: "blob" });
 
