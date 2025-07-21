@@ -1,14 +1,31 @@
-import { getDocs, collection, query, orderBy, limit, startAfter, doc, deleteDoc } from 'firebase/firestore';
+import { getDocs, collection, query, orderBy, limit, startAfter, doc, deleteDoc, getFirestore } from 'firebase/firestore';
+import type { Firestore, QueryDocumentSnapshot } from 'firebase/firestore';
+declare const Chart: any;
 
 class Admin {
+    // Firestore database reference
+    db: Firestore;
+    // Pagination state
+    pagination: {
+        totalCount: number;
+        pageSize: number;
+        currentPage: number;
+        lastVisible: QueryDocumentSnapshot | null;
+    };
 
     constructor() {
-        this.db = null;
-        this.pagination = null;
+        // initialize Firestore
+        this.db = getFirestore(); // or however you obtain your Firestore instance
+        this.pagination = {
+            totalCount: 0,
+            pageSize: 10,
+            currentPage: 0,
+            lastVisible: null
+        };
     }
 
     async ladeAlleUebungen(direction = "initial") {
-        const uebungCol = collection(this.db, "uebungen");
+        const uebungCol = collection(this.db!, "uebungen");
 
         // Zähle die Gesamtzahl
         const allDocs = await getDocs(uebungCol);
@@ -27,7 +44,9 @@ class Admin {
         }
 
         const querySnapshot = await getDocs(q);
-        const tbody = document.getElementById("adminUebungslisteBody");
+        const tbody = document.getElementById("adminUebungslisteBody") as HTMLTableSectionElement | null;
+        if (!tbody) return;
+        // tbody is now non-null
         tbody.innerHTML = "";
 
         let lastVisible = null;
@@ -62,21 +81,21 @@ class Admin {
         }
     }
 
-    async loescheUebung (uebungId) {
+    async loescheUebung(uebungId: string) {
         if (!confirm("Möchtest du diese Übung wirklich löschen?")) return;
 
         try {
-            await deleteDoc(doc(this.db, "uebungen", uebungId));
+            await deleteDoc(doc(this.db!, "uebungen", uebungId));
             console.log("✅ Übung gelöscht:", uebungId);
             this.ladeAlleUebungen(); // Ansicht aktualisieren
         } catch (error) {
             console.error("❌ Fehler beim Löschen der Übung:", error);
             alert("Fehler beim Löschen der Übung.");
         }
-        };
+    };
 
     async ladeUebungsStatistik() {
-        const snapshot = await getDocs(collection(this.db, "uebungen"));
+        const snapshot = await getDocs(collection(this.db!, "uebungen"));
         const countsByMonth = Array(12).fill(0); // Index 0 = Januar, ..., 11 = Dezember
     
         snapshot.forEach(doc => {
