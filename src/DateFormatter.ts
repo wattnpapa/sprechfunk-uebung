@@ -5,7 +5,7 @@ export class DateFormatter {
      * @param {boolean} withTime - Falls `true`, wird die Zeit (HHMM) mit ausgegeben.
      * @returns {string} - Das formatierte NATO-Datum.
      */
-    static formatNATODate(date, withTime = true) {
+    static formatNATODate(date: Date | string, withTime: boolean = true): string {
         if (typeof date === "string") {
             date = new Date(date);
         }
