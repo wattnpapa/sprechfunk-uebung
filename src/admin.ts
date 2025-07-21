@@ -1,5 +1,7 @@
 import { getDocs, collection, query, orderBy, limit, startAfter, doc, deleteDoc, getFirestore } from 'firebase/firestore';
 import type { Firestore, QueryDocumentSnapshot } from 'firebase/firestore';
+import { initializeApp } from 'firebase/app';
+import { firebaseConfig } from './firebase-config.js';
 declare const Chart: any;
 
 class Admin {
@@ -14,8 +16,10 @@ class Admin {
     };
 
     constructor() {
-        // initialize Firestore
-        this.db = getFirestore(); // or however you obtain your Firestore instance
+        // Initialize Firebase App
+        initializeApp(firebaseConfig);
+        // Then get Firestore
+        this.db = getFirestore();
         this.pagination = {
             totalCount: 0,
             pageSize: 10,
