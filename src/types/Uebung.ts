@@ -10,4 +10,5 @@ export interface Uebung {
   teilnehmerListe: string[];
   nachrichten: Record<string, Nachricht[]>;
   createDate: Date;
+  loesungswoerter?: Record<string, string>;
 }
