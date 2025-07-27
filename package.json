@@ -35,7 +35,7 @@
   },
   "dependencies": {
     "firebase": "^12.0.0",
-    "jspdf": "^3.0.1",
-    "jspdf-autotable": "^5.0.2"
+    "jspdf": "3.0.0",
+    "jspdf-autotable": "4.0.0"
   }
 }

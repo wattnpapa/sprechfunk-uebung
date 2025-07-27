@@ -1,17 +1,19 @@
 import { DateFormatter } from "./DateFormatter.js";
+import type { Uebung } from './types/Uebung';
+import type { Nachricht } from './types/Nachricht';
 export class UebungHTMLGenerator {
     /**
      * Erstellt eine HTML-Seite für einen einzelnen Teilnehmer der Übung.
      * @param {Object} teilnehmerDaten - Die Daten des Teilnehmers (inkl. Kopfdaten, Nachrichten und Lösungswort).
      * @returns {string} HTML-Code als String.
      */
-    static generateHTMLPage(teilnehmer, funkUebung) {
+    static generateHTMLPage(teilnehmer: string, funkUebung: Uebung): string {
         const teilnehmerListeHTML = funkUebung.teilnehmerListe
-            .map(name => `<tr><td>${name}</td></tr>`)
-            .join("");
+            .map((name: string) => `<tr><td>${name}</td></tr>`)
+            .join(""); 
         
         const nachrichtenHTML = funkUebung.nachrichten[teilnehmer]
-            .map(n => 
+            .map((n: Nachricht) => 
                 `<tr>
                     <td>${n.id}</td>
                     <td>${n.empfaenger.join("<br/>").replace(/ /g, "&nbsp;")}</td>
@@ -54,7 +56,7 @@ export class UebungHTMLGenerator {
                     <tr><th>Datum</th><td>${DateFormatter.formatNATODate(funkUebung.datum,false)}</td></tr>
                     <tr><th>Rufgruppe</th><td>${funkUebung.rufgruppe}</td></tr>
                     <tr><th>Betriebsleitung</th><td>${funkUebung.leitung}</td></tr>
-                    ${funkUebung.loesungswoerter[teilnehmer] ? `<tr><th>Lösungswort</th><td>${funkUebung.loesungswoerter[teilnehmer]}</td></tr>` : ''}
+                    ${funkUebung.loesungswoerter?.[teilnehmer] ? `<tr><th>Lösungswort</th><td>${funkUebung.loesungswoerter?.[teilnehmer]}</td></tr>` : ''}
                 </table>
             </div>
 
