@@ -1,9 +1,12 @@
+import autoprefixer from 'autoprefixer';
+import postcss from 'rollup-plugin-postcss';
 import resolve from '@rollup/plugin-node-resolve';
 import commonjs from '@rollup/plugin-commonjs';
 import typescript from '@rollup/plugin-typescript';
+import copy from 'rollup-plugin-copy';
 
 export default {
-  input: 'src/app.js',
+  input: 'src/app.ts',
   output: {
     dir: 'dist',
     entryFileNames: 'bundle.js',
@@ -23,5 +26,19 @@ export default {
       //exclude: ['node_modules/jspdf/**', 'node_modules/jspdf-autotable/**']
     }),
     typescript({ tsconfig: './tsconfig.json' }),
+    postcss({
+      extensions: ['.css'],
+      extract: true,      // legt eine separate CSS-Datei an (z.B. dist/app.css)
+      minimize: true,
+      plugins: [autoprefixer()],
+    }),
+    copy({
+      targets: [
+        {
+          src: 'node_modules/@fortawesome/fontawesome-free/webfonts/*',
+          dest: 'dist/webfonts'
+        }
+      ]
+    })
   ],
 };

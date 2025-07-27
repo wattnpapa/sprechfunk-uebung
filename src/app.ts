@@ -1,24 +1,62 @@
 import pdfGenerator from './pdfGenerator.js';
 import { DateFormatter } from "./DateFormatter.js";
-import { FunkUebung } from "./FunkUebung.js";
+import { Uebung } from "./types/Uebung.js";
 import { UebungHTMLGenerator } from './UebungHTMLGenerator.js';
 import { admin } from './admin.js';
 import { initializeApp } from 'firebase/app';
+import type { Firestore } from 'firebase/firestore';
 import { firebaseConfig } from './firebase-config.js';
+import 'bootstrap/dist/css/bootstrap.min.css';
+import '@fortawesome/fontawesome-free/css/all.min.css';
+import 'bootstrap/dist/js/bootstrap.bundle.min.js';
 import {
-  getFirestore,
-  doc,
-  setDoc,
-  getDoc,
-  getDocs,
-  collection,
-  query,
-  orderBy,
-  limit,
-  startAfter
+    getFirestore,
+    doc,
+    setDoc,
+    getDoc,
+    getDocs,
+    collection,
+    query,
+    orderBy,
+    limit,
+    startAfter
 } from 'firebase/firestore';
+import { Converter } from 'showdown';
+import { FunkUebung } from './FunkUebung.js';
+import type { Nachricht } from "./types/Nachricht.js";
+
+// @ts-ignore: no types for chart.js
+import { Chart, registerables } from 'chart.js';
+Chart.register(...registerables);
+declare function gtag(command: 'event', eventName: string, params: Record<string, unknown>): void;
+
+declare global {
+    interface Window {
+        chart: Chart;
+        app: AppController;
+        pdfGenerator: typeof pdfGenerator;
+        admin: typeof admin;
+    }
+}
+
+declare const bootstrap: any;
 
 export class AppController {
+    private db: Firestore;
+    private pagination: {
+        pageSize: number;
+        currentPage: number;
+        lastVisible: any;
+        totalCount: number;
+    };
+    private funkUebung!: FunkUebung;
+    private predefinedLoesungswoerter: string[] = [];
+    private templatesFunksprueche: Record<string, { text: string; filename: string }> = {};
+    private natoDate: string | null = null;
+    private jsonUebungsDaten: any[] = [];
+    private jsonKompletteUebung: Record<string, unknown> = {};
+    private currentPageIndex: number = 0;
+    private htmlSeitenTeilnehmer: string[] = [];
 
     constructor() {
         console.log("📌 AppController wurde initialisiert");
@@ -72,8 +110,8 @@ export class AppController {
                     this.funkUebung = new FunkUebung(buildInfo);
                 }
 
-                document.getElementById("uebungsId").textContent = this.funkUebung.id;
-                document.getElementById("version").innerHTML = buildInfo;
+                document.getElementById("uebungsId")!.textContent = this.funkUebung.id;
+                document.getElementById("version")!.innerHTML = buildInfo;
                 this.funkUebung.buildVersion = buildInfo;
                 // Initialisiere Lösungswörter (in Uppercase)
                 this.predefinedLoesungswoerter = [
@@ -113,16 +151,17 @@ export class AppController {
                 if (urlParams.get("admin") !== null) {
                     admin.ladeAlleUebungen();
                     admin.renderUebungsStatistik();
-                    document.getElementById("adminArea").style.display = "block";
+                    document.getElementById("adminArea")!.style.display = "block";
                 }
 
                 // --- Globaler Button-Click-Tracking-Listener nach DOMContentLoaded ---
                 document.addEventListener("click", (event) => {
-                    if (event.target.closest("button")) {
-                        const button = event.target.closest("button");
+                    const targetEl = event.target as HTMLElement | null;
+                    if (targetEl && targetEl.closest("button")) {
+                        const button = (targetEl.closest("button") as HTMLButtonElement)!;
                         const label = button.innerText.trim() || button.getAttribute("aria-label") || "Unbekannter Button";
-                        if (typeof gtag === "function") {
-                            gtag('event', 'button_click', {
+                        if (typeof (window as any).gtag === "function") {
+                            (window as any).gtag('event', 'button_click', {
                                 'event_category': 'Interaktion',
                                 'event_label': label
                             });
@@ -131,6 +170,62 @@ export class AppController {
                 });
                 // --------------------------------------------------------------
             });
+
+        document.addEventListener("DOMContentLoaded", function () {
+            const modalContent = document.getElementById("howtoContent")! as HTMLElement;
+
+            // Funktion zum Laden der Markdown-Datei
+            function loadHowTo() {
+                fetch('howto.md')
+                    .then(response => response.text())
+                    .then(data => {
+                        const converter = new Converter();
+                        modalContent.innerHTML = converter.makeHtml(data);
+                    })
+                    .catch(error => {
+                        console.error('Fehler beim Laden der Anleitung:', error);
+                        modalContent.innerHTML = 'Es gab einen Fehler beim Laden der Anleitung.';
+                    });
+            }
+
+            // Laden der Anleitung, wenn das Modal geöffnet wird
+            const howtoModal = document.getElementById('howtoModal')! as HTMLElement;
+            howtoModal.addEventListener('show.bs.modal', loadHowTo);
+        });
+
+        document.addEventListener("DOMContentLoaded", function () {
+            (document.querySelector('button[onclick="app.startUebung()"]')! as HTMLButtonElement)
+                .addEventListener('click', function () {
+                    gtag('event', 'Übung_generieren', {
+                        'event_category': 'Button Click',
+                        'event_label': 'Übung generieren Button geklickt'
+                    });
+                });
+
+            (document.querySelector('button[onclick="app.generatePDFs()"]')! as HTMLButtonElement)
+                .addEventListener('click', function () {
+                    gtag('event', 'Teilnehmer_PDF_generieren', {
+                        'event_category': 'Button Click',
+                        'event_label': 'Teilnehmer PDFs generieren Button geklickt'
+                    });
+                });
+
+            (document.querySelector('button[onclick="app.generateNachrichtenvordruckPDFs()"]')! as HTMLButtonElement)
+                .addEventListener('click', function () {
+                    gtag('event', 'Nachrichtenvordruck_PDF_generieren', {
+                        'event_category': 'Button Click',
+                        'event_label': 'Nachrichtenvordruck PDFs generieren Button geklickt'
+                    });
+                });
+
+            (document.querySelector('button[onclick="app.generateInstructorPDF()"]')! as HTMLButtonElement)
+                .addEventListener('click', function () {
+                    gtag('event', 'Übungsleitung_PDF_generieren', {
+                        'event_category': 'Button Click',
+                        'event_label': 'Übungsleitung PDF erzeugen Button geklickt'
+                    });
+                });
+        });
     }
 
     updateVerteilung() {
@@ -139,47 +234,60 @@ export class AppController {
         this.updateAbsolute('buchstabieren');
     }
 
-    updateAbsolute(type) {
-        let total = Number(document.getElementById("spruecheProTeilnehmer").value);
-        let percentInput = document.getElementById(`prozentAn${this.capitalize(type)}`);
-        let calcSpan = document.getElementById(`calcAn${this.capitalize(type)}`);
-        let hiddenInput = document.getElementById(`spruecheAn${this.capitalize(type)}`);
+    updateAbsolute(type: string): void {
+        const totalInput = document.getElementById("spruecheProTeilnehmer") as HTMLInputElement;
+        const total = Number(totalInput.value);
+        const percentInput = document.getElementById(`prozentAn${this.capitalize(type)}`) as HTMLInputElement;
+        const calcSpan = document.getElementById(`calcAn${this.capitalize(type)}`)! as HTMLElement;
+        const hiddenInput = document.getElementById(`spruecheAn${this.capitalize(type)}`) as HTMLInputElement;
 
-        let percentageValue = Number(percentInput.value);
-        let absoluteValue = Math.round((percentageValue / 100) * total);
+        const percentageValue = Number(percentInput.value);
+        const absoluteValue = Math.round((percentageValue / 100) * total);
 
-        calcSpan.textContent = absoluteValue;
-        hiddenInput.value = absoluteValue;
+        calcSpan.textContent = absoluteValue.toString();
+        hiddenInput.value = absoluteValue.toString();
     }
 
-    capitalize(str) {
+    capitalize(str: string): string {
         return str.charAt(0).toUpperCase() + str.slice(1);
     }
 
     renderInitData() {
-        document.getElementById("spruecheProTeilnehmer").value = this.funkUebung.spruecheProTeilnehmer;
-        document.getElementById("spruecheAnAlle").value = this.funkUebung.spruecheAnAlle;
-        document.getElementById("spruecheAnMehrere").value = this.funkUebung.spruecheAnMehrere;
-        document.getElementById("spruecheAnBuchstabieren").value = this.funkUebung.buchstabierenAn;
+        // Set input values with type assertions and toString()
+        const spruecheProTeilnehmerInput = document.getElementById("spruecheProTeilnehmer") as HTMLInputElement;
+        spruecheProTeilnehmerInput.value = this.funkUebung.spruecheProTeilnehmer.toString();
+        const spruecheAnAlleInput = document.getElementById("spruecheAnAlle") as HTMLInputElement;
+        spruecheAnAlleInput.value = this.funkUebung.spruecheAnAlle.toString();
+        const spruecheAnMehrereInput = document.getElementById("spruecheAnMehrere") as HTMLInputElement;
+        spruecheAnMehrereInput.value = this.funkUebung.spruecheAnMehrere.toString();
+        const spruecheAnBuchstabierenInput = document.getElementById("spruecheAnBuchstabieren") as HTMLInputElement;
+        spruecheAnBuchstabierenInput.value = this.funkUebung.buchstabierenAn.toString();
 
         // Prozentanzeige aktualisieren
         const total = this.funkUebung.spruecheProTeilnehmer * this.funkUebung.teilnehmerListe.length;
-        document.getElementById("calcAnAlle").innerText = this.funkUebung.spruecheAnAlle;
-        document.getElementById("calcAnMehrere").innerText = this.funkUebung.spruecheAnMehrere;
-        document.getElementById("calcAnBuchstabieren").innerText = this.funkUebung.buchstabierenAn;
+        (document.getElementById("calcAnAlle")! as HTMLElement).innerText = this.funkUebung.spruecheAnAlle.toString();
+        (document.getElementById("calcAnMehrere")! as HTMLElement).innerText = this.funkUebung.spruecheAnMehrere.toString();
+        (document.getElementById("calcAnBuchstabieren")! as HTMLElement).innerText = this.funkUebung.buchstabierenAn.toString();
 
-        document.getElementById("prozentAnAlle").value = Math.round((this.funkUebung.spruecheAnAlle / this.funkUebung.spruecheProTeilnehmer) * 100);
-        document.getElementById("prozentAnMehrere").value = Math.round((this.funkUebung.spruecheAnMehrere / this.funkUebung.spruecheProTeilnehmer) * 100);
-        document.getElementById("prozentAnBuchstabieren").value = Math.round((this.funkUebung.buchstabierenAn / this.funkUebung.spruecheProTeilnehmer) * 100);
+        const prozentAnAlleInput = document.getElementById("prozentAnAlle") as HTMLInputElement;
+        prozentAnAlleInput.value = Math.round((this.funkUebung.spruecheAnAlle / this.funkUebung.spruecheProTeilnehmer) * 100).toString();
+        const prozentAnMehrereInput = document.getElementById("prozentAnMehrere") as HTMLInputElement;
+        prozentAnMehrereInput.value = Math.round((this.funkUebung.spruecheAnMehrere / this.funkUebung.spruecheProTeilnehmer) * 100).toString();
+        const prozentAnBuchstabierenInput = document.getElementById("prozentAnBuchstabieren") as HTMLInputElement;
+        prozentAnBuchstabierenInput.value = Math.round((this.funkUebung.buchstabierenAn / this.funkUebung.spruecheProTeilnehmer) * 100).toString();
 
-        document.getElementById("leitung").value = this.funkUebung.leitung;
-        document.getElementById("rufgruppe").value = this.funkUebung.rufgruppe;
-        document.getElementById("nameDerUebung").value = this.funkUebung.name;
+        const leitungInput = document.getElementById("leitung") as HTMLInputElement;
+        leitungInput.value = this.funkUebung.leitung;
+        const rufgruppeInput = document.getElementById("rufgruppe") as HTMLInputElement;
+        rufgruppeInput.value = this.funkUebung.rufgruppe;
+        const nameInput = document.getElementById("nameDerUebung") as HTMLInputElement;
+        nameInput.value = this.funkUebung.name;
 
         // 📅 Datum
         const date = new Date(this.funkUebung.datum);
         const isoDate = date.toISOString().split("T")[0];
-        document.getElementById("datum").value = isoDate;
+        const datumInput = document.getElementById("datum") as HTMLInputElement;
+        datumInput.value = isoDate;
 
         this.renderTeilnehmer();
 
@@ -201,15 +309,15 @@ export class AppController {
     }
 
     renderTeilnehmer(triggerShuffle = true) {
-        const container = document.getElementById("teilnehmer-container");
+        const container = document.getElementById("teilnehmer-container")! as HTMLElement;
         container.innerHTML = ""; // Vorherigen Inhalt leeren
 
         let option = document.querySelector('input[name="loesungswortOption"]:checked')?.id;
         let isZentral = option === "zentralLoesungswort";
         let isIndividuell = option === "individuelleLoesungswoerter";
 
-        document.getElementById("zentralLoesungswortContainer").style.display = isZentral ? "block" : "none";
-        document.getElementById("shuffleButton").style.display = (isZentral || isIndividuell) ? "block" : "none";
+        (document.getElementById("zentralLoesungswortContainer")! as HTMLElement).style.display = isZentral ? "block" : "none";
+        (document.getElementById("shuffleButton")! as HTMLElement).style.display = (isZentral || isIndividuell) ? "block" : "none";
 
         container.innerHTML = `
             <table class="table table-bordered">
@@ -252,16 +360,20 @@ export class AppController {
 
         // **Event-Listener für Änderungen an Teilnehmernamen**
         document.querySelectorAll(".teilnehmer-input").forEach(input => {
-            input.addEventListener("input", (event) => {
-                let index = event.target.dataset.index;
-                this.funkUebung.teilnehmerListe[index] = event.target.value;
+            input.addEventListener("input", (event: Event) => {
+                const target = event.target as HTMLInputElement;
+                const index = Number(target.dataset.index);
+                this.funkUebung.teilnehmerListe[index] = target.value;
             });
         });
 
         // **Event-Listener für das Entfernen von Teilnehmern**
         document.querySelectorAll(".delete-teilnehmer").forEach(button => {
-            button.addEventListener("click", (event) => {
-                let index = event.target.closest("button").dataset.index;
+            button.addEventListener("click", (event: Event) => {
+                const mouseEvent = event as MouseEvent;
+                const target = mouseEvent.target! as HTMLElement;
+                const btn = target.closest("button")! as HTMLButtonElement;
+                const index = Number(btn.dataset.index);
                 this.removeTeilnehmer(index);
             });
         });
@@ -272,7 +384,7 @@ export class AppController {
         }
     }
 
-    updateTeilnehmer(index, value) {
+    updateTeilnehmer(index: number, value: string): void {
         this.funkUebung.teilnehmerListe[index] = value;
     }
 
@@ -281,30 +393,39 @@ export class AppController {
         this.renderTeilnehmer();
     }
 
-    removeTeilnehmer(index) {
+    removeTeilnehmer(index: number): void {
         this.funkUebung.teilnehmerListe.splice(index, 1);
         this.renderTeilnehmer();
     }
 
-    toggleFunkspruchInput() {
-        const useCustomList = document.getElementById("useCustomList").checked;
-        document.getElementById("fileUploadContainer").style.display = useCustomList ? "block" : "none";
+    toggleFunkspruchInput(): void {
+        const useCustomList = (document.getElementById("useCustomList")! as HTMLInputElement).checked;
+        (document.getElementById("fileUploadContainer")! as HTMLElement).style.display = useCustomList ? "block" : "none";
     }
 
     startUebung() {
-        const selectedTemplate = document.getElementById("funkspruchVorlage").value; // Die ausgewählte Vorlage
-        const file = document.getElementById("funksprueche").files[0] ?? ""; // Die manuell hochgeladene Datei, falls vorhanden
+        // Cast the select and file input elements before accessing their properties
+        const selectedTemplate = (document.getElementById("funkspruchVorlage") as HTMLSelectElement)!.value;
+        const fileInput = document.getElementById("funksprueche") as HTMLInputElement;
+        const file = fileInput.files?.[0] ?? "";
 
         // Berechnungen und weitere Funktionen wie vorher...
-        this.funkUebung.spruecheProTeilnehmer = Number(document.getElementById("spruecheProTeilnehmer").value);
-        this.funkUebung.spruecheAnAlle = Number(document.getElementById("spruecheAnAlle").value);
-        this.funkUebung.spruecheAnMehrere = Number(document.getElementById("spruecheAnMehrere").value);
-        this.funkUebung.buchstabierenAn = Number(document.getElementById("spruecheAnBuchstabieren").value);
-        this.funkUebung.leitung = document.getElementById("leitung").value;
-        this.funkUebung.rufgruppe = document.getElementById("rufgruppe").value;
-        this.funkUebung.name = document.getElementById("nameDerUebung").value;
-
-        this.funkUebung.datum = new Date(document.getElementById("datum").value + "T00:00:00");
+        const spruecheProTeilnehmerInput = document.getElementById("spruecheProTeilnehmer")! as HTMLInputElement;
+        this.funkUebung.spruecheProTeilnehmer = Number(spruecheProTeilnehmerInput.value);
+        const spruecheAnAlleInput = document.getElementById("spruecheAnAlle")! as HTMLInputElement;
+        this.funkUebung.spruecheAnAlle = Number(spruecheAnAlleInput.value);
+        const spruecheAnMehrereInput = document.getElementById("spruecheAnMehrere")! as HTMLInputElement;
+        this.funkUebung.spruecheAnMehrere = Number(spruecheAnMehrereInput.value);
+        const buchstabierenInput = document.getElementById("spruecheAnBuchstabieren")! as HTMLInputElement;
+        this.funkUebung.buchstabierenAn = Number(buchstabierenInput.value);
+        const leitungInput = document.getElementById("leitung")! as HTMLInputElement;
+        this.funkUebung.leitung = leitungInput.value;
+        const rufgruppeInput = document.getElementById("rufgruppe")! as HTMLInputElement;
+        this.funkUebung.rufgruppe = rufgruppeInput.value;
+        const nameInput = document.getElementById("nameDerUebung")! as HTMLInputElement;
+        this.funkUebung.name = nameInput.value;
+        const datumInput = document.getElementById("datum")! as HTMLInputElement;
+        this.funkUebung.datum = new Date(datumInput.value + "T00:00:00");
         this.natoDate = DateFormatter.formatNATODate(this.funkUebung.datum, false);
 
         this.readLoesungswoerter();
@@ -353,7 +474,14 @@ export class AppController {
         } else if (selectedTemplate == "upload" && file) {
             const reader = new FileReader();
             reader.onload = (event) => {
-                let buffer = event.target.result;
+                // Cast event.target to FileReader and assert non-null
+                const readerEvt = event.target as FileReader;
+                const result = readerEvt.result;
+                if (!(result instanceof ArrayBuffer)) {
+                    console.error("❌ reader.result ist nicht vom Typ ArrayBuffer:", result);
+                    return;
+                }
+                const buffer = result; // sicheres ArrayBuffer
                 let text;
 
                 try {
@@ -390,19 +518,21 @@ export class AppController {
      * Verteilt die Lösungsbuchstaben zufällig auf Nachrichten an den Empfänger,
      * aber mit ihrem ursprünglichen Index (+1), damit das Wort zusammengesetzt werden kann.
      */
-    verteileLoesungswoerter(uebungsDaten) {
-        uebungsDaten.forEach(empfaengerDaten => {
+    verteileLoesungswoerter(
+        uebungsDaten: { teilnehmer: string; loesungswort: string; nachrichten: Nachricht[] }[]
+    ): void {
+        uebungsDaten.forEach((empfaengerDaten: { teilnehmer: string; loesungswort: string; nachrichten: Nachricht[] }) => {
             let empfaenger = empfaengerDaten.teilnehmer;
             let loesungswort = empfaengerDaten.loesungswort.split(""); // Array der Buchstaben mit Index
 
             // Speichere den Original-Index für spätere Rekonstruktion, +1 für menschliche Lesbarkeit
-            let buchstabenMitIndex = loesungswort.map((buchstabe, index) => ({ index: index + 1, buchstabe }));
+            let buchstabenMitIndex = loesungswort.map((buchstabe: string, index: number) => ({ index: index + 1, buchstabe }));
 
             // Alle Nachrichten sammeln, die nur für diesen Teilnehmer bestimmt sind
-            let empfaengerNachrichten = [];
-            uebungsDaten.forEach(absenderDaten => {
+            let empfaengerNachrichten: Nachricht[] = [];
+            uebungsDaten.forEach((absenderDaten: { teilnehmer: string; loesungswort: string; nachrichten: Nachricht[] }) => {
                 if (absenderDaten.teilnehmer !== empfaenger) {
-                    absenderDaten.nachrichten.forEach(nachricht => {
+                    absenderDaten.nachrichten.forEach((nachricht: Nachricht) => {
                         if (nachricht.empfaenger.length === 1 && nachricht.empfaenger[0] === empfaenger) {
                             empfaengerNachrichten.push(nachricht);
                         }
@@ -460,97 +590,110 @@ export class AppController {
     renderUebung() {
         this.currentPageIndex = 0;
         this.htmlSeitenTeilnehmer = [];
-    
+
         this.htmlSeitenTeilnehmer = this.funkUebung.teilnehmerListe.map(teilnehmer => {
             const html = UebungHTMLGenerator.generateHTMLPage(teilnehmer, this.funkUebung);
             return html;
         });
-    
+
         this.displayPage(this.currentPageIndex);
         this.zeigeUebungsdauer();
         this.startVerteilung();
         this.updateUebungLinks()
         this.renderInputFromUebung();
-        document.getElementById("output-container").style.display = "block";
+        document.getElementById("output-container")!.style.display = "block";
     }
 
     renderInputFromUebung() {
         // 🔍 Lösungswörter erkennen
+        const noneRadio = document.getElementById("keineLoesungswoerter") as HTMLInputElement;
+        const centralRadio = document.getElementById("zentralLoesungswort") as HTMLInputElement;
+        const indivRadio = document.getElementById("individuelleLoesungswoerter") as HTMLInputElement;
         let zentraleWorte = new Set(Object.values(this.funkUebung.loesungswoerter));
         if (Object.keys(this.funkUebung.loesungswoerter).length === 0) {
-            document.getElementById("keineLoesungswoerter").checked = true;
+            noneRadio.checked = true;
         } else if (zentraleWorte.size === 1) {
-            document.getElementById("zentralLoesungswort").checked = true;
-            document.getElementById("zentralLoesungswortInput").value = [...zentraleWorte][0];
+            centralRadio.checked = true;
+            (document.getElementById("zentralLoesungswortInput")! as HTMLInputElement).value = [...zentraleWorte][0];
         } else {
-            document.getElementById("individuelleLoesungswoerter").checked = true;
+            indivRadio.checked = true;
         }
-    
+
         // 📅 Datum
         const date = new Date(this.funkUebung.datum);
         const isoDate = date.toISOString().split("T")[0];
-        document.getElementById("datum").value = isoDate;
-    
+        (document.getElementById("datum")! as HTMLInputElement).value = isoDate;
+
         // 📝 Weitere Texteingaben
-        document.getElementById("nameDerUebung").value = this.funkUebung.name || "";
-        document.getElementById("rufgruppe").value = this.funkUebung.rufgruppe || "";
-        document.getElementById("leitung").value = this.funkUebung.leitung || "";
-    
+        (document.getElementById("nameDerUebung")! as HTMLInputElement).value = this.funkUebung.name || "";
+        (document.getElementById("rufgruppe")! as HTMLInputElement).value = this.funkUebung.rufgruppe || "";
+        (document.getElementById("leitung")! as HTMLInputElement).value = this.funkUebung.leitung || "";
+
         // 🔢 Funkspruch-Einstellungen
-        document.getElementById("spruecheProTeilnehmer").value = this.funkUebung.spruecheProTeilnehmer;
-    
+        (document.getElementById("spruecheProTeilnehmer")! as HTMLInputElement).value = this.funkUebung.spruecheProTeilnehmer.toString();
+
         // 📊 Prozentangaben aktualisieren
         const proTeilnehmer = this.funkUebung.spruecheProTeilnehmer || 1;
-        const updateProzent = (idProzent, idAnzahl, wert) => {
+        const updateProzent = (idProzent: string, idAnzahl: string, wert: number): void => {
             const prozent = Math.round((wert / proTeilnehmer) * 100);
-            document.getElementById(idProzent).value = prozent;
-            document.getElementById(idAnzahl).value = wert;
+            (document.getElementById(idProzent)! as HTMLInputElement).value = prozent.toString();
+            (document.getElementById(idAnzahl)! as HTMLInputElement).value = wert.toString();
             const span = document.getElementById("calc" + idAnzahl.charAt(0).toUpperCase() + idAnzahl.slice(1));
-            if (span) span.textContent = wert;
+            if (span) span.textContent = wert.toString();
         };
-    
+
         updateProzent("prozentAnAlle", "spruecheAnAlle", this.funkUebung.spruecheAnAlle || 0);
         updateProzent("prozentAnMehrere", "spruecheAnMehrere", this.funkUebung.spruecheAnMehrere || 0);
         updateProzent("prozentAnBuchstabieren", "spruecheAnBuchstabieren", this.funkUebung.buchstabierenAn || 0);
-    
+
         // Teilnehmerliste inkl. Lösungswörter anzeigen
         this.renderTeilnehmer(false);
     }
 
     /* 
      * Berechne Aktualisierung nach Änderung Prozentwerte Nachrichtentypen
-     */ 
+     */
     calcMsgCount() {
-        const updateMsgCount = (idCalcTextResult,  idCalcValueResult, idProzentVariable, idSpruecheProTeilnehmer) => {
-            const spruecheProTeilnehmer = document.getElementById(idSpruecheProTeilnehmer).value;
-            const prozent = document.getElementById(idProzentVariable).value;
-            const msgCount = Math.round(  spruecheProTeilnehmer *  prozent / 100);
-            document.getElementById(idCalcTextResult).textContent = msgCount;
-            document.getElementById(idCalcValueResult).value = msgCount;
+        const updateMsgCount = (
+            idCalcTextResult: string,
+            idCalcValueResult: string,
+            idProzentVariable: string,
+            idSpruecheProTeilnehmer: string
+        ): void => {
+            const spruecheInput = document.getElementById(idSpruecheProTeilnehmer) as HTMLInputElement;
+            const percentInput = document.getElementById(idProzentVariable) as HTMLInputElement;
+            const msgCount = Math.round(
+                Number(spruecheInput.value) * Number(percentInput.value) / 100
+            );
+            const calcTextEl = document.getElementById(idCalcTextResult)! as HTMLElement;
+            const calcValueInput = document.getElementById(idCalcValueResult)! as HTMLInputElement;
+
+            calcTextEl.textContent = msgCount.toString();
+            calcValueInput.value = msgCount.toString();
         }
 
-        updateMsgCount("calcAnAlle","spruecheAnAlle","prozentAnAlle","spruecheProTeilnehmer");
-        updateMsgCount("calcAnMehrere","spruecheAnMehrere","prozentAnMehrere","spruecheProTeilnehmer");
-        updateMsgCount("calcAnBuchstabieren","spruecheAnBuchstabieren","prozentAnBuchstabieren","spruecheProTeilnehmer");
+        updateMsgCount("calcAnAlle", "spruecheAnAlle", "prozentAnAlle", "spruecheProTeilnehmer");
+        updateMsgCount("calcAnMehrere", "spruecheAnMehrere", "prozentAnMehrere", "spruecheProTeilnehmer");
+        updateMsgCount("calcAnBuchstabieren", "spruecheAnBuchstabieren", "prozentAnBuchstabieren", "spruecheProTeilnehmer");
     }
-    
+
     /**
      * Zeigt die aktuelle Seite im iframe an.
      */
-    displayPage(index) {
+    displayPage(index: number): void {
         if (index < 0 || index >= this.htmlSeitenTeilnehmer.length) return;
 
-        const iframe = document.getElementById("resultFrame");
+        const iframe = document.getElementById("resultFrame")! as HTMLIFrameElement;
         iframe.srcdoc = this.htmlSeitenTeilnehmer[index]; // Lädt den HTML-Code direkt in das iframe
 
-        document.getElementById("current-page").textContent = `Seite ${index + 1} / ${this.htmlSeitenTeilnehmer.length}`;
+        (document.getElementById("current-page")! as HTMLElement).textContent = `Seite ${index + 1} / ${this.htmlSeitenTeilnehmer.length}`;
     }
 
     /**
      * Wechselt zur nächsten oder vorherigen Seite.
      * @param {number} step - 1 für weiter, -1 für zurück
      */
-    changePage(step) {
+    changePage(step: number): void {
         const newIndex = this.currentPageIndex + step;
         if (newIndex >= 0 && newIndex < this.htmlSeitenTeilnehmer.length) {
             this.currentPageIndex = newIndex;
@@ -563,15 +706,13 @@ export class AppController {
     }
 
     // Funktion zum Umschalten der Lösungswort-Optionen
-    toggleLoesungswortOption() {
-        let option = document.querySelector('input[name="loesungswortOption"]:checked').value;
-
-        document.getElementById("zentralesLoesungswortContainer").style.display = option === "gleich" ? "block" : "none";
-
-        // Zeigt/hide die Lösungswort-Spalte in der Teilnehmerliste
-        document.getElementById("loesungswortColumn").style.display = option === "individuell" ? "table-cell" : "none";
-
-        // Aktualisiert die Teilnehmerliste mit Lösungswörtern (falls benötigt)
+    toggleLoesungswortOption(): void {
+        const optionInput = document.querySelector<HTMLInputElement>('input[name="loesungswortOption"]:checked')!;
+        const option = optionInput.value;
+        const container = document.getElementById("zentralesLoesungswortContainer")! as HTMLElement;
+        container.style.display = option === "gleich" ? "block" : "none";
+        const column = document.getElementById("loesungswortColumn")! as HTMLElement;
+        column.style.display = option === "individuell" ? "table-cell" : "none";
         this.renderTeilnehmer();
     }
 
@@ -580,71 +721,72 @@ export class AppController {
     }
 
 
-    setLoesungswoerter() {
-        const isKeine = document.getElementById("keineLoesungswoerter").checked;
-        const isZentral = document.getElementById("zentralLoesungswort").checked;
-        const isIndividuell = document.getElementById("individuelleLoesungswoerter").checked;
+    setLoesungswoerter(): void {
+        const isKeine = (document.getElementById("keineLoesungswoerter")! as HTMLInputElement).checked;
+        const isZentral = (document.getElementById("zentralLoesungswort")! as HTMLInputElement).checked;
+        const isIndividuell = (document.getElementById("individuelleLoesungswoerter")! as HTMLInputElement).checked;
 
         if (isKeine) {
-            // Lösungswörter zurücksetzen
             this.funkUebung.loesungswoerter = {};
-            document.getElementById("zentralLoesungswortInput").disabled = true;
-            document.getElementById("zentralLoesungswortInput").value = "";
-            document.getElementById("shuffleButton").disabled = true;
+            (document.getElementById("zentralLoesungswortInput")! as HTMLInputElement).disabled = true;
+            (document.getElementById("zentralLoesungswortInput")! as HTMLInputElement).value = "";
+            (document.getElementById("shuffleButton")! as HTMLButtonElement).disabled = true;
         } else if (isZentral) {
-            // Zentrales Lösungswort setzen
-            let zentralesWort = document.getElementById("zentralLoesungswortInput").value;
+            const zentral = (document.getElementById("zentralLoesungswortInput")! as HTMLInputElement)
+                .value.trim().toUpperCase();
             this.funkUebung.teilnehmerListe.forEach(teilnehmer => {
-                this.funkUebung.loesungswoerter[teilnehmer] = zentralesWort;
+                this.funkUebung.loesungswoerter[teilnehmer] = zentral;
             });
-
-            // Eingabefeld aktivieren
-            document.getElementById("zentralLoesungswortInput").disabled = false;
-            document.getElementById("shuffleButton").disabled = true;
+            (document.getElementById("zentralLoesungswortInput")! as HTMLInputElement).disabled = false;
+            (document.getElementById("shuffleButton")! as HTMLButtonElement).disabled = true;
         } else if (isIndividuell) {
-            // Individuelle Wörter zuweisen
             this.assignRandomLoesungswoerter();
-            document.getElementById("zentralLoesungswortInput").disabled = true;
-            document.getElementById("shuffleButton").disabled = false;
+            (document.getElementById("zentralLoesungswortInput")! as HTMLInputElement).disabled = true;
+            (document.getElementById("shuffleButton")! as HTMLButtonElement).disabled = false;
         }
 
-        renderTeilnehmer(); // UI aktualisieren
+        this.renderTeilnehmer();
     }
 
-    assignRandomLoesungswoerter() {
-        // Shuffle-Algorithmus für zufällige Verteilung
-        let shuffledWords = [...this.predefinedLoesungswoerter].sort(() => Math.random() - 0.5);
-
-        this.funkUebung.teilnehmerListe.forEach((teilnehmer, index) => {
+    assignRandomLoesungswoerter(): void {
+        const shuffledWords = [...this.predefinedLoesungswoerter].sort(() => Math.random() - 0.5);
+        this.funkUebung.teilnehmerListe.forEach((teilnehmer: string, index: number) => {
             this.funkUebung.loesungswoerter[teilnehmer] = shuffledWords[index % shuffledWords.length];
         });
     }
 
-    shuffleLoesungswoerter() {
-        const isZentral = document.getElementById("zentralLoesungswort").checked;
-        const isIndividuell = document.getElementById("individuelleLoesungswoerter").checked;
+    shuffleLoesungswoerter(): void {
+        const isZentral = (document.getElementById("zentralLoesungswort")! as HTMLInputElement).checked;
+        const isIndividuell = (document.getElementById("individuelleLoesungswoerter")! as HTMLInputElement).checked;
 
         if (isZentral) {
-            let zentralesWort = this.predefinedLoesungswoerter[Math.floor(Math.random() * this.predefinedLoesungswoerter.length)];
-            document.getElementById("zentralLoesungswortInput").value = zentralesWort;
-            this.funkUebung.teilnehmerListe.forEach(teilnehmer => {
+            const zentralesWort = this.predefinedLoesungswoerter[
+                Math.floor(Math.random() * this.predefinedLoesungswoerter.length)
+            ];
+            (document.getElementById("zentralLoesungswortInput")! as HTMLInputElement).value = zentralesWort;
+            this.funkUebung.teilnehmerListe.forEach((teilnehmer: string) => {
                 this.funkUebung.loesungswoerter[teilnehmer] = zentralesWort;
             });
         } else if (isIndividuell) {
             this.assignRandomLoesungswoerter();
         }
 
-        this.renderTeilnehmer(false); // WICHTIG: Setze `triggerShuffle = false`, um Endlosschleife zu vermeiden
+        this.renderTeilnehmer(false);
     }
 
     // Funktion zur Berechnung der Gesamtdauer in Minuten und der durchschnittlichen Zeit pro Funkspruch
     // Funktion zur Berechnung der Gesamtdauer in Minuten und der durchschnittlichen Zeit pro Funkspruch
-    berechneUebungsdauer(nachrichtenDaten) {
+    berechneUebungsdauer(nachrichtenDaten: Nachricht[]): {
+        optimal: number;
+        schlecht: number;
+        durchschnittOptimal: number;
+        durchschnittSchlecht: number;
+    } {
         let gesamtDauerOptimal = 0;
         let gesamtDauerSchlecht = 0;
         let totalMessages = 0;
 
-        nachrichtenDaten.forEach(nachricht => {
+        nachrichtenDaten.forEach((nachricht: Nachricht) => {
             let textLaenge = nachricht.nachricht.length;
             let empfaengerAnzahl = nachricht.empfaenger.length;
 
@@ -688,7 +830,7 @@ export class AppController {
     }
 
     // Umwandlung der Zeit in Stunden und Minuten
-    formatDuration(zeitInMinuten) {
+    formatDuration(zeitInMinuten: number): { stunden: number; minuten: number } {
         const stunden = Math.floor(zeitInMinuten / 60);
         const minuten = Math.floor(zeitInMinuten % 60);
 
@@ -712,19 +854,20 @@ export class AppController {
         const minutenSchelcht = uebungsDauer.schlecht;
 
         // Anzeige der Dauer in der Tabelle
-        document.getElementById("dauerOptimalMinuten").innerText = `${minutenOptimal.toFixed()} Min`;
-        document.getElementById("dauerOptimalStundenMinuten").innerText = `${optimalFormatted.stunden} Std ${optimalFormatted.minuten.toFixed(0)} Min`;
-        document.getElementById("durchschnittOptimal").innerText = `${durchschnittOptimal.toFixed(2)} Sek`;
+        (document.getElementById("dauerOptimalMinuten")! as HTMLElement).innerText = `${minutenOptimal.toFixed()} Min`;
+        (document.getElementById("dauerOptimalStundenMinuten")! as HTMLElement).innerText = `${optimalFormatted.stunden} Std ${optimalFormatted.minuten.toFixed(0)} Min`;
+        (document.getElementById("durchschnittOptimal")! as HTMLElement).innerText = `${durchschnittOptimal.toFixed(2)} Sek`;
 
-        document.getElementById("dauerLangsamMinuten").innerText = `${minutenSchelcht.toFixed()} Min`;
-        document.getElementById("dauerLangsamStundenMinuten").innerText = `${schlechtFormatted.stunden} Std ${schlechtFormatted.minuten.toFixed(0)} Min`;
-        document.getElementById("durchschnittLangsam").innerText = `${durchschnittSchlecht.toFixed(2)} Sek`;
+        (document.getElementById("dauerLangsamMinuten")! as HTMLElement).innerText = `${minutenSchelcht.toFixed()} Min`;
+        (document.getElementById("dauerLangsamStundenMinuten")! as HTMLElement).innerText = `${schlechtFormatted.stunden} Std ${schlechtFormatted.minuten.toFixed(0)} Min`;
+        (document.getElementById("durchschnittLangsam")! as HTMLElement).innerText = `${durchschnittSchlecht.toFixed(2)} Sek`;
     }
 
     berechneVerteilungUndZeigeDiagramm() {
-        const labels = [];
-        const messageCounts = []; // Hier speichern wir die empfangenen Nachrichten
-        const nachrichtenVerteilung = {}; // Hier speichern wir die Verteilung der Nachrichten pro Teilnehmer
+        const labels: string[] = [];
+        const messageCounts: number[] = []; // Hier speichern wir die empfangenen Nachrichten
+        const nachrichtenVerteilung: Record<string, number> = {}; // Hier speichern wir die Verteilung der Nachrichten pro Teilnehmer
+        const leitung = this.funkUebung.leitung; // Übungsleitung zur Ignorierung speichern
 
         // Iteriere über alle Übungsdaten und berechne die empfangenen Nachrichten
         this.funkUebung.teilnehmerListe.forEach(teilnehmer => {
@@ -774,7 +917,7 @@ export class AppController {
         }
 
         // Erstelle das Balkendiagramm mit Chart.js
-        window.chart = new Chart(document.getElementById("distributionChart"), {
+        window.chart = new Chart(document.getElementById("distributionChart")! as HTMLCanvasElement, {
             type: 'bar',
             data: {
                 labels: labels,  // Die Teilnehmernamen
@@ -824,7 +967,7 @@ export class AppController {
     /**
      * Funktion zum Anpassen der Textgröße, damit der Text in die angegebene Breite passt
      */
-    adjustTextForWidth(pdf, text, maxWidth, xPos, yPos) {
+    adjustTextForWidth(pdf: any, text: string, maxWidth: number, xPos: number, yPos: number): void {
         let fontSize = 12; // Anfangsschriftgröße
         let textWidth = pdf.getTextWidth(text);
 
@@ -842,7 +985,7 @@ export class AppController {
 
     // Funktion zum Befüllen der Select-Box mit den Vorlagen
     populateTemplateSelectBox() {
-        const selectBox = document.getElementById("funkspruchVorlage");
+        const selectBox = document.getElementById("funkspruchVorlage")! as HTMLSelectElement;
 
         const mixedOption = document.createElement("option");
         mixedOption.value = "mix_all";
@@ -865,19 +1008,20 @@ export class AppController {
 
     // Funktion zur Anzeige des Datei-Upload-Feldes
     toggleFileUpload() {
-        const selectedValue = document.getElementById("funkspruchVorlage").value;
-        const fileUploadContainer = document.getElementById("fileUploadContainer");
+        const selectBox = document.getElementById("funkspruchVorlage")! as HTMLSelectElement;
+        const selectedValue = selectBox.value;
+        const fileUploadContainer = document.getElementById("fileUploadContainer")! as HTMLElement;
 
         if (selectedValue === "upload") {
             fileUploadContainer.style.display = "block"; // Zeige Datei-Upload-Feld an
         } else {
             fileUploadContainer.style.display = "none"; // Verstecke Datei-Upload-Feld
-            loadTemplate(selectedValue); // Lade die ausgewählte Vorlage
+            this.loadTemplate(selectedValue); // Lade die ausgewählte Vorlage
         }
     }
 
     // Funktion zum Laden der Vorlage
-    loadTemplate(templateName) {
+    loadTemplate(templateName: string): void {
         const selectedTemplate = this.templatesFunksprueche[templateName];
         if (selectedTemplate) {
             // Zum Testen: Zeige den Text der Vorlage (dies kann an anderer Stelle verwendet werden)
@@ -885,67 +1029,46 @@ export class AppController {
 
             // Hier kannst du den Text der Vorlage verwenden, z.B. beim Generieren der Funksprüche
             // Falls du die Datei laden möchtest, kannst du die `filename`-Eigenschaft verwenden
-            loadFile(selectedTemplate.filename);
+            this.loadFile(selectedTemplate.filename);
         }
     }
 
     // Funktion zum Laden einer Datei
-    loadFile(filename) {
+    loadFile(filename: string): void {
         console.log(`Lade die Datei: ${filename}`);
-
-        // Wenn es sich um eine vordefinierte Datei handelt, holen wir sie vom Server
-        if (filename && templates[filename]) {
-            fetch(`path/to/files/${filename}`)
-                .then(response => response.text())  // Die Datei als Text laden
-                .then(data => {
-                    // Die geladenen Daten zurückgeben oder weiterverarbeiten
-                    console.log("Dateiinhalt:", data);
-                    // Hier kannst du die Daten weiterverwenden oder an eine andere Funktion übergeben
-                    processLoadedFile(data); // Zum Beispiel die Daten verarbeiten
-                })
-                .catch(error => {
-                    console.error("Fehler beim Laden der Datei:", error);
-                });
-        }
-        // Falls es sich um eine manuell hochgeladene Datei handelt
-        else if (filename === "upload" && document.getElementById("funksprueche").files.length > 0) {
-            const file = document.getElementById("funksprueche").files[0];
-            const reader = new FileReader();
-            reader.onload = function (event) {
-                const fileContent = event.target.result;  // Der Inhalt der hochgeladenen Datei
-                console.log("Manuell hochgeladene Datei:", fileContent);
-                processLoadedFile(fileContent); // Die Datei weiterverarbeiten
-            };
-            reader.onerror = function (error) {
-                console.error("Fehler beim Lesen der Datei:", error);
-            };
-            reader.readAsText(file);  // Die Datei als Text lesen
-        } else {
-            console.error("Keine Datei ausgewählt oder ungültige Vorlage.");
-        }
+        fetch(filename)
+            .then(response => response.text())
+            .then(data => {
+                console.log("Dateiinhalt:", data);
+                // hier weiterverarbeiten falls nötig
+            })
+            .catch(error => {
+                console.error("Fehler beim Laden der Datei:", error);
+            });
     }
 
     // Funktion, um das aktuelle Datum im Datumsfeld vorzufüllen
     setDefaultDate() {
         const today = new Date();
         const formattedDate = today.toISOString().split('T')[0]; // Format: YYYY-MM-DD
-        document.getElementById("datum").value = formattedDate;
+        (document.getElementById("datum")! as HTMLInputElement).value = formattedDate;
     }
 
-    generateMD5Hash(input) {
+    generateMD5Hash(input: string): string {
         return CryptoJS.MD5(input).toString();
     }
 
     readLoesungswoerter() {
         this.funkUebung.loesungswoerter = {};
-        const isZentral = document.getElementById("zentralLoesungswort").checked;
-        const zentralesWort = document.getElementById("zentralLoesungswortInput")?.value.trim().toUpperCase() || "";
+        const isZentral = (document.getElementById("zentralLoesungswort")! as HTMLInputElement).checked;
+        const zentralInput = document.getElementById("zentralLoesungswoertInput")! as HTMLInputElement;
+        const zentralesWort = zentralInput.value.trim().toUpperCase() || "";
 
         this.funkUebung.teilnehmerListe.forEach((teilnehmer, index) => {
             if (isZentral && zentralesWort) {
                 this.funkUebung.loesungswoerter[teilnehmer] = zentralesWort;
             } else {
-                const input = document.getElementById(`loesungswort-${index}`);
+                const input = document.getElementById(`loesungswort-${index}`) as HTMLInputElement | null;
                 if (input) {
                     this.funkUebung.loesungswoerter[teilnehmer] = input.value.trim().toUpperCase();
                 }
@@ -953,15 +1076,14 @@ export class AppController {
         });
     }
 
-    exportUebungAsJSON() {
-        document.getElementById("jsonOutput").textContent = this.funkUebung.toJson();
-
-        const modal = new bootstrap.Modal(document.getElementById('jsonModal'));
+    exportUebungAsJSON(): void {
+        document.getElementById("jsonOutput")!.textContent = this.funkUebung.toJson();
+        const modal = new bootstrap.Modal(document.getElementById('jsonModal')! as HTMLElement);
         modal.show();
     }
 
-    copyJSONToClipboard() {
-        const text = document.getElementById("jsonOutput").textContent;
+    copyJSONToClipboard(): void {
+        const text = document.getElementById("jsonOutput")!.textContent!;
         navigator.clipboard.writeText(text).then(() => {
             alert("✅ JSON wurde in die Zwischenablage kopiert!");
         }).catch(err => {
@@ -969,11 +1091,10 @@ export class AppController {
         });
     }
 
-    updateUebungLinks() {
-        const linkContainer = document.getElementById("uebung-links");
-        const linkElement = document.getElementById("link-uebung-direkt");
-    
-        if (linkContainer && linkElement && this.funkUebung?.id) {
+    updateUebungLinks(): void {
+        const linkContainer = document.getElementById("uebung-links")! as HTMLElement;
+        const linkElement = document.getElementById("link-uebung-direkt")! as HTMLAnchorElement;
+        if (this.funkUebung.id) {
             const url = `${window.location.origin}${window.location.pathname}?id=${this.funkUebung.id}`;
             linkElement.href = url;
             linkElement.textContent = url;
@@ -983,7 +1104,7 @@ export class AppController {
 
 }
 
-export async function saveUebung(funkUebung, db) {
+export async function saveUebung(funkUebung: FunkUebung, db: Firestore): Promise<void> {
     const uebungRef = doc(db, "uebungen", funkUebung.id);
     try {
         await setDoc(uebungRef, JSON.parse(funkUebung.toJson()));
