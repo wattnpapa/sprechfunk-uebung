@@ -48,6 +48,7 @@
     "firebase": "^12.0.0",
     "jspdf": ">=3.0.1",
     "jspdf-autotable": "4.0.0",
+    "jszip": "^3.10.1",
     "showdown": "^2.1.0"
   }
 }

@@ -6,6 +6,7 @@ import { admin } from './admin.js';
 import { initializeApp } from 'firebase/app';
 import type { Firestore } from 'firebase/firestore';
 import { firebaseConfig } from './firebase-config.js';
+import 'jszip';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import '@fortawesome/fontawesome-free/css/all.min.css';
 import 'bootstrap/dist/js/bootstrap.bundle.min.js';
