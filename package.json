@@ -50,5 +50,8 @@
     "jspdf-autotable": "4.0.0",
     "jszip": "^3.10.1",
     "showdown": "^2.1.0"
+  },
+  "overrides": {
+    "braces": "3.0.3"
   }
 }
