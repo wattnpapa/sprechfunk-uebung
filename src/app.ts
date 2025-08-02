@@ -1062,7 +1062,7 @@ export class AppController {
     readLoesungswoerter() {
         this.funkUebung.loesungswoerter = {};
         const isZentral = (document.getElementById("zentralLoesungswort")! as HTMLInputElement).checked;
-        const zentralInput = document.getElementById("zentralLoesungswortInput")! as HTMLInputElement;
+        const zentralInput = document.getElementById("zentralLoesungswoertInput")! as HTMLInputElement;
         const zentralesWort = zentralInput.value.trim().toUpperCase() || "";
 
         this.funkUebung.teilnehmerListe.forEach((teilnehmer, index) => {
