@@ -51,7 +51,6 @@
 </head>
 
 <body>
-
     <div class="container mt-4">
         <div class="d-flex justify-content-between align-items-center">
             <h2 class="text-primary mb-3">
@@ -70,6 +69,11 @@
                     <i class="fas fa-user"></i> Über den Autor
                 </button>
             </div>
+        </div>
+    </div>
+    <div id="mainAppArea" style="display: block;">
+        <div class="container mt-4">
+
 
             <!-- Dropdown für kleine Bildschirme -->
             <div class="d-md-none dropdown">
@@ -131,7 +135,8 @@
 
                         <h4>👋 Moin! Ich bin Johannes.</h4>
                         <p>
-                            Technik-Enthusiast, Problemlöser und immer auf der Suche nach smarten Lösungen – sei es in
+                            Technik-Enthusiast, Problemlöser und immer auf der Suche nach smarten Lösungen – sei es
+                            in
                             der IT, im Ehrenamt oder im Alltag.
                         </p>
                         <h5>💼 Beruflich</h5>
@@ -144,9 +149,11 @@
                         </p>
                         <h5>🚀 Privat</h5>
                         <p>
-                            In meiner Freizeit bin ich ein echter Macher – sei es bei <b>DIY-Projekten, smarter Technik
+                            In meiner Freizeit bin ich ein echter Macher – sei es bei <b>DIY-Projekten, smarter
+                                Technik
                                 oder Heimautomation</b>. Ich probiere gerne neue Dinge aus
-                            und optimiere Prozesse, egal ob digital oder analog. Außerdem verbringe ich viel Zeit mit
+                            und optimiere Prozesse, egal ob digital oder analog. Außerdem verbringe ich viel Zeit
+                            mit
                             meiner Familie und liebe es, Technik in den Alltag zu integrieren.
                         </p>
                         <h5>📟 Ehrenamtliches Engagement</h5>
@@ -155,11 +162,13 @@
                             <b>Gruppenführer der Fachgruppe Kommunikation</b> und
                             <b>Bereichsausbilder für Sprechfunk</b>. Im Einsatz übernehme ich die Rolle des
                             <b>Sachgebietsleiters in Führungsstellen und Einsatzleitungen</b>.
-                            Mein Schwerpunkt liegt darauf, sichere Kommunikationswege für Einsatzkräfte zu gewährleisten
+                            Mein Schwerpunkt liegt darauf, sichere Kommunikationswege für Einsatzkräfte zu
+                            gewährleisten
                             und digitale Technologien im Krisenmanagement zu nutzen.
                         </p>
                         <h5>📌 Mein Motto:</h5>
-                        <p class="fst-italic">"Technik verstehen, vernetzen und sinnvoll einsetzen – beruflich, privat
+                        <p class="fst-italic">"Technik verstehen, vernetzen und sinnvoll einsetzen – beruflich,
+                            privat
                             und im Ehrenamt."</p>
                         <h5>📡 Interessen:</h5>
                         <ul class="list-unstyled">
@@ -243,7 +252,8 @@
                                         onchange="app.calcMsgCount()" min="0" max="100" value="5">
                                     <span class="input-group-text">%</span>
                                 </div>
-                                <small class="text-muted">Ergibt <span id="calcAnMehrere">2</span> Nachrichten</small>
+                                <small class="text-muted">Ergibt <span id="calcAnMehrere">2</span>
+                                    Nachrichten</small>
                                 <input type="hidden" id="spruecheAnMehrere" value="2">
                             </div>
                             <!-- Buchstabieranteil -->
@@ -275,12 +285,15 @@
 
                         <div class="mb-3">
                             <label for="funkspruchVorlage" class="form-label">Funkspruch-Vorlagen auswählen:</label>
-                            <small class="text-muted d-block mb-2">Tipp: Du kannst mehrere Vorlagen gleichzeitig auswählen.</small>
+                            <small class="text-muted d-block mb-2">Tipp: Du kannst mehrere Vorlagen gleichzeitig
+                                auswählen.</small>
                             <select class="form-select" id="funkspruchVorlage" multiple="multiple"></select>
                             <small class="text-muted">Wähle eine oder mehrere Vorlagen (mit Suchfunktion)</small>
                             <p class="text-muted mt-2">
-                                📬 Wenn du möchtest, dass deine eigenen Funksprüche mit in den Datenpool aufgenommen werden,
-                                sende sie bitte an <a href="mailto:johannes.rudolph@thw-oldenburg.de">johannes.rudolph@thw-oldenburg.de</a>.
+                                📬 Wenn du möchtest, dass deine eigenen Funksprüche mit in den Datenpool aufgenommen
+                                werden,
+                                sende sie bitte an <a
+                                    href="mailto:johannes.rudolph@thw-oldenburg.de">johannes.rudolph@thw-oldenburg.de</a>.
                             </p>
                         </div>
 
@@ -296,12 +309,14 @@
                             <div class="form-check">
                                 <input class="form-check-input" type="radio" id="keineLoesungswoerter"
                                     name="loesungswortOption" checked onclick="app.renderTeilnehmer()">
-                                <label class="form-check-label" for="keineLoesungswoerter">Keine Lösungswörter</label>
+                                <label class="form-check-label" for="keineLoesungswoerter">Keine
+                                    Lösungswörter</label>
                             </div>
                             <div class="form-check">
                                 <input class="form-check-input" type="radio" id="zentralLoesungswort"
                                     name="loesungswortOption" onclick="app.renderTeilnehmer()">
-                                <label class="form-check-label" for="zentralLoesungswort">Zentrales Lösungswort</label>
+                                <label class="form-check-label" for="zentralLoesungswort">Zentrales
+                                    Lösungswort</label>
                             </div>
                             <div class="form-check">
                                 <input class="form-check-input" type="radio" id="individuelleLoesungswoerter"
@@ -477,8 +492,10 @@
                                         Sekunden.</p>
                                     <p class="mb-1"><strong>Annahmen:</strong></p>
                                     <ul class="mb-2">
-                                        <li>Wir schaffen es, <strong>1 Zeichen pro Sekunde</strong> mitzuschreiben.</li>
-                                        <li>Wir benötigen <strong>2 Zeichen pro Sekunde</strong>, um eine Nachricht zu
+                                        <li>Wir schaffen es, <strong>1 Zeichen pro Sekunde</strong> mitzuschreiben.
+                                        </li>
+                                        <li>Wir benötigen <strong>2 Zeichen pro Sekunde</strong>, um eine Nachricht
+                                            zu
                                             übermitteln (sprechen).</li>
                                     </ul>
                                     <p class="mb-1"><strong>Optimale Dauer:</strong>
@@ -488,7 +505,8 @@
                                         <li><strong>Sprechzeit:</strong> Zeichenlänge / 2</li>
                                         <li><strong>Mitschrift:</strong> Zeichenlänge</li>
                                         <li><strong>Empfänger-Zeit:</strong> (Empfängerzahl - 1) × 2 Sekunden</li>
-                                        <li><strong>Verbindungsaufbau:</strong> 5 Sekunden + 3 Sekunden je zusätzlichem
+                                        <li><strong>Verbindungsaufbau:</strong> 5 Sekunden + 3 Sekunden je
+                                            zusätzlichem
                                             Empfänger</li>
                                         <li><strong>Verbindungsabbau:</strong> 3 Sekunden</li>
                                     </ul>
@@ -504,80 +522,93 @@
             </div>
 
         </div>
-        <div id="adminArea" style="display: none;">
-            <div class="card mt-4" id="adminUebungsliste">
-                <div class="card-header">
-                    <h5 class="d-flex justify-content-between align-items-center">
-                        <span><i class="fas fa-database"></i> Gespeicherte Übungen</span>
-                        <button class="btn btn-sm btn-outline-secondary" data-bs-toggle="collapse"
-                            data-bs-target="#collapseAdminUebungen">
-                            <i class="fas fa-chevron-down"></i>
-                        </button>
-                    </h5>
-                </div>
-                <div id="collapseAdminUebungen" class="collapse show">
-                    <div class="card-body">
-                        <div class="table-responsive">
-                            <table class="table table-striped mt-3">
-                                <thead>
-                                    <tr>
-                                        <th>Erstellt</th>
-                                        <th>Name der Übung</th>
-                                        <th>Übungsdatum</th>
-                                        <th>Rufgruppe</th>
-                                        <th>Leitung</th>
-                                        <th>Anzahl Teilnehmer</th>
-                                        <th>ID</th>
-                                    </tr>
-                                </thead>
-                                <tbody id="adminUebungslisteBody">
-                                    <!-- Zeilen werden per JS hinzugefügt -->
-                                </tbody>
-                            </table>
-                            <div class="d-flex justify-content-between align-items-center px-3 py-2">
-                                <div id="adminUebungslisteInfo" class="small text-muted"></div>
-                                <div>
-                                    <button class="btn btn-sm btn-outline-secondary me-2"
-                                        onclick="admin.ladeAlleUebungen('prev')">← Vorherige</button>
-                                    <button class="btn btn-sm btn-outline-secondary"
-                                        onclick="admin.ladeAlleUebungen('next')">Nächste →</button>
-                                </div>
+    </div> <!-- Ende .container mt-4 -->
+    </div>
+    <div id="adminArea" style="display: none;">
+        <div class="card mt-4" id="adminUebungsliste">
+            <div class="card-header">
+                <h5 class="d-flex justify-content-between align-items-center">
+                    <span><i class="fas fa-database"></i> Gespeicherte Übungen</span>
+                    <button class="btn btn-sm btn-outline-secondary" data-bs-toggle="collapse"
+                        data-bs-target="#collapseAdminUebungen">
+                        <i class="fas fa-chevron-down"></i>
+                    </button>
+                </h5>
+            </div>
+            <div id="collapseAdminUebungen" class="collapse show">
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-striped mt-3">
+                            <thead>
+                                <tr>
+                                    <th>Erstellt</th>
+                                    <th>Name der Übung</th>
+                                    <th>Übungsdatum</th>
+                                    <th>Rufgruppe</th>
+                                    <th>Leitung</th>
+                                    <th>Anzahl Teilnehmer</th>
+                                    <th>ID</th>
+                                </tr>
+                            </thead>
+                            <tbody id="adminUebungslisteBody">
+                                <!-- Zeilen werden per JS hinzugefügt -->
+                            </tbody>
+                        </table>
+                        <div class="d-flex justify-content-between align-items-center px-3 py-2">
+                            <div id="adminUebungslisteInfo" class="small text-muted"></div>
+                            <div>
+                                <button class="btn btn-sm btn-outline-secondary me-2"
+                                    onclick="admin.ladeAlleUebungen('prev')">← Vorherige</button>
+                                <button class="btn btn-sm btn-outline-secondary"
+                                    onclick="admin.ladeAlleUebungen('next')">Nächste →</button>
                             </div>
                         </div>
                     </div>
                 </div>
             </div>
+        </div>
 
-            <div class="card mt-4" id="adminDashboardStats">
-                <div class="card-header">
-                    <h5 class="d-flex justify-content-between align-items-center">
-                        <span><i class="fas fa-chart-line"></i> Statistik: Übungen pro Zeit</span>
-                        <button class="btn btn-sm btn-outline-secondary" data-bs-toggle="collapse"
-                            data-bs-target="#collapseAdminStats">
-                            <i class="fas fa-chevron-down"></i>
-                        </button>
-                    </h5>
-                </div>
-                <div id="collapseAdminStats" class="collapse show">
-                    <div class="card-body">
-                        <canvas id="chartUebungenProTag"></canvas>
-                        <small class="text-muted">Anzahl gespeicherter Übungen nach Tag, Woche oder Monat</small>
-                    </div>
+        <div class="card mt-4" id="adminDashboardStats">
+            <div class="card-header">
+                <h5 class="d-flex justify-content-between align-items-center">
+                    <span><i class="fas fa-chart-line"></i> Statistik: Übungen pro Zeit</span>
+                    <button class="btn btn-sm btn-outline-secondary" data-bs-toggle="collapse"
+                        data-bs-target="#collapseAdminStats">
+                        <i class="fas fa-chevron-down"></i>
+                    </button>
+                </h5>
+            </div>
+            <div id="collapseAdminStats" class="collapse show">
+                <div class="card-body">
+                    <canvas id="chartUebungenProTag"></canvas>
+                    <small class="text-muted">Anzahl gespeicherter Übungen nach Tag, Woche oder Monat</small>
                 </div>
             </div>
         </div>
+    </div>
 
 
-        <footer class="main-footer">
-            <div class="float-right d-none d-sm-block">
-                <b>Version</b> <span id="version">1.0.0</span> | <b>Übung ID:</b> <span id="uebungsId">-</span>
-            </div>
-            <strong>© Johannes Rudolph (<a
-                    href="mailto:johannes.rudolph@thw-oldenburg.de">johannes.rudolph@thw-oldenburg.de</a>) | <a
-                    href="https://sprechfunk-uebung.de/" target="_blank">Generator</a> | <a
-                    href="https://github.com/wattnpapa/sprechfunk-uebung" target="_blank">GitHub-Repository</a></strong>
-        </footer>
+    <footer class="main-footer">
+        <div class="float-right d-none d-sm-block">
+            <b>Version</b> <span id="version">1.0.0</span> | <b>Übung ID:</b> <span id="uebungsId">-</span>
+        </div>
+        <strong>© Johannes Rudolph (<a
+                href="mailto:johannes.rudolph@thw-oldenburg.de">johannes.rudolph@thw-oldenburg.de</a>) | <a
+                href="https://sprechfunk-uebung.de/" target="_blank">Generator</a> | <a
+                href="https://github.com/wattnpapa/sprechfunk-uebung" target="_blank">GitHub-Repository</a></strong>
+    </footer>
 
+    <script>
+        document.addEventListener("DOMContentLoaded", () => {
+            const isAdminView = window.location.search.includes("admin");
+            const mainAppArea = document.getElementById("mainAppArea");
+            const adminArea = document.getElementById("adminArea");
+            if (isAdminView) {
+                if (mainAppArea) mainAppArea.style.display = "none";
+                if (adminArea) adminArea.style.display = "block";
+            }
+        });
+    </script>
 </body>
 
 </html>

@@ -2,7 +2,7 @@ import { getDocs, collection, query, orderBy, limit, startAfter, doc, deleteDoc,
 import type { Firestore, QueryDocumentSnapshot } from 'firebase/firestore';
 import { initializeApp } from 'firebase/app';
 import { firebaseConfig } from './firebase-config.js';
-declare const Chart: any;
+import Chart from 'chart.js/auto';
 
 class Admin {
     // Firestore database reference
@@ -101,22 +101,25 @@ class Admin {
     async ladeUebungsStatistik() {
         const snapshot = await getDocs(collection(this.db!, "uebungen"));
         const countsByMonth = Array(12).fill(0); // Index 0 = Januar, ..., 11 = Dezember
-    
+
         snapshot.forEach(doc => {
             const data = doc.data();
             const datum = new Date(data.datum);
             const monat = datum.getMonth(); // 0-basiert: Januar = 0
             countsByMonth[monat]++;
         });
-    
+
         return countsByMonth;
     }
 
     async renderUebungsStatistik() {
         const data = await this.ladeUebungsStatistik();
         const labels = ["Jan", "Feb", "Mär", "Apr", "Mai", "Jun", "Jul", "Aug", "Sep", "Okt", "Nov", "Dez"];
-    
-        new Chart(document.getElementById("chartUebungenProTag"), {
+
+        const canvas = document.getElementById("chartUebungenProTag") as HTMLCanvasElement | null;
+        if (!canvas) return; // Falls das Element nicht existiert, abbrechen
+
+        new Chart(canvas, {
             type: 'bar',
             data: {
                 labels: labels,
