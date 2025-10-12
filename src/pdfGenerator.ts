@@ -50,7 +50,7 @@ class PDFGenerator {
 
             let teilnehmerPdf = new Teilnehmer(teilnehmer, funkUebung, pdf);
             teilnehmerPdf.draw();
-            
+
             const blob = teilnehmerPdf.blob()
             blobMap.set(teilnehmer, blob);
         });
@@ -69,12 +69,19 @@ class PDFGenerator {
                 pdf.addPage();
             }
 
+            // Trennlinie (Schneidekante)
+            pdf.setDrawColor(150);
+            pdf.setLineWidth(0.2);
+            (pdf as any).setLineDash([1, 1], 0); // gestrichelt
+            pdf.line(148, 0, 148, 210);
+            (pdf as any).setLineDash([], 0); // zurücksetzen
+
             const left = parts[i];
             const right = parts[i + 1];
 
             let deckblattLeft = new DeckblattTeilnehmer(left, funkUebung, pdf);
             deckblattLeft.draw(0); // left -> offset 0  
-            
+
             if (right) {
                 let deckblattRight = new DeckblattTeilnehmer(right, funkUebung, pdf);
                 deckblattRight.draw(148); // right -> offset 148
@@ -88,6 +95,12 @@ class PDFGenerator {
                 pdf.addPage();
                 if (j < leftMsgs.length) new Nachrichtenvordruck(left, funkUebung, pdf, leftMsgs[j]).draw();
                 if (right && j < rightMsgs.length) new Nachrichtenvordruck(right, funkUebung, pdf, rightMsgs[j]).draw(148)
+                // Trennlinie (Schneidekante)
+                pdf.setDrawColor(150);
+                pdf.setLineWidth(0.2);
+                (pdf as any).setLineDash([1, 1], 0); // gestrichelt
+                pdf.line(148, 0, 148, 210);
+                (pdf as any).setLineDash([], 0); // zurücksetzen
             }
         }
         return pdf.output('blob');
@@ -104,12 +117,19 @@ class PDFGenerator {
                 pdf.addPage();
             }
 
+            // Trennlinie (Schneidekante)
+            pdf.setDrawColor(150);
+            pdf.setLineWidth(0.2);
+            (pdf as any).setLineDash([1, 1], 0); // gestrichelt
+            pdf.line(148, 0, 148, 210);
+            (pdf as any).setLineDash([], 0); // zurücksetzen
+
             const left = parts[i];
             const right = parts[i + 1];
-            
+
             let deckblattLeft = new DeckblattTeilnehmer(left, funkUebung, pdf);
             deckblattLeft.draw(0); // left -> offset 0
-            
+
             if (right) {
                 let deckblattRight = new DeckblattTeilnehmer(right, funkUebung, pdf);
                 deckblattRight.draw(148); // right -> offset 148
@@ -121,7 +141,13 @@ class PDFGenerator {
                 pdf.addPage();
                 if (j < leftMsgs.length) new Meldevordruck(left, funkUebung, pdf, leftMsgs[j]).draw();
                 if (right && j < rightMsgs.length) new Meldevordruck(right, funkUebung, pdf, leftMsgs[j]).draw(148);
-            }            
+                // Trennlinie (Schneidekante)
+                pdf.setDrawColor(150);
+                pdf.setLineWidth(0.2);
+                (pdf as any).setLineDash([1, 1], 0); // gestrichelt
+                pdf.line(148, 0, 148, 210);
+                (pdf as any).setLineDash([], 0); // zurücksetzen
+            }
         }
         return pdf.output('blob');
     }
@@ -147,7 +173,7 @@ class PDFGenerator {
     /**
      * Erstellt die Nachrichtenvordruck PDFs.
      */
-    async generateNachrichtenvordruckPDFsBlob(funkUebung: FunkUebung) {
+    async generateNachrichtenvordruckPDFsBlob(funkUebung: FunkUebung, hideBackground: boolean = false, hideFooter: boolean = false): Promise<Map<string, Blob>> {
         const blobMap = new Map();
         funkUebung.teilnehmerListe.forEach((teilnehmer: string) => {
             let nachrichten = funkUebung.nachrichten[teilnehmer];
@@ -159,7 +185,7 @@ class PDFGenerator {
             pdf.addPage();
 
             nachrichten.forEach((nachricht: Nachricht, index: number) => {
-                new Nachrichtenvordruck(teilnehmer, funkUebung, pdf, nachricht).draw();
+                new Nachrichtenvordruck(teilnehmer, funkUebung, pdf, nachricht, hideBackground, hideFooter).draw();
                 if (index < nachrichten.length - 1) pdf.addPage();
             });
 
@@ -195,7 +221,7 @@ class PDFGenerator {
     /**
      * Erstellt die Meldevordruck PDFs für alle Teilnehmer.
      */
-    async generateMeldevordruckPDFsBlob(funkUebung: FunkUebung) {
+    async generateMeldevordruckPDFsBlob(funkUebung: FunkUebung, hideBackground: boolean = false, hideFooter: boolean = false): Promise<Map<string, Blob>> {
         const blobMap = new Map();
         funkUebung.teilnehmerListe.forEach((teilnehmer: string) => {
             let nachrichten = funkUebung.nachrichten[teilnehmer];
@@ -207,7 +233,7 @@ class PDFGenerator {
             pdf.addPage();
 
             nachrichten.forEach((nachricht: Nachricht, index: number) => {
-                new Meldevordruck(teilnehmer, funkUebung, pdf, nachricht).draw();
+                new Meldevordruck(teilnehmer, funkUebung, pdf, nachricht, hideBackground, hideFooter).draw();
                 if (index < nachrichten.length - 1) pdf.addPage();
             });
 
@@ -240,8 +266,8 @@ class PDFGenerator {
     generateInstructorPDFBlob(funkUebung: FunkUebung) {
         let pdf = new jsPDF({ orientation: "landscape", unit: "mm", format: "a4" });
 
-        let uebungsLeitung = new Uebungsleitung(funkUebung, pdf); 
-        uebungsLeitung.draw();   
+        let uebungsLeitung = new Uebungsleitung(funkUebung, pdf);
+        uebungsLeitung.draw();
 
         return uebungsLeitung.blob();
     }
@@ -292,13 +318,128 @@ class PDFGenerator {
         return pdf.output("blob");
     }
 
+
+    async generateNachrichtenvordruckA4PDFsBlob(funkUebung: FunkUebung) {
+        const blobs = new Map<string, Blob>();
+        const { jsPDF } = await import("jspdf");
+
+        for (const teilnehmer of funkUebung.teilnehmerListe) {
+            const nachrichten = funkUebung.nachrichten[teilnehmer] || [];
+            const totalA5Pages = 1 + nachrichten.length; // 0 = Deckblatt, danach jede Nachricht eine Seite
+            const half = Math.ceil(totalA5Pages / 2);
+
+            const pdf = new jsPDF({ orientation: "landscape", unit: "mm", format: "a4" });
+            const offsetRight = 148; // A5-Breite in mm
+
+            // Hilfsrenderer für eine Seite auf linker/rechter Hälfte
+            const renderIndex = (pageIndex: number, offsetX: number) => {
+                if (pageIndex < 0 || pageIndex >= totalA5Pages) return;
+                if (pageIndex === 0) {
+                    // Deckblatt
+                    const deck = new DeckblattTeilnehmer(teilnehmer, funkUebung, pdf);
+                    deck.draw(offsetX || 0);
+                } else {
+                    // Nachrichtenseite (pageIndex - 1, da 0 das Deckblatt ist)
+                    const msg = nachrichten[pageIndex - 1];
+                    if (msg) {
+                        new Nachrichtenvordruck(teilnehmer, funkUebung, pdf, msg).draw(offsetX || 0);
+                    }
+                }
+            };
+
+            // Bogenweise ausgeben: links s, rechts s + half
+            for (let s = 0; s < half; s++) {
+                if (s > 0) pdf.addPage();
+                const leftIndex = s;                // 0 .. half-1
+                const rightIndex = s + half;        // half .. totalA5Pages-1
+
+                // Links (Deckblatt oder Nachricht)
+                renderIndex(leftIndex, 0);
+
+                // Rechts (nur wenn vorhanden)
+                if (rightIndex < totalA5Pages) {
+                    renderIndex(rightIndex, offsetRight);
+                }
+
+                // Trennlinie (Schneidekante)
+                pdf.setDrawColor(150);
+                pdf.setLineWidth(0.2);
+                (pdf as any).setLineDash([1, 1], 0); // gestrichelt
+                pdf.line(148, 0, 148, 210);
+                (pdf as any).setLineDash([], 0); // zurücksetzen
+            }
+
+            const blob = pdf.output("blob");
+            blobs.set(teilnehmer, blob);
+        }
+
+        return blobs;
+    }
+
+    /**
+     * Erstellt die Meldevordruck-PDFs im A4-Querformat mit 2 Meldevordrucken pro Seite (paarweise Layout mit Deckblatt).
+     */
+    async generateMeldevordruckA4PDFsBlob(funkUebung: FunkUebung) {
+        const blobs = new Map<string, Blob>();
+        const { jsPDF } = await import("jspdf");
+
+        for (const teilnehmer of funkUebung.teilnehmerListe) {
+            const nachrichten = funkUebung.nachrichten[teilnehmer] || [];
+            const totalA5Pages = 1 + nachrichten.length; // 0 = Deckblatt, danach jede Nachricht eine Seite
+            const half = Math.ceil(totalA5Pages / 2);
+
+            const pdf = new jsPDF({ orientation: "landscape", unit: "mm", format: "a4" });
+            const offsetRight = 148; // A5-Breite in mm
+
+            // Hilfsrenderer für eine Seite auf linker/rechter Hälfte
+            const renderIndex = (pageIndex: number, offsetX: number) => {
+                if (pageIndex < 0 || pageIndex >= totalA5Pages) return;
+                if (pageIndex === 0) {
+                    // Deckblatt
+                    const deck = new DeckblattTeilnehmer(teilnehmer, funkUebung, pdf);
+                    deck.draw(offsetX || 0);
+                } else {
+                    // Meldevordruck-Seite
+                    const msg = nachrichten[pageIndex - 1];
+                    if (msg) {
+                        new Meldevordruck(teilnehmer, funkUebung, pdf, msg).draw(offsetX || 0);
+                    }
+                }
+            };
+
+            // Bogenweise ausgeben: links s, rechts s + half
+            for (let s = 0; s < half; s++) {
+                if (s > 0) pdf.addPage();
+                const leftIndex = s;
+                const rightIndex = s + half;
+
+                renderIndex(leftIndex, 0);
+                if (rightIndex < totalA5Pages) {
+                    renderIndex(rightIndex, offsetRight);
+                }
+
+                // Trennlinie (Schneidekante)
+                pdf.setDrawColor(150);
+                pdf.setLineWidth(0.2);
+                (pdf as any).setLineDash([1, 1], 0); // gestrichelt
+                pdf.line(148, 0, 148, 210);
+                (pdf as any).setLineDash([], 0); // zurücksetzen
+            }
+
+            const blob = pdf.output("blob");
+            blobs.set(teilnehmer, blob);
+        }
+
+        return blobs;
+    }
+
     async generateAllPDFsAsZip(funkUebung: FunkUebung) {
         const zip = new JSZip();
 
         // Teilnehmer-PDFs
         const teilnehmerBlobs = await this.generateTeilnehmerPDFsBlob(funkUebung);
         teilnehmerBlobs.forEach((blob, teilnehmer) => {
-            zip.file(`Teilnehmer/${this.sanitizeFileName(teilnehmer)}.pdf`, blob);
+            zip.file(`Teilnehmer/${this.sanitizeFileName(teilnehmer)}/Übersicht_${this.sanitizeFileName(teilnehmer)}.pdf`, blob);
         });
 
         // Instructor PDF
@@ -308,52 +449,72 @@ class PDFGenerator {
         // Nachrichtenvordrucke
         const nachrichtenvordruckBlobs = await this.generateNachrichtenvordruckPDFsBlob(funkUebung);
         nachrichtenvordruckBlobs.forEach((blob, teilnehmer) => {
-            zip.file(`Nachrichtenvordruck/${this.sanitizeFileName(teilnehmer)}.pdf`, blob);
+            zip.file(`Teilnehmer/${this.sanitizeFileName(teilnehmer)}/Nachrichtenvordruck_${this.sanitizeFileName(teilnehmer)}_A5.pdf`, blob);
+        });
+
+        const nachrichtenvordruckBlobsNadel = await this.generateNachrichtenvordruckPDFsBlob(funkUebung, true, true);
+        nachrichtenvordruckBlobsNadel.forEach((blob, teilnehmer) => {
+            zip.file(`Teilnehmer/${this.sanitizeFileName(teilnehmer)}/Nachrichtenvordruck_${this.sanitizeFileName(teilnehmer)}_Nadeldrucker_A5.pdf`, blob);
+        });
+
+        const nachrichtenvordruckA4Blobs = await this.generateNachrichtenvordruckA4PDFsBlob(funkUebung);
+        nachrichtenvordruckA4Blobs.forEach((blob, teilnehmer) => {
+            zip.file(`Teilnehmer/${this.sanitizeFileName(teilnehmer)}/Nachrichtenvordruck_${this.sanitizeFileName(teilnehmer)}_A4.pdf`, blob);
         });
 
         // Meldevordrucke
         const meldevordruckBlobs = await this.generateMeldevordruckPDFsBlob(funkUebung);
         meldevordruckBlobs.forEach((blob, teilnehmer) => {
-            zip.file(`Meldevordruck/${this.sanitizeFileName(teilnehmer)}.pdf`, blob);
+            zip.file(`Teilnehmer/${this.sanitizeFileName(teilnehmer)}/Meldevordruck_${this.sanitizeFileName(teilnehmer)}_A5.pdf`, blob);
+        });
+
+        const meldevordruckBlobsNadel = await this.generateMeldevordruckPDFsBlob(funkUebung, true, true);
+        meldevordruckBlobsNadel.forEach((blob, teilnehmer) => {
+            zip.file(`Teilnehmer/${this.sanitizeFileName(teilnehmer)}/Meldevordruck_${this.sanitizeFileName(teilnehmer)}_Nadeldrucker_A5.pdf`, blob);
+        });
+
+        const meldevordruckA4Blobs = await this.generateMeldevordruckA4PDFsBlob(funkUebung);
+        meldevordruckA4Blobs.forEach((blob, teilnehmer) => {
+            zip.file(`Teilnehmer/${this.sanitizeFileName(teilnehmer)}/Meldevordruck_${this.sanitizeFileName(teilnehmer)}_A4.pdf`, blob);
         });
 
         // Druck-PDF mit allen Nachrichtenvordrucken
         const allMsgPrint = await this.generateAllNachrichtenvordruckPrintBlob(funkUebung);
         zip.file(
-            `Druck_Nachrichtenvordruck_A5.pdf`,
+            `Gesamt/Druck_Nachrichtenvordruck_A5.pdf`,
             allMsgPrint
         );
 
         // Druck-PDF mit allen Meldevordrucken
         const allMeldPrint = await this.generateAllMeldevordruckPrintBlob(funkUebung);
         zip.file(
-            `Druck_Meldevordruck_A5.pdf`,
+            `Gesamt/Druck_Meldevordruck_A5.pdf`,
             allMeldPrint
         );
 
         // A4-Druckvorlagen hinzufügen
         const allMsgPrintA4 = await this.generateAllNachrichtenvordruckPrintA4Blob(funkUebung);
         zip.file(
-            `Druck_Nachrichtenvordruck_A4.pdf`,
+            `Gesamt/Druck_Nachrichtenvordruck_A4.pdf`,
             allMsgPrintA4
         );
 
         const allMeldPrintA4 = await this.generateAllMeldevordruckPrintA4Blob(funkUebung);
         zip.file(
-            `Druck_Meldevordruck_A4.pdf`,
+            `Gesamt/Druck_Meldevordruck_A4.pdf`,
             allMeldPrintA4
         );
-        
+
         // Nadeldrucker: je ein A5-PDF mit allen Nachrichtenvordrucken
         const plainNachrichtBlob = await this.generatePlainNachrichtenvordruckPrintBlob(funkUebung);
         zip.file(
-            `Nadeldrucker/Plain_Nachrichtenvordruck_A5.pdf`,
+            `Gesamt/Nadeldrucker_Nachrichtenvordruck_A5.pdf`,
             plainNachrichtBlob
         );
         // Nadeldrucker: je ein A5-PDF mit allen Meldevordrucken
         const plainMeldeBlob = await this.generatePlainMeldevordruckPrintBlob(funkUebung);
         zip.file(
-            `Nadeldrucker/Plain_Meldevordruck_A5.pdf`,
+            `Gesamt/Nadeldrucker_Meldevordruck_A5.pdf`,
             plainMeldeBlob
         );
 
