@@ -15,7 +15,6 @@ export class Teilnehmer extends BasePDFTeilnehmer {
 
         let nachrichten = this.funkUebung.nachrichten[this.teilnehmer];
 
-        const pageMargin = 10;
         const pageMarginTop = 25;
         const pageMarginBottom = 25;
         const pageMarginLeft = 10;
@@ -119,16 +118,16 @@ export class Teilnehmer extends BasePDFTeilnehmer {
                 this.pdf.setFontSize(10);
 
                 // **Links: Funkrufname**
-                this.pdf.text(`Eigener Funkrufname: ${this.teilnehmer}`, pageMargin, 20);
+                this.pdf.text(`Eigener Funkrufname: ${this.teilnehmer}`, pageMarginLeft, 20);
 
                 // **Rechts: Name der Übung**
                 let rightText = this.funkUebung.name + " - " + DateFormatter.formatNATODate(this.funkUebung.datum, false)
                 let nameWidth = this.pdf.getTextWidth(rightText);
-                this.pdf.text(rightText, this.pdfWidth - pageMargin - nameWidth, 20);
+                this.pdf.text(rightText, this.pdfWidth - pageMarginLeft - nameWidth, 20);
 
                 // **Trennlinie unter der Kopfzeile**
                 this.pdf.setDrawColor(0);
-                this.pdf.line(pageMargin, 22, this.pdfWidth - pageMargin, 22);
+                this.pdf.line(pageMarginLeft, 22, this.pdfWidth - pageMarginRight, 22);
             }
 
             //Footer
@@ -136,22 +135,22 @@ export class Teilnehmer extends BasePDFTeilnehmer {
             this.pdf.setFontSize(8);
 
             // Hinweis über der Linie
-            this.pdf.text("Wörter in GROSSBUCHSTABEN müssen buchstabiert werden.", pageMargin, this.pdfHeight - 20);
+            this.pdf.text("Wörter in GROSSBUCHSTABEN müssen buchstabiert werden.", pageMarginLeft, this.pdfHeight - 20);
 
             // Trennlinie unter dem Hinweis
             this.pdf.setDrawColor(0);
-            this.pdf.line(pageMargin, this.pdfHeight - 15, this.pdfWidth - pageMargin, this.pdfHeight - 15);
+            this.pdf.line(pageMarginLeft, this.pdfHeight - 15, this.pdfWidth - pageMarginRight, this.pdfHeight - 15);
 
             // Seitenzahl
             this.pdf.setFontSize(10);
             let pageNumberText = `Seite ${pageNumber} von ${totalPages}`;
             let pageNumberWidth = this.pdf.getTextWidth(pageNumberText);
-            this.pdf.text(pageNumberText, this.pdfWidth - pageMargin - pageNumberWidth, this.pdfHeight - 10);
+            this.pdf.text(pageNumberText, this.pdfWidth - pageMarginLeft - pageNumberWidth, this.pdfHeight - 10);
 
             // Link und Copyright-Infos linksbündig
             this.pdf.setFontSize(6);
             let leftText = `© Johannes Rudolph | Version ${this.funkUebung.buildVersion} | Übung ID: ${this.funkUebung.id} | Generiert: ${generierungszeit} | Generator: https://sprechfunk-uebung.de/`;
-            this.pdf.textWithLink(leftText, pageMargin, this.pdfHeight - 10, { url: "https://sprechfunk-uebung.de//" });
+            this.pdf.textWithLink(leftText, pageMarginLeft, this.pdfHeight - 10, { url: "https://sprechfunk-uebung.de//" });
         }
     }
 

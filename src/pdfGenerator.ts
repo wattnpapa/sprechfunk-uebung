@@ -1,7 +1,5 @@
-import dateFormatter, { DateFormatter } from "./DateFormatter.js";
 import { jsPDF } from 'jspdf'
 import autoTable from 'jspdf-autotable'
-import type { Uebung } from './types/Uebung';
 import type { Nachricht } from './types/Nachricht';
 
 import JSZip from "jszip";
@@ -10,6 +8,7 @@ import { FunkUebung } from "./FunkUebung.js";
 import { Meldevordruck } from "./pdf/Meldevordruck.js";
 import { Nachrichtenvordruck } from "./pdf/Nachrichtenvordruck.js";
 import { Teilnehmer } from "./pdf/Teilnehmer.js";
+import { Uebungsleitung } from "./pdf/Uebungsleitung.js";
 
 class PDFGenerator {
     constructor() {
@@ -148,189 +147,6 @@ class PDFGenerator {
         return pdf.output('blob');
     }
 
-    /**
-     * Erstellt die Teilnehmerliste-Tabelle.
-     */
-    drawTeilnehmerTable(
-      pdf: jsPDF,
-      funkUebung: Uebung,
-      startY: number,
-      marginLeft: number,
-      width: number
-    ): void {
-        let teilnehmerColumns = 2;
-        let teilnehmerRows = Math.ceil(funkUebung.teilnehmerListe.length / teilnehmerColumns);
-        let teilnehmerTable = [];
-
-        for (let r = 0; r < teilnehmerRows; r++) {
-            let row = [];
-            for (let c = 0; c < teilnehmerColumns; c++) {
-                let index = r + c * teilnehmerRows;
-                if (index < funkUebung.teilnehmerListe.length) {
-                    row.push(funkUebung.teilnehmerListe[index]);
-                } else {
-                    row.push("");
-                }
-            }
-            teilnehmerTable.push(row);
-        }
-
-        (pdf as any).autoTable({
-            head: [["Teilnehmer", ""]],
-            body: teilnehmerTable,
-            startY: startY,
-            margin: { left: marginLeft },
-            tableWidth: width,
-            theme: "grid",
-            styles: { fontSize: 10, cellPadding: 3, lineWidth: 0.1, lineColor: [0, 0, 0] },
-            headStyles: { fillColor: [200, 200, 200] }
-        });
-    }
-
-    /**
-     * Erstellt die Nachrichten-Tabelle.
-     */
-    drawNachrichtenTable(
-      pdf: jsPDF,
-      nachrichten: Nachricht[],
-      startY: number,
-      marginLeft: number,
-      pdfWidth: number,
-      secondPageTableTopMargin: number
-    ): void {
-        let tableWidth = pdfWidth - 2 * marginLeft;
-        let empfaengerWidth = tableWidth * 0.20;
-        let lfdnrWidth = 12;
-        let columnWidths = [lfdnrWidth, empfaengerWidth, tableWidth - lfdnrWidth - empfaengerWidth];
-
-        (pdf as any).autoTable({
-            head: [["Nr.", "Empfänger", "Nachrichtentext"]],
-            body: nachrichten.map((n: Nachricht) => [n.id, n.empfaenger.join("\n"), n.nachricht]),
-            startY: startY,
-            theme: "grid",
-            margin: { left: marginLeft, top: secondPageTableTopMargin, bottom: 20 },
-            tableWidth: tableWidth,
-            columnStyles: {
-                0: { cellWidth: columnWidths[0] },
-                1: { cellWidth: columnWidths[1] },
-                2: { cellWidth: columnWidths[2] }
-            },
-            styles: { fontSize: 10, cellPadding: 1.5, lineWidth: 0.1, lineColor: [0, 0, 0] },
-            headStyles: { fillColor: [200, 200, 200] }
-        });
-    }
-
-    fixEncoding(text: string): string {
-        return text.normalize("NFC") // Korrigiert Zeichensatz-Probleme
-            .replace(/ /g, "\u00A0"); // Non-Breaking Space für Leerzeichen
-    }
-
-    /**
-     * Erstellt die Kopfzeile der ersten Seite (größer & fett).
-     */
-    drawFirstPageHeader(
-      pdf: jsPDF,
-      funkUebung: Uebung,
-      teilnehmer: string,
-      pdfWidth: number
-    ): void {
-        pdf.setFont("helvetica", "bold");
-        pdf.setFontSize(16);
-        pdf.text(`${funkUebung.name}`, pdfWidth / 2, 15, { align: "center" });
-
-        pdf.setFontSize(14);
-        pdf.text(`${teilnehmer}`, pdfWidth / 2, 20, { align: "center" });
-    }
-
-    /**
-     * Erstellt die Kopfdaten-Tabelle.
-     */
-    drawKopfdatenTable(
-      pdf: jsPDF,
-      funkUebung: Uebung,
-      startY: number,
-      marginLeft: number,
-      width: number
-    ): void {
-        (pdf as any).autoTable({
-            head: [["Beschreibung", "Wert"]],
-            body: [
-                ["Datum", DateFormatter.formatNATODate(funkUebung.datum, false)],
-                ["Rufgruppe", funkUebung.rufgruppe],
-                ["Betriebsleitung", funkUebung.leitung]
-            ],
-            startY: startY,
-            margin: { left: marginLeft },
-            tableWidth: width,
-            theme: "grid",
-            styles: { fontSize: 10, cellPadding: 3, lineWidth: 0.1, lineColor: [0, 0, 0] },
-            headStyles: { fillColor: [200, 200, 200] }
-        });
-    }
-
-    /**
-     * Erstellt die Kopfzeile auf Seite 2+.
-     */
-    drawHeader(
-      pdf: jsPDF,
-      teilnehmer: string,
-      pageNumber: number,
-      pdfWidth: number,
-      pageMargin: number,
-      funkUebung: Uebung
-    ): void {
-        if (pageNumber > 1) {
-            pdf.setFont("helvetica", "normal");
-            pdf.setFontSize(10);
-
-            // **Links: Funkrufname**
-            pdf.text(`Eigener Funkrufname: ${teilnehmer}`, pageMargin, 20);
-
-            // **Rechts: Name der Übung**
-            let rightText = funkUebung.name + " - " + DateFormatter.formatNATODate(funkUebung.datum, false)
-            let nameWidth = pdf.getTextWidth(rightText);
-            pdf.text(rightText, pdfWidth - pageMargin - nameWidth, 20);
-
-            // **Trennlinie unter der Kopfzeile**
-            pdf.setDrawColor(0);
-            pdf.line(pageMargin, 22, pdfWidth - pageMargin, 22);
-        }
-    }
-
-    /**
-     * Erstellt die Fußzeile auf allen Seiten.
-     */
-    drawFooter(
-      pdf: jsPDF,
-      generierungszeit: string,
-      funkUebung: Uebung,
-      pageNumber: number,
-      totalPages: number,
-      pdfWidth: number,
-      pdfHeight: number,
-      pageMargin: number
-    ): void {
-        pdf.setFont("helvetica", "normal");
-        pdf.setFontSize(8);
-
-        // Hinweis über der Linie
-        pdf.text("Wörter in GROSSBUCHSTABEN müssen buchstabiert werden.", pageMargin, pdfHeight - 20);
-
-        // Trennlinie unter dem Hinweis
-        pdf.setDrawColor(0);
-        pdf.line(pageMargin, pdfHeight - 15, pdfWidth - pageMargin, pdfHeight - 15);
-
-        // Seitenzahl
-        pdf.setFontSize(10);
-        let pageNumberText = `Seite ${pageNumber} von ${totalPages}`;
-        let pageNumberWidth = pdf.getTextWidth(pageNumberText);
-        pdf.text(pageNumberText, pdfWidth - pageMargin - pageNumberWidth, pdfHeight - 10);
-
-        // Link und Copyright-Infos linksbündig
-        pdf.setFontSize(6);
-        let leftText = `© Johannes Rudolph | Version ${funkUebung.buildVersion} | Übung ID: ${funkUebung.id} | Generiert: ${generierungszeit} | Generator: https://sprechfunk-uebung.de/`;
-        pdf.textWithLink(leftText, pageMargin, pdfHeight - 10, { url: "https://sprechfunk-uebung.de//" });
-    }
 
     generateNachrichtenvordruckPDFs(funkUebung: FunkUebung) {
         this.generateNachrichtenvordruckPDFsBlob(funkUebung).then(blobMap => {
@@ -428,7 +244,7 @@ class PDFGenerator {
         return blobMap;
     }
 
-    generateInstructorPDF(funkUebung: Uebung) {
+    generateInstructorPDF(funkUebung: FunkUebung) {
         const blob = this.generateInstructorPDFBlob(funkUebung);
         const link = document.createElement("a");
         link.href = URL.createObjectURL(blob);
@@ -442,174 +258,13 @@ class PDFGenerator {
     /**
      * Erstellt das PDF für die Übungsleitung.
      */
-    generateInstructorPDFBlob(funkUebung: Uebung) {
+    generateInstructorPDFBlob(funkUebung: FunkUebung) {
         let pdf = new jsPDF({ orientation: "landscape", unit: "mm", format: "a4" });
 
-        const pdfWidth = pdf.internal.pageSize.getWidth();
-        const pdfHeight = pdf.internal.pageSize.getHeight();
-        const pageMargin = 10;
-        const firstTableStartY = 30;
-        const secondPageTableTopMargin = 30; // **Garantierter Abstand für Tabellen auf Seite 2+**
-        const generierungszeit = DateFormatter.formatNATODate(funkUebung.createDate);
-        const tableFontSize = 8;
+        let uebungsLeitung = new Uebungsleitung(funkUebung, pdf); 
+        uebungsLeitung.draw();   
 
-        // **1. Kopfzeile für erste Seite**
-        this.drawFirstPageHeader(pdf, funkUebung, "Übungsleitung", pdfWidth);
-
-        // **2. Kopfdaten-Tabelle**
-        this.drawKopfdatenTable(pdf, funkUebung, firstTableStartY, pageMargin, ((pdfWidth - 2 * pageMargin) / 2));
-
-        // **3. Teilnehmer-Tabelle**
-        let tableStartY = Math.max((pdf as any).lastAutoTable.finalY + 10, 75);
-
-        let tableBody = funkUebung.teilnehmerListe.map((teilnehmer: string) => [
-            teilnehmer,
-            "", // Platz für Anmeldezeitpunkt
-            funkUebung.loesungswoerter?.[teilnehmer] ? funkUebung.loesungswoerter?.[teilnehmer] : "", // Falls es ein Lösungswort gibt
-            "" // Bemerkungen (handschriftlich eintragbar)
-        ]);
-
-        let columnWidths = [60, 35, 60, 120]; // Anpassung für saubere Darstellung
-
-        (pdf as any).autoTable({
-            head: [["Teilnehmer", "Anmeldung", "Lösungswort", "Bemerkungen"]],
-            body: tableBody,
-            startY: tableStartY,
-            theme: "grid",
-            margin: { left: pageMargin, top: secondPageTableTopMargin },
-            tableWidth: pdfWidth - 2 * pageMargin,
-            columnStyles: {
-                0: { cellWidth: columnWidths[0] },
-                1: { cellWidth: columnWidths[1] },
-                2: { cellWidth: columnWidths[2] },
-                3: { cellWidth: columnWidths[3] }
-            },
-            styles: { fontSize: tableFontSize, cellPadding: 3, lineWidth: 0.1, lineColor: [0, 0, 0] },
-            headStyles: { fillColor: [200, 200, 200] }
-        });
-
-        //Funksprüche der Teilnehmer
-        // Funksprüche aller Teilnehmer sammeln
-        let alleNachrichten: { nr: number; empfaenger: string; sender: string; nachricht: string }[] = [];
-        funkUebung.teilnehmerListe.forEach(sender => {
-            let nachrichten = funkUebung.nachrichten[sender];
-            if (!Array.isArray(nachrichten)) return;
-            nachrichten.forEach((nachricht, index) => {
-                alleNachrichten.push({
-                    nr: index + 1,
-                    empfaenger: nachricht.empfaenger.join("\n"),
-                    sender,
-                    nachricht: nachricht.nachricht
-                });
-            });
-        });
-
-        // Sortieren: zuerst nach Nr, dann Sender
-        alleNachrichten.sort((a, b) => a.nr - b.nr || a.sender.localeCompare(b.sender));
-
-        // Tabelle vorbereiten
-        const tableData = alleNachrichten.map(n => [n.nr, n.empfaenger, n.sender, n.nachricht, ""]);
-
-        let tableWidth = pdfWidth - 2 * pageMargin;
-        let empfaengerWidth = tableWidth * 0.20;
-        let lfdnrWidth = 12;
-        let withCheckBox = 12;
-        let senderWidth = empfaengerWidth; // gleiche Breite wie Empfänger
-        let columnWidthsAll = [lfdnrWidth, empfaengerWidth, senderWidth, tableWidth - lfdnrWidth - (empfaengerWidth * 2) - withCheckBox, withCheckBox];
-
-        // Neuen Y-Startpunkt nach der Teilnehmer-Tabelle
-        pdf.addPage();
-        let nextTableStartY = secondPageTableTopMargin;
-
-        let lastNrValue: number | null = null;
-
-        (pdf as any).autoTable({
-            head: [["Nr", "Empfänger", "Sender", "Nachricht", "Zeit"]],
-            body: tableData,
-            startY: nextTableStartY,
-            theme: "grid",
-            margin: { left: pageMargin, top: secondPageTableTopMargin, bottom: 25 },
-            tableWidth: tableWidth,
-            columnStyles: {
-                0: { cellWidth: columnWidthsAll[0] },
-                1: { cellWidth: columnWidthsAll[1] },
-                2: { cellWidth: columnWidthsAll[2] },
-                3: { cellWidth: columnWidthsAll[3] },
-                4: { cellWidth: columnWidthsAll[4] }
-            },
-            styles: { fontSize: tableFontSize, cellPadding: 1.5, lineWidth: 0.1, lineColor: [0, 0, 0] },
-            headStyles: { fillColor: [200, 200, 200] },
-            didDrawCell: function (data: any) {
-                if (data.section === 'body' && data.column.index === 0) {
-                    const currentNr = data.cell.raw;
-
-                    if (currentNr !== lastNrValue) {
-                        lastNrValue = currentNr;
-
-                        const startX = data.cell.x;
-                        const endX = startX + data.cell.width + data.table.columns.slice(1).reduce((sum: number, col: any) => sum + col.width, 0);
-                        const y = data.cell.y;
-
-                        if (typeof startX === "number" && typeof endX === "number" && typeof y === "number") {
-                            const lineY = y; // Linie direkt über der Zelle
-                            data.doc.setDrawColor(0);
-                            data.doc.setLineWidth(0.75); // Dicker als Standard
-                            data.doc.line(startX, lineY, endX, lineY);
-                        }
-                    }
-                }
-            }
-        });
-
-        // **4. Kopf- und Fußzeilen für alle Seiten**
-        let totalPages = (pdf as any).getNumberOfPages();
-        for (let j = 1; j <= totalPages; j++) {
-            pdf.setPage(j);
-            this.drawHeader(pdf, "Übungsleitung", j, pdfWidth, pageMargin, funkUebung);
-            this.drawFooter(pdf, generierungszeit, funkUebung, j, totalPages, pdfWidth, pdfHeight, pageMargin);
-        }
-
-        return pdf.output("blob");
-    }
-
-    /**
-     * Zeichnet den Inhalt für Teilnehmer PDFs.
-     */
-    drawTeilnehmerInhalte(pdf: jsPDF, uebung: any) {
-        pdf.setFontSize(12);
-        pdf.text(`Teilnehmer: ${uebung.teilnehmer}`, 20, 30);
-        pdf.text(`Rufgruppe: ${uebung.kopfdaten.rufgruppe}`, 20, 40);
-    }
-
-    /**
-     * Zeichnet die Kopfdaten für die Übungsleitung.
-     */
-    drawKopfdaten(pdf: jsPDF, kopfdaten: any) {
-        (pdf as any).autoTable({
-            head: [["Beschreibung", "Wert"]],
-            body: [
-                ["Datum", kopfdaten.datum],
-                ["Rufgruppe", kopfdaten.rufgruppe],
-                ["Betriebsleitung", kopfdaten.leitung]
-            ],
-            startY: 30,
-            theme: "grid",
-            styles: { fontSize: 10 }
-        });
-    }
-
-    /**
-     * Zeichnet die Teilnehmerliste für die Übungsleitung.
-     */
-    drawTeilnehmerListe(pdf: jsPDF, jsonUebungsDaten: any[]) {
-        let tableBody: any[][] = jsonUebungsDaten.map((t: any) => [t.teilnehmer, "", t.loesungswort || "", ""]);
-        (pdf as any).autoTable({
-            head: [["Teilnehmer", "Anmeldung", "Lösungswort", "Bemerkungen"]],
-            body: tableBody,
-            startY: 60,
-            theme: "grid",
-            styles: { fontSize: 10 }
-        });
+        return uebungsLeitung.blob();
     }
 
     sanitizeFileName(name: string) {
