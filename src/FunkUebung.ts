@@ -20,6 +20,7 @@ export class FunkUebung implements Uebung {
     spruecheAnMehrere: number;
     buchstabierenAn: number;
     loesungswoerter: Record<string, string>;
+    loesungsStaerken: Record<string, string>;
     checksumme: string;
     funksprueche: string[];
 
@@ -45,6 +46,7 @@ export class FunkUebung implements Uebung {
         this.buchstabierenAn = 5;
 
         this.loesungswoerter = {};
+        this.loesungsStaerken = {};
 
         this.teilnehmerListe = [
             "Heros Oldenburg 16/11",
@@ -92,46 +94,49 @@ export class FunkUebung implements Uebung {
             teilnehmerListe: this.teilnehmerListe,
             nachrichten: this.nachrichten,
             loesungswoerter: this.loesungswoerter,
+            loesungsStaerken: this.loesungsStaerken,
             spruecheProTeilnehmer: this.spruecheProTeilnehmer,
             spruecheAnAlle: this.spruecheAnAlle,
             spruecheAnMehrere: this.spruecheAnMehrere,
             buchstabierenAn: this.buchstabierenAn
         }, null, 2); // Pretty Print
     }
- 
+
     erstelle() {
         this.createDate = new Date();
         this.nachrichten = this.verteileNachrichtenFair();
         this.verteileLoesungswoerterMitIndex();
+        this.berechneLoesungsStaerken();
+        console.log(this.loesungsStaerken);
     }
 
     getBalancedSubsetOfOthers(
-      teilnehmerListe: string[],
-      sender: string,
-      empfangsZaehler: Record<string, number>,
-      letzteEmpfaenger: Set<string>,
-      empfaengerHistory: string[]
+        teilnehmerListe: string[],
+        sender: string,
+        empfangsZaehler: Record<string, number>,
+        letzteEmpfaenger: Set<string>,
+        empfaengerHistory: string[]
     ): string[] {
         let andere = teilnehmerListe.filter(t => t !== sender && !letzteEmpfaenger.has(t));
-    
+
         // Falls alle ausgeschlossen sind, nehmen wir alle außer dem Sender
         if (andere.length === 0) {
             andere = teilnehmerListe.filter(t => t !== sender);
         }
-    
+
         // Sortiere nach Anzahl empfangener Nachrichten, um weniger Bevorzugte zu priorisieren
         andere.sort((a, b) => empfangsZaehler[a] - empfangsZaehler[b]);
-    
+
         // Entferne Teilnehmer, die kürzlich Empfänger waren, falls möglich
         let bevorzugteEmpfaenger = andere.filter(empf => !empfaengerHistory.includes(empf));
         if (bevorzugteEmpfaenger.length > 0) {
             andere = bevorzugteEmpfaenger;
         }
-    
+
         // Gruppengröße basierend auf Wahrscheinlichkeiten
         let zufallsGroesse;
         let zufallsWert = Math.random();
-    
+
         if (zufallsWert < 0.8) {
             zufallsGroesse = Math.floor(Math.random() * 2) + 2; // 2 oder 3 Teilnehmer
         } else if (zufallsWert < 0.9) {
@@ -145,35 +150,35 @@ export class FunkUebung implements Uebung {
             let maxAchtzigFuenfPercent = Math.ceil(andere.length * 0.85);
             zufallsGroesse = Math.floor(Math.random() * (maxAchtzigFuenfPercent - andere.length + 1)) + andere.length;
         }
-    
+
         zufallsGroesse = Math.min(zufallsGroesse, andere.length);
-    
+
         return andere.slice(0, zufallsGroesse);
     }
-    
+
     getBalancedOther(
-      teilnehmerListe: string[],
-      sender: string,
-      empfangsZaehler: Record<string, number>,
-      letzteEmpfaenger: Set<string>,
-      empfaengerHistory: string[]
+        teilnehmerListe: string[],
+        sender: string,
+        empfangsZaehler: Record<string, number>,
+        letzteEmpfaenger: Set<string>,
+        empfaengerHistory: string[]
     ): string {
         let andere = teilnehmerListe.filter(t => t !== sender && !letzteEmpfaenger.has(t));
-    
+
         // Falls keine Empfänger übrig bleiben, alle Teilnehmer außer dem Sender verwenden
         if (andere.length === 0) {
             andere = teilnehmerListe.filter(t => t !== sender);
         }
-    
+
         // Sortiere nach Anzahl empfangener Nachrichten, um Teilnehmer mit weniger Nachrichten zu bevorzugen
         andere.sort((a, b) => empfangsZaehler[a] - empfangsZaehler[b]);
-    
+
         // Entferne Teilnehmer, die kürzlich Empfänger waren, falls möglich
         let bevorzugteEmpfaenger = andere.filter(empf => !empfaengerHistory.includes(empf));
         if (bevorzugteEmpfaenger.length > 0) {
             andere = bevorzugteEmpfaenger;
         }
-    
+
         return andere.length > 0 ? andere[0] : teilnehmerListe.find(t => t !== sender) || sender;
     }
 
@@ -300,7 +305,7 @@ export class FunkUebung implements Uebung {
                 .split(/\s+/)
                 .some(wort => wort.length > 4 && wort === wort.toUpperCase());
         }
-        
+
         // Sicherstellen, dass pro Teilnehmer genügend Buchstabieraufgaben vorhanden sind
         this.teilnehmerListe.forEach(teilnehmer => {
             const nachrichten = nachrichtenVerteilung[teilnehmer].slice(1); // Ohne Anmeldung
@@ -329,7 +334,7 @@ export class FunkUebung implements Uebung {
 
         const tempCounters: Record<string, number> = {};
         this.teilnehmerListe.forEach(teilnehmer => tempCounters[teilnehmer] = 2);
-    
+
         gemischt.forEach(entry => {
             const { sender, nachricht } = entry;
             nachrichtenVerteilung[sender].push({
@@ -341,7 +346,7 @@ export class FunkUebung implements Uebung {
 
         return nachrichtenVerteilung;
     }
-    
+
     /**
      * Mischt ein Array zufällig durch.
      */
@@ -353,51 +358,51 @@ export class FunkUebung implements Uebung {
         let maxVersuche = 100;
         let durchmischteListe = [...nachrichtenListe];
         let istGueltig = false;
-    
+
         for (let versuch = 0; versuch < maxVersuche; versuch++) {
             durchmischteListe.sort(() => Math.random() - 0.5);
-    
+
             istGueltig = true;
             for (let i = 1; i < durchmischteListe.length; i++) {
-            let aktuelleEmpfaenger = durchmischteListe[i].nachricht.empfaenger;
-            let vorherigeEmpfaenger = durchmischteListe[i - 1].nachricht.empfaenger;
+                let aktuelleEmpfaenger = durchmischteListe[i].nachricht.empfaenger;
+                let vorherigeEmpfaenger = durchmischteListe[i - 1].nachricht.empfaenger;
 
-            const beideSindAlleOderMehrere = 
-                (aktuelleEmpfaenger.length > 1 || aktuelleEmpfaenger[0] === "Alle") &&
-                (vorherigeEmpfaenger.length > 1 || vorherigeEmpfaenger[0] === "Alle");
+                const beideSindAlleOderMehrere =
+                    (aktuelleEmpfaenger.length > 1 || aktuelleEmpfaenger[0] === "Alle") &&
+                    (vorherigeEmpfaenger.length > 1 || vorherigeEmpfaenger[0] === "Alle");
 
-            if (beideSindAlleOderMehrere) {
-                istGueltig = false;
-                break;
+                if (beideSindAlleOderMehrere) {
+                    istGueltig = false;
+                    break;
+                }
             }
-            }
-    
+
             if (istGueltig) {
                 return durchmischteListe;
             }
         }
-    
+
         console.warn("⚠ Konnte keine perfekte Verteilung finden. Nutze beste Lösung.");
         return durchmischteListe;
     }
-    
+
     getFairSubsetOfOthers(
-      teilnehmerListe: string[],
-      sender: string,
-      empfangsZaehler: Record<string, number>,
-      blacklist: Set<string>
+        teilnehmerListe: string[],
+        sender: string,
+        empfangsZaehler: Record<string, number>,
+        blacklist: Set<string>
     ): string[] {
         let andere = teilnehmerListe.filter(t => t !== sender && !blacklist.has(t));
-        
+
         // Sortiere nach Anzahl empfangener Nachrichten, um weniger Bevorzugte zu priorisieren
         andere.sort((a, b) => empfangsZaehler[a] - empfangsZaehler[b]);
-    
+
         // Gruppengröße zufällig auswählen, aber bevorzugt aus denjenigen mit wenig Nachrichten
         let zufallsGroesse = Math.random() < 0.8 ? 2 + Math.floor(Math.random() * 2) : 4 + Math.floor(Math.random() * (Math.ceil(andere.length / 2) - 4));
-        
+
         return andere.slice(0, zufallsGroesse);
     }
-    
+
     /**
      * Wählt gezielt einen Empfänger, der noch nicht genug Nachrichten erhalten hat.
      */
@@ -408,10 +413,10 @@ export class FunkUebung implements Uebung {
         blacklist: Set<string>
     ): string {
         let andere = teilnehmerListe.filter(t => t !== sender && !blacklist.has(t));
-        
+
         // Sortiere nach Anzahl empfangener Nachrichten, um weniger Bevorzugte zu priorisieren
         andere.sort((a, b) => empfangsZaehler[a] - empfangsZaehler[b]);
-    
+
         return andere.length > 0 ? andere[0] : teilnehmerListe.filter(t => t !== sender)[0]; // Notfall: Falls keine Alternative verfügbar
     }
 
@@ -447,26 +452,26 @@ export class FunkUebung implements Uebung {
         return nachrichten;
     }
 
-     /**
-     * Gibt eine zufällige Liste anderer Teilnehmer zurück (mind. 2).
-     * 
-     * @param {string[]} teilnehmerListe - Gesamte Teilnehmerliste
-     * @param {string} aktuellerTeilnehmer - Der Teilnehmer, der "sich selbst" nicht erhalten darf
-     * @returns {string[]} Zufälliges Teil-Array (mindestens 2 Teilnehmer)
-     */
+    /**
+    * Gibt eine zufällige Liste anderer Teilnehmer zurück (mind. 2).
+    * 
+    * @param {string[]} teilnehmerListe - Gesamte Teilnehmerliste
+    * @param {string} aktuellerTeilnehmer - Der Teilnehmer, der "sich selbst" nicht erhalten darf
+    * @returns {string[]} Zufälliges Teil-Array (mindestens 2 Teilnehmer)
+    */
     getRandomSubsetOfOthers(teilnehmerListe: string[], aktuellerTeilnehmer: string): string[] {
         // 1) Filter: Wer ist "nicht ich"?
         const andere = teilnehmerListe.filter(t => t !== aktuellerTeilnehmer);
         const gesamtTeilnehmer = andere.length;
-    
+
         // 2) Durchmischen für Zufälligkeit
         const gemischt = [...andere].sort(() => Math.random() - 0.5);
-    
+
         // 3) Wahrscheinlichkeitsverteilung für Gruppengröße
         let zufallsGroesse;
-    
+
         let zufallsWert = Math.random();
-    
+
         if (zufallsWert < 0.8) {
             // 80% Wahrscheinlichkeit für eine kleine Gruppe (2 oder 3 Teilnehmer)
             zufallsGroesse = Math.floor(Math.random() * 2) + 2; // 2 oder 3
@@ -484,10 +489,10 @@ export class FunkUebung implements Uebung {
             let maxAchtzigFuenfPercent = Math.ceil(gesamtTeilnehmer * 0.85);
             zufallsGroesse = Math.floor(Math.random() * (maxAchtzigFuenfPercent - gesamtTeilnehmer + 1)) + gesamtTeilnehmer;
         }
-    
+
         // Sicherstellen, dass die Größe innerhalb des gültigen Bereichs liegt
         zufallsGroesse = Math.min(zufallsGroesse, gesamtTeilnehmer);
-    
+
         // 4) Den „vorderen“ Teil (z. B. 2, 3, …) zurückgeben
         return gemischt.slice(0, zufallsGroesse);
     }
@@ -523,9 +528,9 @@ export class FunkUebung implements Uebung {
      *    - `einfach`: Array mit den Nachrichtennummern, die an Einzel-Empfänger gehen
      */
     verteileNachrichten(
-      totalMessages: number,
-      anzahlAlle: number,
-      anzahlMehrere: number
+        totalMessages: number,
+        anzahlAlle: number,
+        anzahlMehrere: number
     ): { alle: number[]; mehrere: number[]; einfach: number[] } {
         // 1) Validierung: Reicht die Gesamtanzahl für die gewünschten Mengen aus?
         if (anzahlAlle + anzahlMehrere > totalMessages) {
@@ -574,16 +579,16 @@ export class FunkUebung implements Uebung {
                         });
                     }
                 });
- 
+
                 // Sortiere die Nachrichten chronologisch
                 nachrichtenFuerEmpfaenger.sort((a, b) => a.id - b.id);
- 
+
                 // Bevorzuge die erste Hälfte der Nachrichten
                 const ersteHaelfte = nachrichtenFuerEmpfaenger.slice(0, Math.ceil(nachrichtenFuerEmpfaenger.length / 2));
- 
+
                 // Mische die Buchstaben
                 buchstabenMitIndex.sort(() => Math.random() - 0.5);
- 
+
                 // Weise die Buchstaben in der ersten Hälfte der Nachrichten zu
                 buchstabenMitIndex.forEach((buchstabeMitIndex, i) => {
                     if (i < ersteHaelfte.length) {
@@ -595,6 +600,150 @@ export class FunkUebung implements Uebung {
                 });
             }
         });
+    }
+
+    /**
+     * Berechnet für jeden Teilnehmer die aufsummierte taktische Stärke aus den empfangenen Nachrichten,
+     * im Format "<Führer>/<Unterführer>/<Helfer>/<Gesamt>".
+     * Unterstützt verschiedene Schreibweisen: 1/2/3/6, 1/2/3//6, 1/2/3.
+     * Berücksichtigt auch Nachrichten an mehrere Empfänger und an "Alle".
+     */
+    berechneLoesungsStaerken() {
+        // Initialisiere Zähler für jeden Teilnehmer
+        const summen: Record<string, { fuehrer: number; unterfuehrer: number; helfer: number; gesamt: number }> = {};
+        this.teilnehmerListe.forEach(t => {
+            summen[t] = { fuehrer: 0, unterfuehrer: 0, helfer: 0, gesamt: 0 };
+        });
+
+        // Regex für verschiedene Schreibweisen (erlaubt beliebig viele Leerzeichen und Slashes)
+        const staerkeRegex = /(\d+)\s*\/+\s*(\d+)\s*\/+\s*(\d+)(?:\s*\/+\s*(\d+))?/;
+
+        // Iteriere über alle Nachrichten aller Absender
+        Object.entries(this.nachrichten).forEach(([sender, nachrichtenListe]) => {
+            nachrichtenListe.forEach(nachricht => {
+                // Empfängerlogik:
+                // 1. Falls "Alle" enthalten: Für jeden Teilnehmer außer Sender
+                // 2. Sonst: Für alle explizit genannten Empfänger, außer Sender
+                let empfaengerListe: string[] = [];
+                if (nachricht.empfaenger.includes("Alle")) {
+                    empfaengerListe = this.teilnehmerListe.filter(t => t !== sender);
+                } else {
+                    empfaengerListe = nachricht.empfaenger.filter(e => e !== sender && this.teilnehmerListe.includes(e));
+                }
+                empfaengerListe.forEach(empfaenger => {
+                    // Stärke per Regex extrahieren
+                    const match = nachricht.nachricht.match(staerkeRegex);
+                    if (match) {
+                        const fuehrer = parseInt(match[1], 10);
+                        const unterfuehrer = parseInt(match[2], 10);
+                        const helfer = parseInt(match[3], 10);
+                        let gesamt: number;
+                        if (typeof match[4] !== "undefined" && match[4] !== undefined) {
+                            gesamt = parseInt(match[4], 10);
+                        } else {
+                            gesamt = fuehrer + unterfuehrer + helfer;
+                        }
+                        summen[empfaenger].fuehrer += fuehrer;
+                        summen[empfaenger].unterfuehrer += unterfuehrer;
+                        summen[empfaenger].helfer += helfer;
+                        summen[empfaenger].gesamt += gesamt;
+                    }
+                });
+            });
+        });
+
+        // Fülle this.loesungsStaerken
+        this.loesungsStaerken = {};
+        Object.entries(summen).forEach(([teilnehmer, werte]) => {
+            this.loesungsStaerken[teilnehmer] =
+                `${werte.fuehrer}/${werte.unterfuehrer}/${werte.helfer}/${werte.gesamt}`;
+        });
+
+        // --- Erweiterung: Korrektur von "0/0/0/0"-Stärken ---
+        // Für alle Teilnehmer, deren Stärke "0/0/0/0" ist:
+        for (const teilnehmer of this.teilnehmerListe) {
+            if (this.loesungsStaerken[teilnehmer] === "0/0/0/0") {
+                // 1. Alle Nachrichten finden, die dieser Teilnehmer empfangen hat
+                const empfangeneNachrichten: { absender: string; nachricht: Nachricht }[] = [];
+                Object.entries(this.nachrichten).forEach(([absender, nachrichtenListe]) => {
+                    nachrichtenListe.forEach(nachricht => {
+                        if (nachricht.empfaenger.includes(teilnehmer)) {
+                            empfangeneNachrichten.push({ absender, nachricht });
+                        }
+                    });
+                });
+                // 2. Dynamische Auswahl basierend auf Übungsgröße
+                const totalNachrichten = empfangeneNachrichten.length;
+
+                // Nur Nachrichten mit genau einem Empfänger berücksichtigen
+                const einzelnEmpfangene = empfangeneNachrichten.filter(e => e.nachricht.empfaenger.length === 1);
+
+                // Bereits vorhandene Stärkeneinträge zählen
+                const vorhandeneStaerken = einzelnEmpfangene.filter(e =>
+                    /(\d+)\s*\/+\s*(\d+)\s*\/+\s*(\d+)(?:\s*\/+\s*(\d+))?/.test(e.nachricht.nachricht)
+                ).length;
+
+                let anzahlStaerken = 0;
+                if (totalNachrichten >= 10) {
+                    const zielMindestanzahl = Math.max(2, Math.ceil(einzelnEmpfangene.length * 0.2));
+                    anzahlStaerken = Math.max(0, zielMindestanzahl - vorhandeneStaerken);
+                } else if (totalNachrichten > 0) {
+                    const zielMindestanzahl = 1;
+                    anzahlStaerken = Math.max(0, zielMindestanzahl - vorhandeneStaerken);
+                }
+
+                let auszuwahlende: { absender: string; nachricht: Nachricht }[] = [];
+                if (einzelnEmpfangene.length > 0 && anzahlStaerken > 0) {
+                    // Nur Nachrichten, die noch keinen Stärkeneintrag haben
+                    const ohneStaerke = einzelnEmpfangene.filter(e =>
+                        !/(\d+)\s*\/+\s*(\d+)\s*\/+\s*(\d+)(?:\s*\/+\s*(\d+))?/.test(e.nachricht.nachricht)
+                    );
+                    const gemischt = [...ohneStaerke].sort(() => Math.random() - 0.5);
+                    auszuwahlende = gemischt.slice(0, anzahlStaerken);
+                }
+                // 3. Für jede gewählte Nachricht: Stärke generieren und anhängen (nur wenn Nachricht Empfänger hat)
+                for (const eintrag of auszuwahlende) {
+                    if (eintrag.nachricht.empfaenger && eintrag.nachricht.empfaenger.length > 0) {
+                        const fuehrer = Math.floor(Math.random() * 4);
+                        const unterfuehrer = Math.floor(Math.random() * 9);
+                        const helfer = Math.floor(Math.random() * 31);
+                        const gesamt = fuehrer + unterfuehrer + helfer;
+                        const staerkeText = `Aktuelle Stärke: ${fuehrer}/${unterfuehrer}/${helfer}/${gesamt}`;
+                        eintrag.nachricht.nachricht += " " + staerkeText;
+                        // Erweiterung: Stärke auch in der Empfänger-Nachrichtenliste eintragen
+                        const empfaengerNachrichten = this.nachrichten[teilnehmer];
+                        if (empfaengerNachrichten) {
+                            const zielNachricht = empfaengerNachrichten.find(n => n.id === eintrag.nachricht.id);
+                            if (zielNachricht) {
+                                zielNachricht.nachricht += " " + staerkeText;
+                            }
+                        }
+                        // --- NEU: Stärke auch in der ursprünglichen nachrichtenListe persistieren ---
+                        const senderListe = this.nachrichten[eintrag.absender];
+                        if (senderListe) {
+                            const senderNachricht = senderListe.find(n => n.id === eintrag.nachricht.id);
+                            if (senderNachricht) {
+                                senderNachricht.nachricht = eintrag.nachricht.nachricht;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        // Nach Änderung: Stärke erneut berechnen für alle Teilnehmer mit "0/0/0/0"
+        // (Rekursiv, aber maximal einmal, da wir jetzt Stärken hinzugefügt haben)
+        let staerkenKorrigiert = false;
+        for (const teilnehmer of this.teilnehmerListe) {
+            if (this.loesungsStaerken[teilnehmer] === "0/0/0/0") {
+                staerkenKorrigiert = true;
+                break;
+            }
+        }
+        if (staerkenKorrigiert) {
+            // Rekursiv, aber nur einmal, da jetzt Stärken hinzugefügt wurden
+            // (Endlosrekursion ist ausgeschlossen, da wir garantiert Stärken hinzufügen)
+            this.berechneLoesungsStaerken();
+        }
     }
 
 
