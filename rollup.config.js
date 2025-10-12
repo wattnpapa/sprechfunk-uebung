@@ -13,22 +13,22 @@ export default {
     format: 'es',
     sourcemap: true,
   },
-  // Keine externals mehr, alles wird ins Bundle gepackt
+  treeshake: false,
   plugins: [
     resolve({
-      browser: true,      // prefer “browser” field in package.json
-      preferBuiltins: false, // don’t auto-import Node core modules like “crypto”
+      browser: true,
+      preferBuiltins: false,
       extensions: ['.js', '.ts'],
-      dedupe: ['jspdf'] // Verhindere doppelte jsPDF-Instanzen
+      dedupe: ['jspdf', 'jquery']
     }),
     commonjs({
-      // Verhindere, dass jspdf/jspdf-autotable in CommonJS gewrappt werden!
-      //exclude: ['node_modules/jspdf/**', 'node_modules/jspdf-autotable/**']
+      include: ['node_modules/**'],
+      transformMixedEsModules: true
     }),
     typescript({ tsconfig: './tsconfig.json' }),
     postcss({
       extensions: ['.css'],
-      extract: true,      // legt eine separate CSS-Datei an (z.B. dist/app.css)
+      extract: true,
       minimize: true,
       plugins: [autoprefixer()],
     }),

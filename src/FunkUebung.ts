@@ -616,7 +616,7 @@ export class FunkUebung implements Uebung {
         });
 
         // Regex für verschiedene Schreibweisen (erlaubt beliebig viele Leerzeichen und Slashes)
-        const staerkeRegex = /(\d+)\s*\/+\s*(\d+)\s*\/+\s*(\d+)(?:\s*\/+\s*(\d+))?/;
+        const staerkeRegex = /(\d+)\s*\/+\s*(\d+)\s*\/+\s*(\d+)(?:\s*\/+\s*(\d+))?/g;
 
         // Iteriere über alle Nachrichten aller Absender
         Object.entries(this.nachrichten).forEach(([sender, nachrichtenListe]) => {
@@ -630,25 +630,29 @@ export class FunkUebung implements Uebung {
                 } else {
                     empfaengerListe = nachricht.empfaenger.filter(e => e !== sender && this.teilnehmerListe.includes(e));
                 }
-                empfaengerListe.forEach(empfaenger => {
-                    // Stärke per Regex extrahieren
-                    const match = nachricht.nachricht.match(staerkeRegex);
-                    if (match) {
-                        const fuehrer = parseInt(match[1], 10);
-                        const unterfuehrer = parseInt(match[2], 10);
-                        const helfer = parseInt(match[3], 10);
-                        let gesamt: number;
-                        if (typeof match[4] !== "undefined" && match[4] !== undefined) {
-                            gesamt = parseInt(match[4], 10);
-                        } else {
-                            gesamt = fuehrer + unterfuehrer + helfer;
-                        }
-                        summen[empfaenger].fuehrer += fuehrer;
-                        summen[empfaenger].unterfuehrer += unterfuehrer;
-                        summen[empfaenger].helfer += helfer;
-                        summen[empfaenger].gesamt += gesamt;
-                    }
-                });
+                // --- Erweiterung: mehrere Stärkeneinträge pro Nachricht erkennen und aufsummieren ---
+                // Alle Stärkeneinträge in einer Nachricht erkennen (mehrere erlaubt)
+                const staerkeMatches = Array.from(nachricht.nachricht.matchAll(staerkeRegex));
+                if (staerkeMatches.length > 0) {
+                    empfaengerListe.forEach(empfaenger => {
+                        staerkeMatches.forEach(match => {
+                            const fuehrer = parseInt(match[1], 10);
+                            const unterfuehrer = parseInt(match[2], 10);
+                            const helfer = parseInt(match[3], 10);
+                            let gesamt: number;
+                            if (typeof match[4] !== "undefined" && match[4] !== undefined) {
+                                gesamt = parseInt(match[4], 10);
+                            } else {
+                                gesamt = fuehrer + unterfuehrer + helfer;
+                            }
+                            summen[empfaenger].fuehrer += fuehrer;
+                            summen[empfaenger].unterfuehrer += unterfuehrer;
+                            summen[empfaenger].helfer += helfer;
+                            summen[empfaenger].gesamt += gesamt;
+                        });
+                    });
+                }
+                // --- Alte Logik entfernt: Einzelner match wird nicht mehr separat verarbeitet. ---
             });
         });
 

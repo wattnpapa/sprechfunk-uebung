@@ -2,7 +2,7 @@
 <html lang="de">
 
 <head>
-  <!-- Import Map entfernt, alle Abhängigkeiten werden jetzt ins Bundle gepackt. -->
+    <!-- Import Map entfernt, alle Abhängigkeiten werden jetzt ins Bundle gepackt. -->
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Sprechfunk Übungsgenerator</title>
@@ -220,15 +220,16 @@
                             <!-- Anzahl Funksprüche pro Teilnehmer -->
                             <div class="col-md-6 mb-3">
                                 <label class="form-label">Funksprüche pro Teilnehmer:</label>
-                                <input type="number" class="form-control" id="spruecheProTeilnehmer" onchange="app.calcMsgCount()" min="1" value="50">
+                                <input type="number" class="form-control" id="spruecheProTeilnehmer"
+                                    onchange="app.calcMsgCount()" min="1" value="50">
                             </div>
 
                             <!-- Nachrichten an alle -->
                             <div class="col-md-6 mb-6">
                                 <label class="form-label">% an Alle:</label>
                                 <div class="input-group">
-                                    <input type="number" class="form-control" id="prozentAnAlle" onchange="app.calcMsgCount()" min="0" max="100"
-                                        value="10">
+                                    <input type="number" class="form-control" id="prozentAnAlle"
+                                        onchange="app.calcMsgCount()" min="0" max="100" value="10">
                                     <span class="input-group-text">%</span>
                                 </div>
                                 <small class="text-muted">Ergibt <span id="calcAnAlle">5</span> Nachrichten</small>
@@ -238,8 +239,8 @@
                             <div class="col-md-6 mb-6">
                                 <label class="form-label">% an Mehrere:</label>
                                 <div class="input-group">
-                                    <input type="number" class="form-control" id="prozentAnMehrere" onchange="app.calcMsgCount()" min="0" max="100"
-                                        value="5">
+                                    <input type="number" class="form-control" id="prozentAnMehrere"
+                                        onchange="app.calcMsgCount()" min="0" max="100" value="5">
                                     <span class="input-group-text">%</span>
                                 </div>
                                 <small class="text-muted">Ergibt <span id="calcAnMehrere">2</span> Nachrichten</small>
@@ -249,8 +250,8 @@
                             <div class="col-md-6 mb-6">
                                 <label class="form-label">% Buchstabier-Aufgaben:</label>
                                 <div class="input-group">
-                                    <input type="number" class="form-control" id="prozentAnBuchstabieren" onchange="app.calcMsgCount()" min="0"
-                                        max="100" value="0">
+                                    <input type="number" class="form-control" id="prozentAnBuchstabieren"
+                                        onchange="app.calcMsgCount()" min="0" max="100" value="0">
                                     <span class="input-group-text">%</span>
                                 </div>
                                 <small class="text-muted">Ergibt <span id="calcAnBuchstabieren">0</span>
@@ -259,10 +260,23 @@
                             </div>
                         </div>
 
+                        <div id="vorlagenUploadToggle" class="mb-3">
+                            <label class="form-label fw-bold">Funksprüche auswählen:</label>
+                            <div>
+                                <input type="radio" id="optionVorlagen" name="funkspruchQuelle" value="vorlagen"
+                                    checked>
+                                <label for="optionVorlagen">Vorlagen verwenden</label>
+                            </div>
+                            <div>
+                                <input type="radio" id="optionUpload" name="funkspruchQuelle" value="upload">
+                                <label for="optionUpload">Eigene Datei hochladen</label>
+                            </div>
+                        </div>
+
                         <div class="mb-3">
                             <label for="funkspruchVorlage" class="form-label">Funkspruch-Vorlage auswählen:</label>
-                            <select class="form-control" id="funkspruchVorlage" onchange="app.toggleFileUpload()">
-                            </select>
+                            <select class="form-select" id="funkspruchVorlage" multiple="multiple"></select>
+                            <small class="text-muted">Wähle eine oder mehrere Vorlagen (mit Suchfunktion)</small>
                         </div>
 
                         <!-- Container für den Datei-Upload -->
@@ -478,68 +492,68 @@
             </div>
 
         </div>
-    <div id="adminArea" style="display: none;">
-        <div class="card mt-4" id="adminUebungsliste">
-            <div class="card-header">
-                <h5 class="d-flex justify-content-between align-items-center">
-                    <span><i class="fas fa-database"></i> Gespeicherte Übungen</span>
-                    <button class="btn btn-sm btn-outline-secondary" data-bs-toggle="collapse"
-                        data-bs-target="#collapseAdminUebungen">
-                        <i class="fas fa-chevron-down"></i>
-                    </button>
-                </h5>
-            </div>
-            <div id="collapseAdminUebungen" class="collapse show">
-                <div class="card-body">
-                    <div class="table-responsive">
-                        <table class="table table-striped mt-3">
-                            <thead>
-                                <tr>
-                                    <th>Erstellt</th>
-                                    <th>Name der Übung</th>
-                                    <th>Übungsdatum</th>
-                                    <th>Rufgruppe</th>
-                                    <th>Leitung</th>
-                                    <th>Anzahl Teilnehmer</th>
-                                    <th>ID</th>
-                                </tr>
-                            </thead>
-                            <tbody id="adminUebungslisteBody">
-                                <!-- Zeilen werden per JS hinzugefügt -->
-                            </tbody>
-                        </table>
-                        <div class="d-flex justify-content-between align-items-center px-3 py-2">
-                            <div id="adminUebungslisteInfo" class="small text-muted"></div>
-                            <div>
-                                <button class="btn btn-sm btn-outline-secondary me-2"
-                                    onclick="admin.ladeAlleUebungen('prev')">← Vorherige</button>
-                                <button class="btn btn-sm btn-outline-secondary"
-                                    onclick="admin.ladeAlleUebungen('next')">Nächste →</button>
+        <div id="adminArea" style="display: none;">
+            <div class="card mt-4" id="adminUebungsliste">
+                <div class="card-header">
+                    <h5 class="d-flex justify-content-between align-items-center">
+                        <span><i class="fas fa-database"></i> Gespeicherte Übungen</span>
+                        <button class="btn btn-sm btn-outline-secondary" data-bs-toggle="collapse"
+                            data-bs-target="#collapseAdminUebungen">
+                            <i class="fas fa-chevron-down"></i>
+                        </button>
+                    </h5>
+                </div>
+                <div id="collapseAdminUebungen" class="collapse show">
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table class="table table-striped mt-3">
+                                <thead>
+                                    <tr>
+                                        <th>Erstellt</th>
+                                        <th>Name der Übung</th>
+                                        <th>Übungsdatum</th>
+                                        <th>Rufgruppe</th>
+                                        <th>Leitung</th>
+                                        <th>Anzahl Teilnehmer</th>
+                                        <th>ID</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="adminUebungslisteBody">
+                                    <!-- Zeilen werden per JS hinzugefügt -->
+                                </tbody>
+                            </table>
+                            <div class="d-flex justify-content-between align-items-center px-3 py-2">
+                                <div id="adminUebungslisteInfo" class="small text-muted"></div>
+                                <div>
+                                    <button class="btn btn-sm btn-outline-secondary me-2"
+                                        onclick="admin.ladeAlleUebungen('prev')">← Vorherige</button>
+                                    <button class="btn btn-sm btn-outline-secondary"
+                                        onclick="admin.ladeAlleUebungen('next')">Nächste →</button>
+                                </div>
                             </div>
                         </div>
                     </div>
                 </div>
             </div>
-        </div>
 
-        <div class="card mt-4" id="adminDashboardStats">
-            <div class="card-header">
-                <h5 class="d-flex justify-content-between align-items-center">
-                    <span><i class="fas fa-chart-line"></i> Statistik: Übungen pro Zeit</span>
-                    <button class="btn btn-sm btn-outline-secondary" data-bs-toggle="collapse"
-                        data-bs-target="#collapseAdminStats">
-                        <i class="fas fa-chevron-down"></i>
-                    </button>
-                </h5>
-            </div>
-            <div id="collapseAdminStats" class="collapse show">
-                <div class="card-body">
-                    <canvas id="chartUebungenProTag"></canvas>
-                    <small class="text-muted">Anzahl gespeicherter Übungen nach Tag, Woche oder Monat</small>
+            <div class="card mt-4" id="adminDashboardStats">
+                <div class="card-header">
+                    <h5 class="d-flex justify-content-between align-items-center">
+                        <span><i class="fas fa-chart-line"></i> Statistik: Übungen pro Zeit</span>
+                        <button class="btn btn-sm btn-outline-secondary" data-bs-toggle="collapse"
+                            data-bs-target="#collapseAdminStats">
+                            <i class="fas fa-chevron-down"></i>
+                        </button>
+                    </h5>
+                </div>
+                <div id="collapseAdminStats" class="collapse show">
+                    <div class="card-body">
+                        <canvas id="chartUebungenProTag"></canvas>
+                        <small class="text-muted">Anzahl gespeicherter Übungen nach Tag, Woche oder Monat</small>
+                    </div>
                 </div>
             </div>
         </div>
-    </div>
 
 
         <footer class="main-footer">

@@ -25,6 +25,7 @@ import {
 import { Converter } from 'showdown';
 import { FunkUebung } from './FunkUebung.js';
 import type { Nachricht } from "./types/Nachricht.js";
+import $ from "./select2-setup";
 
 // @ts-ignore: no types for chart.js
 import { Chart, registerables } from 'chart.js';
@@ -37,6 +38,8 @@ declare global {
         app: AppController;
         pdfGenerator: typeof pdfGenerator;
         admin: typeof admin;
+        $: typeof import("jquery");
+        jQuery: typeof import("jquery");
     }
 }
 
@@ -129,6 +132,7 @@ export class AppController {
                 // Vorlagen für Funksprüche
                 this.templatesFunksprueche = {
                     vorlageTHW: { text: "Funksprüche THW", filename: "assets/funksprueche/thw_funksprueche.txt" },
+                    thwleer: { text: "Funksprüche THW Leer", filename: "assets/funksprueche/nachrichten_thw_leer.txt" },
                     vorlageFeuerwehr: { text: "Funksprüche Feuerwehr", filename: "assets/funksprueche/feuerwehr_funksprueche.txt" },
                     vorlageResttungsdienst: { text: "Funksprüche Feuerwehr", filename: "assets/funksprueche/rettungsdienst_funksprueche.txt" },
                     vorlageLustig: { text: "Lustige Funksprüche", filename: "assets/funksprueche/funksprueche_lustig_kreativ.txt" }
@@ -146,6 +150,8 @@ export class AppController {
 
                 // Rufe beim Laden der Seite die Funktion auf, um die Select-Box zu füllen
                 this.populateTemplateSelectBox();
+
+                this.initVorlagenOderUploadToggle();
 
                 this.renderInitData();
 
@@ -202,6 +208,17 @@ export class AppController {
                         'event_label': 'Übung generieren Button geklickt'
                     });
                 });
+        });
+
+        $(document).ready(() => {
+            console.log("jQuery version:", $.fn.jquery);
+            console.log("Select2 vorhanden:", typeof ($.fn as any).select2);
+            $('#funkspruchVorlage').select2({
+                placeholder: "Vorlagen auswählen...",
+                theme: "bootstrap-5",
+                width: "100%",
+                closeOnSelect: false
+            });
         });
     }
 
@@ -382,9 +399,7 @@ export class AppController {
 
     startUebung() {
         // Cast the select and file input elements before accessing their properties
-        const selectedTemplate = (document.getElementById("funkspruchVorlage") as HTMLSelectElement)!.value;
-        const fileInput = document.getElementById("funksprueche") as HTMLInputElement;
-        const file = fileInput.files?.[0] ?? "";
+        const selectedTemplates: string[] = ($('#funkspruchVorlage').val() as string[]) || [];
 
         // Berechnungen und weitere Funktionen wie vorher...
         const spruecheProTeilnehmerInput = document.getElementById("spruecheProTeilnehmer")! as HTMLInputElement;
@@ -407,87 +422,50 @@ export class AppController {
 
         this.readLoesungswoerter();
 
-        // Wenn eine Vorlage aus der select-Box ausgewählt wurde (nicht "Manuelle Datei hochladen")
-        if (selectedTemplate === "mix_all") {
-            const allTemplates = Object.values(this.templatesFunksprueche);
-            const fetchPromises = allTemplates.map(tpl =>
-                fetch(tpl.filename).then(res => res.text())
+        // Neue Logik für Auswahl Vorlagen vs. Upload
+        // Überprüfen, ob der Nutzer "Vorlagen" oder "Eigene Datei" gewählt hat
+        const useVorlagen = (document.getElementById("optionVorlagen") as HTMLInputElement).checked;
+        const useUpload = (document.getElementById("optionUpload") as HTMLInputElement).checked;
+
+        if (useVorlagen) {
+            if (selectedTemplates.length === 0) {
+                alert("Bitte mindestens eine Vorlage auswählen!");
+                return;
+            }
+
+            // Standard-Funksprüche aus Vorlagen laden
+            const fetchPromises = selectedTemplates.map(tpl =>
+                fetch(this.templatesFunksprueche[tpl].filename).then(res => res.text())
             );
 
             Promise.all(fetchPromises)
                 .then(results => {
-                    // Mische alle Zeilen aus allen Dateien
                     this.funkUebung.funksprueche = results
                         .flatMap(text => text.split("\n").filter(s => s.trim() !== ""))
-                        .sort(() => Math.random() - 0.5)
                         .sort(() => Math.random() - 0.5);
-
                     this.generateAllPages();
                 })
-                .catch(error => console.error("Fehler beim Laden mehrerer Vorlagen:", error));
-
-        }
-        else if (selectedTemplate !== "upload") {
-            // Holen Sie sich die Vorlage basierend auf dem Auswahlwert
-            const template = this.templatesFunksprueche[selectedTemplate];
-
-            if (template) {
-                // Hier können wir die Vorlage weiter verwenden, z.B. um Funksprüche zu generieren
-                // Falls notwendig, laden Sie die Datei, wenn sie benötigt wird
-
-                fetch(template.filename)
-                    .then(response => response.text())
-                    .then(data => {
-                        // Wenn die Datei erfolgreich geladen wurde, rufen wir `generateAllPages` auf
-                        this.funkUebung.funksprueche = data.split("\n").filter(s => s.trim() !== "");
-                        //.sort(() => Math.random() - 0.5);
-
-                        this.generateAllPages();  // Übergebe die geladenen Funksprüche an generateAllPages
-                    })
-                    .catch(error => console.error('Fehler beim Laden der Vorlage:', error));
-            } else {
-                console.error("Vorlage nicht gefunden.");
+                .catch(err => console.error("Fehler beim Laden der Vorlagen:", err));
+        } else if (useUpload) {
+            const fileInput = document.getElementById("funksprueche") as HTMLInputElement;
+            const file = fileInput.files?.[0];
+            if (!file) {
+                alert("Bitte eine Datei auswählen!");
+                return;
             }
-        } else if (selectedTemplate == "upload" && file) {
             const reader = new FileReader();
             reader.onload = (event) => {
-                // Cast event.target to FileReader and assert non-null
-                const readerEvt = event.target as FileReader;
-                const result = readerEvt.result;
-                if (!(result instanceof ArrayBuffer)) {
-                    console.error("❌ reader.result ist nicht vom Typ ArrayBuffer:", result);
-                    return;
-                }
-                const buffer = result; // sicheres ArrayBuffer
-                let text;
-
-                try {
-                    // Primärversuch: UTF-8 dekodieren
-                    text = new TextDecoder("utf-8", { fatal: false }).decode(new Uint8Array(buffer));
-
-                    // Wenn Ersatzzeichen vorhanden sind, versuche stattdessen Windows-1252
-                    if (text.includes("\uFFFD")) {
-                        console.warn("⚠️ UTF-8 enthält ungültige Zeichen – versuche Windows-1252 als Fallback");
-                        text = new TextDecoder("windows-1252", { fatal: false }).decode(new Uint8Array(buffer));
-                    }
-                } catch (err) {
-                    console.error("❌ Fehler bei der Kodierungserkennung:", err);
-                    alert("Die Datei konnte nicht als Text gelesen werden.");
-                    return;
-                }
-
-                this.funkUebung.funksprueche = text
-                    .split("\n")
-                    .filter(s => s.trim() !== "");
-
+                const result = (event.target as FileReader).result as string;
+                console.log("Benutzerdefinierte Funksprüche geladen:", result);
+                this.funkUebung.funksprueche = result.split("\n").filter(s => s.trim() !== "");
                 this.generateAllPages();
             };
-            reader.readAsArrayBuffer(file);
+            reader.readAsText(file);
         } else {
-            // Fehlerbehandlung, wenn keine Datei hochgeladen wurde und keine Vorlage ausgewählt wurde
-            console.error("Bitte wählen Sie eine Vorlage oder laden Sie eine benutzerdefinierte Funkspruchliste hoch.");
-            alert("Bitte wählen Sie eine Vorlage oder laden Sie eine benutzerdefinierte Funkspruchliste hoch.");
+            alert("Bitte eine Option auswählen: Vorlagen oder eigene Datei!");
         }
+
+
     }
 
 
@@ -964,24 +942,22 @@ export class AppController {
     populateTemplateSelectBox() {
         const selectBox = document.getElementById("funkspruchVorlage")! as HTMLSelectElement;
 
-        const mixedOption = document.createElement("option");
-        mixedOption.value = "mix_all";
-        mixedOption.textContent = "Alle Vorlagen mischen";
-        selectBox.appendChild(mixedOption);
+        // Leere die Selectbox zunächst
+        selectBox.innerHTML = "";
 
         // Iteriere durch die Vorlagen und füge sie der Select-Box hinzu
         for (const [key, value] of Object.entries(this.templatesFunksprueche)) {
             const option = document.createElement("option");
             option.value = key;
-            option.textContent = `${value.text}`; // Hier kannst du den anzuzeigenden Text anpassen
+            option.textContent = `${value.text}`;
+            option.selected = true; // Standardmäßig ausgewählt
             selectBox.appendChild(option);
         }
-
-        const option = document.createElement("option");
-        option.value = "upload";
-        option.textContent = `Manuelle Datei hochladen`; // Hier kannst du den anzuzeigenden Text anpassen
-        selectBox.appendChild(option);
     }
+
+
+    
+
 
     // Funktion zur Anzeige des Datei-Upload-Feldes
     toggleFileUpload() {
@@ -1077,6 +1053,31 @@ export class AppController {
             linkElement.textContent = url;
             linkContainer.style.display = "block";
         }
+    }
+
+    /**
+     * Initialisiert den Umschalter zwischen "Vorlagen verwenden" und "Eigene Datei hochladen".
+     * Blendet je nach Auswahl das Select2-Feld oder den Uploadbereich ein/aus.
+     */
+    initVorlagenOderUploadToggle() {
+        const vorlagenOption = document.getElementById("optionVorlagen") as HTMLInputElement;
+        const uploadOption = document.getElementById("optionUpload") as HTMLInputElement;
+        const selectBoxContainer = document.getElementById("funkspruchVorlage")!.parentElement as HTMLElement;
+        const fileUploadContainer = document.getElementById("fileUploadContainer") as HTMLElement;
+        const toggleVisibility = () => {
+            if (vorlagenOption.checked) {
+                selectBoxContainer.style.display = "block";
+                fileUploadContainer.style.display = "none";
+            } else if (uploadOption.checked) {
+                selectBoxContainer.style.display = "none";
+                fileUploadContainer.style.display = "block";
+            }
+        };
+
+        vorlagenOption.addEventListener("change", toggleVisibility);
+        uploadOption.addEventListener("change", toggleVisibility);
+
+        toggleVisibility(); // initiale Anzeige
     }
 
 }
