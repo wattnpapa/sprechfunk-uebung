@@ -356,21 +356,6 @@
                         <button class="btn btn-secondary" onclick="app.changePage(-1)">⬅ Zurück</button>
                         <span id="current-page">Seite 1 / 1</span>
                         <button class="btn btn-secondary" onclick="app.changePage(1)">Weiter ➡</button>
-                        <button class="btn btn-danger" onclick="app.generatePDFs()">
-                            <i class="fas fa-file-pdf"></i> Teilnehmer PDFs generieren
-                        </button>
-                        <button class="btn btn-warning" onclick="app.generateNachrichtenvordruckPDFs()">
-                            <i class="fas fa-file-pdf"></i> Nachrichtenvordruck PDFs generieren
-                        </button>
-                        <button class="btn btn-warning" onclick="app.generateMeldevordruckPDFs()">
-                            <i class="fas fa-file-pdf"></i> Meldevordruck PDFs generieren
-                        </button>
-                        <button class="btn btn-info" onclick="app.generateInstructorPDF()">
-                            <i class="fas fa-user-tie"></i> Übungsleitung PDF erzeugen
-                        </button>
-                        <button class="btn btn-outline-dark" onclick="app.exportUebungAsJSON()" hidden>
-                            <i class="fas fa-code"></i> Export als JSON
-                        </button>
                         <button id="downloadZip" class="btn btn-primary"
                             onclick="pdfGenerator.generateAllPDFsAsZip(window.app.funkUebung)">📦 Alle PDFs als ZIP
                             herunterladen</button>

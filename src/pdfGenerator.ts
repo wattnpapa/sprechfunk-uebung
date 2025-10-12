@@ -9,6 +9,7 @@ import { Meldevordruck } from "./pdf/Meldevordruck.js";
 import { Nachrichtenvordruck } from "./pdf/Nachrichtenvordruck.js";
 import { Teilnehmer } from "./pdf/Teilnehmer.js";
 import { Uebungsleitung } from "./pdf/Uebungsleitung.js";
+import { DateFormatter } from './DateFormatter';
 
 class PDFGenerator {
     constructor() {
