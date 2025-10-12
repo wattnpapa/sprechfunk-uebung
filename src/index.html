@@ -585,6 +585,57 @@
                 </div>
             </div>
         </div>
+
+        <!-- Zusammenfassung der Admin-Kennzahlen -->
+        <div class="card mt-4" id="adminSummary">
+            <div class="card-header">
+                <h5 class="d-flex justify-content-between align-items-center">
+                    <span><i class="fas fa-chart-pie"></i> Übersicht: Kennzahlen</span>
+                    <button class="btn btn-sm btn-outline-secondary" data-bs-toggle="collapse"
+                        data-bs-target="#collapseAdminSummary">
+                        <i class="fas fa-chevron-down"></i>
+                    </button>
+                </h5>
+            </div>
+            <div id="collapseAdminSummary" class="collapse show">
+                <div class="card-body">
+                    <ul class="list-group">
+                        <li class="list-group-item">
+                            <strong>📊 Gesamtzahl Übungen:</strong>
+                            <span id="infoGesamtUebungen" class="float-end">–</span>
+                        </li>
+                        <li class="list-group-item">
+                            <strong>📡 Ø Funksprüche pro Teilnehmer:</strong>
+                            <span id="infoSpruecheProTeilnehmer" class="float-end">–</span>
+                        </li>
+                        <li class="list-group-item">
+                            <strong>📦 Gesamtdatenmenge:</strong>
+                            <span id="infoGroesse" class="float-end">–</span>
+                        </li>
+                        <li class="list-group-item">
+                            <strong>👥 Ø Teilnehmerzahl:</strong>
+                            <span id="infoTeilnehmer" class="float-end">–</span>
+                        </li>
+                        <li class="list-group-item">
+                            <strong>⏱️ Ø Übungsdauer (geschätzt):</strong>
+                            <span id="infoDauer" class="float-end">–</span>
+                        </li>
+                        <li class="list-group-item">
+                            <strong>🔤 Anteil mit Lösungswörtern:</strong>
+                            <span id="infoLoesungswort" class="float-end">–%</span>
+                        </li>
+                        <li class="list-group-item">
+                            <strong>💪 Anteil mit Stärkemeldungen:</strong>
+                            <span id="infoStaerke" class="float-end">–%</span>
+                        </li>
+                        <li class="list-group-item">
+                            <strong>🧩 Anteil mit Buchstabieraufgaben:</strong>
+                            <span id="infoBuchstabieren" class="float-end">–%</span>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
     </div>
 
 

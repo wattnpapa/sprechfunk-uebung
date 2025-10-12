@@ -1,4 +1,4 @@
-import { getDocs, collection, query, orderBy, limit, startAfter, doc, deleteDoc, getFirestore } from 'firebase/firestore';
+import { getDocs, collection, query, orderBy, limit, startAfter, doc, deleteDoc, getFirestore, getCountFromServer, where } from 'firebase/firestore';
 import type { Firestore, QueryDocumentSnapshot } from 'firebase/firestore';
 import { initializeApp } from 'firebase/app';
 import { firebaseConfig } from './firebase-config.js';
@@ -25,6 +25,73 @@ class Admin {
             pageSize: 10,
             currentPage: 0,
             lastVisible: null
+        };
+    }
+
+    async ladeAdminStatistik() {
+        const uebungenCol = collection(this.db, "uebungen");
+
+        // 1️⃣ Gesamtzahl aller Übungen
+        const totalSnap = await getCountFromServer(uebungenCol);
+        const total = totalSnap.data().count;
+
+        // 2️⃣ Übungen mit Lösungswörtern
+        const loesungsSnap = await getCountFromServer(
+            query(uebungenCol, where("loesungswoerter", "!=", null))
+        );
+        const loesungsCount = loesungsSnap.data().count;
+
+        // 3️⃣ Übungen mit Stärkemeldungen
+        const staerkeSnap = await getCountFromServer(
+            query(uebungenCol, where("loesungsStaerken", "!=", null))
+        );
+        const staerkeCount = staerkeSnap.data().count;
+
+        // 4️⃣ Übungen mit Buchstabieraufgaben
+        const buchstabierSnap = await getCountFromServer(
+            query(uebungenCol, where("buchstabierenAn", ">", 0))
+        );
+        const buchstabierCount = buchstabierSnap.data().count;
+
+        // 5️⃣ Durchschnittliche Teilnehmerzahl (erfordert 1x Abruf, weil Firestore keine Aggregation unterstützt)
+        const snapshot = await getDocs(uebungenCol);
+        let totalTeilnehmer = 0;
+        let totalBytes = 0;
+        let totalSprueche = 0;
+
+        snapshot.forEach((doc) => {
+            const data = doc.data();
+            totalTeilnehmer += data.teilnehmerListe?.length || 0;
+            totalBytes += JSON.stringify(data).length;
+            totalSprueche += Object.values(data.nachrichten || {}).flat().length;
+        });
+
+        const avgTeilnehmer = total > 0 ? (totalTeilnehmer / total).toFixed(1) : "0";
+        const totalKB = (totalBytes / 1024).toFixed(1) + " kB";
+
+        // 6️⃣ Durchschnittliche Dauer (Schätzung)
+        const avgDauerSek = total > 0 ? (totalSprueche * 15) / total : 0;
+        const avgMin = Math.floor(avgDauerSek / 60);
+        const avgSek = Math.round(avgDauerSek % 60);
+        const avgDauer = `${avgMin} Min ${avgSek} Sek`;
+
+        // 7️⃣ Prozentwerte
+        const p = (n: number) => (total > 0 ? ((n / total) * 100).toFixed(1) + "%" : "0%");
+
+        // 7️⃣ Durchschnittliche Anzahl an Funksprüchen pro Teilnehmer und Übung
+        const avgSpruecheProTeilnehmer =
+            totalTeilnehmer > 0 ? (totalSprueche / totalTeilnehmer).toFixed(1) : "0";
+
+
+        return {
+            total,
+            totalKB,
+            avgTeilnehmer,
+            avgDauer,
+            avgSpruecheProTeilnehmer,
+            pLoesungswort: p(loesungsCount),
+            pStaerke: p(staerkeCount),
+            pBuchstabieren: p(buchstabierCount),
         };
     }
 
@@ -113,6 +180,17 @@ class Admin {
     }
 
     async renderUebungsStatistik() {
+        const stats = await this.ladeAdminStatistik();
+
+        (document.getElementById("infoGroesse") as HTMLElement).innerText = stats.totalKB;
+        (document.getElementById("infoTeilnehmer") as HTMLElement).innerText = stats.avgTeilnehmer;
+        (document.getElementById("infoDauer") as HTMLElement).innerText = stats.avgDauer;
+        (document.getElementById("infoLoesungswort") as HTMLElement).innerText = stats.pLoesungswort;
+        (document.getElementById("infoStaerke") as HTMLElement).innerText = stats.pStaerke;
+        (document.getElementById("infoBuchstabieren") as HTMLElement).innerText = stats.pBuchstabieren;
+        (document.getElementById("infoGesamtUebungen") as HTMLElement).innerText = stats.total.toString();
+        (document.getElementById("infoSpruecheProTeilnehmer") as HTMLElement).innerText = stats.avgSpruecheProTeilnehmer;
+
         const data = await this.ladeUebungsStatistik();
         const labels = ["Jan", "Feb", "Mär", "Apr", "Mai", "Jun", "Jul", "Aug", "Sep", "Okt", "Nov", "Dez"];
 
