@@ -7,6 +7,7 @@ import CryptoJS from 'crypto-js';
 export class FunkUebung implements Uebung {
 
     id: string;
+    autoStaerkeErgaenzen: boolean = true;
     name: string;
     datum: Date;
     buildVersion: string;
@@ -609,6 +610,11 @@ export class FunkUebung implements Uebung {
      * Berücksichtigt auch Nachrichten an mehrere Empfänger und an "Alle".
      */
     berechneLoesungsStaerken() {
+        // Falls automatische Ergänzung deaktiviert ist, nur Summen berechnen, keine Ergänzung durchführen
+        if (!this.autoStaerkeErgaenzen) {
+            console.log("Automatische Ergänzung von Stärkemeldungen ist deaktiviert.");
+        }
+
         // Initialisiere Zähler für jeden Teilnehmer
         const summen: Record<string, { fuehrer: number; unterfuehrer: number; helfer: number; gesamt: number }> = {};
         this.teilnehmerListe.forEach(t => {
@@ -652,7 +658,6 @@ export class FunkUebung implements Uebung {
                         });
                     });
                 }
-                // --- Alte Logik entfernt: Einzelner match wird nicht mehr separat verarbeitet. ---
             });
         });
 
@@ -664,89 +669,92 @@ export class FunkUebung implements Uebung {
         });
 
         // --- Erweiterung: Korrektur von "0/0/0/0"-Stärken ---
-        // Für alle Teilnehmer, deren Stärke "0/0/0/0" ist:
-        for (const teilnehmer of this.teilnehmerListe) {
-            if (this.loesungsStaerken[teilnehmer] === "0/0/0/0") {
-                // 1. Alle Nachrichten finden, die dieser Teilnehmer empfangen hat
-                const empfangeneNachrichten: { absender: string; nachricht: Nachricht }[] = [];
-                Object.entries(this.nachrichten).forEach(([absender, nachrichtenListe]) => {
-                    nachrichtenListe.forEach(nachricht => {
-                        if (nachricht.empfaenger.includes(teilnehmer)) {
-                            empfangeneNachrichten.push({ absender, nachricht });
-                        }
-                    });
-                });
-                // 2. Dynamische Auswahl basierend auf Übungsgröße
-                const totalNachrichten = empfangeneNachrichten.length;
-
-                // Nur Nachrichten mit genau einem Empfänger berücksichtigen
-                const einzelnEmpfangene = empfangeneNachrichten.filter(e => e.nachricht.empfaenger.length === 1);
-
-                // Bereits vorhandene Stärkeneinträge zählen
-                const vorhandeneStaerken = einzelnEmpfangene.filter(e =>
-                    /(\d+)\s*\/+\s*(\d+)\s*\/+\s*(\d+)(?:\s*\/+\s*(\d+))?/.test(e.nachricht.nachricht)
-                ).length;
-
-                let anzahlStaerken = 0;
-                if (totalNachrichten >= 10) {
-                    const zielMindestanzahl = Math.max(2, Math.ceil(einzelnEmpfangene.length * 0.2));
-                    anzahlStaerken = Math.max(0, zielMindestanzahl - vorhandeneStaerken);
-                } else if (totalNachrichten > 0) {
-                    const zielMindestanzahl = 1;
-                    anzahlStaerken = Math.max(0, zielMindestanzahl - vorhandeneStaerken);
-                }
-
-                let auszuwahlende: { absender: string; nachricht: Nachricht }[] = [];
-                if (einzelnEmpfangene.length > 0 && anzahlStaerken > 0) {
-                    // Nur Nachrichten, die noch keinen Stärkeneintrag haben
-                    const ohneStaerke = einzelnEmpfangene.filter(e =>
-                        !/(\d+)\s*\/+\s*(\d+)\s*\/+\s*(\d+)(?:\s*\/+\s*(\d+))?/.test(e.nachricht.nachricht)
-                    );
-                    const gemischt = [...ohneStaerke].sort(() => Math.random() - 0.5);
-                    auszuwahlende = gemischt.slice(0, anzahlStaerken);
-                }
-                // 3. Für jede gewählte Nachricht: Stärke generieren und anhängen (nur wenn Nachricht Empfänger hat)
-                for (const eintrag of auszuwahlende) {
-                    if (eintrag.nachricht.empfaenger && eintrag.nachricht.empfaenger.length > 0) {
-                        const fuehrer = Math.floor(Math.random() * 4);
-                        const unterfuehrer = Math.floor(Math.random() * 9);
-                        const helfer = Math.floor(Math.random() * 31);
-                        const gesamt = fuehrer + unterfuehrer + helfer;
-                        const staerkeText = `Aktuelle Stärke: ${fuehrer}/${unterfuehrer}/${helfer}/${gesamt}`;
-                        eintrag.nachricht.nachricht += " " + staerkeText;
-                        // Erweiterung: Stärke auch in der Empfänger-Nachrichtenliste eintragen
-                        const empfaengerNachrichten = this.nachrichten[teilnehmer];
-                        if (empfaengerNachrichten) {
-                            const zielNachricht = empfaengerNachrichten.find(n => n.id === eintrag.nachricht.id);
-                            if (zielNachricht) {
-                                zielNachricht.nachricht += " " + staerkeText;
+        // Ergänzungslogik nur durchführen, wenn aktiviert
+        if (this.autoStaerkeErgaenzen) {
+            // Für alle Teilnehmer, deren Stärke "0/0/0/0" ist:
+            for (const teilnehmer of this.teilnehmerListe) {
+                if (this.loesungsStaerken[teilnehmer] === "0/0/0/0") {
+                    // 1. Alle Nachrichten finden, die dieser Teilnehmer empfangen hat
+                    const empfangeneNachrichten: { absender: string; nachricht: Nachricht }[] = [];
+                    Object.entries(this.nachrichten).forEach(([absender, nachrichtenListe]) => {
+                        nachrichtenListe.forEach(nachricht => {
+                            if (nachricht.empfaenger.includes(teilnehmer)) {
+                                empfangeneNachrichten.push({ absender, nachricht });
                             }
-                        }
-                        // --- NEU: Stärke auch in der ursprünglichen nachrichtenListe persistieren ---
-                        const senderListe = this.nachrichten[eintrag.absender];
-                        if (senderListe) {
-                            const senderNachricht = senderListe.find(n => n.id === eintrag.nachricht.id);
-                            if (senderNachricht) {
-                                senderNachricht.nachricht = eintrag.nachricht.nachricht;
+                        });
+                    });
+                    // 2. Dynamische Auswahl basierend auf Übungsgröße
+                    const totalNachrichten = empfangeneNachrichten.length;
+
+                    // Nur Nachrichten mit genau einem Empfänger berücksichtigen
+                    const einzelnEmpfangene = empfangeneNachrichten.filter(e => e.nachricht.empfaenger.length === 1);
+
+                    // Bereits vorhandene Stärkeneinträge zählen
+                    const vorhandeneStaerken = einzelnEmpfangene.filter(e =>
+                        /(\d+)\s*\/+\s*(\d+)\s*\/+\s*(\d+)(?:\s*\/+\s*(\d+))?/.test(e.nachricht.nachricht)
+                    ).length;
+
+                    let anzahlStaerken = 0;
+                    if (totalNachrichten >= 10) {
+                        const zielMindestanzahl = Math.max(2, Math.ceil(einzelnEmpfangene.length * 0.2));
+                        anzahlStaerken = Math.max(0, zielMindestanzahl - vorhandeneStaerken);
+                    } else if (totalNachrichten > 0) {
+                        const zielMindestanzahl = 1;
+                        anzahlStaerken = Math.max(0, zielMindestanzahl - vorhandeneStaerken);
+                    }
+
+                    let auszuwahlende: { absender: string; nachricht: Nachricht }[] = [];
+                    if (einzelnEmpfangene.length > 0 && anzahlStaerken > 0) {
+                        // Nur Nachrichten, die noch keinen Stärkeneintrag haben
+                        const ohneStaerke = einzelnEmpfangene.filter(e =>
+                            !/(\d+)\s*\/+\s*(\d+)\s*\/+\s*(\d+)(?:\s*\/+\s*(\d+))?/.test(e.nachricht.nachricht)
+                        );
+                        const gemischt = [...ohneStaerke].sort(() => Math.random() - 0.5);
+                        auszuwahlende = gemischt.slice(0, anzahlStaerken);
+                    }
+                    // 3. Für jede gewählte Nachricht: Stärke generieren und anhängen (nur wenn Nachricht Empfänger hat)
+                    for (const eintrag of auszuwahlende) {
+                        if (eintrag.nachricht.empfaenger && eintrag.nachricht.empfaenger.length > 0) {
+                            const fuehrer = Math.floor(Math.random() * 4);
+                            const unterfuehrer = Math.floor(Math.random() * 9);
+                            const helfer = Math.floor(Math.random() * 31);
+                            const gesamt = fuehrer + unterfuehrer + helfer;
+                            const staerkeText = `Aktuelle Stärke: ${fuehrer}/${unterfuehrer}/${helfer}/${gesamt}`;
+                            eintrag.nachricht.nachricht += " " + staerkeText;
+                            // Erweiterung: Stärke auch in der Empfänger-Nachrichtenliste eintragen
+                            const empfaengerNachrichten = this.nachrichten[teilnehmer];
+                            if (empfaengerNachrichten) {
+                                const zielNachricht = empfaengerNachrichten.find(n => n.id === eintrag.nachricht.id);
+                                if (zielNachricht) {
+                                    zielNachricht.nachricht += " " + staerkeText;
+                                }
+                            }
+                            // --- NEU: Stärke auch in der ursprünglichen nachrichtenListe persistieren ---
+                            const senderListe = this.nachrichten[eintrag.absender];
+                            if (senderListe) {
+                                const senderNachricht = senderListe.find(n => n.id === eintrag.nachricht.id);
+                                if (senderNachricht) {
+                                    senderNachricht.nachricht = eintrag.nachricht.nachricht;
+                                }
                             }
                         }
                     }
                 }
             }
-        }
-        // Nach Änderung: Stärke erneut berechnen für alle Teilnehmer mit "0/0/0/0"
-        // (Rekursiv, aber maximal einmal, da wir jetzt Stärken hinzugefügt haben)
-        let staerkenKorrigiert = false;
-        for (const teilnehmer of this.teilnehmerListe) {
-            if (this.loesungsStaerken[teilnehmer] === "0/0/0/0") {
-                staerkenKorrigiert = true;
-                break;
+            // Nach Änderung: Stärke erneut berechnen für alle Teilnehmer mit "0/0/0/0"
+            // (Rekursiv, aber maximal einmal, da wir jetzt Stärken hinzugefügt haben)
+            let staerkenKorrigiert = false;
+            for (const teilnehmer of this.teilnehmerListe) {
+                if (this.loesungsStaerken[teilnehmer] === "0/0/0/0") {
+                    staerkenKorrigiert = true;
+                    break;
+                }
             }
-        }
-        if (staerkenKorrigiert) {
-            // Rekursiv, aber nur einmal, da jetzt Stärken hinzugefügt wurden
-            // (Endlosrekursion ist ausgeschlossen, da wir garantiert Stärken hinzufügen)
-            this.berechneLoesungsStaerken();
+            if (staerkenKorrigiert) {
+                // Rekursiv, aber nur einmal, da jetzt Stärken hinzugefügt wurden
+                // (Endlosrekursion ist ausgeschlossen, da wir garantiert Stärken hinzufügen)
+                this.berechneLoesungsStaerken();
+            }
         }
     }
 

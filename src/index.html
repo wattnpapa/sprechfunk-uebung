@@ -274,9 +274,14 @@
                         </div>
 
                         <div class="mb-3">
-                            <label for="funkspruchVorlage" class="form-label">Funkspruch-Vorlage auswählen:</label>
+                            <label for="funkspruchVorlage" class="form-label">Funkspruch-Vorlagen auswählen:</label>
+                            <small class="text-muted d-block mb-2">Tipp: Du kannst mehrere Vorlagen gleichzeitig auswählen.</small>
                             <select class="form-select" id="funkspruchVorlage" multiple="multiple"></select>
                             <small class="text-muted">Wähle eine oder mehrere Vorlagen (mit Suchfunktion)</small>
+                            <p class="text-muted mt-2">
+                                📬 Wenn du möchtest, dass deine eigenen Funksprüche mit in den Datenpool aufgenommen werden,
+                                sende sie bitte an <a href="mailto:johannes.rudolph@thw-oldenburg.de">johannes.rudolph@thw-oldenburg.de</a>.
+                            </p>
                         </div>
 
                         <!-- Container für den Datei-Upload -->
@@ -308,6 +313,13 @@
                                 <input type="text" id="zentralLoesungswortInput" class="form-control mt-2"
                                     placeholder="Zentrales Lösungswort">
                             </div>
+                        </div>
+
+                        <div class="form-check mt-3">
+                            <input class="form-check-input" type="checkbox" id="autoStaerkeErgaenzen" checked>
+                            <label class="form-check-label" for="autoStaerkeErgaenzen">
+                                Automatische Ergänzung von Stärkemeldungen aktivieren
+                            </label>
                         </div>
 
                         <button id="shuffleButton" class="btn btn-primary" onclick="app.shuffleLoesungswoerter()"
