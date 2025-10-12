@@ -9,6 +9,7 @@ import { DeckblattTeilnehmer } from "./pdf/DeckblattTeilnehmer.js";
 import { FunkUebung } from "./FunkUebung.js";
 import { Meldevordruck } from "./pdf/Meldevordruck.js";
 import { Nachrichtenvordruck } from "./pdf/Nachrichtenvordruck.js";
+import { Teilnehmer } from "./pdf/Teilnehmer.js";
 
 class PDFGenerator {
     constructor() {
@@ -18,7 +19,7 @@ class PDFGenerator {
         }
     }
 
-    generateTeilnehmerPDFs(funkUebung: Uebung): void {
+    generateTeilnehmerPDFs(funkUebung: FunkUebung): void {
         this.generateTeilnehmerPDFsBlob(funkUebung).then(blobMap => {
             blobMap.forEach((blob, teilnehmer) => {
                 const fileName = `${teilnehmer}.pdf`;
@@ -38,8 +39,7 @@ class PDFGenerator {
     /**
      * Erstellt die Teilnehmer PDFs.
      */
-    async generateTeilnehmerPDFsBlob(funkUebung: Uebung): Promise<Map<string, Blob>> {
-        const generierungszeit = DateFormatter.formatNATODate(funkUebung.createDate, true); // NATO-Datum für Fußzeile
+    async generateTeilnehmerPDFsBlob(funkUebung: FunkUebung): Promise<Map<string, Blob>> {
         const blobMap = new Map();
 
         funkUebung.teilnehmerListe.forEach(teilnehmer => {
@@ -48,38 +48,10 @@ class PDFGenerator {
 
             let pdf = new jsPDF({ orientation: "landscape", unit: "mm", format: "a4" });
 
-            const pdfWidth = pdf.internal.pageSize.getWidth();
-            const pdfHeight = pdf.internal.pageSize.getHeight();
-            const pageMargin = 10;
-            const firstTableStartY = 30;
-            const secondPageTableTopMargin = 30; // **Garantierter Abstand für die Tabelle auf Seite 2+**
-
-            // **1. Kopfzeile für erste Seite**
-            this.drawFirstPageHeader(pdf, funkUebung, teilnehmer, pdfWidth);
-
-            // **2. Kopfdaten-Tabelle (links)**
-            let kopfdatenWidth = (pdfWidth - 2 * pageMargin) * 0.35;
-            this.drawKopfdatenTable(pdf, funkUebung, firstTableStartY, pageMargin, kopfdatenWidth);
-
-            // **3. Teilnehmerliste (rechts)**
-            let teilnehmerWidth = (pdfWidth - 2 * pageMargin) * 0.60;
-            this.drawTeilnehmerTable(pdf, funkUebung, firstTableStartY, pdfWidth - pageMargin - teilnehmerWidth, teilnehmerWidth);
-
-            // **4. Nachrichten-Tabelle**
-            let tableStartY = Math.max((pdf as any).lastAutoTable.finalY + 10, 75);
-
-            this.drawNachrichtenTable(pdf, nachrichten, tableStartY, pageMargin, pdfWidth, secondPageTableTopMargin);
-
-            // **5. Setze Kopfzeilen & Seitenzahlen auf allen Seiten**
-            let totalPages = (pdf as any).getNumberOfPages();
-            for (let j = 1; j <= totalPages; j++) {
-                pdf.setPage(j);
-                this.drawHeader(pdf, teilnehmer, j, pdfWidth, pageMargin, funkUebung);
-                this.drawFooter(pdf, generierungszeit, funkUebung, j, totalPages, pdfWidth, pdfHeight, pageMargin);
-            }
-
-            // **6. PDF speichern**
-            const blob = pdf.output("blob");
+            let teilnehmerPdf = new Teilnehmer(teilnehmer, funkUebung, pdf);
+            teilnehmerPdf.draw();
+            
+            const blob = teilnehmerPdf.blob()
             blobMap.set(teilnehmer, blob);
         });
 
