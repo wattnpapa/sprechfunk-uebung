@@ -59,28 +59,6 @@ class PDFGenerator {
     }
 
     /**
-     * Erstellt ein DIN A5 Deckblatt im Hochformat mit folgendem Aufbau:
-     *   Sprechfunkübung Bravo Meldung 2025
-     *   Heros Jever 21/10
-     *   19jul25
-     *
-     *   Übungsleitung:
-     *   Heros Wind 10
-     *
-     *   Teilnehmer
-     *   <Liste, kleiner & eng zeilenabständig>
-     */
-    async generateDeckblaetterA5Blob(funkUebung: FunkUebung): Promise<Blob> {
-        const pdf = new jsPDF({ orientation: "p", unit: "mm", format: "a5" });
-        // Pro Teilnehmer eine Seite
-        funkUebung.teilnehmerListe.forEach((teilnehmer: string, idx: number) => {
-            if (idx > 0) pdf.addPage();
-            new DeckblattTeilnehmer(teilnehmer, funkUebung, pdf).draw();
-        });
-        return pdf.output("blob");
-    }
-
-    /**
      * Erstellt eine A4-Quer-PDF mit 2 Nachrichtenvordrucken pro Seite (paarweise Layout mit Deckblatt).
      */
     async generateAllNachrichtenvordruckPrintA4Blob(funkUebung: FunkUebung): Promise<Blob> {
@@ -365,10 +343,7 @@ class PDFGenerator {
             `Druck_Meldevordruck_A4.pdf`,
             allMeldPrintA4
         );
-
-        const deckblattBlob = await this.generateDeckblaetterA5Blob(funkUebung);
-        zip.file(`Teilnehmer/DeckblaetterA5.pdf`, deckblattBlob);
-
+        
         // Nadeldrucker: je ein A5-PDF mit allen Nachrichtenvordrucken
         const plainNachrichtBlob = await this.generatePlainNachrichtenvordruckPrintBlob(funkUebung);
         zip.file(
