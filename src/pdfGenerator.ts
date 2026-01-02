@@ -140,7 +140,7 @@ class PDFGenerator {
             for (let j = 0; j < max; j++) {
                 pdf.addPage();
                 if (j < leftMsgs.length) new Meldevordruck(left, funkUebung, pdf, leftMsgs[j]).draw();
-                if (right && j < rightMsgs.length) new Meldevordruck(right, funkUebung, pdf, leftMsgs[j]).draw(148);
+                if (right && j < rightMsgs.length) new Meldevordruck(right, funkUebung, pdf, rightMsgs[j]).draw(148);
                 // Trennlinie (Schneidekante)
                 pdf.setDrawColor(150);
                 pdf.setLineWidth(0.2);
