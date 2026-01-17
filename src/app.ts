@@ -2,6 +2,27 @@
 // UI / Theme / Header Logic
 // =========================
 
+import type { AppMode } from "./appModes";
+import { initUebungsleitung } from "./uebungsleitung";
+
+function detectAppModeFromPath(): AppMode {
+    // Erwartetes Schema: /#/ <mode>
+    // z. B. /#/admin oder /#/uebungsleitung
+    const hash = window.location.hash.replace(/^#\/?/, "");
+    const parts = hash.split("/").filter(Boolean);
+
+    const mode = parts[0] as AppMode | undefined;
+
+    if (mode === "admin" || mode === "uebungsleitung") {
+        return mode;
+    }
+
+    return "generator";
+}
+
+const APP_MODE: AppMode = detectAppModeFromPath();
+console.log("APP_MODE:", APP_MODE);
+
 function initNatoClock(): void {
     const el = document.getElementById("natoTime");
     if (!el) return;
@@ -59,12 +80,27 @@ function initThemeToggle(): void {
     });
 }
 
-function initAdminView(): void {
-    const isAdminView = window.location.search.includes("admin");
-    if (!isAdminView) return;
 
-    document.getElementById("mainAppArea")?.setAttribute("style", "display:none");
-    document.getElementById("adminArea")?.setAttribute("style", "display:block");
+function applyAppMode(mode: AppMode): void {
+    const generator = document.getElementById("mainAppArea");
+    const admin = document.getElementById("adminArea");
+    const uebungsleitung = document.getElementById("uebungsleitungArea");
+
+    generator && (generator.style.display = "none");
+    admin && (admin.style.display = "none");
+    uebungsleitung && (uebungsleitung.style.display = "none");
+
+    switch (mode) {
+        case "generator":
+            generator && (generator.style.display = "block");
+            break;
+        case "admin":
+            admin && (admin.style.display = "block");
+            break;
+        case "uebungsleitung":
+            uebungsleitung && (uebungsleitung.style.display = "block");
+            break;
+    }
 }
 
 // =========================
@@ -73,7 +109,24 @@ function initAdminView(): void {
 document.addEventListener("DOMContentLoaded", () => {
     initNatoClock();
     initThemeToggle();
-    initAdminView();
+
+    applyAppMode(APP_MODE);
+
+    switch (APP_MODE) {
+        case "generator":
+            // nichts zusätzlich
+            break;
+
+        case "admin":
+            admin.ladeAlleUebungen();
+            admin.renderUebungsStatistik();
+            break;
+
+        case "uebungsleitung":
+            console.log("📡 Modus: Übungsleitung");
+            initUebungsleitung((window as any).app?.db);
+            break;
+    }
 });
 import pdfGenerator from './pdfGenerator.js';
 import { DateFormatter } from "./DateFormatter.js";
@@ -233,11 +286,7 @@ export class AppController {
 
                 this.renderInitData();
 
-                if (urlParams.get("admin") !== null) {
-                    admin.ladeAlleUebungen();
-                    admin.renderUebungsStatistik();
-                    document.getElementById("adminArea")!.style.display = "block";
-                }
+                // (admin auto-load entfernt: läuft jetzt zentral über APP_MODE)
 
                 // --- Globaler Button-Click-Tracking-Listener nach DOMContentLoaded ---
                 document.addEventListener("click", (event) => {

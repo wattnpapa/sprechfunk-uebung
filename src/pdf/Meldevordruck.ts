@@ -22,6 +22,7 @@ export class Meldevordruck extends BasePDFTeilnehmer {
     draw(offsetX:number = 0): void {
         const template = 'assets/meldevordruck.png';
         const w = 148, h = 210;
+
         // Hintergrundbild
         if (!this.hideBackground) this.pdf.addImage(template, 'PNG', offsetX, 0, w, h);
 
@@ -36,9 +37,7 @@ export class Meldevordruck extends BasePDFTeilnehmer {
         this.pdf.setFontSize(16);
         this.adjustTextForWidth(this.teilnehmer, 70, offsetX + 22, 25);
 
-        // Empfänger
-        let emp = this.nachricht.empfaenger.includes('Alle') ? 'Alle' : this.nachricht.empfaenger.join(', ');
-        this.adjustTextForWidth(emp, 70, offsetX + 22, 40);
+        this.drawEmpfaenger(offsetX);
 
         // Verfasser
         this.pdf.setFontSize(12);
@@ -70,6 +69,69 @@ export class Meldevordruck extends BasePDFTeilnehmer {
             let rightText = `© Johannes Rudolph | Version ${this.funkUebung.buildVersion} | Übung ID: ${this.funkUebung.id} | Generiert: ${genTime} | Generator: https://sprechfunk-uebung.de/`;
             this.pdf.text(rightText, 148- 3 + offsetX, 210 - 5, { angle: 90, align: "left" });
         }
+    }
+
+    drawEmpfaenger(offsetX: number): void {
+        // Empfänger
+        const startX = offsetX + 20;
+        const startY = 40;
+        const maxWidth = 90;
+        const maxHeight = 10;
+        const lineHeight = 6;
+
+        this.drawDebugBox(startX, startY - 5, maxWidth, maxHeight);
+
+        const maxY = startY + maxHeight;
+        this.pdf.setFontSize(8);
+        let empfaengerListe: string[] = [];
+
+        if (this.nachricht.empfaenger.includes('Alle')) {
+            empfaengerListe = ['Alle'];
+        } else {
+            empfaengerListe = this.nachricht.empfaenger;
+        }
+
+        let currentY = startY;
+        let currentLine = '';
+
+        for (let i = 0; i < empfaengerListe.length; i++) {
+            const part = currentLine
+                ? `${currentLine}, ${empfaengerListe[i]}`
+                : empfaengerListe[i];
+
+            const textWidth = this.pdf.getTextWidth(part);
+
+            if (textWidth <= maxWidth) {
+                // passt noch in die aktuelle Zeile
+                currentLine = part;
+            } else {
+                // Zeile voll → schreiben
+                if (currentY + lineHeight > maxY) {
+                    this.pdf.text('…', startX + maxWidth - 3, maxY - 1);
+                    return;
+                }
+
+                this.pdf.text(currentLine, startX, currentY);
+                currentY += lineHeight;
+                currentLine = empfaengerListe[i];
+            }
+        }
+
+        // letzte Zeile ausgeben
+        if (currentLine && currentY + lineHeight <= maxY) {
+            this.pdf.text(currentLine, startX, currentY);
+        }
+    }
+
+    private drawDebugBox(
+        x: number,
+        y: number,
+        width: number,
+        height: number
+    ) {
+        this.pdf.setDrawColor(255, 0, 0); // rot
+        this.pdf.setLineWidth(0.3);
+        this.pdf.rect(x, y, width, height);
     }
 
 }

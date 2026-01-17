@@ -1,3 +1,17 @@
+html, body {
+    height: 100%;
+}
+
+body {
+    display: flex;
+    flex-direction: column;
+}
+
+#mainAppArea,
+#adminArea,
+#uebungsleitungArea {
+    flex: 1 0 auto;
+}
 
 /* Header grid layout */
 .app-header-grid {
@@ -214,9 +228,8 @@ body {
 }
 
 .main-footer {
-    position: sticky;
-    bottom: 0;
-    z-index: 1500;
+    margin-top: auto;
+    flex-shrink: 0;
 
     background-color: var(--surface);
     color: var(--text-muted);
@@ -628,4 +641,59 @@ body {
 /* Remove Bootstrap light hover */
 [data-theme="dark"] .list-group-item:hover {
     background-color: var(--surface-alt);
+}
+
+/* =========================
+   Übungsleitung – Dark Mode Lesbarkeit
+   ========================= */
+
+#uebungsleitungMeta {
+    color: var(--text);
+}
+
+#uebungsleitungMeta strong {
+    color: var(--text-muted);
+    font-weight: 600;
+}
+
+#uebungsleitungMeta code {
+    color: #ff7ab2;
+    background-color: rgba(255, 255, 255, 0.08);
+    padding: 0.1rem 0.35rem;
+    border-radius: 6px;
+}
+
+/* =========================
+   Einheitliche Überschriften
+   ========================= */
+
+.card-header h4,
+.card-header h5 {
+    margin: 0;
+    font-weight: 600;
+    color: var(--text);
+}
+
+.card-header i {
+    color: var(--primary);
+}
+
+/* =========================
+   Nachrichtenplan – optische Trennung je Nachricht
+   ========================= */
+
+/* Grundzustand: normale Linie */
+#uebungsleitungNachrichten table tbody tr td {
+    border-top-width: 1px;
+}
+
+/* Deutliche Trennung zwischen zwei Nachrichten */
+#uebungsleitungNachrichten table tbody tr:not(:first-child) td {
+    border-top: 3px solid var(--border);
+}
+
+/* Dark Mode – stärkerer Kontrast */
+[data-theme="dark"]
+#uebungsleitungNachrichten table tbody tr:not(:first-child) td {
+    border-top: 3px solid var(--primary);
 }
