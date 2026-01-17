@@ -1309,10 +1309,16 @@ export class AppController {
     updateUebungLinks(): void {
         const linkContainer = document.getElementById("uebung-links")! as HTMLElement;
         const linkElement = document.getElementById("link-uebung-direkt")! as HTMLAnchorElement;
+        const linkUebungsMonitorElement = document.getElementById("link-uebungsleitung-direkt")! as HTMLAnchorElement;
         if (this.funkUebung.id) {
-            const url = `${window.location.origin}${window.location.pathname}?id=${this.funkUebung.id}`;
-            linkElement.href = url;
-            linkElement.textContent = url;
+            const urlUebung = `${window.location.origin}${window.location.pathname}?id=${this.funkUebung.id}`;
+            linkElement.href = urlUebung;
+            linkElement.textContent = urlUebung;
+
+            const urlUebungLeitung = `${window.location.origin}${window.location.pathname}#/uebungsleitung/${this.funkUebung.id}`;
+            linkUebungsMonitorElement.href = urlUebungLeitung;
+            linkUebungsMonitorElement.textContent = urlUebungLeitung;
+
             linkContainer.style.display = "block";
         }
     }
