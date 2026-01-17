@@ -1,16 +1,18 @@
 html, body {
-    height: 100%;
+    min-height: 100%;
 }
 
 body {
     display: flex;
     flex-direction: column;
+    min-height: 100vh;
 }
 
 #mainAppArea,
 #adminArea,
 #uebungsleitungArea {
-    flex: 1 0 auto;
+    flex: 1 1 auto;
+    overflow: visible;
 }
 
 /* Header grid layout */
@@ -136,7 +138,6 @@ body {
     margin: 0;
     background: var(--bg);
     color: var(--text);
-    overflow-x: hidden;
 }
 
 .container {
@@ -228,6 +229,10 @@ body {
 }
 
 .main-footer {
+    position: sticky;
+    bottom: 0;
+    z-index: 4000;
+
     margin-top: auto;
     flex-shrink: 0;
 
@@ -245,7 +250,7 @@ body {
 .app-header {
     position: sticky;
     top: 0;
-    z-index: 2000;
+    z-index: 5000;
 
     background-color: var(--surface);
     border-bottom: 2px solid var(--primary);
@@ -273,11 +278,10 @@ body {
 
 /* Push content slightly under the header so overlap is visible */
 #mainAppArea {
-    margin-top: -24px;
-    padding-top: 50px;
     margin-left: 20px;
     margin-right: 20px;
-    padding-bottom: 24px;
+    padding-top: 1.5rem;
+    padding-bottom: 1.5rem;
 }
 
 /* Header title spacing */
