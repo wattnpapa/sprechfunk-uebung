@@ -12,7 +12,7 @@ export class DeckblattTeilnehmer extends BasePDFTeilnehmer {
         super(teilnehmer, uebung, pdfInstance); // unit default 'mm'
     }
 
-    draw(offsetX:number = 0) {
+    draw(offsetX: number = 0) {
         const dateLine = DateFormatter
             .formatNATODate(this.funkUebung.datum, false)
             .replace(/\s+/g, '')
@@ -54,10 +54,33 @@ export class DeckblattTeilnehmer extends BasePDFTeilnehmer {
         this.pdf.text(this.funkUebung.name, centerX(this.funkUebung.name), y);
         y += lh.title;
 
-        // 3) Eigener Rufname
-        this.pdf.setFont("helvetica", "normal").setFontSize(14);
-        this.pdf.text(this.teilnehmer, centerX(this.teilnehmer), y);
-        y += lh.owner;
+        // 3) Eigener Teilnehmer – Stelle und Funkrufname getrennt
+        const stellenName = this.funkUebung.teilnehmerStellen?.[this.teilnehmer];
+
+        if (stellenName && stellenName.trim().length > 0) {
+            // Zeile 1: Stellenname
+            this.pdf.setFont("helvetica", "normal").setFontSize(14);
+            y += this.drawCenteredMultilineText(
+                stellenName,
+                y,
+                120,
+                lh.owner,
+                offsetX
+            );
+        }
+
+        // Zeile 2: Funkrufname
+        const funk = `${this.teilnehmer}`;
+        this.pdf.setFont("helvetica", "normal").setFontSize(12);
+        y += this.drawCenteredMultilineText(
+            funk,
+            y,
+            120,
+            lh.owner,
+            offsetX
+        );
+
+        // Wenn kein Stellenname vorhanden → bewusst nichts anzeigen
 
         // 4) Rufgruppe
         this.pdf.text(this.funkUebung.rufgruppe, centerX(this.funkUebung.rufgruppe), y);
@@ -85,8 +108,14 @@ export class DeckblattTeilnehmer extends BasePDFTeilnehmer {
         // 9) Teilnehmerliste
         this.pdf.setFont("helvetica", "normal").setFontSize(8);
         this.funkUebung.teilnehmerListe.forEach((name: string) => {
-            this.pdf.text(name, centerX(name), y);
-            y += lh.teilnehmer;
+            const anzeigename = this.getTeilnehmerAnzeigeName(name);
+            y += this.drawCenteredMultilineText(
+                anzeigename,
+                y,
+                120,
+                lh.teilnehmer,
+                offsetX
+            );
         });
 
         // 10) Zweizeiliger Footer
@@ -96,7 +125,28 @@ export class DeckblattTeilnehmer extends BasePDFTeilnehmer {
         const line2 = `Generiert: ${generierungszeit} | Generator: sprechfunk-uebung.de`;
         const y2 = h - 10;
         const y1 = y2 - 4;
-        this.pdf.textWithLink(line1, 10 + offsetX, y1, { url: "https://sprechfunk-uebung.de/" });
-        this.pdf.textWithLink(line2, 10 + offsetX, y2, { url: "https://sprechfunk-uebung.de/" });
+        this.pdf.textWithLink(line1, 10 + offsetX, y1, {url: "https://sprechfunk-uebung.de/"});
+        this.pdf.textWithLink(line2, 10 + offsetX, y2, {url: "https://sprechfunk-uebung.de/"});
+    }
+
+    /**
+     * Zeichnet mehrzeiligen Text zentriert und gibt die benötigte Gesamthöhe zurück.
+     */
+    private drawCenteredMultilineText(
+        text: string,
+        y: number,
+        maxWidth: number,
+        lineHeight: number,
+        offsetX: number = 0
+    ): number {
+        const lines = this.pdf.splitTextToSize(text, maxWidth);
+
+        lines.forEach((line: string, index: number) => {
+            const x = (148 - this.pdf.getTextWidth(line)) / 2 + offsetX;
+            this.pdf.text(line, x, y + index * lineHeight);
+        });
+
+        return lines.length * lineHeight;
     }
 }
+

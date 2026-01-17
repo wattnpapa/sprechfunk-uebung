@@ -64,7 +64,14 @@ export class Teilnehmer extends BasePDFTeilnehmer {
             for (let c = 0; c < teilnehmerColumns; c++) {
                 let index = r + c * teilnehmerRows;
                 if (index < this.funkUebung.teilnehmerListe.length) {
-                    row.push(this.funkUebung.teilnehmerListe[index]);
+                    const rufname = this.funkUebung.teilnehmerListe[index];
+                    const stellen = this.funkUebung.teilnehmerStellen;
+
+                    if (stellen && stellen[rufname]) {
+                        row.push(`${stellen[rufname]}\n${rufname}`);
+                    } else {
+                        row.push(rufname);
+                    }
                 } else {
                     row.push("");
                 }

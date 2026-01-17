@@ -57,13 +57,23 @@ export class Uebungsleitung extends BasePDF {
         // **3. Teilnehmerliste (rechts)**
         let tableStartY = Math.max((this.pdf as any).lastAutoTable.finalY + 10, 75);
 
-        let tableBody = this.funkUebung.teilnehmerListe.map((teilnehmer: string) => [
-            teilnehmer,
-            "", // Platz für Anmeldezeitpunkt
-            this.funkUebung.loesungswoerter?.[teilnehmer] ? this.funkUebung.loesungswoerter?.[teilnehmer] : "", // Falls es ein Lösungswort gibt
-            this.funkUebung.loesungsStaerken?.[teilnehmer] ? this.funkUebung.loesungsStaerken?.[teilnehmer] : "0/0/0//0", // Falls es ein Stärlen gibt gibt
-            "" // Bemerkungen (handschriftlich eintragbar)
-        ]);
+        const stellen = this.funkUebung.teilnehmerStellen;
+
+        let tableBody = this.funkUebung.teilnehmerListe.map((teilnehmer: string) => {
+            let teilnehmerAnzeige = teilnehmer;
+
+            if (stellen && stellen[teilnehmer]) {
+                teilnehmerAnzeige = `${stellen[teilnehmer]}\n${teilnehmer}`;
+            }
+
+            return [
+                teilnehmerAnzeige,
+                "", // Platz für Anmeldezeitpunkt
+                this.funkUebung.loesungswoerter?.[teilnehmer] ?? "", // Lösungswort
+                this.funkUebung.loesungsStaerken?.[teilnehmer] ?? "0/0/0//0", // Stärke
+                "" // Bemerkungen
+            ];
+        });
 
         let columnWidths = [60, 35, 60, 25, 95]; // Anpassung für saubere Darstellung
 

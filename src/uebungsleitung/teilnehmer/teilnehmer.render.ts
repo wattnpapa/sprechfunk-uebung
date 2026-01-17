@@ -36,8 +36,22 @@ export function renderTeilnehmerListe(
 
         return `
       <tr>
-        <td><strong>${name}</strong></td>
-
+        <td>
+          <strong>
+            ${(() => {
+                const u = (window as any).__AKTUELLE_UEBUNG__;
+                const stellen = u?.teilnehmerStellen;
+                if (stellen && stellen[name]) {
+                    return `
+                      ${stellen[name]}<br>
+                      <small class="text-muted">${name}</small>
+                    `;
+                }
+                return name;
+            })()}
+          </strong>
+        </td>
+ 
         <td>
           ${status?.angemeldetUm
             ? `<span class="badge bg-success">${formatNatoDate(status.angemeldetUm)}</span>`

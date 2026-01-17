@@ -79,7 +79,7 @@ export class Meldevordruck extends BasePDFTeilnehmer {
         const maxHeight = 10;
         const lineHeight = 6;
 
-        this.drawDebugBox(startX, startY - 5, maxWidth, maxHeight);
+        //this.drawDebugBox(startX, startY - 5, maxWidth, maxHeight);
 
         const maxY = startY + maxHeight;
         this.pdf.setFontSize(8);
@@ -121,17 +121,6 @@ export class Meldevordruck extends BasePDFTeilnehmer {
         if (currentLine && currentY + lineHeight <= maxY) {
             this.pdf.text(currentLine, startX, currentY);
         }
-    }
-
-    private drawDebugBox(
-        x: number,
-        y: number,
-        width: number,
-        height: number
-    ) {
-        this.pdf.setDrawColor(255, 0, 0); // rot
-        this.pdf.setLineWidth(0.3);
-        this.pdf.rect(x, y, width, height);
     }
 
 }

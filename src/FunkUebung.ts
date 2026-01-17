@@ -14,6 +14,7 @@ export class FunkUebung implements Uebung {
     leitung: string;
     rufgruppe: string;
     teilnehmerListe: string[];
+    teilnehmerStellen?: Record<string, string>;
     nachrichten: Record<string, Nachricht[]>;
     createDate: Date;
     spruecheProTeilnehmer: number;
@@ -93,6 +94,7 @@ export class FunkUebung implements Uebung {
             leitung: this.leitung,
             buildVersion: this.buildVersion,
             teilnehmerListe: this.teilnehmerListe,
+            teilnehmerStellen: this.teilnehmerStellen,
             nachrichten: this.nachrichten,
             loesungswoerter: this.loesungswoerter,
             loesungsStaerken: this.loesungsStaerken,

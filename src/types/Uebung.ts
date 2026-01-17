@@ -11,4 +11,9 @@ export interface Uebung {
   nachrichten: Record<string, Nachricht[]>;
   createDate: Date;
   loesungswoerter?: Record<string, string>;
+  /**
+   * Optional: Mapping von Teilnehmer-Funkrufnamen auf Stellenname.
+   * Optional für Rückwärtskompatibilität.
+   */
+  teilnehmerStellen?: Record<string, string>;
 }

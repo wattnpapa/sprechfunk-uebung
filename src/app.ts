@@ -210,6 +210,9 @@ export class AppController {
     private currentPageIndex: number = 0;
     private htmlSeitenTeilnehmer: string[] = [];
 
+    // Für die Anzeige der "Stellenname anzeigen"-Checkbox
+    private showStellenname: boolean = false;
+
     constructor() {
         console.log("📌 AppController wurde initialisiert");
 
@@ -248,19 +251,34 @@ export class AppController {
                             const data = docSnap.data();
                             this.funkUebung = Object.assign(new FunkUebung(buildInfo), data);
                             Object.assign(this.funkUebung, data);
+                            // Sicherstellen, dass teilnehmerStellen vorhanden ist (Rückwärtskompatibilität)
+                            if (!this.funkUebung.teilnehmerStellen) {
+                                this.funkUebung.teilnehmerStellen = {};
+                            }
                             console.log("📦 Übung aus Datenbank geladen:", this.funkUebung.id);
                             this.renderUebung();
                         } else {
                             console.warn("⚠️ Keine Übung mit dieser ID gefunden. Neue Übung wird erstellt.");
                             this.funkUebung = new FunkUebung(buildInfo);
+                            if (!this.funkUebung.teilnehmerStellen) {
+                                this.funkUebung.teilnehmerStellen = {};
+                            }
                         }
                     } catch (err) {
                         console.error("❌ Fehler beim Laden der Übung:", err);
                         this.funkUebung = new FunkUebung(buildInfo);
+                        if (!this.funkUebung.teilnehmerStellen) {
+                            this.funkUebung.teilnehmerStellen = {};
+                        }
                     }
                 } else {
                     this.funkUebung = new FunkUebung(buildInfo);
+                    if (!this.funkUebung.teilnehmerStellen) {
+                        this.funkUebung.teilnehmerStellen = {};
+                    }
                 }
+
+                console.log(this.funkUebung);
 
                 document.getElementById("uebungsId")!.textContent = this.funkUebung.id;
                 document.getElementById("version")!.innerHTML = buildInfo;
@@ -458,18 +476,37 @@ export class AppController {
         (document.getElementById("zentralLoesungswortContainer")! as HTMLElement).style.display = isZentral ? "block" : "none";
         (document.getElementById("shuffleButton")! as HTMLElement).style.display = (isZentral || isIndividuell) ? "block" : "none";
 
-        container.innerHTML = `
+        // Checkbox für "Stellenname anzeigen"
+        let checkboxId = "showStellennameCheckbox";
+        let checkboxHtml = `
+            <div class="form-check mb-2">
+                <input class="form-check-input" type="checkbox" id="${checkboxId}" ${this.showStellenname ? "checked" : ""}>
+                <label class="form-check-label" for="${checkboxId}">Stellenname anzeigen</label>
+            </div>
+        `;
+        container.innerHTML = checkboxHtml;
+
+        // Tabelle aufbauen, je nach Checkbox
+        let tableHeaders = `<th>Funkrufnamen</th>`;
+        if (this.showStellenname) {
+            tableHeaders += `<th>Name der Stelle</th>`;
+        }
+        if (isIndividuell) {
+            tableHeaders += `<th id='loesungswortHeader'>Lösungswort</th>`;
+        }
+        tableHeaders += `<th style="width: 50px;">Aktion</th>`;
+
+        let tableHtml = `
             <table class="table table-bordered">
                 <thead class="table-dark">
                     <tr>
-                        <th>Funkrufnamen</th>
-                        ${isIndividuell ? "<th id='loesungswortHeader'>Lösungswort</th>" : ""}
-                        <th style="width: 50px;">Aktion</th>
+                        ${tableHeaders}
                     </tr>
                 </thead>
                 <tbody id="teilnehmer-body"></tbody>
             </table>
         `;
+        container.innerHTML += tableHtml;
 
         const tbody = document.getElementById("teilnehmer-body");
         if (!tbody) {
@@ -477,9 +514,17 @@ export class AppController {
             return;
         }
 
-        // **Jeden Teilnehmer rendern**
+        // Jeden Teilnehmer rendern
         this.funkUebung.teilnehmerListe.forEach((teilnehmer, index) => {
             const row = document.createElement("tr");
+
+            let stellenInput = "";
+            if (this.showStellenname) {
+                let value = this.funkUebung.teilnehmerStellen?.[teilnehmer] ?? "";
+                stellenInput = `<td>
+                    <input type="text" class="form-control stellenname-input" data-teilnehmer="${encodeURIComponent(teilnehmer)}" value="${value}" placeholder="Name der Stelle">
+                </td>`;
+            }
 
             let loesungswortInput = "";
             if (isIndividuell) {
@@ -491,31 +536,82 @@ export class AppController {
                 <td>
                     <input type="text" class="form-control teilnehmer-input" data-index="${index}" value="${teilnehmer}">
                 </td>
+                ${stellenInput}
                 ${loesungswortInput}
                 <td><button class="btn btn-danger btn-sm delete-teilnehmer" data-index="${index}"><i class="fas fa-trash"></i></button></td>
             `;
             tbody.appendChild(row);
         });
 
-        // **Event-Listener für Änderungen an Teilnehmernamen**
+        // Event-Listener für Checkbox "Stellenname anzeigen"
+        const self = this;
+        const checkboxEl = document.getElementById(checkboxId) as HTMLInputElement;
+        if (checkboxEl) {
+            checkboxEl.addEventListener("change", function () {
+                self.showStellenname = checkboxEl.checked;
+                self.renderTeilnehmer(false);
+            });
+        }
+
+        // Event-Listener für Änderungen an Teilnehmernamen (inkl. Umbenennung von teilnehmerStellen)
         document.querySelectorAll(".teilnehmer-input").forEach(input => {
             input.addEventListener("input", (event: Event) => {
                 const target = event.target as HTMLInputElement;
                 const index = Number(target.dataset.index);
-                this.funkUebung.teilnehmerListe[index] = target.value;
+                const oldName = this.funkUebung.teilnehmerListe[index];
+                const newName = target.value;
+                if (oldName !== newName) {
+                    // Teilnehmername umbenennen: ggf. teilnehmerStellen-Key umbenennen
+                    if (this.funkUebung.teilnehmerStellen && this.funkUebung.teilnehmerStellen[oldName] !== undefined) {
+                        this.funkUebung.teilnehmerStellen[newName] = this.funkUebung.teilnehmerStellen[oldName];
+                        delete this.funkUebung.teilnehmerStellen[oldName];
+                    }
+                    // Auch loesungswoerter ggf. umbenennen
+                    if (this.funkUebung.loesungswoerter && this.funkUebung.loesungswoerter[oldName] !== undefined) {
+                        this.funkUebung.loesungswoerter[newName] = this.funkUebung.loesungswoerter[oldName];
+                        delete this.funkUebung.loesungswoerter[oldName];
+                    }
+                }
+                this.funkUebung.teilnehmerListe[index] = newName;
             });
         });
 
-        // **Event-Listener für das Entfernen von Teilnehmern**
+        // Event-Listener für das Entfernen von Teilnehmern
         document.querySelectorAll(".delete-teilnehmer").forEach(button => {
             button.addEventListener("click", (event: Event) => {
                 const mouseEvent = event as MouseEvent;
                 const target = mouseEvent.target! as HTMLElement;
                 const btn = target.closest("button")! as HTMLButtonElement;
                 const index = Number(btn.dataset.index);
+                // Vor Entfernen: teilnehmerStellen und loesungswoerter bereinigen
+                const teilnehmer = this.funkUebung.teilnehmerListe[index];
+                if (this.funkUebung.teilnehmerStellen && this.funkUebung.teilnehmerStellen[teilnehmer] !== undefined) {
+                    delete this.funkUebung.teilnehmerStellen[teilnehmer];
+                }
+                if (this.funkUebung.loesungswoerter && this.funkUebung.loesungswoerter[teilnehmer] !== undefined) {
+                    delete this.funkUebung.loesungswoerter[teilnehmer];
+                }
                 this.removeTeilnehmer(index);
             });
         });
+
+        // Event-Listener für Stellenname-Eingabefelder
+        if (this.showStellenname) {
+            document.querySelectorAll(".stellenname-input").forEach(input => {
+                input.addEventListener("input", (event: Event) => {
+                    const target = event.target as HTMLInputElement;
+                    const teilnehmer = decodeURIComponent(target.getAttribute("data-teilnehmer") || "");
+                    if (!this.funkUebung.teilnehmerStellen) {
+                        this.funkUebung.teilnehmerStellen = {};
+                    }
+                    if (target.value.trim() === "") {
+                        delete this.funkUebung.teilnehmerStellen[teilnehmer];
+                    } else {
+                        this.funkUebung.teilnehmerStellen[teilnehmer] = target.value;
+                    }
+                });
+            });
+        }
 
         // Falls `renderTeilnehmer` von einer Benutzerinteraktion kommt, neu verteilen
         if (triggerShuffle) {
@@ -533,6 +629,14 @@ export class AppController {
     }
 
     removeTeilnehmer(index: number): void {
+        // Vor Entfernen: teilnehmerStellen und loesungswoerter bereinigen
+        const teilnehmer = this.funkUebung.teilnehmerListe[index];
+        if (this.funkUebung.teilnehmerStellen && this.funkUebung.teilnehmerStellen[teilnehmer] !== undefined) {
+            delete this.funkUebung.teilnehmerStellen[teilnehmer];
+        }
+        if (this.funkUebung.loesungswoerter && this.funkUebung.loesungswoerter[teilnehmer] !== undefined) {
+            delete this.funkUebung.loesungswoerter[teilnehmer];
+        }
         this.funkUebung.teilnehmerListe.splice(index, 1);
         this.renderTeilnehmer();
     }
@@ -705,6 +809,12 @@ export class AppController {
     }
 
     renderInputFromUebung() {
+        // 🏷️ Stellenname-Checkbox automatisch aktivieren, wenn Stellen vorhanden sind
+        this.showStellenname = !!(
+            this.funkUebung.teilnehmerStellen &&
+            Object.keys(this.funkUebung.teilnehmerStellen).length > 0
+        );
+
         // 🔍 Lösungswörter erkennen
         const noneRadio = document.getElementById("keineLoesungswoerter") as HTMLInputElement;
         const centralRadio = document.getElementById("zentralLoesungswort") as HTMLInputElement;
@@ -1231,6 +1341,7 @@ export async function saveUebung(funkUebung: FunkUebung, db: Firestore): Promise
     const uebungRef = doc(db, "uebungen", funkUebung.id);
     try {
         await setDoc(uebungRef, JSON.parse(funkUebung.toJson()));
+        console.log(funkUebung.toJson());
         console.log("✅ Übung erfolgreich gespeichert:", funkUebung.id);
     } catch (error) {
         console.error("❌ Fehler beim Speichern der Übung:", error);
