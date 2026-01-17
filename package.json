@@ -16,9 +16,10 @@
   "main": "app.js",
   "scripts": {
     "build": "rollup -c && mkdir -p dist && cp -r assets dist/ && cp src/index.html dist/index.html && cp howto.md dist/howto.md && cp src/style.css dist/style.css && cp src/firebase-config.js dist/firebase-config.js",
-    "watch": "rollup -c -w",
+    "watch": "chokidar \"src/**/*\" \"assets/**/*\" \"rollup.config.js\" -c \"npm run build\"",
     "serve": "live-server dist --port=3000",
-    "start": "npm run build && npm run serve"
+    "start": "npm run build && npm run serve",
+    "dev": "concurrently \"npm run watch\" \"npm run serve\""
   },
   "devDependencies": {
     "@rollup/plugin-commonjs": "^28.0.6",
@@ -33,6 +34,8 @@
     "@types/showdown": "^2.0.6",
     "@types/uuid": "^10.0.0",
     "autoprefixer": "^10.4.21",
+    "chokidar-cli": "^3.0.0",
+    "concurrently": "^9.1.0",
     "crypto-js": "^4.2.0",
     "live-server": "^1.2.2",
     "postcss": "^8.5.6",

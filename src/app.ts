@@ -1,3 +1,80 @@
+// =========================
+// UI / Theme / Header Logic
+// =========================
+
+function initNatoClock(): void {
+    const el = document.getElementById("natoTime");
+    if (!el) return;
+
+    const months = ["jan","feb","mar","apr","may","jun","jul","aug","sep","oct","nov","dec"];
+    const pad = (n: number) => String(n).padStart(2, "0");
+
+    const update = () => {
+        const now = new Date();
+        const day = pad(now.getUTCDate());
+        const hours = pad(now.getUTCHours());
+        const minutes = pad(now.getUTCMinutes());
+        const seconds = pad(now.getUTCSeconds());
+        const month = months[now.getUTCMonth()];
+        const year = String(now.getUTCFullYear()).slice(-2);
+
+        el.textContent = `${day}${hours}${minutes}${month}${year}`;
+    };
+
+    update();
+    setInterval(update, 1000);
+}
+
+function initThemeToggle(): void {
+    const toggleBtn = document.getElementById("themeToggle");
+    const storedTheme = localStorage.getItem("theme");
+
+    const getSystemTheme = (): "dark" | "light" =>
+        window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
+
+    const applyTheme = (theme: "dark" | "light") => {
+        document.body.setAttribute("data-theme", theme);
+        if (toggleBtn) {
+            toggleBtn.textContent = theme === "dark" ? "☀️ Light Mode" : "🌙 Dark Mode";
+        }
+    };
+
+    if (storedTheme === "dark" || storedTheme === "light") {
+        applyTheme(storedTheme);
+    } else {
+        applyTheme(getSystemTheme());
+    }
+
+    toggleBtn?.addEventListener("click", () => {
+        const current = document.body.getAttribute("data-theme") as "dark" | "light";
+        const next = current === "dark" ? "light" : "dark";
+        localStorage.setItem("theme", next);
+        applyTheme(next);
+    });
+
+    window.matchMedia("(prefers-color-scheme: dark)").addEventListener("change", e => {
+        if (!localStorage.getItem("theme")) {
+            applyTheme(e.matches ? "dark" : "light");
+        }
+    });
+}
+
+function initAdminView(): void {
+    const isAdminView = window.location.search.includes("admin");
+    if (!isAdminView) return;
+
+    document.getElementById("mainAppArea")?.setAttribute("style", "display:none");
+    document.getElementById("adminArea")?.setAttribute("style", "display:block");
+}
+
+// =========================
+// Global DOM Init
+// =========================
+document.addEventListener("DOMContentLoaded", () => {
+    initNatoClock();
+    initThemeToggle();
+    initAdminView();
+});
 import pdfGenerator from './pdfGenerator.js';
 import { DateFormatter } from "./DateFormatter.js";
 import { Uebung } from "./types/Uebung.js";

@@ -1,64 +1,631 @@
+
+/* Header grid layout */
+.app-header-grid {
+    display: grid;
+    grid-template-columns: auto 1fr auto;
+    align-items: center;
+    gap: 1rem;
+}
+
+/* Title */
+.app-header-title h2 {
+    margin: 0;
+    white-space: nowrap;
+}
+
+/* NATO time */
+.nato-time {
+    justify-self: center;
+    font-size: 0.9rem;
+    opacity: 0.85;
+}
+
+/* Actions */
+.app-header-actions {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+}
+
+/* Mobile layout */
+@media (max-width: 768px) {
+    .app-header-grid {
+        grid-template-columns: auto auto;
+        grid-template-areas:
+            "title burger"
+            "time time";
+        row-gap: 0.25rem;
+    }
+
+    .app-header-title {
+        grid-area: title;
+    }
+
+    .app-header-burger {
+        grid-area: burger;
+        justify-self: end;
+    }
+
+    .nato-time {
+        grid-area: time;
+        justify-self: center;
+    }
+}
+/* NATO Time display in header */
+.nato-time {
+    font-family: "JetBrains Mono", monospace;
+    font-size: 1.2rem;
+    letter-spacing: 0.08em;
+    color: var(--text-muted);
+    opacity: 0.9;
+    white-space: nowrap;
+}
+
+:root {
+    /* Base colors */
+    --bg: #f5f7fb;
+    --surface: #ffffff;
+    --surface-alt: #f1f3f7;
+
+    /* Text */
+    --text: #111827;
+    --text-muted: #6b7280;
+
+    /* Brand */
+    --primary: #202a44; /* RAL 5002 */
+
+    /* Borders & shadows */
+    --border: #e5e7eb;
+    --shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+
+    /* Tables */
+    --table-bg: #ffffff;
+    --table-bg-alt: #f5f7fb;
+    --table-head-bg: #eef1f6;
+
+    /* Forms */
+    --input-bg: #ffffff;
+    --input-text: #111827;
+    --input-border: #e5e7eb;
+}
+
+[data-theme="dark"] {
+    /* Base colors */
+    --bg: #020617;
+    --surface: #0b1220;
+    --surface-alt: #111827;
+
+    /* Text */
+    --text: #e5e7eb;
+    --text-muted: #94a3b8;
+
+    /* Brand */
+    --primary: #3b4a73; /* RAL 5002 – dark */
+
+    /* Borders & shadows */
+    --border: #334155;
+    --shadow: 0 10px 30px rgba(0, 0, 0, 0.45);
+
+    /* Tables */
+    --table-bg: #020617;
+    --table-bg-alt: #0b1220;
+    --table-head-bg: #020617;
+
+    /* Forms */
+    --input-bg: #020617;
+    --input-text: #e5e7eb;
+    --input-border: #334155;
+}
+
 body {
-    font-family: Arial, sans-serif;
-    margin: 20px;
+    font-family: Inter, system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+    margin: 0;
+    background: var(--bg);
+    color: var(--text);
+    overflow-x: hidden;
 }
 
 .container {
-    max-width: 98%;
-    margin: auto;
+    max-width: 100%;
+    padding-left: 1.25rem;
+    padding-right: 1.25rem;
 }
 
-.table th,
-.table td {
-    text-align: left;
-    vertical-align: middle;
-}
-
-.underline {
-    text-decoration: underline;
-    font-weight: bold;
-}
-
-.github-badge {
-    position: fixed;
-    top: 10px;
-    right: 10px;
-    background-color: #24292e;
-    color: white;
-    padding: 10px 15px;
-    border-radius: 5px;
-    font-size: 14px;
-    font-weight: bold;
-    display: flex;
-    align-items: center;
-    text-decoration: none;
-    transition: background-color 0.3s ease;
-}
-
-.github-badge img {
-    width: 20px;
-    height: 20px;
-    margin-right: 8px;
-}
-
-.github-badge:hover {
-    background-color: #444c56;
+@media (min-width: 1200px) {
+    .container {
+        padding-left: 2rem;
+        padding-right: 2rem;
+    }
 }
 
 .card {
-    margin-bottom: 20px;
+    background: var(--surface);
+    border: none;
+    border-radius: 14px;
+    box-shadow: var(--shadow);
+    margin-bottom: 1.5rem;
 }
 
-.row {
-    display: flex;
-    justify-content: space-between;
+.card-header {
+    background: transparent;
+    border-bottom: 1px solid var(--border);
+    font-weight: 600;
 }
 
-/* Stil für das Formular der Teilnehmerverwaltung */
-.card-body {
-    padding: 20px;
+.card-header h4,
+.card-header h5 {
+    margin: 0;
 }
 
 .form-label {
-    font-weight: bold;
+    font-size: 0.85rem;
+    font-weight: 500;
+    color: var(--text-muted);
+}
+
+.form-control,
+.form-select {
+    border-radius: 10px;
+    border: 1px solid var(--input-border);
+    padding: 0.6rem 0.75rem;
+    background: var(--input-bg);
+    color: var(--input-text);
+}
+
+.form-control:focus,
+.form-select:focus {
+    border-color: var(--primary);
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.25);
+}
+
+.table {
+    color: var(--text);
+    background-color: var(--table-bg);
+}
+
+.table thead {
+    background: var(--table-head-bg);
+    color: var(--text-muted);
+}
+
+.table td,
+.table th {
+    border-color: var(--border);
+    vertical-align: middle;
+}
+
+.btn {
+    border-radius: 10px;
+    font-weight: 500;
+}
+
+.btn-primary {
+    background: var(--primary);
+    border-color: var(--primary);
+}
+
+.btn-outline-secondary {
+    color: var(--text-muted);
+    border-color: var(--border);
+}
+
+.btn-outline-secondary:hover {
+    background: var(--border);
+}
+
+.main-footer {
+    position: sticky;
+    bottom: 0;
+    z-index: 1500;
+
+    background-color: var(--surface);
+    color: var(--text-muted);
+
+    border-top: 2px solid var(--primary);
+    box-shadow: 0 -4px 16px rgba(0, 0, 0, 0.15);
+
+    font-size: 0.8rem;
+    padding: 0.75rem 1.25rem;
+}
+
+/* Sticky App Header with strong separation */
+.app-header {
+    position: sticky;
+    top: 0;
+    z-index: 2000;
+
+    background-color: var(--surface);
+    border-bottom: 2px solid var(--primary);
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+}
+
+.app-header .container {
+    display: grid;
+    grid-template-columns: auto 1fr auto;
+    align-items: center;
+    gap: 1rem;
+    padding: 0.75rem 1.25rem;
+}
+
+@media (max-width: 992px) {
+    .app-header .container {
+        grid-template-columns: 1fr;
+        text-align: center;
+    }
+
+    .app-header .container > * {
+        justify-self: center;
+    }
+}
+
+/* Push content slightly under the header so overlap is visible */
+#mainAppArea {
+    margin-top: -24px;
+    padding-top: 50px;
+    margin-left: 20px;
+    margin-right: 20px;
+    padding-bottom: 24px;
+}
+
+/* Header title spacing */
+
+.app-header .btn {
+    margin-left: 0.25rem;
+}
+
+
+/* Optional: soften the first content row so it doesn't visually clash */
+#mainAppArea > .container:first-child {
+    padding-top: 1rem;
+}
+
+
+/* =========================
+   Dark Mode Readability Fixes
+   ========================= */
+
+/* Tables */
+[data-theme="dark"] .table {
+    color: var(--text);
+    background-color: var(--table-bg);
+}
+
+[data-theme="dark"] .table thead {
+    color: var(--text-muted);
+}
+
+[data-theme="dark"] .table-bordered,
+[data-theme="dark"] .table-bordered td,
+[data-theme="dark"] .table-bordered th {
+    border-color: var(--border);
+}
+
+/* Cards */
+[data-theme="dark"] .card {
+    background-color: var(--surface);
+}
+
+[data-theme="dark"] .card-header {
+    border-bottom: 1px solid var(--border);
+}
+
+/* Muted text */
+[data-theme="dark"] .text-muted {
+    color: var(--text-muted) !important;
+}
+
+/* Links */
+[data-theme="dark"] a {
+    color: #93c5fd;
+}
+
+[data-theme="dark"] a:hover {
+    color: #bfdbfe;
+}
+
+/* Modals */
+[data-theme="dark"] .modal-content {
+    background-color: var(--surface);
+    color: var(--text);
+}
+
+[data-theme="dark"] .modal-header,
+[data-theme="dark"] .modal-footer {
+    border-color: var(--border);
+}
+
+/* Charts canvas background helper */
+[data-theme="dark"] canvas {
+    background-color: transparent;
+}
+
+/* =========================
+   Dark Mode – Table & Text Contrast Fix (Admin)
+   ========================= */
+
+/* Table background + text */
+[data-theme="dark"] .table {
+    background-color: var(--table-bg);
+    color: var(--text);
+}
+
+/* Table header */
+[data-theme="dark"] .table thead th {
+    background-color: var(--table-head-bg);
+    color: var(--text);
+    border-bottom: 2px solid var(--border);
+}
+
+/* Table rows */
+[data-theme="dark"] .table tbody tr {
+    background-color: var(--table-bg);
+}
+
+[data-theme="dark"] .table tbody tr:nth-child(even) {
+    background-color: var(--table-bg-alt);
+}
+
+/* Row hover */
+[data-theme="dark"] .table tbody tr:hover {
+    background-color: var(--surface-alt);
+}
+
+/* Table borders */
+[data-theme="dark"] .table td,
+[data-theme="dark"] .table th {
+    border-color: var(--border);
+}
+
+/* Links inside tables */
+[data-theme="dark"] .table a {
+    color: #93c5fd;
+}
+
+[data-theme="dark"] .table a:hover {
+    color: #bfdbfe;
+}
+
+/* Danger / delete buttons inside tables */
+[data-theme="dark"] .table .btn-danger {
+    background-color: #7f1d1d;
+    border-color: #7f1d1d;
+}
+
+/* Admin Area spacing */
+#adminArea {
+    margin-left: 20px;
+    margin-right: 20px;
+}
+
+.app-header h2 {
+    margin: 0;
+    text-align: center;
+    white-space: nowrap;
+}
+
+.app-header .d-md-block {
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+}
+
+/* =========================
+   Dark Mode – Unified Headings System
+   ========================= */
+
+/* App header title */
+[data-theme="dark"] .app-header h2 {
+    color: var(--primary);
+    font-weight: 600;
+}
+
+/* Card section titles */
+[data-theme="dark"] .card-header h4,
+[data-theme="dark"] .card-header h5 {
+    color: var(--text);
+    font-weight: 600;
+}
+
+/* Override Bootstrap .text-primary for headings in card headers (Dark Mode) */
+[data-theme="dark"] .card-header .text-primary {
+    color: var(--text) !important;
+}
+
+/* Generic headings inside content */
+[data-theme="dark"] h1,
+[data-theme="dark"] h2,
+[data-theme="dark"] h3,
+[data-theme="dark"] h4,
+[data-theme="dark"] h5,
+[data-theme="dark"] h6 {
+    color: var(--text);
+}
+
+/* Icons in headings */
+[data-theme="dark"] .card-header i,
+[data-theme="dark"] .app-header i {
+    color: var(--primary);
+}
+
+/* Muted helper text under headings */
+[data-theme="dark"] .card-header small,
+[data-theme="dark"] .card-header .text-muted {
+    color: var(--text-muted) !important;
+}
+
+/* =========================
+   Dark Mode – Form Options & Input Contrast
+   ========================= */
+
+/* Labels & option texts */
+[data-theme="dark"] label,
+[data-theme="dark"] .form-label,
+[data-theme="dark"] .form-check-label {
+    color: var(--text);
+}
+
+/* Radio / checkbox helper text */
+[data-theme="dark"] .form-check-input + label {
+    color: var(--text);
+}
+
+/* Inputs & selects background */
+[data-theme="dark"] .form-control,
+[data-theme="dark"] .form-select,
+[data-theme="dark"] .input-group-text {
+    background-color: var(--input-bg);
+    color: var(--input-text);
+    border-color: var(--input-border);
+}
+
+/* Placeholder text */
+[data-theme="dark"] .form-control::placeholder {
+    color: var(--text-muted);
+}
+
+/* Multi-select / choice boxes */
+[data-theme="dark"] select option {
+    background-color: var(--input-bg);
+    color: var(--input-text);
+}
+
+/* =========================
+   Dark Mode – Tables (Darker & Calmer)
+   ========================= */
+
+[data-theme="dark"] .table {
+    background-color: var(--table-bg);
+}
+
+[data-theme="dark"] .table tbody tr {
+    background-color: var(--table-bg);
+}
+
+[data-theme="dark"] .table tbody tr:nth-child(even) {
+    background-color: var(--table-bg-alt);
+}
+
+[data-theme="dark"] .table thead th {
+    background-color: var(--table-head-bg);
+    color: var(--text);
+}
+
+/* Fix Bootstrap table cell background in Dark Mode */
+[data-theme="dark"] .table > :not(caption) > * > * {
+    background-color: var(--table-bg);
+}
+
+/* =========================
+   Dark Mode – Select2 (Bootstrap 5 Theme)
+   ========================= */
+
+/* Main selection box */
+[data-theme="dark"] .select2-container--bootstrap-5 .select2-selection {
+    background-color: var(--input-bg);
+    color: var(--input-text);
+    border: 1px solid var(--input-border);
+}
+
+/* Rendered selected text */
+[data-theme="dark"] .select2-container--bootstrap-5 .select2-selection__rendered {
+    color: var(--input-text);
+}
+
+/* Placeholder text */
+[data-theme="dark"] .select2-container--bootstrap-5 .select2-selection__placeholder {
+    color: var(--text-muted);
+}
+
+/* Dropdown menu */
+[data-theme="dark"] .select2-container--bootstrap-5 .select2-dropdown {
+    background-color: var(--input-bg);
+    border-color: var(--input-border);
+}
+
+/* Dropdown options */
+[data-theme="dark"] .select2-container--bootstrap-5 .select2-results__option {
+    background-color: var(--input-bg);
+    color: var(--input-text);
+}
+
+/* Hovered option */
+[data-theme="dark"] .select2-container--bootstrap-5 .select2-results__option--highlighted {
+    background-color: var(--surface-alt);
+    color: var(--input-text);
+}
+
+/* Selected option */
+[data-theme="dark"] .select2-container--bootstrap-5 .select2-results__option--selected {
+    background-color: var(--surface);
+    color: var(--input-text);
+}
+
+/* Clear button / arrow */
+[data-theme="dark"] .select2-container--bootstrap-5 .select2-selection__arrow b {
+    border-color: var(--input-text) transparent transparent transparent;
+}
+
+/* Select2 multiple selection tags (Dark Mode) */
+[data-theme="dark"] .select2-container--bootstrap-5
+.select2-selection--multiple
+.select2-selection__choice {
+    background-color: var(--surface-alt);
+    color: var(--text);
+    border: 1px solid var(--border);
+}
+
+[data-theme="dark"] .table {
+    --bs-table-bg: var(--table-bg);
+    --bs-table-striped-bg: var(--table-bg-alt);
+    --bs-table-striped-color: var(--text);
+    --bs-table-hover-bg: var(--surface-alt);
+    --bs-table-hover-color: var(--text);
+}
+
+[data-theme="dark"] .table-striped > tbody > tr:nth-of-type(odd) > * {
+    background-color: var(--table-bg-alt);
+    color: var(--text);
+}
+
+/* =========================
+   Dark Mode – Final table-striped row fix
+   ========================= */
+
+/* Reset any inherited row background */
+[data-theme="dark"] .table tbody tr > * {
+    background-color: var(--table-bg);
+    color: var(--text);
+}
+
+/* Zebra striping – every second row */
+[data-theme="dark"] .table-striped tbody tr:nth-of-type(even) > * {
+    background-color: var(--table-bg-alt);
+}
+
+/* Hover state */
+[data-theme="dark"] .table-striped tbody tr:hover > * {
+    background-color: var(--surface-alt);
+}
+
+/* =========================
+   Dark Mode – List Group (Admin Summary)
+   ========================= */
+
+[data-theme="dark"] .list-group-item {
+    background-color: var(--surface);
+    color: var(--text);
+    border-color: var(--border);
+}
+
+[data-theme="dark"] .list-group-item strong {
+    color: var(--text);
+}
+
+[data-theme="dark"] .list-group-item .float-end {
+    color: var(--text);
+}
+
+/* Remove Bootstrap light hover */
+[data-theme="dark"] .list-group-item:hover {
+    background-color: var(--surface-alt);
 }
