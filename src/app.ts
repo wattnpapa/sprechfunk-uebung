@@ -647,6 +647,15 @@ export class AppController {
     }
 
     startUebung() {
+        // ⚠️ Sicherheitsabfrage: Übung existiert bereits
+        if (this.funkUebung.nachrichten && Object.keys(this.funkUebung.nachrichten).length > 0) {
+            const ok = window.confirm(
+                "Diese Übung wurde bereits generiert.\n\nMöchtest du sie wirklich neu generieren?\nDabei gehen alle bisherigen Nachrichten verloren."
+            );
+            if (!ok) {
+                return;
+            }
+        }
         // Cast the select and file input elements before accessing their properties
         const selectedTemplates: string[] = ($('#funkspruchVorlage').val() as string[]) || [];
 
@@ -713,8 +722,6 @@ export class AppController {
         } else {
             alert("Bitte eine Option auswählen: Vorlagen oder eigene Datei!");
         }
-
-
     }
 
 
