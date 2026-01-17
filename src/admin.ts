@@ -131,8 +131,10 @@ class Admin {
             <td>${uebung.rufgruppe}</td>
             <td>${uebung.leitung}</td>
             <td title="${(uebung.teilnehmerListe || []).join('\n')}">${uebung.teilnehmerListe?.length ?? 0}</td>
-            <td>${uebung.id}</td>
             <td>
+                <button class="btn btn-sm btn-success" onclick="admin.offeneUebungsleitung('${uebung.id}')">
+                    <i class="fas fa-display"></i>
+                </button>
                 <button class="btn btn-sm btn-danger" onclick="admin.loescheUebung('${uebung.id}')">
                     <i class="fas fa-trash-alt"></i>
                 </button>
@@ -164,6 +166,10 @@ class Admin {
             alert("Fehler beim Löschen der Übung.");
         }
     };
+
+    offeneUebungsleitung(uebungId: string): void {
+        location.href = `#/uebungsleitung/${uebungId}`;
+    }
 
     async ladeUebungsStatistik() {
         const snapshot = await getDocs(collection(this.db!, "uebungen"));

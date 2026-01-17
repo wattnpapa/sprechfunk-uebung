@@ -5,23 +5,39 @@
 import type { AppMode } from "./appModes";
 import { initUebungsleitung } from "./uebungsleitung";
 
-function detectAppModeFromPath(): AppMode {
-    // Erwartetes Schema: /#/ <mode>
-    // z. B. /#/admin oder /#/uebungsleitung
+var APP_MODE: AppMode = 'generator'
+
+function handleRoute(): void {
     const hash = window.location.hash.replace(/^#\/?/, "");
     const parts = hash.split("/").filter(Boolean);
 
     const mode = parts[0] as AppMode | undefined;
 
-    if (mode === "admin" || mode === "uebungsleitung") {
-        return mode;
+    if (mode === "uebungsleitung") {
+        const uebungId = parts[1];
+        applyAppMode("uebungsleitung");
+
+        if (uebungId) {
+            // global merken (wird in uebungsleitung genutzt)
+            (window as any).__AKTUELLE_UEBUNG_ID__ = uebungId;
+            initUebungsleitung((window as any).app?.db);
+        }
+        return;
     }
 
-    return "generator";
+    if (mode === "admin") {
+        applyAppMode("admin");
+        admin.ladeAlleUebungen();
+        admin.renderUebungsStatistik();
+        return;
+    }
+
+    // Fallback: Generator
+    applyAppMode("generator");
 }
 
-const APP_MODE: AppMode = detectAppModeFromPath();
-console.log("APP_MODE:", APP_MODE);
+window.addEventListener("DOMContentLoaded", handleRoute);
+window.addEventListener("hashchange", handleRoute);
 
 function initNatoClock(): void {
     const el = document.getElementById("natoTime");
@@ -101,6 +117,8 @@ function applyAppMode(mode: AppMode): void {
             uebungsleitung && (uebungsleitung.style.display = "block");
             break;
     }
+
+    APP_MODE = mode
 }
 
 // =========================

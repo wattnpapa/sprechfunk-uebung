@@ -22,6 +22,14 @@ export function renderTeilnehmerListe(
         return;
     }
 
+    const showLoesungswort =
+        loesungswoerter &&
+        Object.keys(loesungswoerter).length > 0;
+
+    const showStaerke =
+        staerken &&
+        Object.keys(staerken).length > 0;
+
     const rows = teilnehmerListe.map(name => {
         const status: TeilnehmerStatus | undefined =
             getTeilnehmerStatusReadonly(uebungId, name);
@@ -40,7 +48,8 @@ export function renderTeilnehmerListe(
               </button>`
         }
         </td> 
-
+        
+        ${showLoesungswort ? `
         <td>
           <div class="mb-1">
             <small class="text-muted">Soll:</small>
@@ -54,8 +63,10 @@ export function renderTeilnehmerListe(
             data-teilnehmer="${name}"
             value="${status?.loesungswortGesendet ?? ""}"
           />
-        </td> 
+        </td>
+        ` : ``}
 
+        ${showStaerke ? `
         <td>
           <div class="mb-1">
             <small class="text-muted">Soll:</small>
@@ -77,6 +88,7 @@ export function renderTeilnehmerListe(
             `).join("")}
           </div>
         </td>
+        ` : ``}
 
         <td>
           <textarea
@@ -94,12 +106,12 @@ export function renderTeilnehmerListe(
     container.innerHTML = `
     <div class="table-responsive">
       <table class="table table-striped align-middle">
-        <thead>
+       <thead>
           <tr>
             <th>Teilnehmer</th>
             <th>Angemeldet</th>
-            <th>Lösungswort</th>
-            <th>Stärke</th>
+            ${showLoesungswort ? `<th>Lösungswort</th>` : ``}
+            ${showStaerke ? `<th>Stärke</th>` : ``}
             <th>Notizen</th>
           </tr>
         </thead>
