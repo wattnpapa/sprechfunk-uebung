@@ -446,6 +446,16 @@ export class AppController {
         const datumInput = document.getElementById("datum") as HTMLInputElement;
         datumInput.value = isoDate;
 
+        const anmeldungCheckbox = document.getElementById("anmeldungAktiv") as HTMLInputElement;
+        if (anmeldungCheckbox) {
+            anmeldungCheckbox.checked = this.funkUebung.anmeldungAktiv ?? true;
+        }
+
+        document.getElementById("anmeldungAktiv")?.addEventListener("change", (e) => {
+            const target = e.target as HTMLInputElement;
+            this.funkUebung.anmeldungAktiv = target.checked;
+        });
+
         this.renderTeilnehmer();
 
         document.addEventListener("DOMContentLoaded", () => {

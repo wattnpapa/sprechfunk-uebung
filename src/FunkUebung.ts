@@ -25,6 +25,7 @@ export class FunkUebung implements Uebung {
     loesungsStaerken: Record<string, string>;
     checksumme: string;
     funksprueche: string[];
+    anmeldungAktiv: boolean = true;
 
     constructor(buildVersion: string) {
         this.id = uuidv4();
@@ -62,6 +63,7 @@ export class FunkUebung implements Uebung {
 
         this.checksumme = "";
         this.funksprueche = [];
+        this.anmeldungAktiv = true;
     }
 
     updateChecksum() {
@@ -101,7 +103,8 @@ export class FunkUebung implements Uebung {
             spruecheProTeilnehmer: this.spruecheProTeilnehmer,
             spruecheAnAlle: this.spruecheAnAlle,
             spruecheAnMehrere: this.spruecheAnMehrere,
-            buchstabierenAn: this.buchstabierenAn
+            buchstabierenAn: this.buchstabierenAn,
+            anmeldungAktiv: this.anmeldungAktiv
         }, null, 2); // Pretty Print
     }
 
@@ -254,11 +257,13 @@ export class FunkUebung implements Uebung {
             nachrichtenVerteilung[teilnehmer] = [];
 
             // Anmeldungsnachricht
-            nachrichtenVerteilung[teilnehmer].push({
-                id: 1,
-                nachricht: "Ich melde mich in Ihrem Sprechfunkverkehrskreis an.",
-                empfaenger: [this.leitung]
-            });
+            if (this.anmeldungAktiv) {
+                nachrichtenVerteilung[teilnehmer].push({
+                    id: 1,
+                    nachricht: "Ich melde mich in Ihrem Sprechfunkverkehrskreis an.",
+                    empfaenger: [this.leitung]
+                });
+            }
 
             // Nachrichten an 'Alle'
             for (let i = 0; i < anAlle; i++) {
@@ -311,7 +316,8 @@ export class FunkUebung implements Uebung {
 
         // Sicherstellen, dass pro Teilnehmer genügend Buchstabieraufgaben vorhanden sind
         this.teilnehmerListe.forEach(teilnehmer => {
-            const nachrichten = nachrichtenVerteilung[teilnehmer].slice(1); // Ohne Anmeldung
+            const start = this.anmeldungAktiv ? 1 : 0;
+            const nachrichten = nachrichtenVerteilung[teilnehmer].slice(start); // Ohne Anmeldung
             let aktuelleAnzahl = nachrichten.filter(n => enthaeltBuchstabierwort(n.nachricht)).length;
 
             if (aktuelleAnzahl < this.buchstabierenAn) {
@@ -334,9 +340,11 @@ export class FunkUebung implements Uebung {
                 }
             }
         });
-
+        
         const tempCounters: Record<string, number> = {};
-        this.teilnehmerListe.forEach(teilnehmer => tempCounters[teilnehmer] = 2);
+        this.teilnehmerListe.forEach(teilnehmer => {
+            tempCounters[teilnehmer] = this.anmeldungAktiv ? 2 : 1;
+        });
 
         gemischt.forEach(entry => {
             const { sender, nachricht } = entry;
@@ -430,15 +438,17 @@ export class FunkUebung implements Uebung {
         const nachrichten: Nachricht[] = [];
 
         // Erste Nachricht: Anmeldung
-        nachrichten.push({
-            id: 1,
-            nachricht: "Ich melde mich in Ihrem Sprechfunkverkehrskreis an.",
-            empfaenger: [this.leitung]
-        });
+        if (this.anmeldungAktiv) {
+            nachrichten.push({
+                id: 1,
+                nachricht: "Ich melde mich in Ihrem Sprechfunkverkehrskreis an.",
+                empfaenger: [this.leitung]
+            });
+        }
 
         for (let i = 0; i < this.spruecheProTeilnehmer; i++) {
             const nachrichtObj: Nachricht = {
-                id: i + 2,
+                id: i + 5,
                 nachricht: gemischteFunksprueche[i],
                 empfaenger: []
             };
