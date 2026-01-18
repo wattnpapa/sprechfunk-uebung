@@ -48,12 +48,12 @@ function initNatoClock(): void {
 
     const update = () => {
         const now = new Date();
-        const day = pad(now.getUTCDate());
-        const hours = pad(now.getUTCHours());
-        const minutes = pad(now.getUTCMinutes());
-        const seconds = pad(now.getUTCSeconds());
-        const month = months[now.getUTCMonth()];
-        const year = String(now.getUTCFullYear()).slice(-2);
+        const day = pad(now.getDate());
+        const hours = pad(now.getHours());
+        const minutes = pad(now.getMinutes());
+        const seconds = pad(now.getSeconds());
+        const month = months[now.getMonth()];
+        const year = String(now.getFullYear()).slice(-2);
 
         el.textContent = `${day}${hours}${minutes}${month}${year}`;
     };

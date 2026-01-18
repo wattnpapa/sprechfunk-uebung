@@ -20,7 +20,7 @@ export function formatNatoDate(value: unknown): string {
         const day = String(d.getDate()).padStart(2, "0");
         const hh = String(d.getHours()).padStart(2, "0");
         const mm = String(d.getMinutes()).padStart(2, "0");
-        const mon = MONTHS[d.getUTCMonth()];
+        const mon = MONTHS[d.getMonth()];
         const yy = String(d.getFullYear()).slice(-2);
 
         return `${day}${hh}${mm}${mon}${yy}`;
