@@ -340,7 +340,7 @@ export class FunkUebung implements Uebung {
                 }
             }
         });
-        
+
         const tempCounters: Record<string, number> = {};
         this.teilnehmerListe.forEach(teilnehmer => {
             tempCounters[teilnehmer] = this.anmeldungAktiv ? 2 : 1;

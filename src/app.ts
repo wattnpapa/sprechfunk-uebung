@@ -241,7 +241,19 @@ export class AppController {
             })
             .finally(async () => {
                 const urlParams = new URLSearchParams(window.location.search);
-                const uebungId = urlParams.get("id");
+                const hash = window.location.hash.replace(/^#\/?/, "");
+                const parts = hash.split("/").filter(Boolean);
+
+                // Priorität 1: Hash-Routing
+                let uebungId: string | null = null;
+
+                if (parts.length >= 2 && parts[1]) {
+                    uebungId = parts[1];
+                } else {
+                    // Fallback: alte Variante ?id=
+                    const urlParams = new URLSearchParams(window.location.search);
+                    uebungId = urlParams.get("id");
+                }
 
                 if (uebungId) {
                     const docRef = doc(this.db, "uebungen", uebungId);
@@ -1321,7 +1333,7 @@ export class AppController {
         const linkElement = document.getElementById("link-uebung-direkt")! as HTMLAnchorElement;
         const linkUebungsMonitorElement = document.getElementById("link-uebungsleitung-direkt")! as HTMLAnchorElement;
         if (this.funkUebung.id) {
-            const urlUebung = `${window.location.origin}${window.location.pathname}?id=${this.funkUebung.id}`;
+            const urlUebung = `${window.location.origin}${window.location.pathname}#/generator/${this.funkUebung.id}`;
             linkElement.href = urlUebung;
             linkElement.textContent = urlUebung;
 

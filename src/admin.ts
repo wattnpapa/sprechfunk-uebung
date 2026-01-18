@@ -126,12 +126,15 @@ class Admin {
             const tr = document.createElement("tr");
             tr.innerHTML = `
             <td>${new Date(uebung.createDate).toLocaleString()}</td>
-            <td><a href="?id=${uebung.id}" target="_blank">${uebung.name}</a></td>
+            <td><a href="#/generator/${uebung.id}" target="_blank">${uebung.name}</a></td>
             <td>${new Date(uebung.datum).toLocaleDateString()}</td>
             <td>${uebung.rufgruppe}</td>
             <td>${uebung.leitung}</td>
             <td title="${(uebung.teilnehmerListe || []).join('\n')}">${uebung.teilnehmerListe?.length ?? 0}</td>
             <td>
+                 <button class="btn btn-sm btn-warning" onclick="admin.uebungAnschauen('${uebung.id}')">
+                    <i class="fa-solid fa-magnifying-glass"></i>
+                </button>
                 <button class="btn btn-sm btn-success" onclick="admin.offeneUebungsleitung('${uebung.id}')">
                     <i class="fas fa-display"></i>
                 </button>
@@ -170,6 +173,11 @@ class Admin {
     offeneUebungsleitung(uebungId: string): void {
         location.href = `#/uebungsleitung/${uebungId}`;
     }
+
+    uebungAnschauen(uebungId: string): void {
+        location.href = `#/generator/${uebungId}`;
+    }
+
 
     async ladeUebungsStatistik() {
         const snapshot = await getDocs(collection(this.db!, "uebungen"));
