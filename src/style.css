@@ -103,6 +103,10 @@ body {
     --input-bg: #ffffff;
     --input-text: #111827;
     --input-border: #e5e7eb;
+
+    /* Status Success (abgesetzte Nachrichten) */
+    --status-success-bg: #e6f4ea;
+    --status-success-text: #065f46;
 }
 
 [data-theme="dark"] {
@@ -131,6 +135,10 @@ body {
     --input-bg: #020617;
     --input-text: #e5e7eb;
     --input-border: #334155;
+
+    /* Status Success (abgesetzte Nachrichten) */
+    --status-success-bg: #0b3a2e;
+    --status-success-text: #d1fae5;
 }
 
 body {
@@ -251,7 +259,6 @@ body {
     position: sticky;
     top: 0;
     z-index: 5000;
-
     background-color: var(--surface);
     border-bottom: 2px solid var(--primary);
     box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
@@ -700,4 +707,42 @@ body {
 [data-theme="dark"]
 #uebungsleitungNachrichten table tbody tr:not(:first-child) td {
     border-top: 3px solid var(--primary);
+}
+
+/* =====================================================
+   Abgesetzte Nachrichten – Bootstrap-konform & Dark Mode
+   ===================================================== */
+
+/* Light + Dark Mode über Bootstrap-Tabellenvariablen */
+.table-success {
+    --bs-table-bg: var(--status-success-bg);
+    --bs-table-striped-bg: var(--status-success-bg);
+    --bs-table-hover-bg: var(--status-success-bg);
+    --bs-table-color: var(--status-success-text);
+    --bs-table-striped-color: var(--status-success-text);
+    --bs-table-hover-color: var(--status-success-text);
+    --bs-table-border-color: var(--border);
+}
+
+/* Inhalte innerhalb der Zeile */
+.table-success td,
+.table-success th {
+    color: var(--status-success-text);
+}
+
+/* Nachrichtentext & Textarea bleiben lesbar */
+.table-success .nachricht-text,
+.table-success textarea {
+    color: var(--status-success-text);
+}
+
+/* Textarea-Hintergrund neutral halten */
+.table-success textarea {
+    background-color: var(--input-bg);
+    border-color: var(--border);
+}
+
+/* Placeholder im Dark Mode */
+[data-theme="dark"] .table-success textarea::placeholder {
+    color: var(--text-muted);
 }
