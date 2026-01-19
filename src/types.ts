@@ -25,5 +25,5 @@ export interface TeilnehmerStatus {
 export interface NachrichtenStatus {
     abgesetztUm?: string;
     bestaetigt?: boolean;
-    notizen?: string;
+    notiz?: string;
 }

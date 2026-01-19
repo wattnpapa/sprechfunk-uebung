@@ -53,3 +53,20 @@ export function getNachrichtenStatusReadonly(
     const key = `${sender}__${nr}`;
     return storage.nachrichten[key];
 }
+
+export function setNachrichtenNotiz(
+    uebungId: string,
+    sender: string,
+    nr: number,
+    notiz: string
+) {
+    const storage = loadUebungsleitungStorage(uebungId);
+    const key = `${sender}__${nr}`;
+
+    if (!storage.nachrichten[key]) {
+        storage.nachrichten[key] = {};
+    }
+
+    storage.nachrichten[key].notiz = notiz;
+    saveUebungsleitungStorage(storage);
+}

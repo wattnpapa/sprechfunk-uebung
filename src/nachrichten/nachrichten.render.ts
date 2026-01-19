@@ -1,7 +1,7 @@
 // src/uebungsleitung/nachrichten/nachrichten.render.ts
-import { markNachrichtAbgesetzt, getNachrichtenStatusReadonly } from "./nachrichten.state";
-import { loadUebungsleitungStorage, saveUebungsleitungStorage } from "../storage";
-import { formatNatoDate } from "../utils/date";
+import {markNachrichtAbgesetzt, getNachrichtenStatusReadonly, setNachrichtenNotiz} from "./nachrichten.state";
+import {loadUebungsleitungStorage, saveUebungsleitungStorage} from "../storage";
+import {formatNatoDate} from "../utils/date";
 
 let hideAbgesetzteNachrichten = false;
 
@@ -95,34 +95,41 @@ export function renderNachrichtenliste(
         updateNachrichtenProgress(uebungId, nachrichten);
     }
     const rows = nachrichten
-      .filter(n => {
-        if (!hideAbgesetzteNachrichten) return true;
+        .filter(n => {
+            if (!hideAbgesetzteNachrichten) return true;
 
-        const status = uebungId
-          ? getNachrichtenStatusReadonly(uebungId, n.sender, n.nr)
-          : undefined;
+            const status = uebungId
+                ? getNachrichtenStatusReadonly(uebungId, n.sender, n.nr)
+                : undefined;
 
-        return !status?.abgesetztUm;
-      })
-      .map(n => {
-        const status = uebungId
-            ? getNachrichtenStatusReadonly(uebungId, n.sender, n.nr)
-            : undefined;
+            return !status?.abgesetztUm;
+        })
+        .map(n => {
+            const status = uebungId
+                ? getNachrichtenStatusReadonly(uebungId, n.sender, n.nr)
+                : undefined;
 
-        const abgesetzt = Boolean(status?.abgesetztUm);
-
-        return `
+            const abgesetzt = Boolean(status?.abgesetztUm);
+            const notiz = status?.notiz ?? "";
+            return `
     <tr class="${abgesetzt ? "table-success" : ""}">
       <td class="text-center fw-bold">${n.nr}</td>
       <td>${n.empfaenger.map(e => `<div>${e}</div>`).join("")}</td>
       <td>${n.sender}</td>
       <td class="nachricht-text">
-        ${escapeHtml(n.text).replace(/\n/g, "<br>")}
-      </td>
+          ${escapeHtml(n.text).replace(/\n/g, "<br>")}
+        
+          <textarea
+            class="form-control form-control-sm mt-2 nachricht-notiz"
+            data-nr="${n.nr}"
+            data-sender="${escapeAttr(n.sender)}"
+            placeholder="Notiz zur Nachricht…"
+          >${escapeHtml(notiz)}</textarea>
+        </td>
       <td class="text-center">
         ${
-  abgesetzt
-    ? `
+                abgesetzt
+                    ? `
       <div class="d-flex gap-2 justify-content-center">
         <span class="badge bg-success">abgesetzt</span>
         <button
@@ -135,19 +142,19 @@ export function renderNachrichtenliste(
         </button>
       </div>
     `
-    : `<button
+                    : `<button
          class="btn btn-sm btn-outline-success"
          data-action="abgesetzt"
          data-nr="${n.nr}"
          data-sender="${escapeAttr(n.sender)}">
          ✓ abgesetzt
        </button>`
-}
+            }
       </td>
       <td>${status?.abgesetztUm ? formatNatoDate(status.abgesetztUm) : ""}</td>
     </tr>
   `;
-    }).join("");
+        }).join("");
 
     container.innerHTML = `
         <div class="table-responsive">
@@ -192,7 +199,7 @@ export function renderNachrichtenliste(
             const sender = String(btn.dataset.sender || "");
             const uebungId = (window as any).__AKTUELLE_UEBUNG_ID__;
 
-            console.log("[CLICK] Abgesetzt gedrückt", { nr, sender, uebungId });
+            console.log("[CLICK] Abgesetzt gedrückt", {nr, sender, uebungId});
 
             if (!uebungId) {
                 console.warn("[CLICK] Keine Übungs-ID gefunden");
@@ -216,36 +223,50 @@ export function renderNachrichtenliste(
         });
     });
     container.querySelectorAll<HTMLButtonElement>(
-      'button[data-action="reset"]'
+        'button[data-action="reset"]'
     ).forEach(btn => {
-      btn.addEventListener("click", () => {
-        const nr = Number(btn.dataset.nr);
-        const sender = String(btn.dataset.sender || "");
-        const uebungId = (window as any).__AKTUELLE_UEBUNG_ID__;
+        btn.addEventListener("click", () => {
+            const nr = Number(btn.dataset.nr);
+            const sender = String(btn.dataset.sender || "");
+            const uebungId = (window as any).__AKTUELLE_UEBUNG_ID__;
 
-        if (!uebungId || !sender) return;
+            if (!uebungId || !sender) return;
 
-        const storage = loadUebungsleitungStorage(uebungId);
-        const key = `${sender}__${nr}`;
-        delete storage.nachrichten[key];
-        saveUebungsleitungStorage(storage);
+            const storage = loadUebungsleitungStorage(uebungId);
+            const key = `${sender}__${nr}`;
+            delete storage.nachrichten[key];
+            saveUebungsleitungStorage(storage);
 
-        console.log("[STATE] Nachricht zurückgesetzt", { sender, nr });
+            console.log("[STATE] Nachricht zurückgesetzt", {sender, nr});
 
-        const u = (window as any).__AKTUELLE_UEBUNG__;
-        renderNachrichtenliste(buildNachrichtenliste(u));
-      });
+            const u = (window as any).__AKTUELLE_UEBUNG__;
+            renderNachrichtenliste(buildNachrichtenliste(u));
+        });
     });
 
     const toggle = document.getElementById("toggleHideAbgesetzt") as HTMLInputElement | null;
     if (toggle) {
-      toggle.addEventListener("change", () => {
-        hideAbgesetzteNachrichten = toggle.checked;
+        toggle.addEventListener("change", () => {
+            hideAbgesetzteNachrichten = toggle.checked;
 
-        const u = (window as any).__AKTUELLE_UEBUNG__;
-        renderNachrichtenliste(buildNachrichtenliste(u));
-      });
+            const u = (window as any).__AKTUELLE_UEBUNG__;
+            renderNachrichtenliste(buildNachrichtenliste(u));
+        });
     }
+
+    container.querySelectorAll<HTMLTextAreaElement>(
+        "textarea.nachricht-notiz"
+    ).forEach(textarea => {
+        textarea.addEventListener("input", () => {
+            const nr = Number(textarea.dataset.nr);
+            const sender = String(textarea.dataset.sender);
+            const uebungId = (window as any).__AKTUELLE_UEBUNG_ID__;
+
+            if (!uebungId || !sender) return;
+
+            setNachrichtenNotiz(uebungId, sender, nr, textarea.value);
+        });
+    });
 }
 
 /**
