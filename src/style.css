@@ -713,7 +713,6 @@ body {
    Abgesetzte Nachrichten – Bootstrap-konform & Dark Mode
    ===================================================== */
 
-/* Light + Dark Mode über Bootstrap-Tabellenvariablen */
 .table-success {
     --bs-table-bg: var(--status-success-bg);
     --bs-table-striped-bg: var(--status-success-bg);
@@ -724,25 +723,43 @@ body {
     --bs-table-border-color: var(--border);
 }
 
-/* Inhalte innerhalb der Zeile */
+/* 🔒 Erzwinge Hintergrund auf ZELL-Ebene */
+.table-success > td,
+.table-success > th,
 .table-success td,
 .table-success th {
-    color: var(--status-success-text);
+    background-color: var(--status-success-bg) !important;
+    color: var(--status-success-text) !important;
 }
 
-/* Nachrichtentext & Textarea bleiben lesbar */
+/* 🔒 table-striped darf NICHT eingreifen */
+.table-striped > tbody > tr.table-success > * {
+    background-color: var(--status-success-bg) !important;
+    color: var(--status-success-text) !important;
+}
+
+/* 🔒 Hover ebenfalls neutralisieren */
+.table-striped > tbody > tr.table-success:hover > * {
+    background-color: var(--status-success-bg) !important;
+}
+
+/* Nachricht & Notizen */
 .table-success .nachricht-text,
 .table-success textarea {
     color: var(--status-success-text);
 }
 
-/* Textarea-Hintergrund neutral halten */
 .table-success textarea {
     background-color: var(--input-bg);
     border-color: var(--border);
 }
 
-/* Placeholder im Dark Mode */
-[data-theme="dark"] .table-success textarea::placeholder {
+/* Placeholder */
+.table-success textarea::placeholder {
     color: var(--text-muted);
+}
+
+.modal-dialog {
+    padding-top: 50px;
+    padding-bottom: 50px;
 }

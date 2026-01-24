@@ -166,7 +166,7 @@ export function renderNachrichtenliste(
                     <th style="width:200px;">Sender</th>
                     <th>Nachricht</th>
                     <th style="width:140px;" class="text-center">
-                      Status
+                      Abgesetzt 
                       <div class="form-check form-switch d-inline-flex ms-2 align-middle">
                         <input
                           class="form-check-input"
@@ -177,7 +177,7 @@ export function renderNachrichtenliste(
                         <label
                           class="form-check-label small ms-1"
                           for="toggleHideAbgesetzt">
-                          ausblenden
+                           ausblenden
                         </label>
                       </div>
                     </th>

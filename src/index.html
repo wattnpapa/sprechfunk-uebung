@@ -173,90 +173,6 @@
 
 <div id="mainAppArea" style="display: block;">
 
-    <!-- Modal -->
-    <div class="modal fade" id="howtoModal" tabindex="-1" aria-labelledby="howtoModalLabel" aria-hidden="true">
-        <div class="modal-dialog" style="max-width: 90%;">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title" id="howtoModalLabel">Anleitung</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-                <div class="modal-body">
-                    <div id="howtoContent">Lädt...</div>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Schließen</button>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Modal für die Autor-Info -->
-    <div class="modal fade" id="authorModal" tabindex="-1" aria-labelledby="authorModalLabel" aria-hidden="true">
-        <div class="modal-dialog modal-lg"> <!-- Größeres Modal -->
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title" id="authorModalLabel">Über den Autor</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Schließen"></button>
-                </div>
-                <div class="modal-body text-center">
-
-                    <!-- Gravatar Bild -->
-                    <img src="https://www.gravatar.com/avatar/b4d8c8a87a392586b9caee287180163b?s=200"
-                         alt="Johannes Rudolph" class="rounded-circle mb-3" width="150" height="150">
-
-                    <h4>👋 Moin! Ich bin Johannes.</h4>
-                    <p>
-                        Technik-Enthusiast, Problemlöser und immer auf der Suche nach smarten Lösungen – sei es
-                        in
-                        der IT, im Ehrenamt oder im Alltag.
-                    </p>
-                    <h5>💼 Beruflich</h5>
-                    <p>
-                        Als <b>Head of Business Development</b> bei DIA Connecting Software bin ich die
-                        Schnittstelle zwischen Entwicklern, Kunden und Management.
-                        Mein Fokus liegt auf der <b>Vernetzung von Systemen</b>, um Unternehmen effizienter zu
-                        machen. Ich liebe es, komplexe technische Herausforderungen
-                        in einfache, greifbare Lösungen zu verwandeln.
-                    </p>
-                    <h5>🚀 Privat</h5>
-                    <p>
-                        In meiner Freizeit bin ich ein echter Macher – sei es bei <b>DIY-Projekten, smarter
-                        Technik
-                        oder Heimautomation</b>. Ich probiere gerne neue Dinge aus
-                        und optimiere Prozesse, egal ob digital oder analog. Außerdem verbringe ich viel Zeit
-                        mit
-                        meiner Familie und liebe es, Technik in den Alltag zu integrieren.
-                    </p>
-                    <h5>📟 Ehrenamtliches Engagement</h5>
-                    <p>
-                        Seit <b>2007 bin ich beim Technischen Hilfswerk (THW)</b> aktiv. Aktuell bin ich
-                        <b>Gruppenführer der Fachgruppe Kommunikation</b> und
-                        <b>Bereichsausbilder für Sprechfunk</b>. Im Einsatz übernehme ich die Rolle des
-                        <b>Sachgebietsleiters in Führungsstellen und Einsatzleitungen</b>.
-                        Mein Schwerpunkt liegt darauf, sichere Kommunikationswege für Einsatzkräfte zu
-                        gewährleisten
-                        und digitale Technologien im Krisenmanagement zu nutzen.
-                    </p>
-                    <h5>📌 Mein Motto:</h5>
-                    <p class="fst-italic">"Technik verstehen, vernetzen und sinnvoll einsetzen – beruflich,
-                        privat
-                        und im Ehrenamt."</p>
-                    <h5>📡 Interessen:</h5>
-                    <ul class="list-unstyled">
-                        <li>✔ IT & Softwareentwicklung</li>
-                        <li>✔ Funktechnik & Kommunikation</li>
-                        <li>✔ Automatisierung & smarte Technologien</li>
-                        <li>✔ Katastrophenschutz & Führungsstrukturen</li>
-                    </ul>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Schließen</button>
-                </div>
-            </div>
-        </div>
-    </div>
-
     <!-- Hauptbereich mit Kopfdaten, Einstellungen und Teilnehmerverwaltung nebeneinander -->
     <div class="row">
 
@@ -594,7 +510,6 @@
                                     <li><strong>Verbindungsaufbau:</strong> 5 Sekunden + 3 Sekunden je
                                         zusätzlichem
                                         Empfänger
-                                    </li>
                                     <li><strong>Verbindungsabbau:</strong> 3 Sekunden</li>
                                 </ul>
                                 <p class="mb-1"><strong>Langsame Dauer:</strong> Optimale Dauer × 1.5 (wenn
@@ -722,6 +637,90 @@
                         <span id="infoBuchstabieren" class="float-end">–%</span>
                     </li>
                 </ul>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal -->
+<div class="modal fade" id="howtoModal" tabindex="-1" aria-labelledby="howtoModalLabel" aria-hidden="true">
+    <div class="modal-dialog" style="max-width: 90%;">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="howtoModalLabel">Anleitung</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div id="howtoContent">Lädt...</div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Schließen</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal für die Autor-Info -->
+<div class="modal fade" id="authorModal" tabindex="-1" aria-labelledby="authorModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg"> <!-- Größeres Modal -->
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="authorModalLabel">Über den Autor</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Schließen"></button>
+            </div>
+            <div class="modal-body text-center">
+
+                <!-- Gravatar Bild -->
+                <img src="https://www.gravatar.com/avatar/b4d8c8a87a392586b9caee287180163b?s=200"
+                     alt="Johannes Rudolph" class="rounded-circle mb-3" width="150" height="150">
+
+                <h4>👋 Moin! Ich bin Johannes.</h4>
+                <p>
+                    Technik-Enthusiast, Problemlöser und immer auf der Suche nach smarten Lösungen – sei es
+                    in
+                    der IT, im Ehrenamt oder im Alltag.
+                </p>
+                <h5>💼 Beruflich</h5>
+                <p>
+                    Als <b>Head of Business Development</b> bei DIA Connecting Software bin ich die
+                    Schnittstelle zwischen Entwicklern, Kunden und Management.
+                    Mein Fokus liegt auf der <b>Vernetzung von Systemen</b>, um Unternehmen effizienter zu
+                    machen. Ich liebe es, komplexe technische Herausforderungen
+                    in einfache, greifbare Lösungen zu verwandeln.
+                </p>
+                <h5>🚀 Privat</h5>
+                <p>
+                    In meiner Freizeit bin ich ein echter Macher – sei es bei <b>DIY-Projekten, smarter
+                    Technik
+                    oder Heimautomation</b>. Ich probiere gerne neue Dinge aus
+                    und optimiere Prozesse, egal ob digital oder analog. Außerdem verbringe ich viel Zeit
+                    mit
+                    meiner Familie und liebe es, Technik in den Alltag zu integrieren.
+                </p>
+                <h5>📟 Ehrenamtliches Engagement</h5>
+                <p>
+                    Seit <b>2007 bin ich beim Technischen Hilfswerk (THW)</b> aktiv. Aktuell bin ich
+                    <b>Gruppenführer der Fachgruppe Kommunikation</b> und
+                    <b>Bereichsausbilder für Sprechfunk</b>. Im Einsatz übernehme ich die Rolle des
+                    <b>Sachgebietsleiters in Führungsstellen und Einsatzleitungen</b>.
+                    Mein Schwerpunkt liegt darauf, sichere Kommunikationswege für Einsatzkräfte zu
+                    gewährleisten
+                    und digitale Technologien im Krisenmanagement zu nutzen.
+                </p>
+                <h5>📌 Mein Motto:</h5>
+                <p class="fst-italic">"Technik verstehen, vernetzen und sinnvoll einsetzen – beruflich,
+                    privat
+                    und im Ehrenamt."</p>
+                <h5>📡 Interessen:</h5>
+                <ul class="list-unstyled">
+                    <li>✔ IT & Softwareentwicklung</li>
+                    <li>✔ Funktechnik & Kommunikation</li>
+                    <li>✔ Automatisierung & smarte Technologien</li>
+                    <li>✔ Katastrophenschutz & Führungsstrukturen</li>
+                </ul>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Schließen</button>
             </div>
         </div>
     </div>
