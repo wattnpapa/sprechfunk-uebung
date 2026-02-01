@@ -610,12 +610,24 @@ export class FunkUebung implements Uebung {
 
                 // Weise die Buchstaben in der ersten Hälfte der Nachrichten zu
                 buchstabenMitIndex.forEach((buchstabeMitIndex, i) => {
+                    // Zielnachricht bestimmen
+                    let zielNachricht: Nachricht;
+
                     if (i < ersteHaelfte.length) {
-                        ersteHaelfte[i].nachricht += ` ${buchstabeMitIndex}`;
+                        zielNachricht = ersteHaelfte[i];
                     } else {
                         // Falls mehr Buchstaben als Nachrichten, verteilen wir den Rest in der gesamten Liste
-                        nachrichtenFuerEmpfaenger[i % nachrichtenFuerEmpfaenger.length].nachricht += ` ${buchstabeMitIndex}`;
+                        zielNachricht = nachrichtenFuerEmpfaenger[i % nachrichtenFuerEmpfaenger.length];
                     }
+
+                    // Text erweitern (bestehendes Verhalten)
+                    zielNachricht.nachricht += ` ${buchstabeMitIndex}`;
+
+                    // --- NEU: Buchstabe auch im Array speichern ---
+                    if (!zielNachricht.loesungsbuchstaben) {
+                        zielNachricht.loesungsbuchstaben = [];
+                    }
+                    zielNachricht.loesungsbuchstaben.push(buchstabeMitIndex);
                 });
             }
         });
