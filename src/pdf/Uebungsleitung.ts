@@ -29,33 +29,19 @@ export class Uebungsleitung extends BasePDF {
         // **1. Kopfzeile für erste Seite**
         this.pdf.setFont("helvetica", "bold");
         this.pdf.setFontSize(16);
-        this.pdf.text(`${this.funkUebung.name}`, this.pdfWidth / 2, y, { align: "center" });
-        y = y + 5;
+        this.pdf.text(`${this.funkUebung.name}` + DateFormatter.formatNATODate(this.funkUebung.datum, false), this.pdfWidth / 2, y, { align: "center" });
+        y = y + 8;
 
         this.pdf.setFontSize(14);
-        this.pdf.text(`Übungsleitung`, this.pdfWidth / 2, y, { align: "center" });
+        this.pdf.text(`Übungsleitung: ` + this.funkUebung.leitung, this.pdfWidth / 2, y, { align: "center" });
+        y = y + 8;
+
+        this.pdf.setFontSize(14);
+        this.pdf.text(`Rufgruppe: ` + this.funkUebung.rufgruppe, this.pdfWidth / 2, y, { align: "center" });
         y = y + 5;
 
-        // **2. Kopfdaten-Tabelle (links)**
-        let kopfdatenWidth = contentWidth * 0.35;
-        //this.drawKopfdatenTable(pdf, funkUebung, firstTableStartY, pageMargin, kopfdatenWidth);
-        (this.pdf as any).autoTable({
-            head: [["Beschreibung", "Wert"]],
-            body: [
-                ["Datum", DateFormatter.formatNATODate(this.funkUebung.datum, false)],
-                ["Rufgruppe", this.funkUebung.rufgruppe],
-                ["Betriebsleitung", this.funkUebung.leitung]
-            ],
-            startY: y,
-            margin: { left: pageMarginLeft },
-            tableWidth: kopfdatenWidth,
-            theme: "grid",
-            styles: { fontSize: 10, cellPadding: 3, lineWidth: 0.1, lineColor: [0, 0, 0] },
-            headStyles: { fillColor: [200, 200, 200] }
-        });
-
         // **3. Teilnehmerliste (rechts)**
-        let tableStartY = Math.max((this.pdf as any).lastAutoTable.finalY + 10, 75);
+        let tableStartY = y
 
         const stellen = this.funkUebung.teilnehmerStellen;
 
@@ -66,32 +52,48 @@ export class Uebungsleitung extends BasePDF {
                 teilnehmerAnzeige = `${stellen[teilnehmer]}\n${teilnehmer}`;
             }
 
+            // Stärke-Spalte: Nur Gesamtstärke
+            const staerkeValue = this.funkUebung.loesungsStaerken?.[teilnehmer] ?? "0/0/0/0";
+
             return [
                 teilnehmerAnzeige,
                 "", // Platz für Anmeldezeitpunkt
                 this.funkUebung.loesungswoerter?.[teilnehmer] ?? "", // Lösungswort
-                this.funkUebung.loesungsStaerken?.[teilnehmer] ?? "0/0/0//0", // Stärke
+                staerkeValue, // Nur Gesamtstärke
                 "" // Bemerkungen
             ];
         });
 
-        let columnWidths = [60, 35, 60, 25, 95]; // Anpassung für saubere Darstellung
+        // Spaltenbreiten relativ zur verfügbaren Breite berechnen (verhindert Überlauf)
+        const wTeilnehmer = contentWidth * 0.21;
+        const wAnmeldung = contentWidth * 0.12;
+        const wLoesungswort = contentWidth * 0.21;
+        const wStaerke = contentWidth * 0.20;
+        const wBemerkungen = contentWidth - wTeilnehmer - wAnmeldung - wLoesungswort - wStaerke;
+
 
         (this.pdf as any).autoTable({
             head: [["Teilnehmer", "Anmeldung", "Lösungswort", "Stärke", "Bemerkungen"]],
             body: tableBody,
             startY: tableStartY,
             theme: "grid",
-            margin: { left: pageMarginLeft, top: secondPageTableTopMargin },
+            pageBreak: "auto",
+            margin: { left: pageMarginLeft, top: secondPageTableTopMargin, bottom: pageMarginBottom },
             tableWidth: contentWidth,
             columnStyles: {
-                0: { cellWidth: columnWidths[0] },
-                1: { cellWidth: columnWidths[1] },
-                2: { cellWidth: columnWidths[2] },
-                3: { cellWidth: columnWidths[3] },
-                4: { cellWidth: columnWidths[4] }
+                0: { cellWidth: wTeilnehmer },
+                1: { cellWidth: wAnmeldung },
+                2: { cellWidth: wLoesungswort },
+                3: { cellWidth: wStaerke, cellPadding: 2, valign: "top" },
+                4: { cellWidth: wBemerkungen }
             },
-            styles: { fontSize: tableFontSize, cellPadding: 3, lineWidth: 0.1, lineColor: [0, 0, 0] },
+            styles: {
+                fontSize: tableFontSize,
+                cellPadding: 2,
+                lineWidth: 0.1,
+                lineColor: [0, 0, 0],
+                overflow: "linebreak"
+            },
             headStyles: { fillColor: [200, 200, 200] }
         });
 
@@ -123,7 +125,6 @@ export class Uebungsleitung extends BasePDF {
         let withCheckBox = 12;
         let senderWidth = empfaengerWidth; // gleiche Breite wie Empfänger
         let columnWidthsAll = [lfdnrWidth, empfaengerWidth, senderWidth, contentWidth - lfdnrWidth - (empfaengerWidth * 2) - withCheckBox, withCheckBox];
-
         // Neuen Y-Startpunkt nach der Teilnehmer-Tabelle
         this.pdf.addPage();
         let nextTableStartY = secondPageTableTopMargin;
@@ -177,9 +178,8 @@ export class Uebungsleitung extends BasePDF {
             if (pageNumber > 1) {
                 this.pdf.setFont("helvetica", "normal");
                 this.pdf.setFontSize(10);
-
                 // **Links: Funkrufname**
-                this.pdf.text(`Übungsleitung`, pageMarginLeft, 20);
+                this.pdf.text(`Übungsleitung: ` + this.funkUebung.leitung + ' - Rufgruppe: ' + this.funkUebung.rufgruppe, pageMarginLeft, 20);
 
                 // **Rechts: Name der Übung**
                 let rightText = this.funkUebung.name + " - " + DateFormatter.formatNATODate(this.funkUebung.datum, false)
@@ -194,10 +194,6 @@ export class Uebungsleitung extends BasePDF {
             //this.drawHeader(pdf, "Übungsleitung", j, pdfWidth, pageMargin, funkUebung);
             this.pdf.setFont("helvetica", "normal");
             this.pdf.setFontSize(8);
-
-            // Hinweis über der Linie
-            this.pdf.text("Wörter in GROSSBUCHSTABEN müssen buchstabiert werden.", pageMarginLeft, this.pdfHeight - 20);
-
             // Trennlinie unter dem Hinweis
             this.pdf.setDrawColor(0);
             this.pdf.line(pageMarginLeft, this.pdfHeight - 15, this.pdfWidth - pageMarginRight, this.pdfHeight - 15);
