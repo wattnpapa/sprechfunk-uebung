@@ -30,6 +30,9 @@ export function renderTeilnehmerListe(
         staerken &&
         Object.keys(staerken).length > 0;
 
+    // Toggle for Stärke-Details
+    const showStaerkeDetails = (window as any).__SHOW_STAERKE_DETAILS__ ?? false;
+
     const rows = teilnehmerListe.map(name => {
         const status: TeilnehmerStatus | undefined =
             getTeilnehmerStatusReadonly(uebungId, name);
@@ -79,12 +82,33 @@ export function renderTeilnehmerListe(
           />
         </td>
         ` : ``}
-
+ 
         ${showStaerke ? `
         <td>
           <div class="mb-1">
             <small class="text-muted">Soll:</small>
-            <strong>${staerken[name] ?? "–"}</strong>
+            <span style="float: right;"><strong>${staerken[name] ?? "–"}</strong></span>
+            ${(() => {
+              const u = (window as any).__AKTUELLE_UEBUNG__;
+              const nachrichten = u?.nachrichten || {};
+              const details: string[] = [];
+
+              Object.entries(nachrichten).forEach(([absender, liste]: any) => {
+                (liste as any[]).forEach(n => {
+                  if (n.empfaenger?.includes(name) && n.staerken?.length) {
+                    n.staerken.forEach((s: any) => {
+                      details.push(
+                        `<div><small class="text-muted">Von ${absender}:</small><span style="float:right;">${s.fuehrer}/${s.unterfuehrer}/${s.helfer}/${(Number(s.fuehrer)||0)+(Number(s.unterfuehrer)||0)+(Number(s.helfer)||0)}</span></div>`
+                      );
+                    });
+                  }
+                });
+              });
+
+              if (!showStaerkeDetails) return "";
+              if (!details.length) return "";
+              return `<div class="mt-1">${details.join("")}</div>`;
+            })()}
           </div>
           <div class="d-flex gap-1">
             ${[0, 1, 2, 3].map(i => `
@@ -125,7 +149,14 @@ export function renderTeilnehmerListe(
             <th>Teilnehmer</th>
             <th>Angemeldet</th>
             ${showLoesungswort ? `<th>Lösungswort</th>` : ``}
-            ${showStaerke ? `<th>Stärke</th>` : ``}
+            ${showStaerke ? `<th>
+              Stärke
+              <button
+                class="btn btn-sm btn-outline-secondary ms-2"
+                data-action="toggle-staerke-details">
+                Details
+              </button>
+            </th>` : ``}
             <th>Notizen</th>
           </tr>
         </thead>
@@ -235,6 +266,23 @@ function bindTeilnehmerEvents(uebungId: string): void {
                 m.updateTeilnehmerNotiz(uebungId, name, area.value)
             );
         });
+    });
+
+    // Stärke-Details ein/ausblenden
+    container.querySelectorAll<HTMLButtonElement>(
+      'button[data-action="toggle-staerke-details"]'
+    ).forEach(btn => {
+      btn.addEventListener("click", () => {
+        (window as any).__SHOW_STAERKE_DETAILS__ = !(window as any).__SHOW_STAERKE_DETAILS__;
+
+        const u = (window as any).__AKTUELLE_UEBUNG__;
+        renderTeilnehmerListe(
+          uebungId,
+          u.teilnehmerListe || [],
+          u.loesungswoerter || {},
+          u.loesungsStaerken || {}
+        );
+      });
     });
 }
 
