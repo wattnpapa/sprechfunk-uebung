@@ -79,6 +79,12 @@ export async function initUebungsleitung(db: Firestore): Promise<void> {
           <strong>Übungs-ID:</strong><br><code>${uebungId}</code>
         </div>
         <div class="col-12 mt-3 d-flex justify-content-end">
+        <button
+          class="btn btn-outline-secondary"
+          id="exportUebungsleitungPdf">
+          📄 Übungsleitung als PDF
+        </button>
+
           <button
             class="btn btn-outline-danger"
             id="resetUebungsleitungLocalData">
@@ -88,6 +94,46 @@ export async function initUebungsleitung(db: Firestore): Promise<void> {
         
       </div>
     `;
+
+    const pdfBtn = document.getElementById(
+        "exportUebungsleitungPdf"
+    ) as HTMLButtonElement | null;
+
+    if (pdfBtn) {
+      pdfBtn.addEventListener("click", async () => {
+        try {
+          const uebung = (window as any).__AKTUELLE_UEBUNG__;
+
+          if (!uebung) {
+            alert("Keine Übung geladen.");
+            return;
+          }
+
+          // @ts-ignore
+          const { jsPDF } = await import("jspdf");
+          const { Uebungsleitung } = await import("../pdf/Uebungsleitung");
+
+          const pdf = new jsPDF({
+            orientation: "landscape",
+            unit: "mm",
+            format: "a4"
+          });
+
+          const pdfDoc = new Uebungsleitung(uebung, pdf);
+          pdfDoc.draw();
+
+          const filename =
+              `Uebungsleitung_${uebung.name}_${uebung.id}.pdf`
+                  .replace(/\s+/g, "_");
+
+          pdf.save(filename);
+
+        } catch (err) {
+          console.error("❌ Fehler beim PDF-Export:", err);
+          alert("Fehler beim Erstellen der PDF.");
+        }
+      });
+    }
 
     const resetBtn = document.getElementById(
         "resetUebungsleitungLocalData"
