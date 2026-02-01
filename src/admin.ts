@@ -171,11 +171,11 @@ class Admin {
     };
 
     offeneUebungsleitung(uebungId: string): void {
-        location.href = `#/uebungsleitung/${uebungId}`;
+        window.open(`#/uebungsleitung/${uebungId}`, "_blank");
     }
 
     uebungAnschauen(uebungId: string): void {
-        location.href = `#/generator/${uebungId}`;
+        window.open(`#/generator/${uebungId}`, "_blank");
     }
 
 

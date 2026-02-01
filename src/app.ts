@@ -452,9 +452,10 @@ export class AppController {
         const nameInput = document.getElementById("nameDerUebung") as HTMLInputElement;
         nameInput.value = this.funkUebung.name;
 
-        // 📅 Datum
+        // 📅 Datum (lokal ohne UTC-Verschiebung)
         const date = new Date(this.funkUebung.datum);
-        const isoDate = date.toISOString().split("T")[0];
+        const pad = (n: number) => String(n).padStart(2, "0");
+        const isoDate = `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}`;
         const datumInput = document.getElementById("datum") as HTMLInputElement;
         datumInput.value = isoDate;
 
@@ -858,9 +859,10 @@ export class AppController {
             indivRadio.checked = true;
         }
 
-        // 📅 Datum
+        // 📅 Datum (lokal ohne UTC-Verschiebung)
         const date = new Date(this.funkUebung.datum);
-        const isoDate = date.toISOString().split("T")[0];
+        const pad = (n: number) => String(n).padStart(2, "0");
+        const isoDate = `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}`;
         (document.getElementById("datum")! as HTMLInputElement).value = isoDate;
 
         // 📝 Weitere Texteingaben
