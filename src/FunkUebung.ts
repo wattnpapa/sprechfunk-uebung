@@ -351,7 +351,9 @@ export class FunkUebung implements Uebung {
             nachrichtenVerteilung[sender].push({
                 id: tempCounters[sender]++,
                 nachricht: nachricht.text,
-                empfaenger: nachricht.empfaenger
+                empfaenger: nachricht.empfaenger,
+                loesungsbuchstaben: [],
+                staerken: []
             });
         });
 
@@ -442,7 +444,9 @@ export class FunkUebung implements Uebung {
             nachrichten.push({
                 id: 1,
                 nachricht: "Ich melde mich in Ihrem Sprechfunkverkehrskreis an.",
-                empfaenger: [this.leitung]
+                empfaenger: [this.leitung],
+                loesungsbuchstaben: [],
+                staerken: []
             });
         }
 
@@ -450,7 +454,9 @@ export class FunkUebung implements Uebung {
             const nachrichtObj: Nachricht = {
                 id: i + 5,
                 nachricht: gemischteFunksprueche[i],
-                empfaenger: []
+                empfaenger: [],
+                loesungsbuchstaben: [],
+                staerken: []
             };
             if (nachrichtenVerteilung.alle.includes(i)) {
                 nachrichtObj.empfaenger = ["Alle"];
