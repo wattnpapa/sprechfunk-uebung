@@ -112,6 +112,7 @@ export class FunkUebung implements Uebung {
         this.createDate = new Date();
         this.nachrichten = this.verteileNachrichtenFair();
         this.verteileLoesungswoerterMitIndex();
+        this.updateChecksum();
         this.berechneLoesungsStaerken();
         console.log(this.loesungsStaerken);
     }
@@ -352,8 +353,7 @@ export class FunkUebung implements Uebung {
                 id: tempCounters[sender]++,
                 nachricht: nachricht.text,
                 empfaenger: nachricht.empfaenger,
-                loesungsbuchstaben: [],
-                staerken: []
+                loesungsbuchstaben: []
             });
         });
 
@@ -445,8 +445,7 @@ export class FunkUebung implements Uebung {
                 id: 1,
                 nachricht: "Ich melde mich in Ihrem Sprechfunkverkehrskreis an.",
                 empfaenger: [this.leitung],
-                loesungsbuchstaben: [],
-                staerken: []
+                loesungsbuchstaben: []
             });
         }
 
@@ -455,8 +454,7 @@ export class FunkUebung implements Uebung {
                 id: i + 5,
                 nachricht: gemischteFunksprueche[i],
                 empfaenger: [],
-                loesungsbuchstaben: [],
-                staerken: []
+                loesungsbuchstaben: []
             };
             if (nachrichtenVerteilung.alle.includes(i)) {
                 nachrichtObj.empfaenger = ["Alle"];
@@ -473,7 +471,7 @@ export class FunkUebung implements Uebung {
 
     /**
     * Gibt eine zufällige Liste anderer Teilnehmer zurück (mind. 2).
-    * 
+    *
     * @param {string[]} teilnehmerListe - Gesamte Teilnehmerliste
     * @param {string} aktuellerTeilnehmer - Der Teilnehmer, der "sich selbst" nicht erhalten darf
     * @returns {string[]} Zufälliges Teil-Array (mindestens 2 Teilnehmer)
@@ -652,7 +650,7 @@ export class FunkUebung implements Uebung {
         });
 
         // Regex für verschiedene Schreibweisen (erlaubt beliebig viele Leerzeichen und Slashes)
-        const staerkeRegex = /(\d+)\s*\/+\s*(\d+)\s*\/+\s*(\d+)(?:\s*\/+\s*(\d+))?/g;
+        const staerkeRegex = /(\d{1,3})\s*\/+\s*(\d{1,3})\s*\/+\s*(\d{1,3})(?:\s*\/+\s*(\d{1,3}))?/g;
 
         // Iteriere über alle Nachrichten aller Absender
         Object.entries(this.nachrichten).forEach(([sender, nachrichtenListe]) => {
@@ -667,27 +665,50 @@ export class FunkUebung implements Uebung {
                     empfaengerListe = nachricht.empfaenger.filter(e => e !== sender && this.teilnehmerListe.includes(e));
                 }
                 // --- Erweiterung: mehrere Stärkeneinträge pro Nachricht erkennen und aufsummieren ---
-                // Alle Stärkeneinträge in einer Nachricht erkennen (mehrere erlaubt)
-                const staerkeMatches = Array.from(nachricht.nachricht.matchAll(staerkeRegex));
-                if (staerkeMatches.length > 0) {
-                    empfaengerListe.forEach(empfaenger => {
-                        staerkeMatches.forEach(match => {
-                            const fuehrer = parseInt(match[1], 10);
-                            const unterfuehrer = parseInt(match[2], 10);
-                            const helfer = parseInt(match[3], 10);
-                            let gesamt: number;
-                            if (typeof match[4] !== "undefined" && match[4] !== undefined) {
-                                gesamt = parseInt(match[4], 10);
-                            } else {
-                                gesamt = fuehrer + unterfuehrer + helfer;
-                            }
+                // 1) Falls bereits strukturierte Stärke vorhanden ist, diese verwenden
+                if (nachricht.staerken && nachricht.staerken.length > 0) {
+                    // Mehrere strukturierte Stärken aufsummieren
+                    nachricht.staerken.forEach(({ fuehrer, unterfuehrer, helfer }) => {
+                        const gesamt = fuehrer + unterfuehrer + helfer;
+
+                        empfaengerListe.forEach(empfaenger => {
                             summen[empfaenger].fuehrer += fuehrer;
                             summen[empfaenger].unterfuehrer += unterfuehrer;
                             summen[empfaenger].helfer += helfer;
                             summen[empfaenger].gesamt += gesamt;
                         });
                     });
+
+                } else {
+                    // 2) Sonst: Stärke(n) aus dem Nachrichtentext parsen
+                    const staerkeMatches = Array.from(
+                        nachricht.nachricht.matchAll(staerkeRegex)
+                    );
+
+                    if (staerkeMatches.length > 0) {
+                        empfaengerListe.forEach(empfaenger => {
+                            staerkeMatches.forEach(match => {
+                                const fuehrer = parseInt(match[1], 10);
+                                const unterfuehrer = parseInt(match[2], 10);
+                                const helfer = parseInt(match[3], 10);
+
+                                // Stärke ins Objekt übernehmen (Persistenz)
+                                if (!nachricht.staerken) {
+                                    nachricht.staerken = [];
+                                }
+                                nachricht.staerken.push({ fuehrer, unterfuehrer, helfer });
+
+                                const gesamt = fuehrer + unterfuehrer + helfer;
+
+                                summen[empfaenger].fuehrer += fuehrer;
+                                summen[empfaenger].unterfuehrer += unterfuehrer;
+                                summen[empfaenger].helfer += helfer;
+                                summen[empfaenger].gesamt += gesamt;
+                            });
+                        });
+                    }
                 }
+
             });
         });
 
@@ -751,6 +772,8 @@ export class FunkUebung implements Uebung {
                             const gesamt = fuehrer + unterfuehrer + helfer;
                             const staerkeText = `Aktuelle Stärke: ${fuehrer}/${unterfuehrer}/${helfer}/${gesamt}`;
                             eintrag.nachricht.nachricht += " " + staerkeText;
+                            // Stärke als Objekt speichern: { fuehrer, unterfuehrer, helfer }
+                            eintrag.nachricht.staerken = [{ fuehrer, unterfuehrer, helfer }];
                             // Erweiterung: Stärke auch in der Empfänger-Nachrichtenliste eintragen
                             const empfaengerNachrichten = this.nachrichten[teilnehmer];
                             if (empfaengerNachrichten) {
@@ -765,6 +788,7 @@ export class FunkUebung implements Uebung {
                                 const senderNachricht = senderListe.find(n => n.id === eintrag.nachricht.id);
                                 if (senderNachricht) {
                                     senderNachricht.nachricht = eintrag.nachricht.nachricht;
+                                    senderNachricht.staerken = eintrag.nachricht.staerken;
                                 }
                             }
                         }

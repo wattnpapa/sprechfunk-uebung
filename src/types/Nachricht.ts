@@ -3,5 +3,5 @@ export interface Nachricht {
   empfaenger: string[];
   nachricht: string;
   loesungsbuchstaben?: string[];
-  staerken?: number[];
+  staerken?: Array<{ fuehrer: number; unterfuehrer: number; helfer: number }>;
 }
