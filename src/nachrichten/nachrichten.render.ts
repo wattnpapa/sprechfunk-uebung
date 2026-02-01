@@ -4,6 +4,7 @@ import {loadUebungsleitungStorage, saveUebungsleitungStorage} from "../storage";
 import {formatNatoDate} from "../utils/date";
 
 let hideAbgesetzteNachrichten = false;
+let senderFilter: string = "";
 
 function updateNachrichtenProgress(
     uebungId: string,
@@ -94,8 +95,10 @@ export function renderNachrichtenliste(
     if (uebungId) {
         updateNachrichtenProgress(uebungId, nachrichten);
     }
+    const uniqueSenders = Array.from(new Set(nachrichten.map(n => n.sender))).sort();
     const rows = nachrichten
         .filter(n => {
+            if (senderFilter && n.sender !== senderFilter) return false;
             if (!hideAbgesetzteNachrichten) return true;
 
             const status = uebungId
@@ -163,7 +166,13 @@ export function renderNachrichtenliste(
                   <tr>
                     <th style="width:60px;">Nr</th>
                     <th style="width:220px;">Empfänger</th>
-                    <th style="width:200px;">Sender</th>
+                    <th style="width:200px;">
+                      Sender
+                      <select id="senderFilterSelect" class="form-select form-select-sm mt-1">
+                        <option value="">Alle</option>
+                        ${uniqueSenders.map(s => `<option value="${escapeAttr(s)}" ${senderFilter===s?"selected":""}>${escapeHtml(s)}</option>`).join("")}
+                      </select>
+                    </th>
                     <th>Nachricht</th>
                     <th style="width:140px;" class="text-center">
                       Abgesetzt 
@@ -267,6 +276,15 @@ export function renderNachrichtenliste(
             setNachrichtenNotiz(uebungId, sender, nr, textarea.value);
         });
     });
+
+    const senderSelect = document.getElementById("senderFilterSelect") as HTMLSelectElement | null;
+    if (senderSelect) {
+        senderSelect.addEventListener("change", () => {
+            senderFilter = senderSelect.value;
+            const u = (window as any).__AKTUELLE_UEBUNG__;
+            renderNachrichtenliste(buildNachrichtenliste(u));
+        });
+    }
 }
 
 /**

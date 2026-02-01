@@ -686,20 +686,26 @@ export class FunkUebung implements Uebung {
                     );
 
                     if (staerkeMatches.length > 0) {
-                        empfaengerListe.forEach(empfaenger => {
-                            staerkeMatches.forEach(match => {
-                                const fuehrer = parseInt(match[1], 10);
-                                const unterfuehrer = parseInt(match[2], 10);
-                                const helfer = parseInt(match[3], 10);
+                        // Stärke-Matches nur einmal pro Nachricht persistieren
+                        if (!nachricht.staerken) {
+                            nachricht.staerken = [];
+                        }
 
-                                // Stärke ins Objekt übernehmen (Persistenz)
-                                if (!nachricht.staerken) {
-                                    nachricht.staerken = [];
-                                }
-                                nachricht.staerken.push({ fuehrer, unterfuehrer, helfer });
+                        staerkeMatches.forEach(match => {
+                            const fuehrer = parseInt(match[1], 10);
+                            const unterfuehrer = parseInt(match[2], 10);
+                            const helfer = parseInt(match[3], 10);
 
-                                const gesamt = fuehrer + unterfuehrer + helfer;
+                            // Nur einmal speichern (nicht pro Empfänger)
+                            if (!nachricht.staerken) {
+                                nachricht.staerken = [];
+                            }
+                            nachricht.staerken.push({ fuehrer, unterfuehrer, helfer });
 
+                            const gesamt = fuehrer + unterfuehrer + helfer;
+
+                            // Aber für jeden Empfänger aufsummieren
+                            empfaengerListe.forEach(empfaenger => {
                                 summen[empfaenger].fuehrer += fuehrer;
                                 summen[empfaenger].unterfuehrer += unterfuehrer;
                                 summen[empfaenger].helfer += helfer;
