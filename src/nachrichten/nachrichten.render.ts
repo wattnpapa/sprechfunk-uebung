@@ -5,6 +5,7 @@ import {formatNatoDate} from "../utils/date";
 
 let hideAbgesetzteNachrichten = false;
 let senderFilter: string = "";
+let empfaengerFilter: string = "";
 
 function updateNachrichtenProgress(
     uebungId: string,
@@ -96,9 +97,13 @@ export function renderNachrichtenliste(
         updateNachrichtenProgress(uebungId, nachrichten);
     }
     const uniqueSenders = Array.from(new Set(nachrichten.map(n => n.sender))).sort();
+    const uniqueEmpfaenger = Array.from(
+        new Set(nachrichten.flatMap(n => n.empfaenger))
+    ).sort();
     const rows = nachrichten
         .filter(n => {
             if (senderFilter && n.sender !== senderFilter) return false;
+            if (empfaengerFilter && !n.empfaenger.includes(empfaengerFilter)) return false;
             if (!hideAbgesetzteNachrichten) return true;
 
             const status = uebungId
@@ -165,7 +170,13 @@ export function renderNachrichtenliste(
                 <thead>
                   <tr>
                     <th style="width:60px;">Nr</th>
-                    <th style="width:220px;">Empfänger</th>
+                    <th style="width:220px;">
+                      Empfänger
+                      <select id="empfaengerFilterSelect" class="form-select form-select-sm mt-1">
+                        <option value="">Alle</option>
+                        ${uniqueEmpfaenger.map(e => `<option value="${escapeAttr(e)}" ${empfaengerFilter===e?"selected":""}>${escapeHtml(e)}</option>`).join("")}
+                      </select>
+                    </th>
                     <th style="width:200px;">
                       Sender
                       <select id="senderFilterSelect" class="form-select form-select-sm mt-1">
@@ -281,6 +292,15 @@ export function renderNachrichtenliste(
     if (senderSelect) {
         senderSelect.addEventListener("change", () => {
             senderFilter = senderSelect.value;
+            const u = (window as any).__AKTUELLE_UEBUNG__;
+            renderNachrichtenliste(buildNachrichtenliste(u));
+        });
+    }
+
+    const empfaengerSelect = document.getElementById("empfaengerFilterSelect") as HTMLSelectElement | null;
+    if (empfaengerSelect) {
+        empfaengerSelect.addEventListener("change", () => {
+            empfaengerFilter = empfaengerSelect.value;
             const u = (window as any).__AKTUELLE_UEBUNG__;
             renderNachrichtenliste(buildNachrichtenliste(u));
         });
