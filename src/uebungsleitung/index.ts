@@ -109,6 +109,16 @@ export async function initUebungsleitung(db: Firestore): Promise<void> {
             return;
           }
 
+          // Storage initialisieren (und lokale Daten für PDF/Ansicht bereithalten)
+          const localData = (loadUebungsleitungStorage(uebungId) as any) ?? (() => {
+            try {
+              const raw = localStorage.getItem(`sprechfunk:uebungsleitung:${uebungId}`);
+              return raw ? JSON.parse(raw) : null;
+            } catch {
+              return null;
+            }
+          })();
+
           // @ts-ignore
           const { jsPDF } = await import("jspdf");
           const { Uebungsleitung } = await import("../pdf/Uebungsleitung");
@@ -119,7 +129,7 @@ export async function initUebungsleitung(db: Firestore): Promise<void> {
             format: "a4"
           });
 
-          const pdfDoc = new Uebungsleitung(uebung, pdf);
+          const pdfDoc = new Uebungsleitung(uebung, pdf, localData);
           pdfDoc.draw();
 
           const filename =

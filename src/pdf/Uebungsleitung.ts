@@ -5,9 +5,11 @@ import { Nachricht } from "../types/Nachricht";
 import { BasePDF } from "./BasePDF";
 
 export class Uebungsleitung extends BasePDF {
+    private localData: any;
 
-    constructor(uebung: FunkUebung, pdfInstance: jsPDF) {
-        super(uebung, pdfInstance)
+    constructor(uebung: FunkUebung, pdfInstance: jsPDF, localData: any = null) {
+        super(uebung, pdfInstance);
+        this.localData = localData;
     }
 
     draw(): void {
@@ -29,7 +31,7 @@ export class Uebungsleitung extends BasePDF {
         // **1. Kopfzeile für erste Seite**
         this.pdf.setFont("helvetica", "bold");
         this.pdf.setFontSize(16);
-        this.pdf.text(`${this.funkUebung.name}` + DateFormatter.formatNATODate(this.funkUebung.datum, false), this.pdfWidth / 2, y, { align: "center" });
+        this.pdf.text(`${this.funkUebung.name} - ` + DateFormatter.formatNATODate(this.funkUebung.datum, false), this.pdfWidth / 2, y, { align: "center" });
         y = y + 8;
 
         this.pdf.setFontSize(14);
@@ -54,13 +56,13 @@ export class Uebungsleitung extends BasePDF {
 
             // Stärke-Spalte: Nur Gesamtstärke
             const staerkeValue = this.funkUebung.loesungsStaerken?.[teilnehmer] ?? "0/0/0/0";
-
+            const anmeldeZeit = this.localData?.teilnehmer?.[teilnehmer]?.angemeldetUm ? DateFormatter.formatNATODate(this.localData?.teilnehmer?.[teilnehmer]?.angemeldetUm) : "";
             return [
                 teilnehmerAnzeige,
-                "", // Platz für Anmeldezeitpunkt
+                anmeldeZeit, // Anmeldezeitpunkt
                 this.funkUebung.loesungswoerter?.[teilnehmer] ?? "", // Lösungswort
                 staerkeValue, // Nur Gesamtstärke
-                "" // Bemerkungen
+                this.localData?.teilnehmer?.[teilnehmer]?.notizen ?? "" // Bemerkungen
             ];
         });
 
@@ -100,16 +102,33 @@ export class Uebungsleitung extends BasePDF {
 
         //Funksprüche der Teilnehmer
         // Funksprüche aller Teilnehmer sammeln
-        let alleNachrichten: { nr: number; empfaenger: string; sender: string; nachricht: string }[] = [];
+        let alleNachrichten: { nr: number; empfaenger: string; sender: string; nachricht: string; zeit: string }[] = [];
+
         this.funkUebung.teilnehmerListe.forEach(sender => {
             let nachrichten = this.funkUebung.nachrichten[sender];
             if (!Array.isArray(nachrichten)) return;
+
             nachrichten.forEach((nachricht, index) => {
+
+                // Zeitstempel kommt aus localData (wenn vorhanden)
+                // Key-Format: "<Teilnehmer>__<Index>"
+                const key = `${sender}__${index + 1}`;
+                console.log(key);
+
+                const zeit = this.localData?.nachrichten?.[key]?.abgesetztUm
+                    ? DateFormatter.formatNATODate(this.localData.nachrichten[key].abgesetztUm)
+                    : "";
+
+                const notiz = this.localData?.nachrichten?.[key]?.notiz
+                    ? "\n\nAnmerkung:\n" + this.localData?.nachrichten?.[key]?.notiz
+                    : "";
+
                 alleNachrichten.push({
                     nr: index + 1,
                     empfaenger: nachricht.empfaenger.join("\n"),
                     sender,
-                    nachricht: nachricht.nachricht,
+                    nachricht: nachricht.nachricht + notiz,
+                    zeit
                 });
             });
         });
@@ -118,11 +137,17 @@ export class Uebungsleitung extends BasePDF {
         alleNachrichten.sort((a, b) => a.nr - b.nr || a.sender.localeCompare(b.sender));
 
         // Tabelle vorbereiten
-        const tableData = alleNachrichten.map(n => [n.nr, n.empfaenger, n.sender, n.nachricht, ""]);
+        const tableData = alleNachrichten.map(n => [
+            n.nr,
+            n.empfaenger,
+            n.sender,
+            n.nachricht,
+            n.zeit
+        ]);
 
         let empfaengerWidth = contentWidth * 0.20;
         let lfdnrWidth = 12;
-        let withCheckBox = 12;
+        let withCheckBox = 24;
         let senderWidth = empfaengerWidth; // gleiche Breite wie Empfänger
         let columnWidthsAll = [lfdnrWidth, empfaengerWidth, senderWidth, contentWidth - lfdnrWidth - (empfaengerWidth * 2) - withCheckBox, withCheckBox];
         // Neuen Y-Startpunkt nach der Teilnehmer-Tabelle
