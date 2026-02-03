@@ -312,6 +312,7 @@ export class AppController {
                     vorlageTHW: { text: "Funksprüche THW (Chat GPT)", filename: "assets/funksprueche/thw_funksprueche.txt" },
                     thwleer: { text: "Funksprüche THW Leer", filename: "assets/funksprueche/nachrichten_thw_leer.txt" },
                     thwmelle: { text: "Funksprüche THW Melle", filename: "assets/funksprueche/nachrichten_thw_melle.txt" },
+                    thwessen: { text: "Funksprüche THW Essen", filename: "assets/funksprueche/nachrichten_thw_essen.txt" },
                     vorlageFeuerwehr: { text: "Funksprüche Feuerwehr (Chat GPT)", filename: "assets/funksprueche/feuerwehr_funksprueche.txt" },
                     vorlageResttungsdienst: { text: "Funksprüche Rettungsdienst (Chat GPT)", filename: "assets/funksprueche/rettungsdienst_funksprueche.txt" },
                     vorlageLustig: { text: "Lustige Funksprüche (Chat GPT)", filename: "assets/funksprueche/funksprueche_lustig_kreativ.txt" }
