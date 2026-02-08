@@ -170,7 +170,7 @@ export class Uebungsleitung extends BasePDF {
                 3: { cellWidth: columnWidthsAll[3] },
                 4: { cellWidth: columnWidthsAll[4] }
             },
-            styles: { fontSize: tableFontSize, cellPadding: 1.5, lineWidth: 0.1, lineColor: [0, 0, 0] },
+            styles: { fontSize: tableFontSize, cellPadding: 1.5, lineWidth: 0.1, lineColor: [0, 0, 0], overflow: "linebreak" },
             headStyles: { fillColor: [200, 200, 200] },
             didDrawCell: function (data: any) {
                 if (data.section === 'body' && data.column.index === 0) {

@@ -78,14 +78,15 @@ export class Nachrichtenvordruck extends BasePDFTeilnehmer {
             17.5
         );
 
-        // Nachricht umbrochen
+        // Nachricht umbrochen (mit expliziten \n Zeilenumbrüchen)
         this.pdf.setFontSize(12);
-        const lineHeight = 6.5;
-        const msgLines = this.pdf.splitTextToSize(this.nachricht.nachricht, 120);
-        let startY = 77;
-        msgLines.forEach((line: string, i: number) => {
-            this.pdf.text(line, offsetX + 17, startY + i * lineHeight);
-        });
+        this.drawMultilineText(
+            this.nachricht.nachricht,
+            offsetX + 17,
+            77,
+            120,
+            6.5
+        );
 
         // Footer (compact)
         if (!this.hideFooter) {

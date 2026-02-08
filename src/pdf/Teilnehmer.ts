@@ -110,7 +110,7 @@ export class Teilnehmer extends BasePDFTeilnehmer {
                 1: { cellWidth: columnWidths[1] },
                 2: { cellWidth: columnWidths[2] }
             },
-            styles: { fontSize: 10, cellPadding: 1.5, lineWidth: 0.1, lineColor: [0, 0, 0] },
+            styles: { fontSize: 10, cellPadding: 1.5, lineWidth: 0.1, lineColor: [0, 0, 0], overflow: "linebreak" },
             headStyles: { fillColor: [200, 200, 200] }
         });
 

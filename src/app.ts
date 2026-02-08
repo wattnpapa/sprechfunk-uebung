@@ -738,8 +738,26 @@ export class AppController {
             const reader = new FileReader();
             reader.onload = (event) => {
                 const result = (event.target as FileReader).result as string;
-                console.log("Benutzerdefinierte Funksprüche geladen:", result);
-                this.funkUebung.funksprueche = result.split("\n").filter(s => s.trim() !== "");
+
+                const cleaned = result
+                    // Unicode normalisieren (u + ¨ → ü)
+                    .normalize("NFKC")
+                    .replace(/\p{M}/gu, "")
+                    .replace(/[^\S\n]+/g, " ")
+                    .trim()
+                    // ALLES raus, was nicht explizit erlaubt ist
+                    //.replace(/[^A-Za-zÄÖÜäöüß0-9 ,.\-;:_?!#*+%&"§\/()=<> \n]/g, "")
+                    // Windows-Zeilenumbrüche vereinheitlichen
+                    .replace(/\r\n/g, "\n")
+                    // Mehrfach-Leerzeichen zusammenziehen
+                    //.replace(/[ \t]+/g, " ")
+                    // Leerzeichen am Zeilenanfang/-ende entfernen
+                    //.replace(/^[ ]+|[ ]+$/gm, "");
+
+                this.funkUebung.funksprueche = cleaned
+                    .split("\n")
+                    .filter(s => s.trim() !== "");
+
                 this.generateAllPages();
             };
             reader.readAsText(file);
