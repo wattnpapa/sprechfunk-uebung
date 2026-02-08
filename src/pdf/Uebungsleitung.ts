@@ -1,14 +1,14 @@
-import { FunkUebung } from "../FunkUebung";
+import { Uebung } from "../types/Uebung";
 import { jsPDF } from "jspdf";
-import { DateFormatter } from "../DateFormatter";
+import { formatNatoDate } from "../utils/date";
 import { Nachricht } from "../types/Nachricht";
 import { BasePDF } from "./BasePDF";
 
 export class Uebungsleitung extends BasePDF {
     private localData: any;
 
-    constructor(uebung: FunkUebung, pdfInstance: jsPDF, localData: any = null) {
-        super(uebung, pdfInstance);
+    constructor(uebung: Uebung, pdfInstance: jsPDF, localData: any = null) {
+        super(uebung as any, pdfInstance);
         this.localData = localData;
     }
 
@@ -25,13 +25,14 @@ export class Uebungsleitung extends BasePDF {
 
         const firstTableStartY = 30;
 
-        const generierungszeit = DateFormatter.formatNATODate(this.funkUebung.createDate);
+        const generierungszeit = formatNatoDate(this.funkUebung.createDate);
+        const datumString = formatNatoDate(this.funkUebung.datum, false);
         const tableFontSize = 8;
 
         // **1. Kopfzeile für erste Seite**
         this.pdf.setFont("helvetica", "bold");
         this.pdf.setFontSize(16);
-        this.pdf.text(`${this.funkUebung.name} - ` + DateFormatter.formatNATODate(this.funkUebung.datum, false), this.pdfWidth / 2, y, { align: "center" });
+        this.pdf.text(`${this.funkUebung.name} - ` + datumString, this.pdfWidth / 2, y, { align: "center" });
         y = y + 8;
 
         this.pdf.setFontSize(14);
@@ -56,7 +57,7 @@ export class Uebungsleitung extends BasePDF {
 
             // Stärke-Spalte: Nur Gesamtstärke
             const staerkeValue = this.funkUebung.loesungsStaerken?.[teilnehmer] ?? "0/0/0/0";
-            const anmeldeZeit = this.localData?.teilnehmer?.[teilnehmer]?.angemeldetUm ? DateFormatter.formatNATODate(this.localData?.teilnehmer?.[teilnehmer]?.angemeldetUm) : "";
+            const anmeldeZeit = this.localData?.teilnehmer?.[teilnehmer]?.angemeldetUm ? formatNatoDate(this.localData?.teilnehmer?.[teilnehmer]?.angemeldetUm) : "";
             return [
                 teilnehmerAnzeige,
                 anmeldeZeit, // Anmeldezeitpunkt
@@ -116,7 +117,7 @@ export class Uebungsleitung extends BasePDF {
                 console.log(key);
 
                 const zeit = this.localData?.nachrichten?.[key]?.abgesetztUm
-                    ? DateFormatter.formatNATODate(this.localData.nachrichten[key].abgesetztUm)
+                    ? formatNatoDate(this.localData.nachrichten[key].abgesetztUm)
                     : "";
 
                 const notiz = this.localData?.nachrichten?.[key]?.notiz
@@ -207,7 +208,7 @@ export class Uebungsleitung extends BasePDF {
                 this.pdf.text(`Übungsleitung: ` + this.funkUebung.leitung + ' - Rufgruppe: ' + this.funkUebung.rufgruppe, pageMarginLeft, 20);
 
                 // **Rechts: Name der Übung**
-                let rightText = this.funkUebung.name + " - " + DateFormatter.formatNATODate(this.funkUebung.datum, false)
+                let rightText = this.funkUebung.name + " - " + formatNatoDate(this.funkUebung.datum, false)
                 let nameWidth = this.pdf.getTextWidth(rightText);
                 this.pdf.text(rightText, this.pdfWidth - pageMarginLeft - nameWidth, 20);
 

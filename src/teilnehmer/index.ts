@@ -8,17 +8,9 @@ import { loadTeilnehmerStorage, saveTeilnehmerStorage, clearTeilnehmerStorage } 
 import type { TeilnehmerStorage } from "../types";
 import { escapeHtml } from "../utils/html";
 
-/**
- * Erwarteter Hash:
- *   #/teilnehmer/<kryptischeId>
- */
-function getTeilnehmerIdFromHash(): string | null {
-  const hash = window.location.hash.replace(/^#\/?/, "");
-  const parts = hash.split("/");
 
-  if (parts[0] !== "teilnehmer") return null;
-  return parts[1] ?? null;
-}
+import { store } from "../state/store";
+import { router } from "../router";
 
 export async function initTeilnehmer(db: Firestore): Promise<void> {
   const area = document.getElementById("teilnehmerArea");
@@ -26,29 +18,16 @@ export async function initTeilnehmer(db: Firestore): Promise<void> {
 
   if (!area || !contentEl) return;
 
-  const kryptischeId = getTeilnehmerIdFromHash();
+  const { params } = router.parseHash();
+  const uebungId = params[0];
+  const tId = params[1];
 
-  if (!kryptischeId) {
-    contentEl.innerHTML = `<div class="alert alert-danger">Keine Teilnehmer-ID angegeben.</div>`;
+  if (!uebungId || !tId) {
+    contentEl.innerHTML = `<div class="alert alert-danger">Ungültiger Link.</div>`;
     return;
   }
 
   try {
-    // Da wir die uebungId nicht direkt im Link haben, müssen wir entweder:
-    // 1. Die uebungId als Teil des Links mitgeben: #/teilnehmer/<uebungId>/<teilnehmerId>
-    // 2. Eine Collection "teilnehmerLinks" in Firebase haben, die auf die Übung verweist.
-    
-    // Angenommen wir ändern das Link-Format auf #/teilnehmer/<uebungId>/<kryptischeId>
-    const hash = window.location.hash.replace(/^#\/?/, "");
-    const parts = hash.split("/");
-    const uebungId = parts[1];
-    const tId = parts[2];
-
-    if (!uebungId || !tId) {
-        contentEl.innerHTML = `<div class="alert alert-danger">Ungültiger Link.</div>`;
-        return;
-    }
-
     const ref = doc(db, "uebungen", uebungId);
     const snap = await getDoc(ref);
 
@@ -58,6 +37,8 @@ export async function initTeilnehmer(db: Firestore): Promise<void> {
     }
 
     const u = snap.data() as Uebung;
+    store.setState({ aktuelleUebung: u, aktuelleUebungId: uebungId });
+
     const teilnehmerName = u.teilnehmerIds ? u.teilnehmerIds[tId] : null;
 
     if (!teilnehmerName) {

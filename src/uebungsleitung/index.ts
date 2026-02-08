@@ -21,13 +21,20 @@ function getUebungIdFromHash(): string | null {
   return parts[1] ?? null;
 }
 
+import type { Uebung } from "../types/Uebung";
+import { UebungsleitungStorage } from "../types";
+
+import { store } from "../state/store";
+import { router } from "../router";
+
 export async function initUebungsleitung(db: Firestore): Promise<void> {
   const area = document.getElementById("uebungsleitungArea");
   const metaEl = document.getElementById("uebungsleitungMeta");
 
   if (!area || !metaEl) return;
 
-  const uebungId = getUebungIdFromHash();
+  const { params } = router.parseHash();
+  const uebungId = params[0];
 
   if (!uebungId) {
     metaEl.innerHTML = `<div class="alert alert-danger">Keine Übungs-ID angegeben.</div>`;
@@ -44,10 +51,9 @@ export async function initUebungsleitung(db: Firestore): Promise<void> {
       return;
     }
 
-    const u: any = snap.data();
+    const u = snap.data() as Uebung;
 
-    (window as any).__AKTUELLE_UEBUNG__ = u;
-    (window as any).__AKTUELLE_UEBUNG_ID__ = uebungId;
+    store.setState({ aktuelleUebung: u, aktuelleUebungId: uebungId });
 
     // Storage initialisieren
     loadUebungsleitungStorage(uebungId);
@@ -102,7 +108,7 @@ export async function initUebungsleitung(db: Firestore): Promise<void> {
     if (pdfBtn) {
       pdfBtn.addEventListener("click", async () => {
         try {
-          const uebung = (window as any).__AKTUELLE_UEBUNG__;
+          const uebung = store.getState().aktuelleUebung;
 
           if (!uebung) {
             alert("Keine Übung geladen.");
@@ -110,10 +116,10 @@ export async function initUebungsleitung(db: Firestore): Promise<void> {
           }
 
           // Storage initialisieren (und lokale Daten für PDF/Ansicht bereithalten)
-          const localData = (loadUebungsleitungStorage(uebungId) as any) ?? (() => {
+          const localData = (loadUebungsleitungStorage(uebungId)) ?? (() => {
             try {
               const raw = localStorage.getItem(`sprechfunk:uebungsleitung:${uebungId}`);
-              return raw ? JSON.parse(raw) : null;
+              return raw ? JSON.parse(raw) as UebungsleitungStorage : null;
             } catch {
               return null;
             }

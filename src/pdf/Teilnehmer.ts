@@ -1,7 +1,7 @@
 import { FunkUebung } from "../FunkUebung";
 import { jsPDF } from "jspdf";
 import { BasePDFTeilnehmer } from "./BasePDFTeilnehmer";
-import { DateFormatter } from "../DateFormatter";
+import { formatNatoDate } from "../utils/date";
 import { Nachricht } from "../types/Nachricht";
 
 export class Teilnehmer extends BasePDFTeilnehmer {
@@ -11,7 +11,7 @@ export class Teilnehmer extends BasePDFTeilnehmer {
     }
 
     draw(): void {
-        const generierungszeit = DateFormatter.formatNATODate(this.funkUebung.createDate, true); // NATO-Datum für Fußzeile
+        const generierungszeit = formatNatoDate(this.funkUebung.createDate, true); // NATO-Datum für Fußzeile
 
         let nachrichten = this.funkUebung.nachrichten[this.teilnehmer];
 
@@ -40,7 +40,7 @@ export class Teilnehmer extends BasePDFTeilnehmer {
         (this.pdf as any).autoTable({
             head: [["Beschreibung", "Wert"]],
             body: [
-                ["Datum", DateFormatter.formatNATODate(this.funkUebung.datum, false)],
+                ["Datum", formatNatoDate(this.funkUebung.datum, false)],
                 ["Rufgruppe", this.funkUebung.rufgruppe],
                 ["Betriebsleitung", this.funkUebung.leitung]
             ],
@@ -128,7 +128,7 @@ export class Teilnehmer extends BasePDFTeilnehmer {
                 this.pdf.text(`Eigener Funkrufname: ${this.teilnehmer}`, pageMarginLeft, 20);
 
                 // **Rechts: Name der Übung**
-                let rightText = this.funkUebung.name + " - " + DateFormatter.formatNATODate(this.funkUebung.datum, false)
+                let rightText = this.funkUebung.name + " - " + formatNatoDate(this.funkUebung.datum, false)
                 let nameWidth = this.pdf.getTextWidth(rightText);
                 this.pdf.text(rightText, this.pdfWidth - pageMarginLeft - nameWidth, 20);
 

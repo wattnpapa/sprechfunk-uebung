@@ -9,7 +9,7 @@ import { Meldevordruck } from "./pdf/Meldevordruck.js";
 import { Nachrichtenvordruck } from "./pdf/Nachrichtenvordruck.js";
 import { Teilnehmer } from "./pdf/Teilnehmer.js";
 import { Uebungsleitung } from "./pdf/Uebungsleitung.js";
-import { DateFormatter } from './DateFormatter';
+import { formatNatoDate } from "./utils/date";
 
 class PDFGenerator {
     constructor() {
@@ -522,7 +522,7 @@ class PDFGenerator {
 
         const link = document.createElement("a");
         link.href = URL.createObjectURL(zipBlob);
-        const zipName = `${this.sanitizeFileName(funkUebung.name)}_${DateFormatter.formatNATODate(new Date())}.zip`;
+        const zipName = `${this.sanitizeFileName(funkUebung.name)}_${formatNatoDate(new Date())}.zip`;
         link.download = zipName
         document.body.appendChild(link);
         link.click();

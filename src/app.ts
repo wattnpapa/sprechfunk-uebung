@@ -5,35 +5,40 @@
 import type { AppMode } from "./appModes";
 import { initUebungsleitung } from "./uebungsleitung";
 import { initTeilnehmer } from "./teilnehmer";
-
-var APP_MODE: AppMode = 'generator'
+import { router } from "./router";
+import { store } from "./state/store";
 
 function handleRoute(): void {
-    const hash = window.location.hash.replace(/^#\/?/, "");
-    const parts = hash.split("/").filter(Boolean);
+    const { mode, params } = router.parseHash();
 
-    const mode = parts[0] as AppMode | undefined;
+    store.setState({ mode });
+
+    const db = store.getState().db;
+    if (!db) {
+        console.warn("⚠️ DB noch nicht initialisiert");
+        return;
+    }
 
     if (mode === "uebungsleitung") {
-        const uebungId = parts[1];
+        const uebungId = params[0];
         applyAppMode("uebungsleitung");
 
         if (uebungId) {
-            // global merken (wird in uebungsleitung genutzt)
-            (window as any).__AKTUELLE_UEBUNG_ID__ = uebungId;
-            initUebungsleitung((window as any).app?.db);
+            store.setState({ aktuelleUebungId: uebungId });
+            initUebungsleitung(db);
         }
         return;
     }
 
     if (mode === "teilnehmer") {
         applyAppMode("teilnehmer");
-        initTeilnehmer((window as any).app?.db);
+        initTeilnehmer(db);
         return;
     }
 
     if (mode === "admin") {
         applyAppMode("admin");
+        admin.db = db;
         admin.ladeAlleUebungen();
         admin.renderUebungsStatistik();
         return;
@@ -43,8 +48,14 @@ function handleRoute(): void {
     applyAppMode("generator");
 }
 
-window.addEventListener("DOMContentLoaded", handleRoute);
-window.addEventListener("hashchange", handleRoute);
+window.addEventListener("DOMContentLoaded", () => {
+    handleRoute();
+    initNatoClock();
+    initThemeToggle();
+    initModals();
+});
+
+router.subscribe(() => handleRoute());
 
 function initNatoClock(): void {
     const el = document.getElementById("natoTime");
@@ -104,14 +115,18 @@ function initThemeToggle(): void {
 }
 
 
+function initModals() {
+    // Falls zusätzliche Modal-Initialisierung nötig ist
+}
+
 function applyAppMode(mode: AppMode): void {
     const generator = document.getElementById("mainAppArea");
-    const admin = document.getElementById("adminArea");
+    const adminEl = document.getElementById("adminArea");
     const uebungsleitung = document.getElementById("uebungsleitungArea");
     const teilnehmer = document.getElementById("teilnehmerArea");
 
     generator && (generator.style.display = "none");
-    admin && (admin.style.display = "none");
+    adminEl && (adminEl.style.display = "none");
     uebungsleitung && (uebungsleitung.style.display = "none");
     teilnehmer && (teilnehmer.style.display = "none");
 
@@ -120,7 +135,7 @@ function applyAppMode(mode: AppMode): void {
             generator && (generator.style.display = "block");
             break;
         case "admin":
-            admin && (admin.style.display = "block");
+            adminEl && (adminEl.style.display = "block");
             break;
         case "uebungsleitung":
             uebungsleitung && (uebungsleitung.style.display = "block");
@@ -129,37 +144,9 @@ function applyAppMode(mode: AppMode): void {
             teilnehmer && (teilnehmer.style.display = "block");
             break;
     }
-
-    APP_MODE = mode
 }
-
-// =========================
-// Global DOM Init
-// =========================
-document.addEventListener("DOMContentLoaded", () => {
-    initNatoClock();
-    initThemeToggle();
-
-    applyAppMode(APP_MODE);
-
-    switch (APP_MODE) {
-        case "generator":
-            // nichts zusätzlich
-            break;
-
-        case "admin":
-            admin.ladeAlleUebungen();
-            admin.renderUebungsStatistik();
-            break;
-
-        case "uebungsleitung":
-            console.log("📡 Modus: Übungsleitung");
-            initUebungsleitung((window as any).app?.db);
-            break;
-    }
-});
 import pdfGenerator from './pdfGenerator.js';
-import { DateFormatter } from "./DateFormatter.js";
+import { formatNatoDate } from "./utils/date";
 import { Uebung } from "./types/Uebung.js";
 import { UebungHTMLGenerator } from './UebungHTMLGenerator.js';
 import { admin } from './admin.js';
@@ -230,6 +217,7 @@ export class AppController {
 
         const app = initializeApp(firebaseConfig);
         this.db = getFirestore(app);
+        store.setState({ db: this.db });
         this.pagination = {
             pageSize: 25,
             currentPage: 0,
@@ -707,7 +695,7 @@ export class AppController {
         this.funkUebung.name = nameInput.value;
         const datumInput = document.getElementById("datum")! as HTMLInputElement;
         this.funkUebung.datum = new Date(datumInput.value + "T00:00:00");
-        this.natoDate = DateFormatter.formatNATODate(this.funkUebung.datum, false);
+        this.natoDate = formatNatoDate(this.funkUebung.datum, false);
 
         this.readLoesungswoerter();
 
@@ -1242,3 +1230,4 @@ export async function saveUebung(funkUebung: FunkUebung, db: Firestore): Promise
 window.app = new AppController();
 window.pdfGenerator = pdfGenerator;
 window.admin = admin;
+

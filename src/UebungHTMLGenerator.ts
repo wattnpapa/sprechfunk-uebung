@@ -1,4 +1,4 @@
-import { DateFormatter } from "./DateFormatter.js";
+import { formatNatoDate } from "./utils/date";
 import type { Uebung } from './types/Uebung';
 import type { Nachricht } from './types/Nachricht';
 import { escapeHtml } from "./utils/html";
@@ -55,7 +55,7 @@ export class UebungHTMLGenerator {
             <div class="col">
                 <h3>Kopfdaten</h3>
                 <table>
-                    <tr><th>Datum</th><td>${DateFormatter.formatNATODate(funkUebung.datum,false)}</td></tr>
+                    <tr><th>Datum</th><td>${formatNatoDate(funkUebung.datum, false)}</td></tr>
                     <tr><th>Rufgruppe</th><td>${funkUebung.rufgruppe}</td></tr>
                     <tr><th>Betriebsleitung</th><td>${funkUebung.leitung}</td></tr>
                     ${funkUebung.loesungswoerter?.[teilnehmer] ? `<tr><th>Lösungswort</th><td>${funkUebung.loesungswoerter?.[teilnehmer]}</td></tr>` : ''}

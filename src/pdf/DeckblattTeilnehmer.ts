@@ -3,7 +3,7 @@ import {FunkUebung} from "../FunkUebung";
 import {jsPDF} from "jspdf";
 import firebase from "firebase/compat";
 import Blob = firebase.firestore.Blob;
-import {DateFormatter} from "../DateFormatter";
+import { formatNatoDate } from "../utils/date";
 import {BasePDFTeilnehmer} from "./BasePDFTeilnehmer";
 
 export class DeckblattTeilnehmer extends BasePDFTeilnehmer {
@@ -13,8 +13,7 @@ export class DeckblattTeilnehmer extends BasePDFTeilnehmer {
     }
 
     draw(offsetX: number = 0) {
-        const dateLine = DateFormatter
-            .formatNATODate(this.funkUebung.datum, false)
+        const dateLine = formatNatoDate(this.funkUebung.datum, false)
             .replace(/\s+/g, '')
             .toLowerCase();
 
@@ -119,7 +118,7 @@ export class DeckblattTeilnehmer extends BasePDFTeilnehmer {
         });
 
         // 10) Zweizeiliger Footer
-        const generierungszeit = DateFormatter.formatNATODate(this.funkUebung.createDate, true);
+        const generierungszeit = formatNatoDate(this.funkUebung.createDate, true);
         this.pdf.setFont("helvetica", "normal").setFontSize(6);
         const line1 = `© Johannes Rudolph | Version ${this.funkUebung.buildVersion} | Übung ID: ${this.funkUebung.id}`;
         const line2 = `Generiert: ${generierungszeit} | Generator: sprechfunk-uebung.de`;

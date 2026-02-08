@@ -15,6 +15,8 @@ export interface Uebung {
   nachrichten: Record<string, Nachricht[]>;
   createDate: Date;
   loesungswoerter?: Record<string, string>;
+  loesungsStaerken?: Record<string, string>;
+  verwendeteVorlagen?: string[];
   /**
    * Optional: Mapping von Teilnehmer-Funkrufnamen auf Stellenname.
    * Optional für Rückwärtskompatibilität.

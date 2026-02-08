@@ -4,7 +4,7 @@ import Blob = firebase.firestore.Blob;
 import {jsPDF} from "jspdf";
 import {BasePDFTeilnehmer} from "./BasePDFTeilnehmer";
 import {Nachricht} from "../types/Nachricht";
-import {DateFormatter} from "../DateFormatter";
+import { formatNatoDate } from "../utils/date";
 
 export class Nachrichtenvordruck extends BasePDFTeilnehmer {
 
@@ -90,7 +90,7 @@ export class Nachrichtenvordruck extends BasePDFTeilnehmer {
 
         // Footer (compact)
         if (!this.hideFooter) {
-            const genTime = DateFormatter.formatNATODate(this.funkUebung.createDate, true);
+            const genTime = formatNatoDate(this.funkUebung.createDate, true);
             this.pdf.setFont("helvetica", "normal");
             this.pdf.setFontSize(8);
 
