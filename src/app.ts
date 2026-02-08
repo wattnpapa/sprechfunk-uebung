@@ -705,6 +705,7 @@ export class AppController {
         const useUpload = (document.getElementById("optionUpload") as HTMLInputElement).checked;
 
         if (useVorlagen) {
+            this.funkUebung.verwendeteVorlagen = selectedTemplates;
             if (selectedTemplates.length === 0) {
                 alert("Bitte mindestens eine Vorlage auswählen!");
                 return;
@@ -841,7 +842,7 @@ export class AppController {
         this.renderTeilnehmer(false);
     }
 
-    /* 
+    /*
      * Berechne Aktualisierung nach Änderung Prozentwerte Nachrichtentypen
      */
     calcMsgCount() {
@@ -1100,25 +1101,6 @@ export class AppController {
         this.berechneVerteilungUndZeigeDiagramm();
     }
 
-    /**
-     * Funktion zum Anpassen der Textgröße, damit der Text in die angegebene Breite passt
-     */
-    adjustTextForWidth(pdf: any, text: string, maxWidth: number, xPos: number, yPos: number): void {
-        let fontSize = 12; // Anfangsschriftgröße
-        let textWidth = pdf.getTextWidth(text);
-
-        // Wenn der Text zu lang ist, die Schriftgröße verringern
-        while (textWidth > maxWidth && fontSize > 5) {
-            fontSize -= 0.5;
-            pdf.setFontSize(fontSize);
-            textWidth = pdf.getTextWidth(text);
-        }
-
-        // Text mit angepasster Größe hinzufügen
-        pdf.text(text, xPos, yPos);
-    }
-
-
     // Funktion zum Befüllen der Select-Box mit den Vorlagen
     populateTemplateSelectBox() {
         const selectBox = document.getElementById("funkspruchVorlage")! as HTMLSelectElement;
@@ -1131,36 +1113,12 @@ export class AppController {
             const option = document.createElement("option");
             option.value = key;
             option.textContent = `${value.text}`;
-            option.selected = true; // Standardmäßig ausgewählt
+            option.selected = Array.isArray(this.funkUebung?.verwendeteVorlagen)
+                ? this.funkUebung.verwendeteVorlagen.includes(key)
+                : false;
             selectBox.appendChild(option);
         }
-    }
-
-    // Funktion zum Laden der Vorlage
-    loadTemplate(templateName: string): void {
-        const selectedTemplate = this.templatesFunksprueche[templateName];
-        if (selectedTemplate) {
-            // Zum Testen: Zeige den Text der Vorlage (dies kann an anderer Stelle verwendet werden)
-            console.log(`Vorlage geladen: ${selectedTemplate.text}`);
-
-            // Hier kannst du den Text der Vorlage verwenden, z.B. beim Generieren der Funksprüche
-            // Falls du die Datei laden möchtest, kannst du die `filename`-Eigenschaft verwenden
-            this.loadFile(selectedTemplate.filename);
-        }
-    }
-
-    // Funktion zum Laden einer Datei
-    loadFile(filename: string): void {
-        console.log(`Lade die Datei: ${filename}`);
-        fetch(filename)
-            .then(response => response.text())
-            .then(data => {
-                console.log("Dateiinhalt:", data);
-                // hier weiterverarbeiten falls nötig
-            })
-            .catch(error => {
-                console.error("Fehler beim Laden der Datei:", error);
-            });
+        $('#funkspruchVorlage').trigger('change');
     }
 
     // Funktion, um das aktuelle Datum im Datumsfeld vorzufüllen
@@ -1168,10 +1126,6 @@ export class AppController {
         const today = new Date();
         const formattedDate = today.toISOString().split('T')[0]; // Format: YYYY-MM-DD
         (document.getElementById("datum")! as HTMLInputElement).value = formattedDate;
-    }
-
-    generateMD5Hash(input: string): string {
-        return CryptoJS.MD5(input).toString();
     }
 
     readLoesungswoerter() {
@@ -1190,12 +1144,6 @@ export class AppController {
                 }
             }
         });
-    }
-
-    exportUebungAsJSON(): void {
-        document.getElementById("jsonOutput")!.textContent = this.funkUebung.toJson();
-        const modal = new bootstrap.Modal(document.getElementById('jsonModal')! as HTMLElement);
-        modal.show();
     }
 
     copyJSONToClipboard(): void {
