@@ -26,6 +26,7 @@ export class FunkUebung implements Uebung {
     checksumme: string;
     funksprueche: string[];
     anmeldungAktiv: boolean = true;
+    verwendeteVorlagen?: string[];
 
     constructor(buildVersion: string) {
         this.id = uuidv4();
@@ -104,7 +105,8 @@ export class FunkUebung implements Uebung {
             spruecheAnAlle: this.spruecheAnAlle,
             spruecheAnMehrere: this.spruecheAnMehrere,
             buchstabierenAn: this.buchstabierenAn,
-            anmeldungAktiv: this.anmeldungAktiv
+            anmeldungAktiv: this.anmeldungAktiv,
+            verwendeteVorlagen: this.verwendeteVorlagen
         }, null, 2); // Pretty Print
     }
 

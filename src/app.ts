@@ -1113,9 +1113,10 @@ export class AppController {
             const option = document.createElement("option");
             option.value = key;
             option.textContent = `${value.text}`;
-            option.selected = Array.isArray(this.funkUebung?.verwendeteVorlagen)
-                ? this.funkUebung.verwendeteVorlagen.includes(key)
-                : false;
+            const used = this.funkUebung?.verwendeteVorlagen;
+            option.selected = Array.isArray(used)
+                ? used.length === 0 || used.includes(key)
+                : true;
             selectBox.appendChild(option);
         }
         $('#funkspruchVorlage').trigger('change');

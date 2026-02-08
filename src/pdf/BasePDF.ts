@@ -78,7 +78,6 @@ export abstract class BasePDF {
             // @ts-ignore
             this.pdf.text(paragraph, x, currentY, {
                 maxWidth: maxWidth,
-                overflow: "linebreak"
             });
 
             // Höhe berechnen, die jsPDF tatsächlich benötigt hat
