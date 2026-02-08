@@ -8,6 +8,10 @@ export interface Uebung {
   leitung: string;
   rufgruppe: string;
   teilnehmerListe: string[];
+  /**
+   * Mapping von kryptischer ID auf Teilnehmer-Funkrufname.
+   */
+  teilnehmerIds?: Record<string, string>;
   nachrichten: Record<string, Nachricht[]>;
   createDate: Date;
   loesungswoerter?: Record<string, string>;

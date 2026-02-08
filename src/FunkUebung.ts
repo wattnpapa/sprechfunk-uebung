@@ -14,6 +14,7 @@ export class FunkUebung implements Uebung {
     leitung: string;
     rufgruppe: string;
     teilnehmerListe: string[];
+    teilnehmerIds: Record<string, string>;
     teilnehmerStellen?: Record<string, string>;
     nachrichten: Record<string, Nachricht[]>;
     createDate: Date;
@@ -65,6 +66,7 @@ export class FunkUebung implements Uebung {
         this.checksumme = "";
         this.funksprueche = [];
         this.anmeldungAktiv = true;
+        this.teilnehmerIds = {};
     }
 
     updateChecksum() {
@@ -79,6 +81,7 @@ export class FunkUebung implements Uebung {
             buchstabierenAn: this.buchstabierenAn,
             loesungswoerter: this.loesungswoerter,
             teilnehmerListe: this.teilnehmerListe,
+            teilnehmerIds: this.teilnehmerIds,
             nachrichten: this.nachrichten
         });
 
@@ -97,6 +100,7 @@ export class FunkUebung implements Uebung {
             leitung: this.leitung,
             buildVersion: this.buildVersion,
             teilnehmerListe: this.teilnehmerListe,
+            teilnehmerIds: this.teilnehmerIds,
             teilnehmerStellen: this.teilnehmerStellen,
             nachrichten: this.nachrichten,
             loesungswoerter: this.loesungswoerter,
@@ -114,6 +118,14 @@ export class FunkUebung implements Uebung {
         this.createDate = new Date();
         this.nachrichten = this.verteileNachrichtenFair();
         this.verteileLoesungswoerterMitIndex();
+
+        // Generiere kryptische IDs für Teilnehmer
+        this.teilnehmerIds = {};
+        this.teilnehmerListe.forEach(t => {
+            const id = uuidv4();
+            this.teilnehmerIds[id] = t;
+        });
+
         this.updateChecksum();
         this.berechneLoesungsStaerken();
         console.log(this.loesungsStaerken);

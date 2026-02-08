@@ -1,3 +1,17 @@
+export interface TeilnehmerStorage {
+    version: number;
+    uebungId: string;
+    teilnehmer: string; // Funkrufname
+    lastUpdated: string;
+    nachrichten: Record<string, NachrichtenStatusTeilnehmer>;
+    hideTransmitted: boolean;
+}
+
+export interface NachrichtenStatusTeilnehmer {
+    uebertragen: boolean;
+    uebertragenUm?: string;
+}
+
 export interface UebungsleitungStorage {
     version: number;
     uebungId: string;

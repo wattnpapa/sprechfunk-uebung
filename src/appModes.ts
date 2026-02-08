@@ -1,4 +1,5 @@
 export type AppMode =
     | "generator"
     | "admin"
-    | "uebungsleitung";
+    | "uebungsleitung"
+    | "teilnehmer";

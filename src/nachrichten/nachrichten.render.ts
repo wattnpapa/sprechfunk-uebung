@@ -2,6 +2,7 @@
 import {markNachrichtAbgesetzt, getNachrichtenStatusReadonly, setNachrichtenNotiz} from "./nachrichten.state";
 import {loadUebungsleitungStorage, saveUebungsleitungStorage} from "../storage";
 import {formatNatoDate} from "../utils/date";
+import {escapeHtml} from "../utils/html";
 
 let hideAbgesetzteNachrichten = false;
 let senderFilter: string = "";
@@ -125,7 +126,7 @@ export function renderNachrichtenliste(
       <td>${n.empfaenger.map(e => `<div>${e}</div>`).join("")}</td>
       <td>${n.sender}</td>
       <td class="nachricht-text">
-          ${escapeHtml(n.text).replace(/\n/g, "<br>")}
+          ${escapeHtml(n.text).replace(/\\n/g, "<br>").replace(/\n/g, "<br>")}
         
           <textarea
             class="form-control form-control-sm mt-2 nachricht-notiz"
@@ -305,16 +306,6 @@ export function renderNachrichtenliste(
             renderNachrichtenliste(buildNachrichtenliste(u));
         });
     }
-}
-
-/**
- * HTML escapen (Sicherheit)
- */
-function escapeHtml(value: string): string {
-    return value
-        .replace(/&/g, "&amp;")
-        .replace(/</g, "&lt;")
-        .replace(/>/g, "&gt;");
 }
 
 function escapeAttr(value: string): string {

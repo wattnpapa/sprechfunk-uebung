@@ -1,6 +1,8 @@
 import { DateFormatter } from "./DateFormatter.js";
 import type { Uebung } from './types/Uebung';
 import type { Nachricht } from './types/Nachricht';
+import { escapeHtml } from "./utils/html";
+
 export class UebungHTMLGenerator {
     /**
      * Erstellt eine HTML-Seite für einen einzelnen Teilnehmer der Übung.
@@ -17,7 +19,7 @@ export class UebungHTMLGenerator {
                 `<tr>
                     <td>${n.id}</td>
                     <td>${n.empfaenger.join("<br/>").replace(/ /g, "&nbsp;")}</td>
-                    <td>${n.nachricht}</td>
+                    <td>${escapeHtml(n.nachricht).replace(/\\n/g, "<br>").replace(/\n/g, "<br>")}</td>
                 </tr>`)
             .join("");
 

@@ -4,6 +4,7 @@
 
 import type { AppMode } from "./appModes";
 import { initUebungsleitung } from "./uebungsleitung";
+import { initTeilnehmer } from "./teilnehmer";
 
 var APP_MODE: AppMode = 'generator'
 
@@ -22,6 +23,12 @@ function handleRoute(): void {
             (window as any).__AKTUELLE_UEBUNG_ID__ = uebungId;
             initUebungsleitung((window as any).app?.db);
         }
+        return;
+    }
+
+    if (mode === "teilnehmer") {
+        applyAppMode("teilnehmer");
+        initTeilnehmer((window as any).app?.db);
         return;
     }
 
@@ -101,10 +108,12 @@ function applyAppMode(mode: AppMode): void {
     const generator = document.getElementById("mainAppArea");
     const admin = document.getElementById("adminArea");
     const uebungsleitung = document.getElementById("uebungsleitungArea");
+    const teilnehmer = document.getElementById("teilnehmerArea");
 
     generator && (generator.style.display = "none");
     admin && (admin.style.display = "none");
     uebungsleitung && (uebungsleitung.style.display = "none");
+    teilnehmer && (teilnehmer.style.display = "none");
 
     switch (mode) {
         case "generator":
@@ -115,6 +124,9 @@ function applyAppMode(mode: AppMode): void {
             break;
         case "uebungsleitung":
             uebungsleitung && (uebungsleitung.style.display = "block");
+            break;
+        case "teilnehmer":
+            teilnehmer && (teilnehmer.style.display = "block");
             break;
     }
 
@@ -1160,14 +1172,30 @@ export class AppController {
         const linkContainer = document.getElementById("uebung-links")! as HTMLElement;
         const linkElement = document.getElementById("link-uebung-direkt")! as HTMLAnchorElement;
         const linkUebungsMonitorElement = document.getElementById("link-uebungsleitung-direkt")! as HTMLAnchorElement;
+        const teilnehmerLinksContainer = document.getElementById("links-teilnehmer-container")! as HTMLElement;
+
         if (this.funkUebung.id) {
-            const urlUebung = `${window.location.origin}${window.location.pathname}#/generator/${this.funkUebung.id}`;
+            const baseUrl = `${window.location.origin}${window.location.pathname}`;
+
+            const urlUebung = `${baseUrl}#/generator/${this.funkUebung.id}`;
             linkElement.href = urlUebung;
             linkElement.textContent = urlUebung;
 
-            const urlUebungLeitung = `${window.location.origin}${window.location.pathname}#/uebungsleitung/${this.funkUebung.id}`;
+            const urlUebungLeitung = `${baseUrl}#/uebungsleitung/${this.funkUebung.id}`;
             linkUebungsMonitorElement.href = urlUebungLeitung;
             linkUebungsMonitorElement.textContent = urlUebungLeitung;
+
+            // Teilnehmer-Links
+            teilnehmerLinksContainer.innerHTML = "";
+            if (this.funkUebung.teilnehmerIds) {
+                Object.entries(this.funkUebung.teilnehmerIds).forEach(([id, name]) => {
+                    const url = `${baseUrl}#/teilnehmer/${this.funkUebung.id}/${id}`;
+                    const div = document.createElement("div");
+                    div.className = "mb-1";
+                    div.innerHTML = `<strong>${name}:</strong> <a href="${url}" target="_blank" class="text-break">${url}</a>`;
+                    teilnehmerLinksContainer.appendChild(div);
+                });
+            }
 
             linkContainer.style.display = "block";
         }

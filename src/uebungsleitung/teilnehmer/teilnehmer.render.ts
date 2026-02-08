@@ -137,6 +137,28 @@ export function renderTeilnehmerListe(
             data-teilnehmer="${name}"
           >${status?.notizen ?? ""}</textarea>
         </td>
+
+        <td>
+          ${(() => {
+              const u = (window as any).__AKTUELLE_UEBUNG__;
+              const teilnehmerIds = u?.teilnehmerIds || {};
+              // Finde die kryptische ID für diesen Teilnehmernamen
+              const entry = Object.entries(teilnehmerIds).find(([id, tName]) => tName === name);
+              if (entry) {
+                  const kryptischeId = entry[0];
+                  const url = `${window.location.origin}${window.location.pathname}#/teilnehmer/${u.id}/${kryptischeId}`;
+                  return `
+                    <div class="input-group input-group-sm" style="min-width: 150px;">
+                        <input type="text" class="form-control" value="${url}" readonly id="link-${kryptischeId}">
+                        <button class="btn btn-outline-secondary btn-copy-link" type="button" data-id="${kryptischeId}">
+                            <i class="fas fa-copy"></i>
+                        </button>
+                    </div>
+                  `;
+              }
+              return "–";
+          })()}
+        </td>
       </tr>
     `;
     }).join("");
@@ -158,6 +180,7 @@ export function renderTeilnehmerListe(
               </button>
             </th>` : ``}
             <th>Notizen</th>
+            <th>Link</th>
           </tr>
         </thead>
         <tbody>
@@ -172,6 +195,26 @@ export function renderTeilnehmerListe(
         .forEach(area => autoResizeTextarea(area));
 
     bindTeilnehmerEvents(uebungId);
+    bindCopyLinkEvents();
+}
+
+function bindCopyLinkEvents() {
+    document.querySelectorAll(".btn-copy-link").forEach(btn => {
+        btn.addEventListener("click", (e) => {
+            const id = (e.currentTarget as HTMLElement).dataset.id;
+            const input = document.getElementById(`link-${id}`) as HTMLInputElement;
+            if (input) {
+                input.select();
+                document.execCommand("copy");
+                
+                const icon = (e.currentTarget as HTMLElement).querySelector("i");
+                if (icon) {
+                    icon.classList.replace("fa-copy", "fa-check");
+                    setTimeout(() => icon.classList.replace("fa-check", "fa-copy"), 2000);
+                }
+            }
+        });
+    });
 }
 
 /**
