@@ -665,11 +665,6 @@ export class AppController {
         this.renderTeilnehmer();
     }
 
-    toggleFunkspruchInput(): void {
-        const useCustomList = (document.getElementById("useCustomList")! as HTMLInputElement).checked;
-        (document.getElementById("fileUploadContainer")! as HTMLElement).style.display = useCustomList ? "block" : "none";
-    }
-
     startUebung() {
         // ⚠️ Sicherheitsabfrage: Übung existiert bereits
         if (this.funkUebung.nachrichten && Object.keys(this.funkUebung.nachrichten).length > 0) {
@@ -764,70 +759,6 @@ export class AppController {
         } else {
             alert("Bitte eine Option auswählen: Vorlagen oder eigene Datei!");
         }
-    }
-
-
-    /**
-     * Verteilt die Lösungsbuchstaben zufällig auf Nachrichten an den Empfänger,
-     * aber mit ihrem ursprünglichen Index (+1), damit das Wort zusammengesetzt werden kann.
-     */
-    verteileLoesungswoerter(
-        uebungsDaten: { teilnehmer: string; loesungswort: string; nachrichten: Nachricht[] }[]
-    ): void {
-        uebungsDaten.forEach((empfaengerDaten: { teilnehmer: string; loesungswort: string; nachrichten: Nachricht[] }) => {
-            let empfaenger = empfaengerDaten.teilnehmer;
-            let loesungswort = empfaengerDaten.loesungswort.split(""); // Array der Buchstaben mit Index
-
-            // Speichere den Original-Index für spätere Rekonstruktion, +1 für menschliche Lesbarkeit
-            let buchstabenMitIndex = loesungswort.map((buchstabe: string, index: number) => ({ index: index + 1, buchstabe }));
-
-            // Alle Nachrichten sammeln, die nur für diesen Teilnehmer bestimmt sind
-            let empfaengerNachrichten: Nachricht[] = [];
-            uebungsDaten.forEach((absenderDaten: { teilnehmer: string; loesungswort: string; nachrichten: Nachricht[] }) => {
-                if (absenderDaten.teilnehmer !== empfaenger) {
-                    absenderDaten.nachrichten.forEach((nachricht: Nachricht) => {
-                        if (nachricht.empfaenger.length === 1 && nachricht.empfaenger[0] === empfaenger) {
-                            empfaengerNachrichten.push(nachricht);
-                        }
-                    });
-                }
-            });
-
-            let anzahlNachrichten = empfaengerNachrichten.length;
-
-            if (anzahlNachrichten === 0) {
-                console.warn(`⚠ Warnung: Keine Nachrichten für ${empfaenger} verfügbar!`);
-                return;
-            }
-
-            // Falls das Lösungswort mehr Buchstaben als Nachrichten hat, müssen mehrere Buchstaben pro Nachricht gesendet werden
-            let buchstabenProNachricht = Math.ceil(buchstabenMitIndex.length / anzahlNachrichten);
-
-            // Zufällig mischen, aber mit Index
-            buchstabenMitIndex.sort(() => Math.random() - 0.5);
-
-            let buchstabenIndex = 0;
-
-            // Nachrichten zufällig mischen
-            let gemischteNachrichten = [...empfaengerNachrichten].sort(() => Math.random() - 0.5);
-
-            // Buchstaben zufällig auf Nachrichten verteilen, aber mit originalem Index (+1 für menschliche Lesbarkeit)
-            gemischteNachrichten.forEach(nachricht => {
-                let buchstabenSegment = [];
-
-                for (let i = 0; i < buchstabenProNachricht; i++) {
-                    if (buchstabenIndex < buchstabenMitIndex.length) {
-                        let { index, buchstabe } = buchstabenMitIndex[buchstabenIndex];
-                        buchstabenSegment.push(`${index}${buchstabe}`); // Format: "1F"
-                        buchstabenIndex++;
-                    }
-                }
-
-                if (buchstabenSegment.length > 0) {
-                    nachricht.nachricht += " " + buchstabenSegment.join(""); // Mehrere Buchstaben direkt hintereinander
-                }
-            });
-        });
     }
 
     /**
@@ -959,53 +890,6 @@ export class AppController {
             this.currentPageIndex = newIndex;
             this.displayPage(this.currentPageIndex);
         }
-    }
-
-    generatePDFs() {
-        pdfGenerator.generateTeilnehmerPDFs(this.funkUebung);
-    }
-
-    // Funktion zum Umschalten der Lösungswort-Optionen
-    toggleLoesungswortOption(): void {
-        const optionInput = document.querySelector<HTMLInputElement>('input[name="loesungswortOption"]:checked')!;
-        const option = optionInput.value;
-        const container = document.getElementById("zentralesLoesungswortContainer")! as HTMLElement;
-        container.style.display = option === "gleich" ? "block" : "none";
-        const column = document.getElementById("loesungswortColumn")! as HTMLElement;
-        column.style.display = option === "individuell" ? "table-cell" : "none";
-        this.renderTeilnehmer();
-    }
-
-    generateInstructorPDF() {
-        pdfGenerator.generateInstructorPDF(this.funkUebung);
-    }
-
-
-    setLoesungswoerter(): void {
-        const isKeine = (document.getElementById("keineLoesungswoerter")! as HTMLInputElement).checked;
-        const isZentral = (document.getElementById("zentralLoesungswort")! as HTMLInputElement).checked;
-        const isIndividuell = (document.getElementById("individuelleLoesungswoerter")! as HTMLInputElement).checked;
-
-        if (isKeine) {
-            this.funkUebung.loesungswoerter = {};
-            (document.getElementById("zentralLoesungswortInput")! as HTMLInputElement).disabled = true;
-            (document.getElementById("zentralLoesungswortInput")! as HTMLInputElement).value = "";
-            (document.getElementById("shuffleButton")! as HTMLButtonElement).disabled = true;
-        } else if (isZentral) {
-            const zentral = (document.getElementById("zentralLoesungswortInput")! as HTMLInputElement)
-                .value.trim().toUpperCase();
-            this.funkUebung.teilnehmerListe.forEach(teilnehmer => {
-                this.funkUebung.loesungswoerter[teilnehmer] = zentral;
-            });
-            (document.getElementById("zentralLoesungswortInput")! as HTMLInputElement).disabled = false;
-            (document.getElementById("shuffleButton")! as HTMLButtonElement).disabled = true;
-        } else if (isIndividuell) {
-            this.assignRandomLoesungswoerter();
-            (document.getElementById("zentralLoesungswortInput")! as HTMLInputElement).disabled = true;
-            (document.getElementById("shuffleButton")! as HTMLButtonElement).disabled = false;
-        }
-
-        this.renderTeilnehmer();
     }
 
     assignRandomLoesungswoerter(): void {
@@ -1216,14 +1100,6 @@ export class AppController {
         this.berechneVerteilungUndZeigeDiagramm();
     }
 
-    generateNachrichtenvordruckPDFs() {
-        pdfGenerator.generateNachrichtenvordruckPDFs(this.funkUebung);
-    }
-
-    generateMeldevordruckPDFs() {
-        pdfGenerator.generateMeldevordruckPDFs(this.funkUebung);
-    }
-
     /**
      * Funktion zum Anpassen der Textgröße, damit der Text in die angegebene Breite passt
      */
@@ -1257,24 +1133,6 @@ export class AppController {
             option.textContent = `${value.text}`;
             option.selected = true; // Standardmäßig ausgewählt
             selectBox.appendChild(option);
-        }
-    }
-
-
-    
-
-
-    // Funktion zur Anzeige des Datei-Upload-Feldes
-    toggleFileUpload() {
-        const selectBox = document.getElementById("funkspruchVorlage")! as HTMLSelectElement;
-        const selectedValue = selectBox.value;
-        const fileUploadContainer = document.getElementById("fileUploadContainer")! as HTMLElement;
-
-        if (selectedValue === "upload") {
-            fileUploadContainer.style.display = "block"; // Zeige Datei-Upload-Feld an
-        } else {
-            fileUploadContainer.style.display = "none"; // Verstecke Datei-Upload-Feld
-            this.loadTemplate(selectedValue); // Lade die ausgewählte Vorlage
         }
     }
 
