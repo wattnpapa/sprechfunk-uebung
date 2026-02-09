@@ -1,0 +1,60 @@
+{
+  "id": "89afbca7-75db-4e5a-8d0b-937050a3c901",
+  "name": "New Profile",
+  "provider": "openai",
+  "model": "gpt-5",
+  "maxIterations": 250,
+  "minTimeBetweenToolCalls": 0,
+  "toolApprovals": {
+    "aider---get_context_files": "always",
+    "aider---add_context_files": "always",
+    "aider---drop_context_files": "always",
+    "aider---run_prompt": "ask",
+    "power---file_edit": "ask",
+    "power---file_read": "always",
+    "power---file_write": "ask",
+    "power---glob": "always",
+    "power---grep": "always",
+    "power---semantic_search": "always",
+    "power---bash": "ask",
+    "power---fetch": "always",
+    "subagents---run_task": "always",
+    "skills---activate_skill": "always",
+    "tasks---list_tasks": "always",
+    "tasks---get_task": "always",
+    "tasks---get_task_message": "always",
+    "tasks---create_task": "ask",
+    "tasks---delete_task": "ask",
+    "memory---store_memory": "always",
+    "memory---retrieve_memory": "always",
+    "memory---delete_memory": "never",
+    "memory---list_memories": "never",
+    "memory---update_memory": "never"
+  },
+  "toolSettings": {
+    "power---bash": {
+      "allowedPattern": "ls .*;cat .*;git status;git show;git log",
+      "deniedPattern": "rm .*;del .*;chown .*;chgrp .*;chmod .*"
+    }
+  },
+  "includeContextFiles": true,
+  "includeRepoMap": false,
+  "usePowerTools": true,
+  "useAiderTools": false,
+  "useTodoTools": true,
+  "useSubagents": true,
+  "useTaskTools": false,
+  "useMemoryTools": true,
+  "useSkillsTools": true,
+  "customInstructions": "",
+  "enabledServers": [],
+  "subagent": {
+    "enabled": false,
+    "systemPrompt": "",
+    "invocationMode": "on-demand",
+    "color": "#3368a8",
+    "description": "",
+    "contextMemory": "off"
+  },
+  "projectDir": "/Users/johannes/Developer/sprechfunk-uebung"
+}
