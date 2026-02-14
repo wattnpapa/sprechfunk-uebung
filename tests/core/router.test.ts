@@ -52,6 +52,10 @@ describe("router", () => {
         router.navigate("uebungsleitung", "id1");
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         expect((globalThis as any).window.location.hash).toBe("#/uebungsleitung/id1");
+
+        router.navigate("generator");
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        expect((globalThis as any).window.location.hash).toBe("#/generator");
     });
 
     it("defaults to generator on empty hash", async () => {

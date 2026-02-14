@@ -25,6 +25,13 @@
     "test": "vitest",
     "test:coverage": "vitest run --coverage",
     "test:e2e": "playwright test",
+    "test:e2e:smoke": "playwright test -g \"@smoke\"",
+    "test:e2e:generator": "playwright test -g \"@generator\"",
+    "test:e2e:admin": "playwright test -g \"@admin\"",
+    "test:e2e:teilnehmer": "playwright test -g \"@teilnehmer\"",
+    "test:e2e:uebungsleitung": "playwright test -g \"@uebungsleitung\"",
+    "test:e2e:routing": "playwright test -g \"@routing\"",
+    "test:e2e:split": "npm run test:e2e:smoke && npm run test:e2e:generator && npm run test:e2e:admin && npm run test:e2e:teilnehmer && npm run test:e2e:uebungsleitung && npm run test:e2e:routing",
     "coverage:readme": "node scripts/update-coverage-link.mjs"
   },
   "devDependencies": {

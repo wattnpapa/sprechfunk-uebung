@@ -65,17 +65,12 @@ export class AppView {
                 fetch("howto.md")
                     .then(response => response.text())
                     .then(data => {
-                        if (!modalContent) {
-                            return;
-                        }
                         const converter = new Converter();
                         modalContent.innerHTML = converter.makeHtml(data);
                     })
                     .catch(error => {
                         console.error("Fehler beim Laden der Anleitung:", error);
-                        if (modalContent) {
-                            modalContent.innerHTML = "Es gab einen Fehler beim Laden der Anleitung.";
-                        }
+                        modalContent.innerHTML = "Es gab einen Fehler beim Laden der Anleitung.";
                     });
             };
             const howtoModal = document.getElementById("howtoModal");

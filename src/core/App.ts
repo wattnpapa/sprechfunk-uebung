@@ -6,7 +6,7 @@ import { GeneratorController } from "../generator";
 import { admin } from "../admin/index";
 import { initializeApp } from "firebase/app";
 import { firebaseConfig } from "../firebase-config.js";
-import { getFirestore, Firestore } from "firebase/firestore";
+import { connectFirestoreEmulator, getFirestore, Firestore } from "firebase/firestore";
 import { NatoClock } from "./NatoClock";
 import { ThemeManager } from "./ThemeManager";
 import { AppView } from "./AppView";
@@ -28,6 +28,20 @@ export class App {
         // 1. Initialize Firebase
         const firebaseApp = initializeApp(firebaseConfig);
         this.db = getFirestore(firebaseApp);
+        const shouldUseEmulator = (() => {
+            const search = window.location?.search ?? "";
+            const byQuery = new URLSearchParams(search).get("emulator") === "1";
+            let byStorage = false;
+            try {
+                byStorage = window.localStorage.getItem("useFirestoreEmulator") === "1";
+            } catch {
+                byStorage = false;
+            }
+            return byQuery || byStorage;
+        })();
+        if (shouldUseEmulator) {
+            connectFirestoreEmulator(this.db, "127.0.0.1", 8080);
+        }
         store.setState({ db: this.db });
 
         // 2. Initialize Core UI Components
@@ -75,7 +89,7 @@ export class App {
             }
 
             case "admin": {
-                admin.db = this.db;
+                admin.setDb(this.db);
                 admin.ladeAlleUebungen();
                 admin.renderUebungsStatistik();
                 break;

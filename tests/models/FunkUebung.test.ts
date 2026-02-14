@@ -21,4 +21,17 @@ describe("FunkUebung", () => {
         expect(parsed.id).toBe(u.id);
         expect(parsed.checksumme).toBe(u.checksumme);
     });
+
+    it("uses fallback id generation when randomUUID is unavailable", () => {
+        const original = Object.getOwnPropertyDescriptor(globalThis, "crypto");
+        Object.defineProperty(globalThis, "crypto", {
+            value: {},
+            configurable: true
+        });
+        const u = new FunkUebung("v1");
+        expect(u.id).toContain("-");
+        if (original) {
+            Object.defineProperty(globalThis, "crypto", original);
+        }
+    });
 });

@@ -1,6 +1,7 @@
 import { 
     Firestore, 
     doc, 
+    deleteDoc,
     getDoc, 
     setDoc, 
     collection, 
@@ -19,6 +20,45 @@ import { FunkUebung } from "../models/FunkUebung";
 
 export class FirebaseService {
     constructor(private db: Firestore) {}
+
+    private isLocalMockMode(): boolean {
+        if (typeof window === "undefined") {
+            return false;
+        }
+        try {
+            return window.localStorage.getItem("useFirestoreEmulator") === "1";
+        } catch {
+            return false;
+        }
+    }
+
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    private readMockStore(): Record<string, any> {
+        if (!this.isLocalMockMode() || typeof window === "undefined") {
+            return {};
+        }
+        try {
+            const raw = window.localStorage.getItem("e2eFirestoreSeed");
+            if (!raw) {
+                return {};
+            }
+            const parsed = JSON.parse(raw) as Record<string, unknown>;
+            if (!parsed || typeof parsed !== "object") {
+                return {};
+            }
+            return parsed as Record<string, unknown>;
+        } catch {
+            return {};
+        }
+    }
+
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    private writeMockStore(store: Record<string, any>): void {
+        if (!this.isLocalMockMode() || typeof window === "undefined") {
+            return;
+        }
+        window.localStorage.setItem("e2eFirestoreSeed", JSON.stringify(store));
+    }
 
     /**
      * Wandelt ein Firestore-Dokument in ein sauberes Uebung-Objekt um (Domain-Modell).
@@ -172,6 +212,11 @@ export class FirebaseService {
      * Lädt eine Übung anhand ihrer ID.
      */
     async getUebung(id: string): Promise<FunkUebung | null> {
+        if (this.isLocalMockMode()) {
+            const store = this.readMockStore();
+            const data = store[id];
+            return data ? this.mapToDomain(id, data) : null;
+        }
         const docRef = doc(this.db, "uebungen", id);
         const docSnap = await getDoc(docRef);
 
@@ -185,6 +230,18 @@ export class FirebaseService {
      * Speichert eine Übung.
      */
     async saveUebung(uebung: FunkUebung | Uebung): Promise<void> {
+        if (this.isLocalMockMode()) {
+            const id = uebung.id;
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            const store = this.readMockStore() as Record<string, any>;
+            if (uebung instanceof FunkUebung) {
+                store[id] = JSON.parse(uebung.toJson());
+            } else {
+                store[id] = { ...uebung };
+            }
+            this.writeMockStore(store);
+            return;
+        }
         const id = uebung.id;
         const docRef = doc(this.db, "uebungen", id);
         
@@ -204,11 +261,45 @@ export class FirebaseService {
         await setDoc(docRef, dataToSave);
     }
 
+    async deleteUebung(id: string): Promise<void> {
+        if (this.isLocalMockMode()) {
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            const store = this.readMockStore() as Record<string, any>;
+            // eslint-disable-next-line @typescript-eslint/no-dynamic-delete
+            delete store[id];
+            this.writeMockStore(store);
+            return;
+        }
+        await deleteDoc(doc(this.db, "uebungen", id));
+    }
+
     /**
      * Lädt Übungen für die Admin-Ansicht mit Paginierung.
      */
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     async getUebungenPaged(pageSize: number, lastVisible: any = null, direction: "next" | "prev" | "initial" = "initial") {
+        if (this.isLocalMockMode()) {
+            const store = this.readMockStore();
+            const allEntries = Object.entries(store).map(([id, data]) => this.mapToDomain(id, data));
+            allEntries.sort((a, b) => {
+                const da = new Date(a.createDate).getTime();
+                const db = new Date(b.createDate).getTime();
+                return db - da;
+            });
+
+            let start = 0;
+            if (direction === "next" && lastVisible && typeof lastVisible.__mockIndex === "number") {
+                start = lastVisible.__mockIndex + 1;
+            }
+            const page = allEntries.slice(start, start + pageSize);
+            const lastIndex = start + page.length - 1;
+
+            return {
+                uebungen: page,
+                lastVisible: page.length > 0 ? { __mockIndex: lastIndex } : null,
+                size: page.length
+            };
+        }
         const uebungCol = collection(this.db, "uebungen");
         let q;
 
@@ -230,6 +321,23 @@ export class FirebaseService {
     }
 
     async getUebungenSnapshot(): Promise<QuerySnapshot<DocumentData>> {
+        if (this.isLocalMockMode()) {
+            const store = this.readMockStore();
+            const entries = Object.entries(store);
+            const docs = entries.map(([id, data]) => ({
+                id,
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                data: () => data as any
+            }));
+            const snapshot = {
+                size: docs.length,
+                docs,
+                forEach: (cb: (doc: { id: string; data: () => DocumentData }) => void) => {
+                    docs.forEach(cb);
+                }
+            };
+            return snapshot as unknown as QuerySnapshot<DocumentData>;
+        }
         return getDocs(collection(this.db, "uebungen"));
     }
 
@@ -237,6 +345,54 @@ export class FirebaseService {
      * Lädt Statistiken für das Admin-Dashboard.
      */
     async getAdminStats() {
+        if (this.isLocalMockMode()) {
+            const store = this.readMockStore();
+            const docs = Object.values(store) as Record<string, unknown>[];
+
+            const hasNonEmptyRecord = (val: unknown): boolean => {
+                if (!val || typeof val !== "object") {
+                    return false;
+                }
+                return Object.keys(val as Record<string, unknown>).length > 0;
+            };
+
+            let totalTeilnehmer = 0;
+            let totalBytes = 0;
+            let totalSprueche = 0;
+            let loesungsCount = 0;
+            let staerkeCount = 0;
+            let buchstabierCount = 0;
+
+            docs.forEach(data => {
+                totalTeilnehmer += ((data["teilnehmerListe"] as unknown[])?.length || 0);
+                if (hasNonEmptyRecord(data["loesungswoerter"])) {
+                    loesungsCount++;
+                }
+                if (hasNonEmptyRecord(data["loesungsStaerken"])) {
+                    staerkeCount++;
+                }
+                if ((data["buchstabierenAn"] as number || 0) > 0) {
+                    buchstabierCount++;
+                }
+                totalBytes += JSON.stringify(data).length;
+                const nachrichten = data["nachrichten"] as Record<string, unknown[]> || {};
+                Object.values(nachrichten).forEach(msgs => {
+                    if (Array.isArray(msgs)) {
+                        totalSprueche += msgs.length;
+                    }
+                });
+            });
+
+            return {
+                total: docs.length,
+                totalTeilnehmer,
+                totalBytes,
+                totalSprueche,
+                loesungsCount,
+                staerkeCount,
+                buchstabierCount
+            };
+        }
         const uebungenCol = collection(this.db, "uebungen");
         const allDocsSnap = await getDocs(uebungenCol);
         

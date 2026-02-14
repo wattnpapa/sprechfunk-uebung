@@ -20,7 +20,7 @@ describe("App", () => {
     it("initializes core components and exposes globals", async () => {
         vi.doMock("../../src/uebungsleitung", () => ({ initUebungsleitung: vi.fn() }));
         vi.doMock("../../src/teilnehmer", () => ({ initTeilnehmer: vi.fn() }));
-        vi.doMock("../../src/admin/index", () => ({ admin: { ladeAlleUebungen: vi.fn(), renderUebungsStatistik: vi.fn() } }));
+        vi.doMock("../../src/admin/index", () => ({ admin: { ladeAlleUebungen: vi.fn(), renderUebungsStatistik: vi.fn(), setDb: vi.fn() } }));
         vi.doMock("../../src/generator", () => ({ GeneratorController: { getInstance: () => ({ handleRoute: vi.fn() }) } }));
         vi.doMock("../../src/services/pdfGenerator", () => ({ default: {} }));
         vi.doMock("../../src/firebase-config.js", () => ({ firebaseConfig: {} }));
@@ -57,7 +57,7 @@ describe("App", () => {
     });
 
     it("routes to admin handler", async () => {
-        const admin = { ladeAlleUebungen: vi.fn(), renderUebungsStatistik: vi.fn(), db: null as unknown };
+        const admin = { ladeAlleUebungen: vi.fn(), renderUebungsStatistik: vi.fn(), setDb: vi.fn(), db: null as unknown };
         vi.doMock("../../src/admin/index", () => ({ admin }));
         vi.doMock("../../src/uebungsleitung", () => ({ initUebungsleitung: vi.fn() }));
         vi.doMock("../../src/teilnehmer", () => ({ initTeilnehmer: vi.fn() }));
@@ -90,7 +90,7 @@ describe("App", () => {
         const initTeilnehmer = vi.fn();
         vi.doMock("../../src/uebungsleitung", () => ({ initUebungsleitung }));
         vi.doMock("../../src/teilnehmer", () => ({ initTeilnehmer }));
-        vi.doMock("../../src/admin/index", () => ({ admin: { ladeAlleUebungen: vi.fn(), renderUebungsStatistik: vi.fn() } }));
+        vi.doMock("../../src/admin/index", () => ({ admin: { ladeAlleUebungen: vi.fn(), renderUebungsStatistik: vi.fn(), setDb: vi.fn() } }));
         vi.doMock("../../src/generator", () => ({ GeneratorController: { getInstance: () => ({ handleRoute: vi.fn() }) } }));
         vi.doMock("../../src/services/pdfGenerator", () => ({ default: {} }));
         vi.doMock("../../src/firebase-config.js", () => ({ firebaseConfig: {} }));
@@ -117,7 +117,7 @@ describe("App", () => {
         setupGlobals();
         vi.doMock("../../src/uebungsleitung", () => ({ initUebungsleitung: vi.fn() }));
         vi.doMock("../../src/teilnehmer", () => ({ initTeilnehmer }));
-        vi.doMock("../../src/admin/index", () => ({ admin: { ladeAlleUebungen: vi.fn(), renderUebungsStatistik: vi.fn() } }));
+        vi.doMock("../../src/admin/index", () => ({ admin: { ladeAlleUebungen: vi.fn(), renderUebungsStatistik: vi.fn(), setDb: vi.fn() } }));
         vi.doMock("../../src/generator", () => ({ GeneratorController: { getInstance: () => ({ handleRoute: vi.fn() }) } }));
         vi.doMock("../../src/services/pdfGenerator", () => ({ default: {} }));
         vi.doMock("../../src/firebase-config.js", () => ({ firebaseConfig: {} }));
@@ -139,5 +139,66 @@ describe("App", () => {
         app2.init();
 
         expect(initTeilnehmer).toHaveBeenCalled();
+    });
+
+    it("warns and aborts routing when db is missing", async () => {
+        vi.doMock("../../src/uebungsleitung", () => ({ initUebungsleitung: vi.fn() }));
+        vi.doMock("../../src/teilnehmer", () => ({ initTeilnehmer: vi.fn() }));
+        vi.doMock("../../src/admin/index", () => ({ admin: { ladeAlleUebungen: vi.fn(), renderUebungsStatistik: vi.fn(), setDb: vi.fn() } }));
+        vi.doMock("../../src/generator", () => ({ GeneratorController: { getInstance: () => ({ handleRoute: vi.fn() }) } }));
+        vi.doMock("../../src/services/pdfGenerator", () => ({ default: {} }));
+        vi.doMock("../../src/firebase-config.js", () => ({ firebaseConfig: {} }));
+        vi.doMock("../../src/state/store", () => ({ store: { setState: vi.fn() } }));
+        const applyAppMode = vi.fn();
+        vi.doMock("../../src/core/AppView", () => ({ AppView: class { applyAppMode = applyAppMode; initModals = vi.fn(); initGlobalListeners = vi.fn(); } }));
+        vi.doMock("../../src/core/NatoClock", () => ({ NatoClock: class { init = vi.fn(); } }));
+        vi.doMock("../../src/core/ThemeManager", () => ({ ThemeManager: class { init = vi.fn(); } }));
+        vi.doMock("../../src/core/router", () => ({
+            router: {
+                subscribe: vi.fn(),
+                parseHash: vi.fn().mockReturnValue({ mode: "generator", params: [] })
+            }
+        }));
+        vi.doMock("firebase/app", () => ({ initializeApp: vi.fn().mockReturnValue({}) }));
+        vi.doMock("firebase/firestore", () => ({ getFirestore: vi.fn().mockReturnValue({}) }));
+
+        const warn = vi.spyOn(console, "warn").mockImplementation(() => {});
+        const { App } = await import("../../src/core/App");
+        const app = new App();
+
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        (app as any).handleRoute();
+
+        expect(warn).toHaveBeenCalled();
+        expect(applyAppMode).not.toHaveBeenCalled();
+        warn.mockRestore();
+    });
+
+    it("does not initialize uebungsleitung without id", async () => {
+        const initUebungsleitung = vi.fn();
+        vi.doMock("../../src/uebungsleitung", () => ({ initUebungsleitung }));
+        vi.doMock("../../src/teilnehmer", () => ({ initTeilnehmer: vi.fn() }));
+        vi.doMock("../../src/admin/index", () => ({ admin: { ladeAlleUebungen: vi.fn(), renderUebungsStatistik: vi.fn(), setDb: vi.fn() } }));
+        vi.doMock("../../src/generator", () => ({ GeneratorController: { getInstance: () => ({ handleRoute: vi.fn() }) } }));
+        vi.doMock("../../src/services/pdfGenerator", () => ({ default: {} }));
+        vi.doMock("../../src/firebase-config.js", () => ({ firebaseConfig: {} }));
+        vi.doMock("../../src/state/store", () => ({ store: { setState: vi.fn() } }));
+        vi.doMock("../../src/core/AppView", () => ({ AppView: class { applyAppMode = vi.fn(); initModals = vi.fn(); initGlobalListeners = vi.fn(); } }));
+        vi.doMock("../../src/core/NatoClock", () => ({ NatoClock: class { init = vi.fn(); } }));
+        vi.doMock("../../src/core/ThemeManager", () => ({ ThemeManager: class { init = vi.fn(); } }));
+        vi.doMock("../../src/core/router", () => ({
+            router: {
+                subscribe: (cb: () => void) => { cb(); return () => {}; },
+                parseHash: () => ({ mode: "uebungsleitung", params: [] })
+            }
+        }));
+        vi.doMock("firebase/app", () => ({ initializeApp: vi.fn().mockReturnValue({}) }));
+        vi.doMock("firebase/firestore", () => ({ getFirestore: vi.fn().mockReturnValue({}) }));
+
+        const { App } = await import("../../src/core/App");
+        const app = new App();
+        app.init();
+
+        expect(initUebungsleitung).not.toHaveBeenCalled();
     });
 });

@@ -125,4 +125,60 @@ describe("ThemeManager", () => {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         expect((globalThis as any).localStorage.getItem("theme")).toBe("startrek");
     });
+
+    it("toggle from startrek goes to dark and system change is ignored when startrek stored", () => {
+        const { document, toggleBtn, attrs } = makeDocument();
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        (globalThis as any).document = document;
+        const matchMediaListeners: Array<(e: { matches: boolean }) => void> = [];
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        (globalThis as any).window = {
+            matchMedia: vi.fn().mockReturnValue({
+                matches: false,
+                addEventListener: (_event: string, cb: (e: { matches: boolean }) => void) => {
+                    matchMediaListeners.push(cb);
+                }
+            })
+        };
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        (globalThis as any).localStorage.setItem("theme", "startrek");
+
+        const manager = new ThemeManager();
+        manager.init();
+
+        const clickHandler = (toggleBtn.addEventListener as unknown as ReturnType<typeof vi.fn>).mock.calls
+            .find(call => call[0] === "click")?.[1];
+        clickHandler?.();
+        expect(attrs.get("data-theme")).toBe("dark");
+
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        (globalThis as any).localStorage.setItem("theme", "startrek");
+        attrs.set("data-theme", "startrek");
+        matchMediaListeners[0]?.({ matches: true });
+        expect(attrs.get("data-theme")).toBe("startrek");
+    });
+
+    it("applies system change when no theme is stored", () => {
+        const { document, attrs } = makeDocument();
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        (globalThis as any).document = document;
+        const matchMediaListeners: Array<(e: { matches: boolean }) => void> = [];
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        (globalThis as any).window = {
+            matchMedia: vi.fn().mockReturnValue({
+                matches: false,
+                addEventListener: (_event: string, cb: (e: { matches: boolean }) => void) => {
+                    matchMediaListeners.push(cb);
+                }
+            })
+        };
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        (globalThis as any).localStorage.removeItem("theme");
+
+        const manager = new ThemeManager();
+        manager.init();
+
+        matchMediaListeners[0]?.({ matches: true });
+        expect(attrs.get("data-theme")).toBe("dark");
+    });
 });

@@ -49,10 +49,10 @@ export class UiFeedback {
         toast.className = `app-toast is-${variant}`;
         toast.textContent = message;
         container.appendChild(toast);
-        window.setTimeout(() => toast.classList.add("is-visible"), 10);
-        window.setTimeout(() => {
+        globalThis.setTimeout(() => toast.classList.add("is-visible"), 10);
+        globalThis.setTimeout(() => {
             toast.classList.remove("is-visible");
-            window.setTimeout(() => toast.remove(), 220);
+            globalThis.setTimeout(() => toast.remove(), 220);
         }, 2500);
     }
 }

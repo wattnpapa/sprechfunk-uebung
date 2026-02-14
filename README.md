@@ -1,29 +1,84 @@
-# 📡 Sprechfunk Übungsgenerator
+# Sprechfunk Übungsgenerator
 
-[![GitHub](https://img.shields.io/badge/GitHub-Repository-blue?logo=github)](https://github.com/wattnpapa/sprechfunk-uebung)
-[![Live Demo](https://img.shields.io/badge/Demo-Online-green)](https://sprechfunk-uebung.de//)
 [![Build](https://github.com/wattnpapa/sprechfunk-uebung/actions/workflows/main.yml/badge.svg)](https://github.com/wattnpapa/sprechfunk-uebung/actions/workflows/main.yml)
 [![Coverage](https://codecov.io/gh/wattnpapa/sprechfunk-uebung/branch/main/graph/badge.svg)](https://codecov.io/gh/wattnpapa/sprechfunk-uebung)
 [![Coverage Report](https://img.shields.io/badge/Coverage%20Report-HTML-blue)](https://github.com/wattnpapa/sprechfunk-uebung#readme/coverage/)
 
-Ein **Web-Tool zur automatischen Generierung von Sprechfunk-Übungen** mit individuellen Funksprüchen für jeden Teilnehmer.  
-Erstellt druckbare **PDF-Dokumente** für Teilnehmer inkl. Funknachrichten und exportiert sie direkt.
+Web-Anwendung zur Erstellung von BOS-Sprechfunkübungen mit:
+- Generator für Übungsdaten und Funkspruchverteilung
+- Teilnehmeransicht mit Tabellen- und Vordruckmodus
+- Übungsleitung mit Live-Status/Filtern
+- Admin-Übersicht mit Statistik und Verwaltung
+- PDF/ZIP-Export
 
----
+## Live
+- Demo: https://sprechfunk-uebung.de/
+- Repository: https://github.com/wattnpapa/sprechfunk-uebung
 
-## 🚀 **Funktionen**
-✅ **Dynamische Teilnehmerverwaltung** (hinzufügen, entfernen, bearbeiten)  
-✅ **Anpassbare Funkspruchlisten** (Standard oder eigene Liste hochladen)  
-✅ **Automatische Zuweisung von Nachrichten** (Einzeln, an mehrere oder an alle)  
-✅ **Vorschau im Browser** (Direkt in einem iframe sichtbar)  
-✅ **PDF-Export** für alle Teilnehmer  
-✅ **Fußzeile mit Seitenzahlen und klickbarem Link zum Generator**  
-✅ **Störer (Badge) mit Link zum GitHub-Repository**  
+## Kernfunktionen
+- Übungskonfiguration:
+- Kopfdaten, Teilnehmerliste, Stellennamen, Verteilung der Sprüche
+- Lösungswörter:
+- keine / zentral / individuell, Zufalls-Neuvergabe
+- Quellen:
+- Vorlagen oder eigener Text-Upload
+- Ergebnisbereich:
+- Link-Tabelle (Teilnehmer/Übungsleitung), Copy-/Mail-Aktionen, ZIP-Download
+- Teilnehmeransicht:
+- Status je Nachricht, Filter, optionales Ausblenden übertragener Nachrichten
+- Modal mit PDF-Seiten (Meldevordruck/Nachrichtenvordruck), Tastenkürzel
+- Übungsleitung:
+- Teilnehmerstatus, Nachrichtenplan, Sender-/Empfänger-/Textfilter
+- Admin:
+- Übungsliste, Suche, Pagination, Kennzahlen/Diagramm, Löschen
+- Themes:
+- Light/Dark + Star-Trek-Theme (LCARS-Stil)
 
----
+## Lokal starten
+Voraussetzungen:
+- Node.js 20+
+- npm
 
-## 🖥 **Live-Version**
-👉 **[Hier ausprobieren](https://sprechfunk-uebung.de//)**
+Schritte:
+1. `npm ci`
+2. `npm run build`
+3. `npm run serve`
+4. Browser öffnen: `http://127.0.0.1:3000`
+
+Entwicklung mit Watch:
+- `npm run dev`
+
+## Tests und Qualität
+- Lint: `npm run lint`
+- Unit/Integration: `npm run test`
+- Coverage: `npm run test:coverage`
+- E2E komplett: `npm run test:e2e`
+
+E2E-Suiten (tag-basiert):
+- Smoke: `npm run test:e2e:smoke`
+- Generator: `npm run test:e2e:generator`
+- Admin: `npm run test:e2e:admin`
+- Teilnehmer: `npm run test:e2e:teilnehmer`
+- Übungsleitung: `npm run test:e2e:uebungsleitung`
+- Routing: `npm run test:e2e:routing`
+- Alle nacheinander: `npm run test:e2e:split`
+
+## CI/CD (GitHub Actions)
+Workflow: `.github/workflows/main.yml`
+- Build, Lint, Unit/Integration mit Coverage
+- Codecov-Upload (`CODECOV_TOKEN` via Secret/Variable)
+- E2E als Matrix-Jobs:
+- `smoke`, `generator`, `admin`, `teilnehmer`, `uebungsleitung`, `routing`
+- Pro E2E-Suite werden Artefakte hochgeladen:
+- `test-results`, `playwright-report`
+- Deployment auf GitHub Pages nach erfolgreichen Jobs
+
+## Sicherheit / Dependencies
+- Sicherheitsupdates regelmäßig über Dependabot/NPM Audit
+- `jspdf`/`jspdf-autotable` auf aktuellem Stand
+
+## Lizenz
+MIT
 
 # 📖 Anleitung – Sprechfunk Übungsgenerator
 

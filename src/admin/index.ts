@@ -1,4 +1,4 @@
-import { doc, deleteDoc, getFirestore } from "firebase/firestore";
+import { getFirestore } from "firebase/firestore";
 import type { Firestore, QueryDocumentSnapshot } from "firebase/firestore";
 import { initializeApp } from "firebase/app";
 import { firebaseConfig } from "../firebase-config.js";
@@ -14,7 +14,7 @@ export class AdminController {
         totalCount: number;
         pageSize: number;
         currentPage: number;
-        lastVisible: QueryDocumentSnapshot | null;
+        lastVisible: QueryDocumentSnapshot | { __mockIndex: number } | null;
     };
     private firebaseService: FirebaseService;
     private view: AdminView;
@@ -40,6 +40,11 @@ export class AdminController {
             id => this.offeneUebungsleitung(id),
             id => this.loescheUebung(id)
         );
+    }
+
+    public setDb(db: Firestore): void {
+        this.db = db;
+        this.firebaseService = new FirebaseService(db);
     }
 
     async ladeAdminStatistik() {
@@ -117,7 +122,7 @@ export class AdminController {
         }
 
         try {
-            await deleteDoc(doc(this.db, "uebungen", uebungId));
+            await this.firebaseService.deleteUebung(uebungId);
             // console.log("✅ Übung gelöscht:", uebungId); // Removed console.log
             this.ladeAlleUebungen(); // Ansicht aktualisieren
         } catch (error) {

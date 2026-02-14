@@ -90,7 +90,7 @@ export class GeneratorStatsService {
             }
         });
 
-        labels.forEach(t => counts.push(dist[t] ?? 0));
+        labels.forEach(t => counts.push(dist[t] as number));
         return { labels, counts };
     }
 }

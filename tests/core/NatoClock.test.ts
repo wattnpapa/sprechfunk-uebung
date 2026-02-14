@@ -21,8 +21,23 @@ describe("NatoClock", () => {
 
         const clock = new NatoClock();
         clock.init();
+        vi.advanceTimersByTime(1000);
 
         expect(element.textContent).toBe(formatNatoDate(new Date(), true));
         vi.useRealTimers();
+    });
+
+    it("does nothing when target element is missing", () => {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        (globalThis as any).document = { getElementById: () => null };
+        const intervalSpy = vi.spyOn(globalThis, "setInterval");
+
+        const clock = new NatoClock();
+        clock.init();
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        (clock as any).update();
+
+        expect(intervalSpy).not.toHaveBeenCalled();
+        intervalSpy.mockRestore();
     });
 });

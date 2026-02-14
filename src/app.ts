@@ -13,7 +13,7 @@ import { firebaseConfig } from "./firebase-config.js";
 import "bootstrap/dist/css/bootstrap.min.css";
 import "@fortawesome/fontawesome-free/css/all.min.css";
 import "bootstrap/dist/js/bootstrap.bundle.min.js";
-import { getFirestore } from "firebase/firestore";
+import { connectFirestoreEmulator, getFirestore } from "firebase/firestore";
 import pdfGenerator from "./services/pdfGenerator";
 import "./core/select2-setup";
 import { NatoClock } from "./core/NatoClock";
@@ -64,6 +64,20 @@ async function loadBuildVersion(): Promise<void> {
 // Initialize Firebase
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
+const shouldUseEmulator = (() => {
+    const search = window.location?.search ?? "";
+    const byQuery = new URLSearchParams(search).get("emulator") === "1";
+    let byStorage = false;
+    try {
+        byStorage = window.localStorage.getItem("useFirestoreEmulator") === "1";
+    } catch {
+        byStorage = false;
+    }
+    return byQuery || byStorage;
+})();
+if (shouldUseEmulator) {
+    connectFirestoreEmulator(db, "127.0.0.1", 8080);
+}
 store.setState({ db });
 
 // Main Routing Logic
@@ -108,7 +122,7 @@ function handleRoute(): void {
         if (idEl) {
             idEl.textContent = "-";
         }
-        admin.db = db;
+        admin.setDb(db);
         admin.ladeAlleUebungen();
         admin.renderUebungsStatistik();
         return;

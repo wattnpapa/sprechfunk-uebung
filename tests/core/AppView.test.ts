@@ -97,6 +97,85 @@ describe("AppView", () => {
         expect((globalThis as any).window.gtag).toHaveBeenCalled();
     });
 
+    it("uses fallback labels and skips tracking when gtag missing", () => {
+        const view = new AppView();
+        view.initGlobalListeners();
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const { listeners } = (globalThis as any)._test;
+
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        (globalThis as any).window.gtag = undefined;
+        listeners.click[0]?.({ target: null });
+        listeners.click[0]?.({
+            target: {
+                closest: (sel: string) => {
+                    if (sel !== "button") {
+                        return null;
+                    }
+                    return { innerText: "", getAttribute: () => "aria fallback" };
+                }
+            }
+        });
+        listeners.click[0]?.({
+            target: {
+                closest: (sel: string) => {
+                    if (sel !== "button") {
+                        return null;
+                    }
+                    return { innerText: "", getAttribute: () => "" };
+                }
+            }
+        });
+    });
+
+    it("ignores invalid delegated click targets", () => {
+        const view = new AppView();
+        view.initGlobalListeners();
+
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const { listeners } = (globalThis as any)._test;
+
+        listeners.click[1]?.({ target: null });
+        listeners.click[1]?.({ target: { closest: () => null } });
+
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        expect((globalThis as any).window.gtag).not.toHaveBeenCalledWith(
+            "event",
+            "Übung_generieren",
+            expect.anything()
+        );
+    });
+
+    it("does not track delegated event when gtag is unavailable", () => {
+        const view = new AppView();
+        view.initGlobalListeners();
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const { listeners } = (globalThis as any)._test;
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        (globalThis as any).window.gtag = undefined;
+        listeners.click[1]?.({ target: { closest: (sel: string) => (sel === "#startUebungBtn" ? {} : null) } });
+    });
+
+    it("does not initialize select2 when select is missing", () => {
+        const view = new AppView();
+        const oldGet = (globalThis as any).document.getElementById;
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        (globalThis as any).document.getElementById = (id: string) => {
+            if (id === "funkspruchVorlage") {
+                return null;
+            }
+            return oldGet(id);
+        };
+        view.initGlobalListeners();
+    });
+
+    it("does not initialize select2 when plugin is missing", () => {
+        const view = new AppView();
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        (globalThis as any).window.$ = vi.fn(() => ({}));
+        view.initGlobalListeners();
+    });
+
     it("loads howto modal content", async () => {
         const view = new AppView();
         view.initModals();
@@ -125,6 +204,19 @@ describe("AppView", () => {
         err.mockRestore();
     });
 
+    it("does nothing when howto container is missing", () => {
+        const view = new AppView();
+        const oldGet = (globalThis as any).document.getElementById;
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        (globalThis as any).document.getElementById = (id: string) => {
+            if (id === "howtoContent") {
+                return null;
+            }
+            return oldGet(id);
+        };
+        view.initModals();
+    });
+
     it("applies app mode visibility", () => {
         const view = new AppView();
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -141,5 +233,16 @@ describe("AppView", () => {
 
         view.applyAppMode("teilnehmer");
         expect(elements.get("teilnehmerArea")?.style.display).toBe("block");
+    });
+
+    it("handles missing app mode containers safely", () => {
+        const view = new AppView();
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        (globalThis as any).document.getElementById = () => null;
+
+        view.applyAppMode("generator");
+        view.applyAppMode("admin");
+        view.applyAppMode("uebungsleitung");
+        view.applyAppMode("teilnehmer");
     });
 });

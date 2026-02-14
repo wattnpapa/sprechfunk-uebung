@@ -260,7 +260,8 @@ export class TeilnehmerView {
                 onDocToggleCurrent();
                 return;
             }
-            if (e.key === "ü" || e.key === "Ü") {
+            // `[` is a practical fallback on non-DE keyboard layouts (e.g. CI runners).
+            if (e.key === "ü" || e.key === "Ü" || e.key === "[") {
                 const toggle = document.getElementById("toggle-hide-transmitted-modal") as HTMLInputElement | null;
                 if (toggle) {
                     toggle.checked = !toggle.checked;
