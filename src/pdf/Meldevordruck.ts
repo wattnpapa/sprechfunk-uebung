@@ -1,92 +1,130 @@
-import { jsPDF } from "jspdf";
 import { FunkUebung } from "../models/FunkUebung";
-import { Nachricht } from "../types/Nachricht";
+import { jsPDF } from "jspdf";
 import { BasePDFTeilnehmer } from "./BasePDFTeilnehmer";
+import { Nachricht } from "../types/Nachricht";
+import { formatNatoDate } from "../utils/date";
 
 export class Meldevordruck extends BasePDFTeilnehmer {
-    private nachricht: Nachricht;
-    private hideBackground: boolean;
-    private hideFooter: boolean;
 
-    constructor(teilnehmer: string, funkUebung: FunkUebung, pdf: jsPDF, nachricht: Nachricht, hideBackground = false, hideFooter = false) {
-        super(teilnehmer, funkUebung, pdf);
+    protected hideBackground = false;
+    protected hideFooter = false;
+
+    protected nachricht: Nachricht;
+
+    constructor(teilnehmer: string, uebung: FunkUebung, pdfInstance: jsPDF, nachricht: Nachricht, hideBackground = false, hideFooter = false) {
+        super(teilnehmer, uebung, pdfInstance); // unit default 'mm'
         this.nachricht = nachricht;
         this.hideBackground = hideBackground;
         this.hideFooter = hideFooter;
     }
 
-    draw(xOffset = 0) {
-        // A5 Format: 148mm x 210mm
-        // Ränder: 10mm
-        const margin = 10;
-        const width = 148 - 2 * margin;
-         
-        const startX = xOffset + margin;
-        const startY = margin;
+    draw(offsetX = 0): void {
+        const template = "assets/meldevordruck.png";
+        const w = 148, h = 210;
 
-        // --- Hintergrund (Formular) ---
+        // Hintergrundbild
         if (!this.hideBackground) {
-            this.drawFormular(startX, startY, width);
+            this.pdf.addImage(template, "PNG", offsetX, 0, w, h);
         }
 
-        // --- Inhalt ---
-        this.fillContent(startX, startY);
+        // FM Zentrale
+        this.pdf.setFontSize(16);
+        this.pdf.text("x", offsetX + 109.5, 10);
+        // Nummer
+        this.pdf.setFontSize(12);
+        this.pdf.text(`${this.nachricht.id}`, offsetX + 80, 12);
 
-        // --- Footer ---
+        // Absender
+        this.pdf.setFontSize(16);
+        this.adjustTextForWidth(this.teilnehmer, 70, offsetX + 22, 25);
+
+        this.drawEmpfaenger(offsetX);
+
+        // Verfasser
+        this.pdf.setFontSize(12);
+        this.adjustTextForWidth(this.teilnehmer, 40, offsetX + 37, 192);
+
+        // Nachricht umbrochen (mit expliziten \n Zeilenumbrüchen)
+        this.pdf.setFontSize(11.5);
+        this.drawMultilineText(
+            this.nachricht.nachricht,
+            offsetX + 20,
+            55,
+            120,
+            5
+        );
+
+        // Footer
         if (!this.hideFooter) {
-            this.drawFooter(xOffset);
+            const genTime = formatNatoDate(this.funkUebung.createDate, true);
+            this.pdf.setFont("helvetica", "normal");
+            this.pdf.setFontSize(8);
+
+            this.pdf.text(this.funkUebung.name, offsetX + (148 / 2), 4, { align: "center" });
+
+            // Hinweis ganz unten (5 mm Abstand vom unteren Rand)
+            this.pdf.text("Wörter in GROSSBUCHSTABEN müssen buchstabiert werden.", offsetX + (148 / 2), 210 - 1.5, { align: "center" });
+
+            // Trennlinie direkt darüber (bei 7 mm Abstand vom unteren Rand)
+            this.pdf.setDrawColor(0);
+
+            // Vertikaler Text (90° gedreht) an der rechten Seite (5 mm vom rechten Rand)
+            this.pdf.setFontSize(6);
+            const rightText = `© Johannes Rudolph | Version ${this.funkUebung.buildVersion} | Übung ID: ${this.funkUebung.id} | Generiert: ${genTime} | Generator: https://sprechfunk-uebung.de/`;
+            this.pdf.text(rightText, 148- 3 + offsetX, 210 - 5, { angle: 90, align: "left" });
         }
     }
 
-    private drawFormular(x: number, y: number, w: number) {
-        // Kopfzeile
-        this.addRect(x, y, w, 15);
-        this.addText("NACHWEIS", x + w / 2, y + 6, 12, "bold", "center");
-        this.addText("über eingegangene / abgegangene Nachrichten", x + w / 2, y + 11, 10, "normal", "center");
+    drawEmpfaenger(offsetX: number): void {
+        // Empfänger
+        const startX = offsetX + 20;
+        const startY = 40;
+        const maxWidth = 90;
+        const maxHeight = 10;
+        const lineHeight = 6;
 
-        // Zeilen
-        let currentY = y + 15;
-        const lineHeight = 8;
-        
-        // 1. Zeile: Lfd. Nr, Annahme, Abgang
-        this.addRect(x, currentY, w, lineHeight);
-        this.addLine(x + 20, currentY, x + 20, currentY + lineHeight); // Nach Lfd Nr
-        this.addLine(x + 74, currentY, x + 74, currentY + lineHeight); // Mitte
-        
-        this.addText("Lfd. Nr.", x + 2, currentY + 5, 8);
-        this.addText("Annahme (Datum, Uhrzeit, von)", x + 22, currentY + 5, 8);
-        this.addText("Abgang (Datum, Uhrzeit, an)", x + 76, currentY + 5, 8);
+        //this.drawDebugBox(startX, startY - 5, maxWidth, maxHeight);
 
-        currentY += lineHeight;
+        const maxY = startY + maxHeight;
+        this.pdf.setFontSize(8);
+        let empfaengerListe: string[] = [];
 
-        // 2. Zeile: Inhalt
-        const contentHeight = 120;
-        this.addRect(x, currentY, w, contentHeight);
-        this.addText("Inhalt / Spruch:", x + 2, currentY + 5, 8);
+        if (this.nachricht.empfaenger.includes("Alle")) {
+            empfaengerListe = ["Alle"];
+        } else {
+            empfaengerListe = this.nachricht.empfaenger;
+        }
 
-        currentY += contentHeight;
+        let currentY = startY;
+        let currentLine = "";
 
-        // 3. Zeile: Vermerke
-        this.addRect(x, currentY, w, 20);
-        this.addText("Vermerke:", x + 2, currentY + 5, 8);
+        for (const empfaenger of empfaengerListe) {
+            const part = currentLine
+                ? `${currentLine}, ${empfaenger}`
+                : empfaenger;
+
+            const textWidth = this.pdf.getTextWidth(part);
+
+            if (textWidth <= maxWidth) {
+                // passt noch in die aktuelle Zeile
+                currentLine = part;
+            } else {
+                // Zeile voll → schreiben
+                if (currentY + lineHeight > maxY) {
+                    this.pdf.text("…", startX + maxWidth - 3, maxY - 1);
+                    return;
+                }
+
+                this.pdf.text(currentLine, startX, currentY);
+                currentY += lineHeight;
+                currentLine = empfaenger;
+            }
+        }
+
+        // letzte Zeile ausgeben
+        if (currentLine && currentY + lineHeight <= maxY) {
+            this.pdf.text(currentLine, startX, currentY);
+        }
     }
 
-    private fillContent(x: number, y: number) {
-        // Lfd Nr
-        this.addText(this.nachricht.id.toString(), x + 10, y + 21, 10, "bold", "center");
-
-        // Inhalt
-        const contentY = y + 35;
-        const maxWidth = 120;
-        this.addWrappedText(this.nachricht.nachricht, x + 5, contentY, maxWidth, 11, "normal");
-
-        // Empfänger (Abgang)
-        const empfaenger = this.nachricht.empfaenger.join(", ");
-        this.addText(empfaenger, x + 80, y + 21, 9);
-    }
-
-    private drawFooter(xOffset: number) {
-        const y = 200;
-        this.addText(`Seite ${this.pdf.getCurrentPageInfo().pageNumber}`, xOffset + 74, y, 8, "normal", "center");
-    }
 }

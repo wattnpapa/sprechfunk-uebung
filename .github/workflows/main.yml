@@ -37,6 +37,9 @@ jobs:
       - name: Update coverage report link in README
         run: npm run coverage:readme
 
+      - name: Run lint
+        run: npm run lint
+
       - name: Run tests with coverage
         run: npm run test:coverage
 

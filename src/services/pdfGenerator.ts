@@ -1,19 +1,19 @@
-import {jsPDF} from "jspdf";
+/* eslint-disable @typescript-eslint/no-explicit-any */
+import { jsPDF } from "jspdf";
 import autoTable from "jspdf-autotable";
-import type {Nachricht} from "../types/Nachricht";
+import type { Nachricht } from "../types/Nachricht";
 
 import JSZip from "jszip";
-import {DeckblattTeilnehmer} from "../pdf/DeckblattTeilnehmer.js";
-import {FunkUebung} from "../models/FunkUebung.js";
-import {Meldevordruck} from "../pdf/Meldevordruck.js";
-import {Nachrichtenvordruck} from "../pdf/Nachrichtenvordruck.js";
-import {Teilnehmer} from "../pdf/Teilnehmer.js";
-import {Uebungsleitung} from "../pdf/Uebungsleitung.js";
-import {formatNatoDate} from "../utils/date";
+import { DeckblattTeilnehmer } from "../pdf/DeckblattTeilnehmer.js";
+import { FunkUebung } from "../models/FunkUebung.js";
+import { Meldevordruck } from "../pdf/Meldevordruck.js";
+import { Nachrichtenvordruck } from "../pdf/Nachrichtenvordruck.js";
+import { Teilnehmer } from "../pdf/Teilnehmer.js";
+import { Uebungsleitung } from "../pdf/Uebungsleitung.js";
+import { formatNatoDate } from "../utils/date";
 
 class PDFGenerator {
     constructor() {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         if (typeof (jsPDF as any).API.autoTable !== "function") {
             // @ts-expect-error Plugin-Binding für jsPDF
             autoTable(jsPDF);
@@ -44,12 +44,12 @@ class PDFGenerator {
         const blobMap = new Map();
 
         funkUebung.teilnehmerListe.forEach(teilnehmer => {
-            const pdf = new jsPDF({orientation: "landscape", unit: "mm", format: "a4"});
+            const pdf = new jsPDF({ orientation: "landscape", unit: "mm", format: "a4" });
 
             const teilnehmerPdf = new Teilnehmer(teilnehmer, funkUebung, pdf);
             teilnehmerPdf.draw();
 
-            const blob = pdf.output("blob");
+            const blob = teilnehmerPdf.blob();
             blobMap.set(teilnehmer, blob);
         });
 
@@ -70,42 +70,37 @@ class PDFGenerator {
             // Trennlinie (Schneidekante)
             pdf.setDrawColor(150);
             pdf.setLineWidth(0.2);
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             (pdf as any).setLineDash([1, 1], 0); // gestrichelt
             pdf.line(148, 0, 148, 210);
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             (pdf as any).setLineDash([], 0); // zurücksetzen
 
             const left = parts[i];
             const right = parts[i + 1];
-
-            if(!left) {
+            if (!left) {
                 continue;
             }
 
             const deckblattLeft = new DeckblattTeilnehmer(left, funkUebung, pdf);
-            deckblattLeft.draw(0); // left -> offset 0
+            deckblattLeft.draw(0); // left -> offset 0  
 
             if (right) {
                 const deckblattRight = new DeckblattTeilnehmer(right, funkUebung, pdf);
                 deckblattRight.draw(148); // right -> offset 148
             }
 
+            // Nachrichtenvordrucke
             const leftMsgs = funkUebung.nachrichten[left] || [];
-            const rightMsgs = (right && funkUebung.nachrichten[right]) || [];
-
+            const rightMsgs = right ? funkUebung.nachrichten[right] || [] : [];
             const max = Math.max(leftMsgs.length, rightMsgs.length);
-
             for (let j = 0; j < max; j++) {
                 pdf.addPage();
-
-                const leftMsg = leftMsgs[j];
-                if (leftMsg) {
-                    // TypeScript is happy now because 'left' was guarded above
-                    new Nachrichtenvordruck(left, funkUebung, pdf, leftMsg).draw();
+                if (j < leftMsgs.length) {
+                    const leftMsg = leftMsgs[j];
+                    if (leftMsg) {
+                        new Nachrichtenvordruck(left, funkUebung, pdf, leftMsg).draw();
+                    }
                 }
-
-                if (right) {
+                if (right && j < rightMsgs.length) {
                     const rightMsg = rightMsgs[j];
                     if (rightMsg) {
                         new Nachrichtenvordruck(right, funkUebung, pdf, rightMsg).draw(148);
@@ -114,10 +109,8 @@ class PDFGenerator {
                 // Trennlinie (Schneidekante)
                 pdf.setDrawColor(150);
                 pdf.setLineWidth(0.2);
-                // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 (pdf as any).setLineDash([1, 1], 0); // gestrichelt
                 pdf.line(148, 0, 148, 210);
-                // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 (pdf as any).setLineDash([], 0); // zurücksetzen
             }
         }
@@ -138,16 +131,13 @@ class PDFGenerator {
             // Trennlinie (Schneidekante)
             pdf.setDrawColor(150);
             pdf.setLineWidth(0.2);
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             (pdf as any).setLineDash([1, 1], 0); // gestrichelt
             pdf.line(148, 0, 148, 210);
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             (pdf as any).setLineDash([], 0); // zurücksetzen
 
             const left = parts[i];
             const right = parts[i + 1];
-
-            if(!left) {
+            if (!left) {
                 continue;
             }
 
@@ -158,22 +148,18 @@ class PDFGenerator {
                 const deckblattRight = new DeckblattTeilnehmer(right, funkUebung, pdf);
                 deckblattRight.draw(148); // right -> offset 148
             }
-
             const leftMsgs = funkUebung.nachrichten[left] || [];
-            const rightMsgs = (right && funkUebung.nachrichten[right]) || [];
-
+            const rightMsgs = right ? funkUebung.nachrichten[right] || [] : [];
             const max = Math.max(leftMsgs.length, rightMsgs.length);
-
             for (let j = 0; j < max; j++) {
                 pdf.addPage();
-
-                const leftMsg = leftMsgs[j];
-                if (leftMsg) {
-                    // TypeScript is happy now because 'left' was guarded above
-                    new Meldevordruck(left, funkUebung, pdf, leftMsg).draw();
+                if (j < leftMsgs.length) {
+                    const leftMsg = leftMsgs[j];
+                    if (leftMsg) {
+                        new Meldevordruck(left, funkUebung, pdf, leftMsg).draw();
+                    }
                 }
-
-                if (right) {
+                if (right && j < rightMsgs.length) {
                     const rightMsg = rightMsgs[j];
                     if (rightMsg) {
                         new Meldevordruck(right, funkUebung, pdf, rightMsg).draw(148);
@@ -182,10 +168,8 @@ class PDFGenerator {
                 // Trennlinie (Schneidekante)
                 pdf.setDrawColor(150);
                 pdf.setLineWidth(0.2);
-                // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 (pdf as any).setLineDash([1, 1], 0); // gestrichelt
                 pdf.line(148, 0, 148, 210);
-                // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 (pdf as any).setLineDash([], 0); // zurücksetzen
             }
         }
@@ -216,7 +200,7 @@ class PDFGenerator {
     async generateNachrichtenvordruckPDFsBlob(funkUebung: FunkUebung, hideBackground = false, hideFooter = false): Promise<Map<string, Blob>> {
         const blobMap = new Map();
         funkUebung.teilnehmerListe.forEach((teilnehmer: string) => {
-            const nachrichten = funkUebung.nachrichten[teilnehmer] ?? [];
+            const nachrichten = funkUebung.nachrichten[teilnehmer] || [];
 
             const pdf = new jsPDF("p", "mm", "a5");
             // Deckblatt als erste Seite
@@ -231,7 +215,6 @@ class PDFGenerator {
                 }
             });
 
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             const totalPages = (pdf as any).getNumberOfPages();
             for (let j = 2; j <= totalPages; j++) {
                 pdf.setPage(j);
@@ -267,7 +250,7 @@ class PDFGenerator {
     async generateMeldevordruckPDFsBlob(funkUebung: FunkUebung, hideBackground = false, hideFooter = false): Promise<Map<string, Blob>> {
         const blobMap = new Map();
         funkUebung.teilnehmerListe.forEach((teilnehmer: string) => {
-            const nachrichten = funkUebung.nachrichten[teilnehmer] ?? [];
+            const nachrichten = funkUebung.nachrichten[teilnehmer] || [];
 
             const pdf = new jsPDF("p", "mm", "a5"); // A5 Hochformat
             // Deckblatt als erste Seite
@@ -282,7 +265,6 @@ class PDFGenerator {
                 }
             });
 
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             const totalPages = (pdf as any).getNumberOfPages();
             for (let j = 2; j <= totalPages; j++) {
                 pdf.setPage(j);
@@ -310,7 +292,7 @@ class PDFGenerator {
      * Erstellt das PDF für die Übungsleitung.
      */
     generateInstructorPDFBlob(funkUebung: FunkUebung) {
-        const pdf = new jsPDF({orientation: "landscape", unit: "mm", format: "a4"});
+        const pdf = new jsPDF({ orientation: "landscape", unit: "mm", format: "a4" });
 
         const uebungsLeitung = new Uebungsleitung(funkUebung, pdf);
         uebungsLeitung.draw();
@@ -319,7 +301,7 @@ class PDFGenerator {
     }
 
     sanitizeFileName(name: string) {
-        return name.replace(/[/:*?"<>|]/g, "-");
+        return name.replace(/[/\\:*?"<>|]/g, "-");
     }
 
     /**
@@ -327,7 +309,7 @@ class PDFGenerator {
      * jeweils mit Deckblatt als Trennblatt.
      */
     async generatePlainNachrichtenvordruckPrintBlob(funkUebung: FunkUebung) {
-        const pdf = new jsPDF({orientation: "p", unit: "mm", format: "a5"});
+        const pdf = new jsPDF({ orientation: "p", unit: "mm", format: "a5" });
         funkUebung.teilnehmerListe.forEach((teilnehmer, tIdx) => {
             if (tIdx > 0) {
                 pdf.addPage();
@@ -352,7 +334,7 @@ class PDFGenerator {
      * jeweils mit Deckblatt als Trennblatt.
      */
     async generatePlainMeldevordruckPrintBlob(funkUebung: FunkUebung) {
-        const pdf = new jsPDF({orientation: "p", unit: "mm", format: "a5"});
+        const pdf = new jsPDF({ orientation: "p", unit: "mm", format: "a5" });
         funkUebung.teilnehmerListe.forEach((teilnehmer: string, tIdx: number) => {
             if (tIdx > 0) {
                 pdf.addPage();
@@ -375,14 +357,14 @@ class PDFGenerator {
 
     async generateNachrichtenvordruckA4PDFsBlob(funkUebung: FunkUebung) {
         const blobs = new Map<string, Blob>();
-        const {jsPDF} = await import("jspdf");
+        const { jsPDF } = await import("jspdf");
 
         for (const teilnehmer of funkUebung.teilnehmerListe) {
             const nachrichten = funkUebung.nachrichten[teilnehmer] || [];
             const totalA5Pages = 1 + nachrichten.length; // 0 = Deckblatt, danach jede Nachricht eine Seite
             const half = Math.ceil(totalA5Pages / 2);
 
-            const pdf = new jsPDF({orientation: "landscape", unit: "mm", format: "a4"});
+            const pdf = new jsPDF({ orientation: "landscape", unit: "mm", format: "a4" });
             const offsetRight = 148; // A5-Breite in mm
 
             // Hilfsrenderer für eine Seite auf linker/rechter Hälfte
@@ -422,10 +404,8 @@ class PDFGenerator {
                 // Trennlinie (Schneidekante)
                 pdf.setDrawColor(150);
                 pdf.setLineWidth(0.2);
-                // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 (pdf as any).setLineDash([1, 1], 0); // gestrichelt
                 pdf.line(148, 0, 148, 210);
-                // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 (pdf as any).setLineDash([], 0); // zurücksetzen
             }
 
@@ -441,14 +421,14 @@ class PDFGenerator {
      */
     async generateMeldevordruckA4PDFsBlob(funkUebung: FunkUebung) {
         const blobs = new Map<string, Blob>();
-        const {jsPDF} = await import("jspdf");
+        const { jsPDF } = await import("jspdf");
 
         for (const teilnehmer of funkUebung.teilnehmerListe) {
             const nachrichten = funkUebung.nachrichten[teilnehmer] || [];
             const totalA5Pages = 1 + nachrichten.length; // 0 = Deckblatt, danach jede Nachricht eine Seite
             const half = Math.ceil(totalA5Pages / 2);
 
-            const pdf = new jsPDF({orientation: "landscape", unit: "mm", format: "a4"});
+            const pdf = new jsPDF({ orientation: "landscape", unit: "mm", format: "a4" });
             const offsetRight = 148; // A5-Breite in mm
 
             // Hilfsrenderer für eine Seite auf linker/rechter Hälfte
@@ -485,10 +465,8 @@ class PDFGenerator {
                 // Trennlinie (Schneidekante)
                 pdf.setDrawColor(150);
                 pdf.setLineWidth(0.2);
-                // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 (pdf as any).setLineDash([1, 1], 0); // gestrichelt
                 pdf.line(148, 0, 148, 210);
-                // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 (pdf as any).setLineDash([], 0); // zurücksetzen
             }
 
@@ -584,7 +562,7 @@ class PDFGenerator {
             plainMeldeBlob
         );
 
-        const zipBlob = await zip.generateAsync({type: "blob"});
+        const zipBlob = await zip.generateAsync({ type: "blob" });
 
         const link = document.createElement("a");
         link.href = URL.createObjectURL(zipBlob);
