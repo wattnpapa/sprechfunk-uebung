@@ -527,13 +527,25 @@ body {
 
 .generator-link-actions {
     display: flex;
-    flex-wrap: wrap;
+    flex-wrap: nowrap;
+    justify-content: flex-end;
+    align-items: center;
     gap: 0.4rem;
 }
 
 .generator-link-actions .btn {
-    min-width: 106px;
+    min-width: 96px;
     border-radius: 6px;
+    white-space: nowrap;
+    flex: 0 0 auto;
+}
+
+.generator-link-url code {
+    display: block;
+    max-width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
 }
 
 .app-toast-container {
@@ -611,7 +623,7 @@ body {
 @media (min-width: 992px) {
     .generator-link-grid-header {
         display: grid;
-        grid-template-columns: 1.1fr 1.3fr 3fr 2.1fr;
+        grid-template-columns: 1fr 1.2fr 2fr 2.6fr;
         gap: 0.75rem;
         font-size: 0.8rem;
         color: var(--text-muted);
@@ -622,7 +634,7 @@ body {
     }
 
     .generator-link-row {
-        grid-template-columns: 1.1fr 1.3fr 3fr 2.1fr;
+        grid-template-columns: 1fr 1.2fr 2fr 2.6fr;
         align-items: center;
         gap: 0.75rem;
         padding: 0.7rem;
@@ -643,6 +655,11 @@ body {
     .generator-link-actions a.btn {
         flex: 1 1 calc(50% - 0.4rem);
         min-width: 0;
+    }
+
+    .generator-link-actions {
+        flex-wrap: wrap;
+        justify-content: flex-start;
     }
 
     .app-toast-container {

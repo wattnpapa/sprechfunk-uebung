@@ -406,10 +406,11 @@ export class UebungsleitungView {
         `;
     }
 
-    public updateProgress(total: number, done: number) {
+    public updateProgress(total: number, done: number, etaLabel: string) {
         const bar = document.getElementById("nachrichtenProgressBar");
         const label = document.getElementById("nachrichtenProgressLabel");
-        if (!bar || !label) {
+        const eta = document.getElementById("nachrichtenEtaLabel");
+        if (!bar || !label || !eta) {
             return;
         }
 
@@ -417,6 +418,7 @@ export class UebungsleitungView {
         bar.style.width = `${percent}%`;
         bar.setAttribute("aria-valuenow", String(percent));
         label.textContent = `${done} / ${total}`;
+        eta.textContent = etaLabel;
     }
 
     public bindNachrichtenEvents(

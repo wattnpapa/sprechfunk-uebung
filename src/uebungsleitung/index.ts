@@ -8,6 +8,7 @@ import type { Firestore } from "firebase/firestore";
 import {FunkUebung} from "../models/FunkUebung";
 import { uiFeedback } from "../core/UiFeedback";
 import { debounce } from "../utils/debounce";
+import { formatNatoDate } from "../utils/date";
 
 interface FlattenedNachricht {
     nr: number;
@@ -143,7 +144,8 @@ export class UebungsleitungController {
                 done++;
             }
         });
-        this.view.updateProgress(nachrichten.length, done);
+        const etaLabel = this.calculateEtaLabel(nachrichten);
+        this.view.updateProgress(nachrichten.length, done, etaLabel);
 
         this.view.renderNachrichtenListe(
             nachrichten,
@@ -162,6 +164,46 @@ export class UebungsleitungController {
                 input.setSelectionRange(pos, pos);
             }
         }
+    }
+
+    private calculateEtaLabel(nachrichten: FlattenedNachricht[]): string {
+        if (!this.storage || nachrichten.length === 0) {
+            return "ETA: –";
+        }
+
+        const sentTimestamps = nachrichten
+            .map(n => {
+                const key = `${n.sender}__${n.nr}`;
+                return this.storage?.nachrichten[key]?.abgesetztUm ?? "";
+            })
+            .map(iso => Date.parse(iso))
+            .filter(ts => Number.isFinite(ts))
+            .sort((a, b) => a - b);
+
+        if (sentTimestamps.length < 2) {
+            return "ETA: –";
+        }
+
+        const first = sentTimestamps[0];
+        const last = sentTimestamps[sentTimestamps.length - 1];
+        if (first === undefined || last === undefined) {
+            return "ETA: –";
+        }
+        const intervals = sentTimestamps.length - 1;
+        const avgIntervalMs = (last - first) / intervals;
+        if (avgIntervalMs <= 0) {
+            return "ETA: –";
+        }
+
+        const remainingMessages = nachrichten.length - sentTimestamps.length;
+        if (remainingMessages <= 0) {
+            return `ETA: ${formatNatoDate(last)} (Rest: 0 min)`;
+        }
+
+        const remainingMs = Math.round(avgIntervalMs * remainingMessages);
+        const remainingMinutes = Math.max(1, Math.round(remainingMs / 60000));
+        const etaTs = last + remainingMs;
+        return `ETA: ${formatNatoDate(etaTs)} (Rest: ${remainingMinutes} min)`;
     }
 
     // --- Actions ---
