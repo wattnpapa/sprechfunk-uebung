@@ -1,5 +1,5 @@
 import { Uebung } from "../types/Uebung";
-import { AppMode } from "../appModes";
+import { AppMode } from "../core/appModes";
 import { Firestore } from "firebase/firestore";
 
 export interface AppState {

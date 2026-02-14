@@ -1,29 +1,29 @@
-import { formatNatoDate } from "./utils/date";
-import type { Uebung } from './types/Uebung';
-import type { Nachricht } from './types/Nachricht';
-import { escapeHtml } from "./utils/html";
+import { formatNatoDate } from "../utils/date";
+import type { Uebung } from "../types/Uebung";
+import type { Nachricht } from "../types/Nachricht";
+import { escapeHtml } from "../utils/html";
 
-export class UebungHTMLGenerator {
-    /**
-     * Erstellt eine HTML-Seite für einen einzelnen Teilnehmer der Übung.
-     * @param {Object} teilnehmerDaten - Die Daten des Teilnehmers (inkl. Kopfdaten, Nachrichten und Lösungswort).
-     * @returns {string} HTML-Code als String.
-     */
-    static generateHTMLPage(teilnehmer: string, funkUebung: Uebung): string {
-        const teilnehmerListeHTML = funkUebung.teilnehmerListe
-            .map((name: string) => `<tr><td>${name}</td></tr>`)
-            .join(""); 
-        
-        const nachrichtenHTML = funkUebung.nachrichten[teilnehmer]
-            .map((n: Nachricht) => 
-                `<tr>
-                    <td>${n.id}</td>
-                    <td>${n.empfaenger.join("<br/>").replace(/ /g, "&nbsp;")}</td>
-                    <td>${escapeHtml(n.nachricht).replace(/\\n/g, "<br>").replace(/\n/g, "<br>")}</td>
-                </tr>`)
-            .join("");
+/**
+ * Erstellt eine HTML-Seite für einen einzelnen Teilnehmer der Übung.
+ * @returns {string} HTML-Code als String.
+ * @param teilnehmer
+ * @param funkUebung
+ */
+export function generateHTMLPage(teilnehmer: string, funkUebung: Uebung): string {
+    const teilnehmerListeHTML = funkUebung.teilnehmerListe
+        .map((name: string) => `<tr><td>${name}</td></tr>`)
+        .join("");
 
-        return `<!DOCTYPE html>
+    const nachrichtenHTML = (funkUebung.nachrichten["teilnehmer"] ?? [])
+        .map((n: Nachricht) =>
+            `<tr>
+            <td>${n.id}</td>
+            <td>${n.empfaenger.join("<br/>").replace(/ /g, "&nbsp;")}</td>
+            <td>${escapeHtml(n.nachricht).replace(/\\n/g, "<br>").replace(/\n/g, "<br>")}</td>
+        </tr>`)
+        .join("");
+
+    return `<!DOCTYPE html>
 <html lang="de">
 <head>
     <meta charset="UTF-8">
@@ -58,7 +58,7 @@ export class UebungHTMLGenerator {
                     <tr><th>Datum</th><td>${formatNatoDate(funkUebung.datum, false)}</td></tr>
                     <tr><th>Rufgruppe</th><td>${funkUebung.rufgruppe}</td></tr>
                     <tr><th>Betriebsleitung</th><td>${funkUebung.leitung}</td></tr>
-                    ${funkUebung.loesungswoerter?.[teilnehmer] ? `<tr><th>Lösungswort</th><td>${funkUebung.loesungswoerter?.[teilnehmer]}</td></tr>` : ''}
+                    ${funkUebung.loesungswoerter?.[teilnehmer] ? `<tr><th>Lösungswort</th><td>${funkUebung.loesungswoerter?.[teilnehmer]}</td></tr>` : ""}
                 </table>
             </div>
 
@@ -82,5 +82,8 @@ export class UebungHTMLGenerator {
     </div>
 </body>
 </html>`;
-    }
 }
+
+export const UebungHTMLGenerator = {
+    generateHTMLPage
+};

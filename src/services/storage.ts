@@ -1,4 +1,4 @@
-import { UebungsleitungStorage, TeilnehmerStorage } from "./types";
+import { UebungsleitungStorage, TeilnehmerStorage } from "../types/Storage";
 
 const STORAGE_PREFIX = "sprechfunk:uebungsleitung";
 const TEILNEHMER_STORAGE_PREFIX = "sprechfunk:teilnehmer";

@@ -1,174 +1,124 @@
+import type {Firestore} from "firebase/firestore";
+import {loadTeilnehmerStorage, saveTeilnehmerStorage, clearTeilnehmerStorage} from "../services/storage";
+import {TeilnehmerView} from "./TeilnehmerView";
+import {FirebaseService} from "../services/FirebaseService";
+import {store} from "../state/store";
+import {router} from "../core/router";
+import {Uebung} from "../types/Uebung";
+import {TeilnehmerStorage} from "../types/Storage";
 
-import { doc, getDoc } from "firebase/firestore";
-import type { Firestore } from "firebase/firestore";
-import { formatNatoDate } from "../utils/date";
-import type { Uebung } from "../types/Uebung";
-import type { Nachricht } from "../types/Nachricht";
-import { loadTeilnehmerStorage, saveTeilnehmerStorage, clearTeilnehmerStorage } from "../storage";
-import type { TeilnehmerStorage } from "../types";
-import { escapeHtml } from "../utils/html";
+export class TeilnehmerController {
+    private view: TeilnehmerView;
+    private firebaseService: FirebaseService;
+    private uebungId: string | null = null;
+    private teilnehmerId: string | null = null;
+    private uebung: Uebung | null = null;
+    private teilnehmerName: string | null = null;
+    private storage: TeilnehmerStorage | null = null;
 
-
-import { store } from "../state/store";
-import { router } from "../router";
-
-export async function initTeilnehmer(db: Firestore): Promise<void> {
-  const area = document.getElementById("teilnehmerArea");
-  const contentEl = document.getElementById("teilnehmerContent");
-
-  if (!area || !contentEl) return;
-
-  const { params } = router.parseHash();
-  const uebungId = params[0];
-  const tId = params[1];
-
-  if (!uebungId || !tId) {
-    contentEl.innerHTML = `<div class="alert alert-danger">Ungültiger Link.</div>`;
-    return;
-  }
-
-  try {
-    const ref = doc(db, "uebungen", uebungId);
-    const snap = await getDoc(ref);
-
-    if (!snap.exists()) {
-      contentEl.innerHTML = `<div class="alert alert-warning">Übung nicht gefunden.</div>`;
-      return;
+    constructor(db: Firestore) {
+        this.view = new TeilnehmerView();
+        this.firebaseService = new FirebaseService(db);
     }
 
-    const u = snap.data() as Uebung;
-    store.setState({ aktuelleUebung: u, aktuelleUebungId: uebungId });
+    public async init() {
+        const {params} = router.parseHash();
+        this.uebungId = params[0] ?? null;
+        this.teilnehmerId = params[1] ?? null;
 
-    const teilnehmerName = u.teilnehmerIds ? u.teilnehmerIds[tId] : null;
+        const contentEl = document.getElementById("teilnehmerContent");
+        if (!contentEl) {
+            return;
+        }
 
-    if (!teilnehmerName) {
-        contentEl.innerHTML = `<div class="alert alert-danger">Teilnehmer nicht in dieser Übung gefunden.</div>`;
-        return;
+        if (!this.uebungId || !this.teilnehmerId) {
+            contentEl.innerHTML = "<div class=\"alert alert-danger\">Ungültiger Link.</div>";
+            return;
+        }
+
+        this.uebung = await this.firebaseService.getUebung(this.uebungId);
+        if (!this.uebung) {
+            contentEl.innerHTML = "<div class=\"alert alert-warning\">Übung nicht gefunden.</div>";
+            return;
+        }
+
+        store.setState({aktuelleUebung: this.uebung, aktuelleUebungId: this.uebungId});
+
+        this.teilnehmerName = this.uebung.teilnehmerIds ? (this.uebung.teilnehmerIds[this.teilnehmerId] ?? null) : null;
+
+        if (!this.teilnehmerName) {
+            contentEl.innerHTML = "<div class=\"alert alert-danger\">Teilnehmer nicht in dieser Übung gefunden.</div>";
+            return;
+        }
+
+        this.storage = loadTeilnehmerStorage(this.uebungId, this.teilnehmerName);
+
+        // Initial Render
+        this.view.renderHeader(this.uebung, this.teilnehmerName);
+        this.renderNachrichten();
+
+        // Bind Events
+        this.view.bindEvents(
+            (id, checked) => this.toggleUebertragen(id, checked),
+            checked => this.toggleHide(checked),
+            () => this.resetData()
+        );
     }
 
-    area.style.display = "block";
+    private renderNachrichten() {
+        if (!this.uebung || !this.storage || !this.teilnehmerName) {
+            return;
+        }
+        const nachrichten = this.uebung.nachrichten[this.teilnehmerName] || [];
+        this.view.renderNachrichten(nachrichten, this.storage);
+    }
 
-    renderTeilnehmerSeite(u, teilnehmerName, contentEl);
+    private toggleUebertragen(id: number, checked: boolean) {
+        if (!this.storage) {
+            return;
+        }
 
-  } catch (err) {
-    console.error("❌ Fehler beim Laden der Teilnehmer-Daten:", err);
-    contentEl.innerHTML = `<div class="alert alert-danger">Fehler beim Laden der Daten.</div>`;
-  }
-}
+        if (checked) {
+            this.storage.nachrichten[id] = {
+                uebertragen: true,
+                uebertragenUm: new Date().toISOString()
+            };
+        } else {
+            // eslint-disable-next-line @typescript-eslint/no-dynamic-delete
+            delete this.storage.nachrichten[id];
+        }
 
-function renderTeilnehmerSeite(u: Uebung, teilnehmer: string, container: HTMLElement) {
-    const storage = loadTeilnehmerStorage(u.id, teilnehmer);
-    const nachrichten = u.nachrichten[teilnehmer] || [];
+        saveTeilnehmerStorage(this.storage);
+        this.renderNachrichten();
+    }
 
-    const nachrichtenRows = nachrichten
-        .filter((n: Nachricht) => {
-            if (storage.hideTransmitted) {
-                return !storage.nachrichten[n.id]?.uebertragen;
-            }
-            return true;
-        })
-        .map((n: Nachricht) => {
-            const status = storage.nachrichten[n.id];
-            const isUebertragen = !!status?.uebertragen;
+    private toggleHide(checked: boolean) {
+        if (!this.storage) {
+            return;
+        }
+        this.storage.hideTransmitted = checked;
+        saveTeilnehmerStorage(this.storage);
+        this.renderNachrichten();
+    }
 
-            return `
-        <tr class="${isUebertragen ? 'table-success opacity-50' : ''}">
-            <td>${n.id}</td>
-            <td>${n.empfaenger.join(", ")}</td>
-            <td>${escapeHtml(n.nachricht).replace(/\\n/g, "<br>").replace(/\n/g, "<br>")}</td>
-            <td>
-                <div class="form-check form-switch">
-                    <input class="form-check-input btn-toggle-uebertragen" type="checkbox" 
-                        data-id="${n.id}" ${isUebertragen ? 'checked' : ''}>
-                    <label class="form-check-label small">Übertragen</label>
-                </div>
-            </td>
-        </tr>
-    `}).join("");
-
-    container.innerHTML = `
-        <div class="card mb-4">
-            <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
-                <h3 class="card-title mb-0">Sprechfunkübung: ${u.name}</h3>
-                <button class="btn btn-sm btn-outline-light" id="btn-reset-teilnehmer-data">
-                    <i class="fas fa-undo"></i> Lokale Daten löschen
-                </button>
-            </div>
-            <div class="card-body">
-                <div class="row">
-                    <div class="col-md-6">
-                        <p><strong>Eigener Funkrufname:</strong> ${teilnehmer}</p>
-                        <p><strong>Datum:</strong> ${formatNatoDate(u.datum)}</p>
-                    </div>
-                    <div class="col-md-6">
-                        <p><strong>Rufgruppe:</strong> ${u.rufgruppe}</p>
-                        <p><strong>Übungsleitung:</strong> ${u.leitung}</p>
-                        ${u.loesungswoerter?.[teilnehmer] ? `<p><strong>Lösungswort:</strong> <code class="fs-5">${u.loesungswoerter[teilnehmer]}</code></p>` : ''}
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <div class="d-flex justify-content-between align-items-center mb-3">
-            <h4>Meine Funksprüche</h4>
-            <div class="form-check form-switch">
-                <input class="form-check-input" type="checkbox" id="toggle-hide-transmitted" ${storage.hideTransmitted ? 'checked' : ''}>
-                <label class="form-check-label" for="toggle-hide-transmitted">Übertragene ausblenden</label>
-            </div>
-        </div>
-
-        <div class="table-responsive">
-            <table class="table table-striped table-hover align-middle">
-                <thead class="table-light">
-                    <tr>
-                        <th>Nr.</th>
-                        <th>Empfänger</th>
-                        <th>Nachricht</th>
-                        <th style="width: 150px;">Status</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    ${nachrichtenRows || '<tr><td colspan="4" class="text-center text-muted">Keine Nachrichten vorhanden.</td></tr>'}
-                </tbody>
-            </table>
-        </div>
-    `;
-
-    // Event-Listener: Übertragen toggle
-    container.querySelectorAll(".btn-toggle-uebertragen").forEach(el => {
-        el.addEventListener("change", (e) => {
-            const checkbox = e.target as HTMLInputElement;
-            const msgId = checkbox.dataset.id!;
-            const storage = loadTeilnehmerStorage(u.id, teilnehmer);
-
-            if (checkbox.checked) {
-                storage.nachrichten[msgId] = {
-                    uebertragen: true,
-                    uebertragenUm: new Date().toISOString()
-                };
-            } else {
-                delete storage.nachrichten[msgId];
-            }
-
-            saveTeilnehmerStorage(storage);
-            renderTeilnehmerSeite(u, teilnehmer, container);
-        });
-    });
-
-    // Event-Listener: Ausblenden toggle
-    const hideToggle = document.getElementById("toggle-hide-transmitted") as HTMLInputElement;
-    hideToggle?.addEventListener("change", () => {
-        const storage = loadTeilnehmerStorage(u.id, teilnehmer);
-        storage.hideTransmitted = hideToggle.checked;
-        saveTeilnehmerStorage(storage);
-        renderTeilnehmerSeite(u, teilnehmer, container);
-    });
-
-    // Event-Listener: Reset
-    document.getElementById("btn-reset-teilnehmer-data")?.addEventListener("click", () => {
+    private resetData() {
+        if (!this.uebungId || !this.teilnehmerName) {
+            return;
+        }
         if (confirm("Möchten Sie wirklich alle lokalen Daten für diese Übung löschen? Ihr Übertragungsstatus geht verloren.")) {
-            clearTeilnehmerStorage(u.id, teilnehmer);
+            clearTeilnehmerStorage(this.uebungId, this.teilnehmerName);
             window.location.reload();
         }
-    });
+    }
+}
+
+export async function initTeilnehmer(db: Firestore): Promise<void> {
+    const controller = new TeilnehmerController(db);
+    await controller.init();
+
+    // Make area visible
+    const area = document.getElementById("teilnehmerArea");
+    if (area) {
+        area.style.display = "block";
+    }
 }

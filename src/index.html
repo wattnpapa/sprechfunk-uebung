@@ -2,53 +2,33 @@
 <html lang="de">
 
 <head>
-    <!-- Import Map entfernt, alle Abhängigkeiten werden jetzt ins Bundle gepackt. -->
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Sprechfunk Übungsgenerator</title>
-    <!-- Favicon -->
     <link rel="icon" type="image/png" href="assets/favicon.png">
-
-    <!-- in dist/index.html -->
     <script type="module" src="bundle.js"></script>
 
-    <!-- Titel & Beschreibung -->
-    <title>Sprechfunk Übungsgenerator</title>
-    <meta name="description"
-          content="Erstelle realistische Sprechfunk-Übungen für Ausbildung und Training mit dem Sprechfunk Übungsgenerator.">
-    <meta name="keywords"
-          content="Sprechfunk, BOS-Funk, Funkübung, THW, Feuerwehr, Katastrophenschutz, Kommunikationstraining">
+    <meta name="description" content="Erstelle realistische Sprechfunk-Übungen für Ausbildung und Training mit dem Sprechfunk Übungsgenerator.">
+    <meta name="keywords" content="Sprechfunk, BOS-Funk, Funkübung, THW, Feuerwehr, Katastrophenschutz, Kommunikationstraining">
     <meta name="author" content="Johannes Rudolph">
 
-    <!-- Open Graph für Social Media (Facebook, LinkedIn) -->
     <meta property="og:title" content="Sprechfunk Übungsgenerator">
-    <meta property="og:description"
-          content="Erstelle realistische Sprechfunk-Übungen für Ausbildung und Training mit dem Sprechfunk Übungsgenerator.">
-    <!--<meta property="og:image" content="https://yourdomain.com/assets/preview-image.png">-->
+    <meta property="og:description" content="Erstelle realistische Sprechfunk-Übungen für Ausbildung und Training mit dem Sprechfunk Übungsgenerator.">
     <meta property="og:url" content="https://sprechfunk-uebung.de">
     <meta property="og:type" content="website">
 
-    <!-- Twitter Card für Twitter Vorschau -->
     <meta name="twitter:card" content="summary_large_image">
     <meta name="twitter:title" content="Sprechfunk Übungsgenerator">
-    <meta name="twitter:description"
-          content="Erstelle realistische Sprechfunk-Übungen für Ausbildung und Training mit dem Sprechfunk Übungsgenerator.">
-    <!--<meta name="twitter:image" content="https://yourdomain.com/assets/preview-image.png">-->
+    <meta name="twitter:description" content="Erstelle realistische Sprechfunk-Übungen für Ausbildung und Training mit dem Sprechfunk Übungsgenerator.">
 
     <!-- Google tag (gtag.js) -->
     <script async src="https://www.googletagmanager.com/gtag/js?id=G-7FN1RQ6MK4"></script>
     <script>
         window.dataLayer = window.dataLayer || [];
-
-        function gtag() {
-            dataLayer.push(arguments);
-        }
-
+        function gtag() { dataLayer.push(arguments); }
         gtag('js', new Date());
-
         gtag('config', 'G-7FN1RQ6MK4');
     </script>
-
 
     <link rel="stylesheet" href="bundle.css">
     <link rel="stylesheet" href="style.css">
@@ -57,17 +37,14 @@
 <body data-theme="light">
 <header class="app-header">
     <div class="container app-header-grid">
-        <!-- Left: Title -->
         <div class="app-header-title">
             <h2 class="text-primary">
                 <i class="fas fa-broadcast-tower"></i> Sprechfunk Übungsgenerator
             </h2>
         </div>
 
-        <!-- Center: NATO Time -->
         <div id="natoTime" class="nato-time"></div>
 
-        <!-- Right: Desktop buttons -->
         <div class="app-header-actions d-none d-md-flex">
             <a href="https://github.com/wattnpapa/sprechfunk-uebung" class="btn btn-dark">
                 <i class="fab fa-github"></i> GitHub
@@ -83,7 +60,6 @@
             </button>
         </div>
 
-        <!-- Right (mobile): Burger -->
         <div class="app-header-burger d-md-none">
             <button class="btn btn-primary dropdown-toggle" type="button" data-bs-toggle="dropdown">
                 <i class="fas fa-bars"></i>
@@ -114,435 +90,50 @@
     </div>
 </header>
 
+<!-- Container für die verschiedenen Views -->
 <div id="uebungsleitungArea" style="display:none;">
     <div class="container my-4">
-
-        <!-- Übungs-Kopfdaten -->
         <div class="card mb-3">
-            <div class="card-header">
-                <h4 class="mb-0"><i class="fas fa-eye"></i> Übungsüberwachung – Übungsleitung</h4>
-            </div>
-            <div class="card-body" id="uebungsleitungMeta">
-                <!-- wird per TS befüllt -->
-            </div>
+            <div class="card-header"><h4 class="mb-0"><i class="fas fa-eye"></i> Übungsüberwachung – Übungsleitung</h4></div>
+            <div class="card-body" id="uebungsleitungMeta"></div>
         </div>
-
-        <!-- Teilnehmerübersicht -->
         <div class="card mb-3">
-            <div class="card-header">
-                <h4 class="mb-0"><i class="fas fa-users"></i> Teilnehmer</h4>
-            </div>
-            <div class="card-body" id="uebungsleitungTeilnehmer">
-                <!-- später Tabelle -->
-            </div>
+            <div class="card-header"><h4 class="mb-0"><i class="fas fa-users"></i> Teilnehmer</h4></div>
+            <div class="card-body" id="uebungsleitungTeilnehmer"></div>
         </div>
-
-        <!-- Nachrichtenübersicht -->
         <div class="card">
             <div class="card-header">
                 <div class="d-flex justify-content-between align-items-center">
-                    <h4 class="mb-0">
-                        <i class="fas fa-list"></i> Nachrichtenplan
-                    </h4>
-
+                    <h4 class="mb-0"><i class="fas fa-list"></i> Nachrichtenplan</h4>
                     <div class="d-flex align-items-center" style="min-width:220px;">
-                        <small class="me-2 text-muted" id="nachrichtenProgressLabel">
-                            0 / 0
-                        </small>
+                        <small class="me-2 text-muted" id="nachrichtenProgressLabel">0 / 0</small>
                         <div class="progress flex-grow-1" style="height: 10px;">
-                            <div
-                                id="nachrichtenProgressBar"
-                                class="progress-bar bg-success"
-                                role="progressbar"
-                                style="width: 0%;"
-                                aria-valuenow="0"
-                                aria-valuemin="0"
-                                aria-valuemax="100">
-                            </div>
+                            <div id="nachrichtenProgressBar" class="progress-bar bg-success" role="progressbar" style="width: 0%;"></div>
                         </div>
                     </div>
                 </div>
             </div>
-            <div class="card-body" id="uebungsleitungNachrichten">
-
-            </div>
+            <div class="card-body" id="uebungsleitungNachrichten"></div>
         </div>
-
     </div>
 </div>
 
 <div id="teilnehmerArea" style="display:none;">
     <div class="container my-4">
-        <div id="teilnehmerContent">
-            <!-- wird per TS befüllt -->
-        </div>
+        <div id="teilnehmerContent"></div>
     </div>
 </div>
 
 <div id="mainAppArea" style="display: block;">
-
-    <!-- Hauptbereich mit Kopfdaten, Einstellungen und Teilnehmerverwaltung nebeneinander -->
-    <div class="row">
-
-        <!-- Card für Kopfdaten (links) -->
-        <div class="col-md-4">
-            <div class="card">
-                <div class="card-header">
-                    <h4><i class="fas fa-info-circle"></i> Kopfdaten</h4>
-                </div>
-                <div class="card-body">
-                    <div class="mb-3">
-                        <label class="form-label">Datum der Übung:</label>
-                        <input type="date" class="form-control" id="datum">
-                    </div>
-
-                    <div class="mb-3">
-                        <label class="form-label">Name der Übung:</label>
-                        <input type="text" class="form-control" id="nameDerUebung">
-                    </div>
-
-                    <div class="mb-3">
-                        <label class="form-label">Rufgruppe der Übung:</label>
-                        <input type="text" class="form-control" id="rufgruppe">
-                    </div>
-
-                    <div class="mb-3">
-                        <label class="form-label">Funkrufname der Übungsleitung:</label>
-                        <input type="text" class="form-control" id="leitung">
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Card für Einstellungen (Mitte) -->
-        <div class="col-md-4">
-            <div class="card">
-                <div class="card-header">
-                    <h4><i class="fas fa-comment"></i> Einstellungen</h4>
-                </div>
-                <div class="card-body">
-                    <div class="row">
-                        <!-- Anzahl Funksprüche pro Teilnehmer -->
-                        <div class="col-md-6 mb-3">
-                            <label class="form-label">Funksprüche pro Teilnehmer:</label>
-                            <input type="number" class="form-control" id="spruecheProTeilnehmer"
-                                   onchange="app.calcMsgCount()" min="1" value="50">
-                        </div>
-
-                        <!-- Nachrichten an alle -->
-                        <div class="col-md-6 mb-6">
-                            <label class="form-label">% an Alle:</label>
-                            <div class="input-group">
-                                <input type="number" class="form-control" id="prozentAnAlle"
-                                       onchange="app.calcMsgCount()" min="0" max="100" value="10">
-                                <span class="input-group-text">%</span>
-                            </div>
-                            <small class="text-muted">Ergibt <span id="calcAnAlle">5</span> Nachrichten</small>
-                            <input type="hidden" id="spruecheAnAlle" value="5">
-                        </div>
-                        <!-- Nachrichten an mehrere -->
-                        <div class="col-md-6 mb-6">
-                            <label class="form-label">% an Mehrere:</label>
-                            <div class="input-group">
-                                <input type="number" class="form-control" id="prozentAnMehrere"
-                                       onchange="app.calcMsgCount()" min="0" max="100" value="5">
-                                <span class="input-group-text">%</span>
-                            </div>
-                            <small class="text-muted">Ergibt <span id="calcAnMehrere">2</span>
-                                Nachrichten</small>
-                            <input type="hidden" id="spruecheAnMehrere" value="2">
-                        </div>
-                        <!-- Buchstabieranteil -->
-                        <div class="col-md-6 mb-6">
-                            <label class="form-label">% Buchstabier-Aufgaben:</label>
-                            <div class="input-group">
-                                <input type="number" class="form-control" id="prozentAnBuchstabieren"
-                                       onchange="app.calcMsgCount()" min="0" max="100" value="0">
-                                <span class="input-group-text">%</span>
-                            </div>
-                            <small class="text-muted">Ergibt <span id="calcAnBuchstabieren">0</span>
-                                Nachrichten</small>
-                            <input type="hidden" id="spruecheAnBuchstabieren" value="0">
-                        </div>
-                    </div>
-
-                    <div id="vorlagenUploadToggle" class="mb-3">
-                        <label class="form-label fw-bold">Funksprüche auswählen:</label>
-                        <div>
-                            <input type="radio" id="optionVorlagen" name="funkspruchQuelle" value="vorlagen"
-                                   checked>
-                            <label for="optionVorlagen">Vorlagen verwenden</label>
-                        </div>
-                        <div>
-                            <input type="radio" id="optionUpload" name="funkspruchQuelle" value="upload">
-                            <label for="optionUpload">Eigene Datei hochladen</label>
-                        </div>
-                    </div>
-
-                    <div class="mb-3">
-                        <label for="funkspruchVorlage" class="form-label">Funkspruch-Vorlagen auswählen:</label>
-                        <small class="text-muted d-block mb-2">Tipp: Du kannst mehrere Vorlagen gleichzeitig
-                            auswählen.</small>
-                        <select class="form-select" id="funkspruchVorlage" multiple="multiple"></select>
-                        <small class="text-muted">Wähle eine oder mehrere Vorlagen (mit Suchfunktion)</small>
-                        <p class="text-muted mt-2">
-                            📬 Wenn du möchtest, dass deine eigenen Funksprüche mit in den Datenpool aufgenommen
-                            werden,
-                            sende sie bitte an <a
-                                href="mailto:johannes.rudolph@thw-oldenburg.de">johannes.rudolph@thw-oldenburg.de</a>.
-                        </p>
-                    </div>
-
-                    <!-- Container für den Datei-Upload -->
-                    <div class="mb-3" id="fileUploadContainer" style="display: none;">
-                        <label class="form-label">Funksprüche hochladen:</label>
-                        <input type="file" class="form-control" id="funksprueche" accept=".txt">
-                    </div>
-
-                    <!-- Lösungswörter -->
-                    <div class="mb-3">
-                        <label class="form-label">Lösungswörter:</label>
-                        <div class="form-check">
-                            <input class="form-check-input" type="radio" id="keineLoesungswoerter"
-                                   name="loesungswortOption" checked onclick="app.renderTeilnehmer()">
-                            <label class="form-check-label" for="keineLoesungswoerter">Keine
-                                Lösungswörter</label>
-                        </div>
-                        <div class="form-check">
-                            <input class="form-check-input" type="radio" id="zentralLoesungswort"
-                                   name="loesungswortOption" onclick="app.renderTeilnehmer()">
-                            <label class="form-check-label" for="zentralLoesungswort">Zentrales
-                                Lösungswort</label>
-                        </div>
-                        <div class="form-check">
-                            <input class="form-check-input" type="radio" id="individuelleLoesungswoerter"
-                                   name="loesungswortOption" onclick="app.renderTeilnehmer()">
-                            <label class="form-check-label" for="individuelleLoesungswoerter">Individuelle
-                                Lösungswörter</label>
-                        </div>
-                        <div id="zentralLoesungswortContainer" style="display: none;">
-                            <input type="text" id="zentralLoesungswortInput" class="form-control mt-2"
-                                   placeholder="Zentrales Lösungswort">
-                        </div>
-                    </div>
-
-                    <div class="form-check mt-3">
-                        <input class="form-check-input" type="checkbox" id="autoStaerkeErgaenzen" checked>
-                        <label class="form-check-label" for="autoStaerkeErgaenzen">
-                            Automatische Ergänzung von Stärkemeldungen aktivieren
-                        </label>
-                    </div>
-                    <div class="form-check mt-3">
-                        <input class="form-check-input"
-                               type="checkbox"
-                               id="anmeldungAktiv"
-                               checked>
-                        <label class="form-check-label" for="anmeldungAktiv">
-                            Anmeldungs-Funkspruch generieren
-                        </label>
-                    </div>
-
-                    <button id="shuffleButton" class="btn btn-primary" onclick="app.shuffleLoesungswoerter()"
-                            style="display: none;">
-                        🔀 Lösungswörter Zufällig neu zuweisen
-                    </button>
-                </div>
-            </div>
-        </div>
-
-        <!-- Card für Teilnehmerverwaltung (rechts) -->
-        <div class="col-md-4">
-            <div class="card">
-                <div class="card-header">
-                    <h4 class="text-primary"><i class="fas fa-users"></i> Teilnehmerverwaltung</h4>
-                </div>
-                <div class="card-body">
-                    <!-- Teilnehmerliste -->
-                    <div class="row" id="teilnehmer-container">
-                        <!-- Hier wird per JS die Tabelle eingefügt -->
-                    </div>
-                    <!-- Teilnehmer hinzufügen Button -->
-                    <button class="btn btn-success mt-3" onclick="app.addTeilnehmer()">Teilnehmer
-                        hinzufügen
-                    </button>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <button class="btn btn-success w-100 mt-4" onclick="app.startUebung()">
-        <i class="fas fa-cogs"></i> Übung generieren
-    </button>
-
-    <div id="output-container" style="display: none; margin-top: 20px;">
-        <div id="uebung-links" class="card mt-4" style="display: none;">
-            <div class="card-header bg-primary text-white">
-                🔗 Links zur Übung
-            </div>
-            <div class="card-body">
-                <p class="card-text">
-                    Mit diesem Link kannst du die Übung jederzeit wieder aufrufen:
-                </p>
-                <div>Übung <a id="link-uebung-direkt" href="#" target="_blank" class="card-link text-break"></a></div>
-                <div>Übungsleitungs Monitor <a id="link-uebungsleitung-direkt" href="#" target="_blank" class="card-link text-break"></a></div>
-                <hr>
-                <h6>Teilnehmer-Links:</h6>
-                <div id="links-teilnehmer-container"></div>
-            </div>
-        </div>
-
-        <!-- Vorschau der generierten Seiten -->
-        <div class="card mb-3">
-            <div class="card-header">
-                <h5 class="d-flex justify-content-between align-items-center">
-                    <span><i class="fas fa-file-alt"></i> Vorschau der generierten Seiten</span>
-                    <button class="btn btn-sm btn-outline-secondary" data-bs-toggle="collapse"
-                            data-bs-target="#collapseVorschau">
-                        <i class="fas fa-chevron-down"></i>
-                    </button>
-                </h5>
-            </div>
-            <div id="collapseVorschau" class="collapse show">
-                <div class="card-body text-center">
-                    <button class="btn btn-secondary" onclick="app.changePage(-1)">⬅ Zurück</button>
-                    <span id="current-page">Seite 1 / 1</span>
-                    <button class="btn btn-secondary" onclick="app.changePage(1)">Weiter ➡</button>
-                    <button id="downloadZip" class="btn btn-primary"
-                            onclick="pdfGenerator.generateAllPDFsAsZip(window.app.funkUebung)">📦 Alle PDFs als ZIP
-                        herunterladen
-                    </button>
-                    <iframe id="resultFrame"
-                            style="width: 100%; height: 400px; border: 1px solid #ccc; margin-top: 20px;"></iframe>
-                </div>
-            </div>
-        </div>
-
-        <!-- JSON Modal -->
-        <div class="modal fade" id="jsonModal" tabindex="-1" aria-labelledby="jsonModalLabel" aria-hidden="true">
-            <div class="modal-dialog modal-lg modal-dialog-scrollable">
-                <div class="modal-content">
-                    <div class="modal-header">
-                        <h5 class="modal-title" id="jsonModalLabel">Übungsdaten als JSON</h5>
-                        <button type="button" class="btn-close" data-bs-dismiss="modal"
-                                aria-label="Schließen"></button>
-                    </div>
-                    <div class="modal-body">
-                            <pre id="jsonOutput"
-                                 style="white-space: pre-wrap; word-wrap: break-word; background-color: #f8f9fa; padding: 1rem; border-radius: .3rem;"></pre>
-                    </div>
-                    <div class="modal-footer">
-                        <button class="btn btn-secondary" data-bs-dismiss="modal">Schließen</button>
-                        <button class="btn btn-primary" onclick="app.copyJSONToClipboard()">📋 In Zwischenablage
-                            kopieren
-                        </button>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <div class="row">
-            <div class="col-md-6">
-                <!-- Nachrichtenverteilung -->
-                <div class="card mb-3">
-                    <div class="card-header">
-                        <h5 class="d-flex justify-content-between align-items-center">
-                            <span><i class="fas fa-chart-bar"></i> Nachrichtenverteilung</span>
-                            <button class="btn btn-sm btn-outline-secondary" data-bs-toggle="collapse"
-                                    data-bs-target="#collapseDiagramm">
-                                <i class="fas fa-chevron-down"></i>
-                            </button>
-                        </h5>
-                    </div>
-                    <div id="collapseDiagramm" class="collapse show">
-                        <div class="card-body">
-                            <canvas id="distributionChart"></canvas>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <div class="col-md-6">
-                <!-- Dauer der Übung-->
-                <div class="card mb-3">
-                    <div class="card-header">
-                        <h5 class="d-flex justify-content-between align-items-center">
-                            <span><i class="fas fa-clock"></i> Geschätzte Dauer der Übung</span>
-                            <button class="btn btn-sm btn-outline-secondary" data-bs-toggle="collapse"
-                                    data-bs-target="#collapseDauer">
-                                <i class="fas fa-chevron-down"></i>
-                            </button>
-                        </h5>
-                    </div>
-                    <div id="collapseDauer" class="collapse show">
-                        <div class="card-body">
-                            <table class="table table-bordered">
-                                <thead class="table-dark">
-                                <tr>
-                                    <th></th>
-                                    <th>Dauer in Minuten</th>
-                                    <th>Dauer in Stunden und Minuten</th>
-                                    <th>Durchschnittliche Zeit pro Funkspruch (Sek.)</th>
-                                </tr>
-                                </thead>
-                                <tbody>
-                                <tr>
-                                    <td>Optimal</td>
-                                    <td id="dauerOptimalMinuten">- Min</td>
-                                    <td id="dauerOptimalStundenMinuten">- Std - Min</td>
-                                    <td id="durchschnittOptimal">- Sek</td>
-                                </tr>
-                                <tr>
-                                    <td>Langsam</td>
-                                    <td id="dauerLangsamMinuten">- Min</td>
-                                    <td id="dauerLangsamStundenMinuten">- Std - Min</td>
-                                    <td id="durchschnittLangsam">- Sek</td>
-                                </tr>
-                                </tbody>
-                            </table>
-                            <div class="mt-3">
-                                <h6>📘 Rechenformeln & Annahmen:</h6>
-                                <p class="mb-1"><strong>Basis-Einheit:</strong> Alle Berechnungen basieren auf
-                                    Sekunden.</p>
-                                <p class="mb-1"><strong>Annahmen:</strong></p>
-                                <ul class="mb-2">
-                                    <li>Wir schaffen es, <strong>1 Zeichen pro Sekunde</strong> mitzuschreiben.
-                                    </li>
-                                    <li>Wir benötigen <strong>2 Zeichen pro Sekunde</strong>, um eine Nachricht
-                                        zu
-                                        übermitteln (sprechen).
-                                    </li>
-                                </ul>
-                                <p class="mb-1"><strong>Optimale Dauer:</strong>
-                                    <code>Sprechzeit + Mitschrift + Empfänger-Zeit + Verbindungsaufbau + Verbindungsabbau</code>
-                                </p>
-                                <ul class="mb-2">
-                                    <li><strong>Sprechzeit:</strong> Zeichenlänge / 2</li>
-                                    <li><strong>Mitschrift:</strong> Zeichenlänge</li>
-                                    <li><strong>Empfänger-Zeit:</strong> (Empfängerzahl - 1) × 2 Sekunden</li>
-                                    <li><strong>Verbindungsaufbau:</strong> 5 Sekunden + 3 Sekunden je
-                                        zusätzlichem
-                                        Empfänger
-                                    <li><strong>Verbindungsabbau:</strong> 3 Sekunden</li>
-                                </ul>
-                                <p class="mb-1"><strong>Langsame Dauer:</strong> Optimale Dauer × 1.5 (wenn
-                                    Wiederholung erforderlich)</p>
-                                <p class="text-muted">Diese Formeln dienen zur realistischen Einschätzung der
-                                    Gesamtdauer anhand der Nachrichteninhalte und Teilnehmeranzahl.</p>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-    </div>
+    <!-- Wird von GeneratorView.ts befüllt -->
 </div>
+
 <div id="adminArea" style="display: none;">
     <div class="card mt-4" id="adminUebungsliste">
         <div class="card-header">
             <h5 class="d-flex justify-content-between align-items-center">
                 <span><i class="fas fa-database"></i> Gespeicherte Übungen</span>
-                <button class="btn btn-sm btn-outline-secondary" data-bs-toggle="collapse"
-                        data-bs-target="#collapseAdminUebungen">
+                <button class="btn btn-sm btn-outline-secondary" data-bs-toggle="collapse" data-bs-target="#collapseAdminUebungen">
                     <i class="fas fa-chevron-down"></i>
                 </button>
             </h5>
@@ -561,19 +152,13 @@
                             <th>Anzahl Teilnehmer</th>
                         </tr>
                         </thead>
-                        <tbody id="adminUebungslisteBody">
-                        <!-- Zeilen werden per JS hinzugefügt -->
-                        </tbody>
+                        <tbody id="adminUebungslisteBody"></tbody>
                     </table>
                     <div class="d-flex justify-content-between align-items-center px-3 py-2">
                         <div id="adminUebungslisteInfo" class="small text-muted"></div>
                         <div>
-                            <button class="btn btn-sm btn-outline-secondary me-2"
-                                    onclick="admin.ladeAlleUebungen('prev')">← Vorherige
-                            </button>
-                            <button class="btn btn-sm btn-outline-secondary"
-                                    onclick="admin.ladeAlleUebungen('next')">Nächste →
-                            </button>
+                            <button class="btn btn-sm btn-outline-secondary me-2" onclick="admin.ladeAlleUebungen('prev')">← Vorherige</button>
+                            <button class="btn btn-sm btn-outline-secondary" onclick="admin.ladeAlleUebungen('next')">Nächste →</button>
                         </div>
                     </div>
                 </div>
@@ -585,8 +170,7 @@
         <div class="card-header">
             <h5 class="d-flex justify-content-between align-items-center">
                 <span><i class="fas fa-chart-line"></i> Statistik: Übungen pro Zeit</span>
-                <button class="btn btn-sm btn-outline-secondary" data-bs-toggle="collapse"
-                        data-bs-target="#collapseAdminStats">
+                <button class="btn btn-sm btn-outline-secondary" data-bs-toggle="collapse" data-bs-target="#collapseAdminStats">
                     <i class="fas fa-chevron-down"></i>
                 </button>
             </h5>
@@ -599,13 +183,11 @@
         </div>
     </div>
 
-    <!-- Zusammenfassung der Admin-Kennzahlen -->
     <div class="card mt-4" id="adminSummary">
         <div class="card-header">
             <h5 class="d-flex justify-content-between align-items-center">
                 <span><i class="fas fa-chart-pie"></i> Übersicht: Kennzahlen</span>
-                <button class="btn btn-sm btn-outline-secondary" data-bs-toggle="collapse"
-                        data-bs-target="#collapseAdminSummary">
+                <button class="btn btn-sm btn-outline-secondary" data-bs-toggle="collapse" data-bs-target="#collapseAdminSummary">
                     <i class="fas fa-chevron-down"></i>
                 </button>
             </h5>
@@ -613,45 +195,21 @@
         <div id="collapseAdminSummary" class="collapse show">
             <div class="card-body">
                 <ul class="list-group">
-                    <li class="list-group-item">
-                        <strong>📊 Gesamtzahl Übungen:</strong>
-                        <span id="infoGesamtUebungen" class="float-end">–</span>
-                    </li>
-                    <li class="list-group-item">
-                        <strong>📡 Ø Funksprüche pro Teilnehmer:</strong>
-                        <span id="infoSpruecheProTeilnehmer" class="float-end">–</span>
-                    </li>
-                    <li class="list-group-item">
-                        <strong>📦 Gesamtdatenmenge:</strong>
-                        <span id="infoGroesse" class="float-end">–</span>
-                    </li>
-                    <li class="list-group-item">
-                        <strong>👥 Ø Teilnehmerzahl:</strong>
-                        <span id="infoTeilnehmer" class="float-end">–</span>
-                    </li>
-                    <li class="list-group-item">
-                        <strong>⏱️ Ø Übungsdauer (geschätzt):</strong>
-                        <span id="infoDauer" class="float-end">–</span>
-                    </li>
-                    <li class="list-group-item">
-                        <strong>🔤 Anteil mit Lösungswörtern:</strong>
-                        <span id="infoLoesungswort" class="float-end">–%</span>
-                    </li>
-                    <li class="list-group-item">
-                        <strong>💪 Anteil mit Stärkemeldungen:</strong>
-                        <span id="infoStaerke" class="float-end">–%</span>
-                    </li>
-                    <li class="list-group-item">
-                        <strong>🧩 Anteil mit Buchstabieraufgaben:</strong>
-                        <span id="infoBuchstabieren" class="float-end">–%</span>
-                    </li>
+                    <li class="list-group-item"><strong>📊 Gesamtzahl Übungen:</strong> <span id="infoGesamtUebungen" class="float-end">–</span></li>
+                    <li class="list-group-item"><strong>📡 Ø Funksprüche pro Teilnehmer:</strong> <span id="infoSpruecheProTeilnehmer" class="float-end">–</span></li>
+                    <li class="list-group-item"><strong>📦 Gesamtdatenmenge:</strong> <span id="infoGroesse" class="float-end">–</span></li>
+                    <li class="list-group-item"><strong>👥 Ø Teilnehmerzahl:</strong> <span id="infoTeilnehmer" class="float-end">–</span></li>
+                    <li class="list-group-item"><strong>⏱️ Ø Übungsdauer (geschätzt):</strong> <span id="infoDauer" class="float-end">–</span></li>
+                    <li class="list-group-item"><strong>🔤 Anteil mit Lösungswörtern:</strong> <span id="infoLoesungswort" class="float-end">–%</span></li>
+                    <li class="list-group-item"><strong>💪 Anteil mit Stärkemeldungen:</strong> <span id="infoStaerke" class="float-end">–%</span></li>
+                    <li class="list-group-item"><strong>🧩 Anteil mit Buchstabieraufgaben:</strong> <span id="infoBuchstabieren" class="float-end">–%</span></li>
                 </ul>
             </div>
         </div>
     </div>
 </div>
 
-<!-- Modal -->
+<!-- Modals -->
 <div class="modal fade" id="howtoModal" tabindex="-1" aria-labelledby="howtoModalLabel" aria-hidden="true">
     <div class="modal-dialog" style="max-width: 90%;">
         <div class="modal-content">
@@ -659,67 +217,31 @@
                 <h5 class="modal-title" id="howtoModalLabel">Anleitung</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
-            <div class="modal-body">
-                <div id="howtoContent">Lädt...</div>
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Schließen</button>
-            </div>
+            <div class="modal-body"><div id="howtoContent">Lädt...</div></div>
+            <div class="modal-footer"><button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Schließen</button></div>
         </div>
     </div>
 </div>
 
-<!-- Modal für die Autor-Info -->
 <div class="modal fade" id="authorModal" tabindex="-1" aria-labelledby="authorModalLabel" aria-hidden="true">
-    <div class="modal-dialog modal-lg"> <!-- Größeres Modal -->
+    <div class="modal-dialog modal-lg">
         <div class="modal-content">
             <div class="modal-header">
                 <h5 class="modal-title" id="authorModalLabel">Über den Autor</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Schließen"></button>
             </div>
             <div class="modal-body text-center">
-
-                <!-- Gravatar Bild -->
-                <img src="https://www.gravatar.com/avatar/b4d8c8a87a392586b9caee287180163b?s=200"
-                     alt="Johannes Rudolph" class="rounded-circle mb-3" width="150" height="150">
-
+                <img src="https://www.gravatar.com/avatar/b4d8c8a87a392586b9caee287180163b?s=200" alt="Johannes Rudolph" class="rounded-circle mb-3" width="150" height="150">
                 <h4>👋 Moin! Ich bin Johannes.</h4>
-                <p>
-                    Technik-Enthusiast, Problemlöser und immer auf der Suche nach smarten Lösungen – sei es
-                    in
-                    der IT, im Ehrenamt oder im Alltag.
-                </p>
+                <p>Technik-Enthusiast, Problemlöser und immer auf der Suche nach smarten Lösungen – sei es in der IT, im Ehrenamt oder im Alltag.</p>
                 <h5>💼 Beruflich</h5>
-                <p>
-                    Als <b>Head of Business Development</b> bei DIA Connecting Software bin ich die
-                    Schnittstelle zwischen Entwicklern, Kunden und Management.
-                    Mein Fokus liegt auf der <b>Vernetzung von Systemen</b>, um Unternehmen effizienter zu
-                    machen. Ich liebe es, komplexe technische Herausforderungen
-                    in einfache, greifbare Lösungen zu verwandeln.
-                </p>
+                <p>Als <b>Head of Business Development</b> bei DIA Connecting Software bin ich die Schnittstelle zwischen Entwicklern, Kunden und Management. Mein Fokus liegt auf der <b>Vernetzung von Systemen</b>, um Unternehmen effizienter zu machen.</p>
                 <h5>🚀 Privat</h5>
-                <p>
-                    In meiner Freizeit bin ich ein echter Macher – sei es bei <b>DIY-Projekten, smarter
-                    Technik
-                    oder Heimautomation</b>. Ich probiere gerne neue Dinge aus
-                    und optimiere Prozesse, egal ob digital oder analog. Außerdem verbringe ich viel Zeit
-                    mit
-                    meiner Familie und liebe es, Technik in den Alltag zu integrieren.
-                </p>
+                <p>In meiner Freizeit bin ich ein echter Macher – sei es bei <b>DIY-Projekten, smarter Technik oder Heimautomation</b>.</p>
                 <h5>📟 Ehrenamtliches Engagement</h5>
-                <p>
-                    Seit <b>2007 bin ich beim Technischen Hilfswerk (THW)</b> aktiv. Aktuell bin ich
-                    <b>Gruppenführer der Fachgruppe Kommunikation</b> und
-                    <b>Bereichsausbilder für Sprechfunk</b>. Im Einsatz übernehme ich die Rolle des
-                    <b>Sachgebietsleiters in Führungsstellen und Einsatzleitungen</b>.
-                    Mein Schwerpunkt liegt darauf, sichere Kommunikationswege für Einsatzkräfte zu
-                    gewährleisten
-                    und digitale Technologien im Krisenmanagement zu nutzen.
-                </p>
+                <p>Seit <b>2007 bin ich beim Technischen Hilfswerk (THW)</b> aktiv. Aktuell bin ich <b>Gruppenführer der Fachgruppe Kommunikation</b> und <b>Bereichsausbilder für Sprechfunk</b>.</p>
                 <h5>📌 Mein Motto:</h5>
-                <p class="fst-italic">"Technik verstehen, vernetzen und sinnvoll einsetzen – beruflich,
-                    privat
-                    und im Ehrenamt."</p>
+                <p class="fst-italic">"Technik verstehen, vernetzen und sinnvoll einsetzen – beruflich, privat und im Ehrenamt."</p>
                 <h5>📡 Interessen:</h5>
                 <ul class="list-unstyled">
                     <li>✔ IT & Softwareentwicklung</li>
@@ -728,8 +250,25 @@
                     <li>✔ Katastrophenschutz & Führungsstrukturen</li>
                 </ul>
             </div>
+            <div class="modal-footer"><button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Schließen</button></div>
+        </div>
+    </div>
+</div>
+
+<!-- JSON Modal (wird von GeneratorView genutzt) -->
+<div class="modal fade" id="jsonModal" tabindex="-1" aria-labelledby="jsonModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-scrollable">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="jsonModalLabel">Übungsdaten als JSON</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Schließen"></button>
+            </div>
+            <div class="modal-body">
+                <pre id="jsonOutput" style="white-space: pre-wrap; word-wrap: break-word; background-color: #f8f9fa; padding: 1rem; border-radius: .3rem;"></pre>
+            </div>
             <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Schließen</button>
+                <button class="btn btn-secondary" data-bs-dismiss="modal">Schließen</button>
+                <button class="btn btn-primary" onclick="app.copyJSONToClipboard()">📋 In Zwischenablage kopieren</button>
             </div>
         </div>
     </div>
@@ -737,13 +276,8 @@
 
 <footer class="main-footer">
     <b>Version</b> <span id="version">1.0.0</span> | <b>Übung ID:</b> <span id="uebungsId">-</span>
-
-    <strong>© Johannes Rudolph (<a
-            href="mailto:johannes.rudolph@thw-oldenburg.de">johannes.rudolph@thw-oldenburg.de</a>) | <a
-            href="https://sprechfunk-uebung.de/" target="_blank">Generator</a> | <a
-            href="https://github.com/wattnpapa/sprechfunk-uebung" target="_blank">GitHub-Repository</a></strong>
+    <strong>© Johannes Rudolph (<a href="mailto:johannes.rudolph@thw-oldenburg.de">johannes.rudolph@thw-oldenburg.de</a>) | <a href="https://sprechfunk-uebung.de/" target="_blank">Generator</a> | <a href="https://github.com/wattnpapa/sprechfunk-uebung" target="_blank">GitHub-Repository</a></strong>
 </footer>
 
 </body>
-
 </html>

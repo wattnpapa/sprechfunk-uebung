@@ -9,4 +9,4 @@ export const NAMENS_POOL = [
     "Mission Klarwelle", "Funklinie Bravo", "Wellenbrecher", "Feuerlinie", "Zentrale Stern",
     "Kontrollzone", "Dunkelruf", "Glühende Welle", "Projekt Grenzton", "Übertragungsprotokoll",
     "Funknetz Gamma", "Knoten Echo", "Frequenzrausch", "Alpha Codex", "Mission Lautsprecher"
-  ];
+];

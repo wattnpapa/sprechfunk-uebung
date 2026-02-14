@@ -1,92 +1,62 @@
-import {jsPDF} from "jspdf";
-import {FunkUebung} from "../FunkUebung";
+import { jsPDF } from "jspdf";
+import {FunkUebung} from "../models/FunkUebung";
 
 export abstract class BasePDF {
-
+    protected pdf: jsPDF;
     protected funkUebung: FunkUebung;
 
-    protected pdf: jsPDF;
-
-    protected pdfWidth: number;
-    protected pdfHeight: number;
-
-    constructor(
-        funkUebung: FunkUebung,
-        pdfInstance: jsPDF
-    ) {
+    constructor(funkUebung: FunkUebung, pdf: jsPDF) {
         this.funkUebung = funkUebung;
-
-        this.pdf = pdfInstance;
-        this.pdfWidth = this.pdf.internal.pageSize.getWidth();
-        this.pdfHeight = this.pdf.internal.pageSize.getHeight();
+        this.pdf = pdf;
     }
 
+    abstract draw(xOffset?: number): void;
 
-    public blob() : Blob {
-        return this.pdf.output('blob');
-    }
-
-    public abstract draw(offsetX: number) : void
-
-    protected adjustTextForWidth(text: string, maxWidth: number, x: number, y: number) {
-        let fontSize = 12;
+    protected addText(text: string, x: number, y: number, fontSize = 10, fontStyle = "normal", align: "left" | "center" | "right" = "left") {
         this.pdf.setFontSize(fontSize);
-
-        while (this.pdf.getTextWidth(text) > maxWidth && fontSize > 7) {
-            fontSize -= 0.5; // Schrittweise verkleinern
-            this.pdf.setFontSize(fontSize);
-        }
-
-        this.pdf.text(text, x, y);
+        this.pdf.setFont("helvetica", fontStyle);
+        this.pdf.text(text, x, y, { align: align });
     }
 
-    /**
-     * Zeichnet Text in mehreren Zeilen.
-     * - Respektiert explizite Zeilenumbrüche ("\\n")
-     * - Bricht jede Zeile zusätzlich automatisch um (maxWidth)
-     */
-    /**
-     * Zeichnet Text mehrzeilig mit automatischem Umbruch.
-     * - Respektiert explizite Zeilenumbrüche ("\n")
-     * - Nutzt jsPDF-eigenes Wrapping (maxWidth)
-     * - Verhindert buchstabenweises Auseinanderziehen
-     */
-    protected drawMultilineText(
-        text: string,
-        x: number,
-        y: number,
-        maxWidth: number,
-        lineHeight: number
-    ): void {
-        if (!text) return;
+    protected addRect(x: number, y: number, w: number, h: number) {
+        this.pdf.rect(x, y, w, h);
+    }
 
-        // echte Zeilenumbrüche sicherstellen
-        const normalized = String(text).replace(/\\n/g, "\n");
+    protected addLine(x1: number, y1: number, x2: number, y2: number) {
+        this.pdf.line(x1, y1, x2, y2);
+    }
 
-        const paragraphs = normalized.split("\n");
+    protected addWrappedText(text: string, x: number, y: number, maxWidth: number, fontSize = 10, fontStyle = "normal") {
+        this.pdf.setFontSize(fontSize);
+        this.pdf.setFont("helvetica", fontStyle);
+        const lines = this.pdf.splitTextToSize(text, maxWidth);
+        this.pdf.text(lines, x, y);
+        return lines.length * (fontSize * 0.3527); // Ungefähre Höhe in mm zurückgeben
+    }
 
-        let currentY = y;
+    protected addCheckbox(x: number, y: number, size = 4, checked = false) {
+        this.pdf.rect(x, y, size, size);
+        if (checked) {
+            this.pdf.line(x, y, x + size, y + size);
+            this.pdf.line(x + size, y, x, y + size);
+        }
+    }
 
-        paragraphs.forEach((paragraph) => {
-            // Leerzeile → Abstand
-            if (paragraph.trim() === "") {
-                currentY += lineHeight;
-                return;
-            }
-
-            // Text zeichnen (jsPDF übernimmt Umbruch!)
-            // @ts-ignore
-            this.pdf.text(paragraph, x, currentY, {
-                maxWidth: maxWidth,
-            });
-
-            // Höhe berechnen, die jsPDF tatsächlich benötigt hat
-            const dimensions = this.pdf.getTextDimensions(paragraph, {
-                maxWidth: maxWidth
-            });
-
-            // y-Position für nächsten Absatz erhöhen
-            currentY += dimensions.h;
+    protected addTable(headers: string[], data: string[][], startY: number, startX: number, colWidths: number[] = []) {
+        // @ts-expect-error jsPDF autotable types
+        this.pdf.autoTable({
+            head: [headers],
+            body: data,
+            startY: startY,
+            margin: { left: startX },
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            columnStyles: colWidths.reduce((acc: any, width, index) => {
+                acc[index] = { cellWidth: width };
+                return acc;
+            }, {}),
+            theme: "grid",
+            styles: { fontSize: 10, cellPadding: 1 },
+            headStyles: { fillColor: [220, 220, 220], textColor: 0, fontStyle: "bold" }
         });
     }
 }
