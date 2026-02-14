@@ -25,6 +25,8 @@ export class GeneratorController {
     private previewService: GeneratorPreviewService;
     private view: GeneratorView;
     private buildInfo = "dev";
+    private initialConfigFingerprint = "";
+    private isFreshExercise = true;
 
     public static getInstance(): GeneratorController {
         if (!GeneratorController.instance) {
@@ -83,6 +85,8 @@ export class GeneratorController {
         const uebungId = params.length >= 1 ? (params[0] ?? null) : null;
         const uebung = await this.loadUebung(uebungId);
         this.funkUebung = uebung;
+        this.isFreshExercise = !uebungId;
+        this.initialConfigFingerprint = this.createConfigFingerprint(this.funkUebung);
         this.updateUI();
     }
 
@@ -245,6 +249,8 @@ export class GeneratorController {
         const formData = this.view.getFormData();
         Object.assign(this.funkUebung, formData);
         this.readLoesungswoerterFromView();
+        this.funkUebung.istStandardKonfiguration =
+            this.isFreshExercise && this.createConfigFingerprint(this.funkUebung) === this.initialConfigFingerprint;
 
         if (!this.validateSpruchVerteilung()) {
             return;
@@ -305,13 +311,11 @@ export class GeneratorController {
     }
 
     renderUebungResult() {
-        this.previewService.generate(this.funkUebung);
-        const page = this.previewService.getAt(0);
         const allMsgs = Object.values(this.funkUebung.nachrichten).flat();
         const stats = this.statsService.berechneUebungsdauer(allMsgs);
         const chart = this.statsService.berechneVerteilung(this.funkUebung);
 
-        this.view.renderUebungResult(this.funkUebung, page, stats, chart);
+        this.view.renderUebungResult(this.funkUebung, stats, chart);
     }
 
     displayPage(index: number) {
@@ -339,6 +343,26 @@ export class GeneratorController {
             return false;
         }
         return true;
+    }
+
+    private createConfigFingerprint(uebung: FunkUebung): string {
+        const date = new Date(uebung.datum);
+        const dateOnly = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}`;
+        return JSON.stringify({
+            name: uebung.name,
+            datum: dateOnly,
+            rufgruppe: uebung.rufgruppe,
+            leitung: uebung.leitung,
+            teilnehmerListe: uebung.teilnehmerListe,
+            teilnehmerStellen: uebung.teilnehmerStellen || {},
+            spruecheProTeilnehmer: uebung.spruecheProTeilnehmer,
+            spruecheAnAlle: uebung.spruecheAnAlle,
+            spruecheAnMehrere: uebung.spruecheAnMehrere,
+            buchstabierenAn: uebung.buchstabierenAn,
+            anmeldungAktiv: uebung.anmeldungAktiv,
+            loesungswoerter: uebung.loesungswoerter || {},
+            loesungsStaerken: uebung.loesungsStaerken || {}
+        });
     }
 
 }

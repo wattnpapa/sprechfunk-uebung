@@ -25,6 +25,9 @@ export class AdminView {
 
         uebungen.forEach(uebung => {
             const tr = document.createElement("tr");
+            if (uebung.istStandardKonfiguration) {
+                tr.classList.add("admin-standard-uebung-row");
+            }
             tr.innerHTML = `
                 <td>${uebung.createDate ? new Date(uebung.createDate).toLocaleString() : "-"}</td>
                 <td><a href="#/generator/${uebung.id}" target="_blank">${uebung.name}</a></td>

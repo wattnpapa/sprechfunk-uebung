@@ -796,6 +796,15 @@ body {
     color: var(--text-muted);
 }
 
+.admin-standard-uebung-row > * {
+    background-color: #fff8d6 !important;
+}
+
+[data-theme="dark"] .admin-standard-uebung-row > * {
+    background-color: #3a3418 !important;
+    color: var(--text) !important;
+}
+
 .modal-dialog {
     padding-top: 50px;
     padding-bottom: 50px;

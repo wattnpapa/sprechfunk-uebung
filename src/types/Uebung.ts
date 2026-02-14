@@ -29,4 +29,5 @@ export interface Uebung {
     checksumme: string;
     funksprueche: string[];
     anmeldungAktiv: boolean;
+    istStandardKonfiguration?: boolean;
 }

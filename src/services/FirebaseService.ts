@@ -155,7 +155,8 @@ export class FirebaseService {
             checksumme: typeof data.checksumme === "string" ? data.checksumme : "",
             funksprueche: toStringArray(data.funksprueche),
             anmeldungAktiv: typeof data.anmeldungAktiv === "boolean" ? data.anmeldungAktiv : true,
-            verwendeteVorlagen: toStringArray(data.verwendeteVorlagen)
+            verwendeteVorlagen: toStringArray(data.verwendeteVorlagen),
+            istStandardKonfiguration: typeof data.istStandardKonfiguration === "boolean" ? data.istStandardKonfiguration : false
         });
         return uebung;
     }

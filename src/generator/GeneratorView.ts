@@ -379,37 +379,119 @@ export class GeneratorView {
 
     public renderLinks(uebung: FunkUebung) {
         const linkContainer = document.getElementById("uebung-links");
-        const linkElement = document.getElementById("link-uebung-direkt") as HTMLAnchorElement;
-        const linkUebungsMonitorElement = document.getElementById("link-uebungsleitung-direkt") as HTMLAnchorElement;
         const teilnehmerLinksContainer = document.getElementById("links-teilnehmer-container");
 
-        if (!linkContainer || !linkElement || !linkUebungsMonitorElement || !teilnehmerLinksContainer) {
+        if (!linkContainer || !teilnehmerLinksContainer) {
             return;
         }
 
         if (uebung.id) {
             const baseUrl = this.getBaseUrl();
             const urlUebung = `${baseUrl}#/generator/${uebung.id}`;
-            linkElement.href = urlUebung;
-            linkElement.textContent = urlUebung;
-
             const urlUebungLeitung = `${baseUrl}#/uebungsleitung/${uebung.id}`;
-            linkUebungsMonitorElement.href = urlUebungLeitung;
-            linkUebungsMonitorElement.textContent = urlUebungLeitung;
 
             teilnehmerLinksContainer.innerHTML = "";
+            this.appendLinkRow(teilnehmerLinksContainer, "Übung", "-", urlUebung);
+            this.appendLinkRow(teilnehmerLinksContainer, "Übungsleitung", "-", urlUebungLeitung);
+
             if (uebung.teilnehmerIds) {
                 Object.entries(uebung.teilnehmerIds).forEach(([id, name]) => {
                     const url = `${baseUrl}#/teilnehmer/${uebung.id}/${id}`;
-                    const div = document.createElement("div");
-                    div.className = "mb-1";
-                    div.innerHTML = `<strong>${name}:</strong> <a href="${url}" target="_blank" class="text-break">${url}</a>`;
-                    teilnehmerLinksContainer.appendChild(div);
+                    this.appendLinkRow(
+                        teilnehmerLinksContainer,
+                        "Teilnehmer",
+                        name,
+                        url,
+                        this.createMailtoLink(uebung.name || "Sprechfunk-Übung", name, url)
+                    );
                 });
             }
 
             linkContainer.style.display = "block";
         }
+    }
+
+    private appendLinkRow(container: HTMLElement, typ: string, name: string, url: string, mailtoUrl?: string) {
+        const tr = document.createElement("tr");
+
+        const tdTyp = document.createElement("td");
+        tdTyp.textContent = typ;
+        tr.appendChild(tdTyp);
+
+        const tdName = document.createElement("td");
+        tdName.textContent = name;
+        tr.appendChild(tdName);
+
+        const tdLink = document.createElement("td");
+        const link = document.createElement("a");
+        link.href = url;
+        link.target = "_blank";
+        link.className = "text-break";
+        link.textContent = url;
+        tdLink.appendChild(link);
+        tr.appendChild(tdLink);
+
+        const tdActions = document.createElement("td");
+        tdActions.className = "text-nowrap";
+
+        const copyButton = document.createElement("button");
+        copyButton.type = "button";
+        copyButton.className = "btn btn-outline-secondary btn-sm me-2";
+        copyButton.innerHTML = "<i class=\"fas fa-copy\"></i> Kopieren";
+        copyButton.addEventListener("click", () => {
+            this.copyTextToClipboard(url)
+                .then(() => alert("Link wurde kopiert."))
+                .catch(() => alert("Kopieren fehlgeschlagen."));
+        });
+        tdActions.appendChild(copyButton);
+
+        if (mailtoUrl) {
+            const mailButton = document.createElement("button");
+            mailButton.type = "button";
+            mailButton.className = "btn btn-outline-primary btn-sm";
+            mailButton.innerHTML = "<i class=\"fas fa-envelope\"></i> Mail";
+            mailButton.addEventListener("click", () => {
+                window.location.href = mailtoUrl;
+            });
+            tdActions.appendChild(mailButton);
+        }
+
+        tr.appendChild(tdActions);
+        container.appendChild(tr);
+    }
+
+    private async copyTextToClipboard(text: string): Promise<void> {
+        if (navigator.clipboard?.writeText) {
+            await navigator.clipboard.writeText(text);
+            return;
+        }
+
+        const textarea = document.createElement("textarea");
+        textarea.value = text;
+        textarea.setAttribute("readonly", "");
+        textarea.style.position = "absolute";
+        textarea.style.left = "-9999px";
+        document.body.appendChild(textarea);
+        textarea.select();
+        document.execCommand("copy");
+        document.body.removeChild(textarea);
+    }
+
+    private createMailtoLink(uebungsName: string, teilnehmerName: string, teilnehmerUrl: string): string {
+        const subject = `Sprechfunk-Übung: ${uebungsName} - ${teilnehmerName}`;
+        const bodyLines = [
+            `Hallo ${teilnehmerName},`,
+            "",
+            `hier ist dein Link zur Teilnehmeransicht der Übung "${uebungsName}":`,
+            teilnehmerUrl,
+            "",
+            "Du kannst die Ansicht während der Übung nutzen.",
+            "Dort kannst du auch die Druckdaten herunterladen.",
+            "",
+            "Viele Grüße"
+        ];
+
+        return `mailto:?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(bodyLines.join("\n"))}`;
     }
 
     private getBaseUrl(): string {
@@ -504,14 +586,10 @@ export class GeneratorView {
 
     public renderUebungResult(
         uebung: FunkUebung,
-        page: PreviewPage | null,
         stats: UebungsDauerStats,
         chart: VerteilungsStats
     ) {
         this.showOutputContainer();
-        if (page) {
-            this.renderPreview(page.html, page.index, page.total);
-        }
         this.renderLinks(uebung);
         this.renderDuration(stats);
         this.renderChart(chart.labels, chart.counts);
@@ -726,35 +804,37 @@ export class GeneratorView {
                         <p class="card-text">
                             Mit diesem Link kannst du die Übung jederzeit wieder aufrufen:
                         </p>
-                        <div>Übung <a id="link-uebung-direkt" href="#" target="_blank" class="card-link text-break"></a></div>
-                        <div>Übungsleitungs Monitor <a id="link-uebungsleitung-direkt" href="#" target="_blank" class="card-link text-break"></a></div>
-                        <hr>
-                        <h6>Teilnehmer-Links:</h6>
-                        <div id="links-teilnehmer-container"></div>
+                        <div class="table-responsive">
+                            <table class="table table-sm table-striped align-middle">
+                                <thead>
+                                    <tr>
+                                        <th>Typ</th>
+                                        <th>Name</th>
+                                        <th>Link</th>
+                                        <th>Aktionen</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="links-teilnehmer-container"></tbody>
+                            </table>
+                        </div>
                     </div>
                 </div>
 
-                <!-- Vorschau der generierten Seiten -->
                 <div class="card mb-3">
                     <div class="card-header">
                         <h5 class="d-flex justify-content-between align-items-center">
-                            <span><i class="fas fa-file-alt"></i> Vorschau der generierten Seiten</span>
+                            <span><i class="fas fa-file-archive"></i> Export</span>
                             <button class="btn btn-sm btn-outline-secondary" data-bs-toggle="collapse"
-                                    data-bs-target="#collapseVorschau">
+                                    data-bs-target="#collapseExport">
                                 <i class="fas fa-chevron-down"></i>
                             </button>
                         </h5>
                     </div>
-                    <div id="collapseVorschau" class="collapse show">
+                    <div id="collapseExport" class="collapse show">
                         <div class="card-body text-center">
-                            <button id="pagePrevBtn" class="btn btn-secondary">⬅ Zurück</button>
-                            <span id="current-page">Seite 1 / 1</span>
-                            <button id="pageNextBtn" class="btn btn-secondary">Weiter ➡</button>
                             <button id="zipAllPdfsBtn" class="btn btn-primary">📦 Alle PDFs als ZIP
                                 herunterladen
                             </button>
-                            <iframe id="resultFrame"
-                                    style="width: 100%; height: 400px; border: 1px solid #ccc; margin-top: 20px;"></iframe>
                         </div>
                     </div>
                 </div>
