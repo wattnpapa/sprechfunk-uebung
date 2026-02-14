@@ -4,6 +4,7 @@ import $ from "../core/select2-setup";
 import type { UebungsDauerStats, VerteilungsStats } from "./GeneratorStatsService";
 import type { PreviewPage } from "./GeneratorPreviewService";
 import pdfGenerator from "../services/pdfGenerator";
+import { uiFeedback } from "../core/UiFeedback";
 
 export class GeneratorView {
     private bindingController = new AbortController();
@@ -743,26 +744,8 @@ export class GeneratorView {
     public copyJsonToClipboard(json: string) {
         this.showJsonModal(json);
         navigator.clipboard.writeText(json)
-            .then(() => this.showToast("JSON wurde kopiert."))
-            .catch(() => this.showToast("Kopieren fehlgeschlagen.", true));
-    }
-
-    private showToast(message: string, isError = false) {
-        const container = document.getElementById("appToastContainer");
-        if (!container) {
-            return;
-        }
-        const toast = document.createElement("div");
-        toast.className = `app-toast ${isError ? "is-error" : "is-success"}`;
-        toast.textContent = message;
-        container.appendChild(toast);
-        window.setTimeout(() => {
-            toast.classList.add("is-visible");
-        }, 10);
-        window.setTimeout(() => {
-            toast.classList.remove("is-visible");
-            window.setTimeout(() => toast.remove(), 220);
-        }, 2400);
+            .then(() => uiFeedback.success("JSON wurde kopiert."))
+            .catch(() => uiFeedback.error("Kopieren fehlgeschlagen."));
     }
 
     public renderUebungResult(
@@ -1162,7 +1145,6 @@ export class GeneratorView {
                 </div>
 
             </div>
-            <div id="appToastContainer" class="app-toast-container" aria-live="polite" aria-atomic="true"></div>
             </div>
         `;
     }

@@ -1,3 +1,5 @@
+import { uiFeedback } from "./UiFeedback";
+
 export class ThemeManager {
     private toggleBtns: HTMLElement[];
 
@@ -47,6 +49,7 @@ export class ThemeManager {
             btn.addEventListener("dblclick", () => {
                 localStorage.setItem("theme", "startrek");
                 this.applyTheme("startrek");
+                uiFeedback.info("Star Trek Theme aktiviert.");
             });
         });
 

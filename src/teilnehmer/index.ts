@@ -9,6 +9,8 @@ import {TeilnehmerStorage} from "../types/Storage";
 import pdfGenerator from "../services/pdfGenerator";
 import { FunkUebung } from "../models/FunkUebung";
 import { Nachricht } from "../types/Nachricht";
+import { uiFeedback } from "../core/UiFeedback";
+import { debounce } from "../utils/debounce";
 
 type DocMode = "table" | "meldevordruck" | "nachrichtenvordruck";
 
@@ -30,7 +32,9 @@ export class TeilnehmerController {
         nachrichtenvordruck: 1
     };
     private docBlobInFlight = new Map<DocMode, Set<number>>();
+    private docBlobCache = new Map<DocMode, Map<number, Blob>>();
     private preloadToken = 0;
+    private debouncedRenderNachrichten = debounce(() => this.renderNachrichten(), 140);
 
     constructor(db: Firestore) {
         this.view = new TeilnehmerView();
@@ -86,7 +90,7 @@ export class TeilnehmerController {
             () => this.setDocMode("table"),
             () => this.toggleCurrentDocMessage(),
             () => this.downloadTeilnehmerZip(),
-            () => this.renderNachrichten()
+            () => this.debouncedRenderNachrichten()
         );
     }
 
@@ -148,7 +152,7 @@ export class TeilnehmerController {
         if (!this.uebungId || !this.teilnehmerName) {
             return;
         }
-        if (confirm("Möchten Sie wirklich alle lokalen Daten für diese Übung löschen? Ihr Übertragungsstatus geht verloren.")) {
+        if (uiFeedback.confirm("Möchten Sie wirklich alle lokalen Daten für diese Übung löschen? Ihr Übertragungsstatus geht verloren.")) {
             clearTeilnehmerStorage(this.uebungId, this.teilnehmerName);
             this.revokeDocUrl();
             window.location.reload();
@@ -236,12 +240,7 @@ export class TeilnehmerController {
         const isTransmitted = !!currentMsg && !!this.storage?.nachrichten[currentMsg.id]?.uebertragen;
         this.view.setDocTransmitted(isTransmitted);
 
-        let blob: Blob;
-        if (this.docMode === "meldevordruck") {
-            blob = await pdfGenerator.generateMeldevordruckPageBlob(previewUebung, this.teilnehmerName, this.docPage);
-        } else {
-            blob = await pdfGenerator.generateNachrichtenvordruckPageBlob(previewUebung, this.teilnehmerName, this.docPage);
-        }
+        const blob = await this.getDocBlob(previewUebung, this.docMode, this.docPage);
 
         if (token !== this.docRenderToken) {
             return;
@@ -294,19 +293,25 @@ export class TeilnehmerController {
             return;
         }
 
-        const zipBlob = await pdfGenerator.generateTeilnehmerPDFsAsZip(this.uebung as FunkUebung, this.teilnehmerName);
-        const link = document.createElement("a");
-        link.href = URL.createObjectURL(zipBlob);
-        link.download = `${pdfGenerator.sanitizeFileName(this.teilnehmerName)}_${pdfGenerator.sanitizeFileName(this.uebung.name)}.zip`;
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-        URL.revokeObjectURL(link.href);
+        try {
+            const zipBlob = await pdfGenerator.generateTeilnehmerPDFsAsZip(this.uebung as FunkUebung, this.teilnehmerName);
+            const link = document.createElement("a");
+            link.href = URL.createObjectURL(zipBlob);
+            link.download = `${pdfGenerator.sanitizeFileName(this.teilnehmerName)}_${pdfGenerator.sanitizeFileName(this.uebung.name)}.zip`;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            URL.revokeObjectURL(link.href);
+            uiFeedback.success("ZIP wurde heruntergeladen.");
+        } catch {
+            uiFeedback.error("ZIP konnte nicht erstellt werden.");
+        }
     }
 
     private invalidateDocCache() {
         this.preloadToken += 1;
         this.docBlobInFlight.clear();
+        this.docBlobCache.clear();
     }
 
     private preloadPages(mode: DocMode) {
@@ -357,9 +362,7 @@ export class TeilnehmerController {
                 return;
             }
             inflight.add(page);
-            const task = mode === "meldevordruck"
-                ? pdfGenerator.generateMeldevordruckPageBlob(previewUebung, this.teilnehmerName as string, page)
-                : pdfGenerator.generateNachrichtenvordruckPageBlob(previewUebung, this.teilnehmerName as string, page);
+            const task = this.getDocBlob(previewUebung, mode, page);
             task.then(() => {
                 inflight?.delete(page);
             }).finally(() => {
@@ -375,6 +378,20 @@ export class TeilnehmerController {
             URL.revokeObjectURL(this.currentDocUrl);
             this.currentDocUrl = null;
         }
+    }
+
+    private async getDocBlob(previewUebung: FunkUebung, mode: DocMode, page: number): Promise<Blob> {
+        const modeCache = this.docBlobCache.get(mode) ?? new Map<number, Blob>();
+        this.docBlobCache.set(mode, modeCache);
+        const cached = modeCache.get(page);
+        if (cached) {
+            return cached;
+        }
+        const blob = mode === "meldevordruck"
+            ? await pdfGenerator.generateMeldevordruckPageBlob(previewUebung, this.teilnehmerName as string, page)
+            : await pdfGenerator.generateNachrichtenvordruckPageBlob(previewUebung, this.teilnehmerName as string, page);
+        modeCache.set(page, blob);
+        return blob;
     }
 }
 

@@ -4,6 +4,7 @@ import { initializeApp } from "firebase/app";
 import { firebaseConfig } from "../firebase-config.js";
 import { FirebaseService } from "../services/FirebaseService";
 import { AdminView } from "./AdminView";
+import { uiFeedback } from "../core/UiFeedback";
 
 export class AdminController {
     // Firestore database reference
@@ -47,7 +48,7 @@ export class AdminController {
             stats = await this.firebaseService.getAdminStats();
         } catch (error) {
             console.error("Admin-Statistik konnte nicht geladen werden:", error);
-            alert("Admin-Statistik konnte wegen Firestore-Quota aktuell nicht geladen werden.");
+            uiFeedback.error("Admin-Statistik konnte wegen Firestore-Quota aktuell nicht geladen werden.");
             return;
         }
 
@@ -111,7 +112,7 @@ export class AdminController {
     }
 
     async loescheUebung(uebungId: string) {
-        if (!confirm("Möchtest du diese Übung wirklich löschen?")) {
+        if (!uiFeedback.confirm("Möchtest du diese Übung wirklich löschen?")) {
             return;
         }
 
@@ -121,7 +122,7 @@ export class AdminController {
             this.ladeAlleUebungen(); // Ansicht aktualisieren
         } catch (error) {
             console.error("❌ Fehler beim Löschen der Übung:", error);
-            alert("Fehler beim Löschen der Übung.");
+            uiFeedback.error("Fehler beim Löschen der Übung.");
         }
     };
 

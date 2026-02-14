@@ -11,6 +11,7 @@ import { Nachrichtenvordruck } from "../pdf/Nachrichtenvordruck.js";
 import { Teilnehmer } from "../pdf/Teilnehmer.js";
 import { Uebungsleitung } from "../pdf/Uebungsleitung.js";
 import { formatNatoDate } from "../utils/date";
+import { uiFeedback } from "../core/UiFeedback";
 
 class PDFGenerator {
     constructor() {
@@ -33,7 +34,7 @@ class PDFGenerator {
                 URL.revokeObjectURL(link.href);
             });
 
-            alert("Alle Teilnehmer PDFs wurden erfolgreich erstellt!");
+            uiFeedback.success("Alle Teilnehmer PDFs wurden erfolgreich erstellt.");
         });
     }
 
@@ -190,7 +191,7 @@ class PDFGenerator {
                 URL.revokeObjectURL(link.href);
             });
 
-            alert("Alle Nachrichtenvordruck PDFs wurden erfolgreich erstellt!");
+            uiFeedback.success("Alle Nachrichtenvordruck PDFs wurden erfolgreich erstellt.");
         });
     }
 
@@ -290,7 +291,7 @@ class PDFGenerator {
                 URL.revokeObjectURL(link.href);
             });
 
-            alert("Alle Meldevorduck PDFs wurden erfolgreich erstellt!");
+            uiFeedback.success("Alle Meldevordruck PDFs wurden erfolgreich erstellt.");
         });
     }
 

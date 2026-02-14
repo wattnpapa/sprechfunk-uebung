@@ -6,6 +6,8 @@ import { router } from "../core/router";
 import { UebungsleitungStorage } from "../types/Storage";
 import type { Firestore } from "firebase/firestore";
 import {FunkUebung} from "../models/FunkUebung";
+import { uiFeedback } from "../core/UiFeedback";
+import { debounce } from "../utils/debounce";
 
 interface FlattenedNachricht {
     nr: number;
@@ -27,6 +29,10 @@ export class UebungsleitungController {
     private empfaengerFilter = "";
     private textFilter = "";
     private showStaerkeDetails = false;
+    private debouncedRenderNachrichten = debounce(() => this.renderNachrichten(), 140);
+    private debouncedSaveNotiz = debounce((sender: string, nr: number, val: string) => {
+        this.persistNachrichtNotiz(sender, nr, val);
+    }, 220);
 
     constructor(db: Firestore) {
         this.view = new UebungsleitungView();
@@ -86,7 +92,7 @@ export class UebungsleitungController {
                 this.hideAbgesetzt = val; this.renderNachrichten(); 
             },
             val => {
-                this.textFilter = val; this.renderNachrichten();
+                this.textFilter = val; this.debouncedRenderNachrichten();
             }
         );
     }
@@ -106,6 +112,10 @@ export class UebungsleitungController {
         if (!this.uebung || !this.storage) {
             return;
         }
+
+        const activeEl = document.activeElement as HTMLInputElement | null;
+        const shouldRestoreTextFilterFocus = activeEl?.id === "nachrichtenTextFilterInput";
+        const caretPos = shouldRestoreTextFilterFocus ? (activeEl.selectionStart ?? this.textFilter.length) : null;
         
         // Build flat list
         const nachrichten: FlattenedNachricht[] = [];
@@ -143,6 +153,15 @@ export class UebungsleitungController {
             this.empfaengerFilter,
             this.textFilter
         );
+
+        if (shouldRestoreTextFilterFocus) {
+            const input = document.getElementById("nachrichtenTextFilterInput") as HTMLInputElement | null;
+            if (input) {
+                input.focus({ preventScroll: true });
+                const pos = Math.min(caretPos ?? input.value.length, input.value.length);
+                input.setSelectionRange(pos, pos);
+            }
+        }
     }
 
     // --- Actions ---
@@ -214,6 +233,10 @@ export class UebungsleitungController {
     }
 
     private updateNachrichtNotiz(sender: string, nr: number, val: string) {
+        this.debouncedSaveNotiz(sender, nr, val);
+    }
+
+    private persistNachrichtNotiz(sender: string, nr: number, val: string) {
         if (!this.storage) {
             return;
         }
@@ -240,12 +263,12 @@ export class UebungsleitungController {
             pdf.save(filename);
         } catch (err) {
             console.error(err);
-            alert("Fehler beim PDF Export");
+            uiFeedback.error("Fehler beim PDF Export");
         }
     }
 
     private resetData() {
-        if (!confirm("Wirklich alle lokalen Daten zurücksetzen?")) {
+        if (!uiFeedback.confirm("Wirklich alle lokalen Daten zurücksetzen?")) {
             return;
         }
         if (this.uebungId) {

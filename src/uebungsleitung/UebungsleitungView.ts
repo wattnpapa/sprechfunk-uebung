@@ -86,22 +86,6 @@ export class UebungsleitungView {
 
         const rows = teilnehmerListe.map(name => {
             const status = teilnehmerStatus[name];
-            
-            // Link generieren
-            let linkHtml = "–";
-            const entry = Object.entries(uebung.teilnehmerIds || {}).find(([_, tName]) => tName === name);
-            if (entry) {
-                const kryptischeId = entry[0];
-                const url = `${window.location.origin}${window.location.pathname}#/teilnehmer/${uebung.id}/${kryptischeId}`;
-                linkHtml = `
-                    <div class="input-group input-group-sm" style="min-width: 150px;">
-                        <input type="text" class="form-control" value="${url}" readonly id="link-${kryptischeId}">
-                        <button class="btn btn-outline-secondary btn-copy-link" type="button" data-id="${kryptischeId}">
-                            <i class="fas fa-copy"></i>
-                        </button>
-                    </div>
-                  `;
-            }
 
             // Name & Stelle
             let nameHtml = `<strong>${name}</strong>`;
@@ -175,8 +159,6 @@ export class UebungsleitungView {
                 data-teilnehmer="${name}"
               >${status?.notizen ?? ""}</textarea>
             </td>
-    
-            <td>${linkHtml}</td>
           </tr>
         `;
         }).join("");
@@ -198,7 +180,6 @@ export class UebungsleitungView {
                   </button>
                 </th>` : ""}
                 <th>Notizen</th>
-                <th>Link</th>
               </tr>
             </thead>
             <tbody>
@@ -271,21 +252,6 @@ export class UebungsleitungView {
                 onToggleDetails();
             }
 
-            // Copy Link
-            const btnCopy = target.closest(".btn-copy-link") as HTMLElement;
-            if (btnCopy) {
-                const id = btnCopy.dataset["id"];
-                const input = document.getElementById(`link-${id}`) as HTMLInputElement;
-                if (input) {
-                    input.select();
-                    document.execCommand("copy");
-                    const icon = btnCopy.querySelector("i");
-                    if (icon) {
-                        icon.classList.replace("fa-copy", "fa-check");
-                        setTimeout(() => icon.classList.replace("fa-check", "fa-copy"), 2000);
-                    }
-                }
-            }
         });
 
         container.addEventListener("change", e => {
@@ -350,7 +316,7 @@ export class UebungsleitungView {
                 if (empfaengerFilter && !n.empfaenger.includes(empfaengerFilter)) {
                     return false;
                 }
-                if (textFilter && !`${n.nr} ${n.sender} ${n.empfaenger.join(" ")} ${n.text}`.toLowerCase().includes(textFilter.toLowerCase())) {
+                if (textFilter && !n.text.toLowerCase().includes(textFilter.toLowerCase())) {
                     return false;
                 }
                 
@@ -401,9 +367,6 @@ export class UebungsleitungView {
             }).join("");
 
         container.innerHTML = `
-            <div class="mb-2">
-                <input id="nachrichtenTextFilterInput" type="search" class="form-control form-control-sm" placeholder="Nachrichten filtern (Nr, Sender, Empfänger, Text)" value="${this.escapeAttr(textFilter)}">
-            </div>
             <div class="table-responsive">
                 <table class="table table-bordered table-striped align-middle">
                     <thead>
@@ -423,7 +386,10 @@ export class UebungsleitungView {
                             ${uniqueSenders.map(s => `<option value="${this.escapeAttr(s)}" ${senderFilter===s?"selected":""}>${escapeHtml(s)}</option>`).join("")}
                           </select>
                         </th>
-                        <th>Nachricht</th>
+                        <th>
+                          Nachricht
+                          <input id="nachrichtenTextFilterInput" type="search" class="form-control form-control-sm mt-1" placeholder="Suchen..." value="${this.escapeAttr(textFilter)}">
+                        </th>
                         <th style="width:140px;" class="text-center">
                           Abgesetzt 
                           <div class="form-check form-switch d-inline-flex ms-2 align-middle">

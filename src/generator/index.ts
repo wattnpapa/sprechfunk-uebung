@@ -8,6 +8,7 @@ import { GeneratorStatsService } from "./GeneratorStatsService";
 import { GeneratorPreviewService } from "./GeneratorPreviewService";
 import pdfGenerator from "../services/pdfGenerator";
 import { Chart, registerables } from "chart.js";
+import { uiFeedback } from "../core/UiFeedback";
 
 Chart.register(...registerables);
 
@@ -213,7 +214,7 @@ export class GeneratorController {
             this.predefinedLoesungswoerter
         );
         if (result.error) {
-            alert(result.error);
+            uiFeedback.error(result.error);
             return;
         }
         if (result.centralWord !== undefined) {
@@ -246,7 +247,7 @@ export class GeneratorController {
 
     async startUebung() {
         if (this.funkUebung.nachrichten && Object.keys(this.funkUebung.nachrichten).length > 0) {
-            if (!confirm("Übung neu generieren? Bestehende Nachrichten gehen verloren.")) {
+            if (!uiFeedback.confirm("Übung neu generieren? Bestehende Nachrichten gehen verloren.")) {
                 return;
             }
         }
@@ -267,14 +268,14 @@ export class GeneratorController {
         if (source === "vorlagen") {
             const selected = this.view.getSelectedTemplates();
             if (selected.length === 0) {
-                alert("Bitte Vorlage wählen");
+                uiFeedback.error("Bitte Vorlage wählen");
                 return;
             }
             this.funkUebung.verwendeteVorlagen = selected;
             
             const missing = selected.filter(k => !this.templatesFunksprueche[k]);
             if (missing.length > 0) {
-                alert("Mindestens eine Vorlage ist nicht verfügbar. Bitte Auswahl prüfen.");
+                uiFeedback.error("Mindestens eine Vorlage ist nicht verfügbar. Bitte Auswahl prüfen.");
                 return;
             }
             const promises = selected.map(k => {
@@ -296,7 +297,7 @@ export class GeneratorController {
         } else {
             const file = this.view.getUploadedFile();
             if (!file) {
-                alert("Datei wählen");
+                uiFeedback.error("Datei wählen");
                 return;
             }
             const text = await file.text();
@@ -341,11 +342,11 @@ export class GeneratorController {
         const anmeldungOffset = this.funkUebung.anmeldungAktiv ? 1 : 0;
         const minRequired = anmeldungOffset + this.funkUebung.spruecheAnAlle + this.funkUebung.spruecheAnMehrere;
         if (this.funkUebung.spruecheProTeilnehmer < minRequired) {
-            alert("Ungültige Verteilung: 'Sprüche pro Teilnehmer' ist kleiner als die Summe aus Anmeldung + An Alle + An Mehrere.");
+            uiFeedback.error("Ungültige Verteilung: 'Sprüche pro Teilnehmer' ist kleiner als die Summe aus Anmeldung + An Alle + An Mehrere.");
             return false;
         }
         if (this.funkUebung.spruecheProTeilnehmer < anmeldungOffset) {
-            alert("Ungültige Verteilung: 'Sprüche pro Teilnehmer' darf nicht kleiner als die Anmelde-Nachricht sein.");
+            uiFeedback.error("Ungültige Verteilung: 'Sprüche pro Teilnehmer' darf nicht kleiner als die Anmelde-Nachricht sein.");
             return false;
         }
         return true;

@@ -370,12 +370,11 @@ describe("GeneratorController", () => {
         expect(renderUebungResult).toHaveBeenCalled();
     });
 
-    it("renderUebungResult renders preview and stats", async () => {
+    it("renderUebungResult renders stats", async () => {
         const controller = await makeController();
         controller.funkUebung.nachrichten = { A: [{ nachricht: "x" }] as unknown as never[] };
 
         const view = { renderUebungResult: vi.fn() };
-        const previewService = { generate: vi.fn(), getAt: vi.fn().mockReturnValue("page") };
         const statsService = {
             berechneUebungsdauer: vi.fn().mockReturnValue({ dauer: 1 }),
             berechneVerteilung: vi.fn().mockReturnValue({ verteilung: 1 })
@@ -384,16 +383,12 @@ describe("GeneratorController", () => {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         (controller as any).view = view;
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        (controller as any).previewService = previewService;
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         (controller as any).statsService = statsService;
 
         controller.renderUebungResult();
 
-        expect(previewService.generate).toHaveBeenCalled();
         expect(view.renderUebungResult).toHaveBeenCalledWith(
             controller.funkUebung,
-            "page",
             { dauer: 1 },
             { verteilung: 1 }
         );
