@@ -45,13 +45,14 @@ export class Meldevordruck extends BasePDFTeilnehmer {
         this.adjustTextForWidth(this.teilnehmer, 40, offsetX + 37, 192);
 
         // Nachricht umbrochen (mit expliziten \n Zeilenumbrüchen)
-        this.pdf.setFontSize(11.5);
         this.drawMultilineText(
             this.nachricht.nachricht,
             offsetX + 20,
             55,
             120,
-            5
+            5,
+            11.5,
+            0
         );
 
         // Footer

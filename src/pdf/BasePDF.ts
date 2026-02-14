@@ -56,11 +56,15 @@ export abstract class BasePDF {
         x: number,
         y: number,
         maxWidth: number,
-        lineHeight: number
+        lineHeight: number,
+        fontSize: number,
+        lineSpacing = 0
     ): void {
         if (!text) {
             return;
         }
+
+        this.pdf.setFontSize(fontSize);
 
         // echte Zeilenumbrüche sicherstellen
         const normalized = String(text).replace(/\\n/g, "\n");
@@ -76,18 +80,11 @@ export abstract class BasePDF {
                 return;
             }
 
-            // Text zeichnen (jsPDF übernimmt Umbruch!)
-            this.pdf.text(paragraph, x, currentY, {
-                maxWidth: maxWidth
+            const lines = this.pdf.splitTextToSize(paragraph, maxWidth);
+            lines.forEach((line: string) => {
+                this.pdf.text(line, x, currentY);
+                currentY += lineHeight + lineSpacing;
             });
-
-            // Höhe berechnen, die jsPDF tatsächlich benötigt hat
-            const dimensions = this.pdf.getTextDimensions(paragraph, {
-                maxWidth: maxWidth
-            });
-
-            // y-Position für nächsten Absatz erhöhen
-            currentY += dimensions.h;
         });
     }
 }

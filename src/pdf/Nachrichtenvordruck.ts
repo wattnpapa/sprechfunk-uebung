@@ -66,7 +66,7 @@ export class Nachrichtenvordruck extends BasePDFTeilnehmer {
             offsetX + 58,
             30,
             83,
-            9.5
+            0.5
         );
 
         // Anschrift (unten)
@@ -79,13 +79,14 @@ export class Nachrichtenvordruck extends BasePDFTeilnehmer {
         );
 
         // Nachricht umbrochen (mit expliziten \n Zeilenumbrüchen)
-        this.pdf.setFontSize(12);
         this.drawMultilineText(
             this.nachricht.nachricht,
             offsetX + 17,
             77,
             120,
-            6.5
+            6.3,
+            12,
+            0
         );
 
         // Footer (compact)
