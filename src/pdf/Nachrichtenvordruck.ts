@@ -66,7 +66,7 @@ export class Nachrichtenvordruck extends BasePDFTeilnehmer {
             offsetX + 58,
             30,
             83,
-            0.5
+            17.5
         );
 
         // Anschrift (unten)

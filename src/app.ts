@@ -39,6 +39,27 @@ declare global {
 const appView = new AppView();
 const natoClock = new NatoClock();
 const themeManager = new ThemeManager();
+let appBuildVersion = "dev";
+
+async function loadBuildVersion(): Promise<void> {
+    const isLocal = ["localhost", "127.0.0.1", "0.0.0.0"].includes(window.location.hostname);
+    if (isLocal) {
+        appBuildVersion = "dev";
+    } else {
+        try {
+            const response = await fetch("build.json");
+            const data = await response.json();
+            appBuildVersion = `${data.buildDate}-${data.runNumber}-${data.commit}`;
+        } catch {
+            appBuildVersion = "dev";
+        }
+    }
+
+    const versionEl = document.getElementById("version");
+    if (versionEl) {
+        versionEl.textContent = appBuildVersion;
+    }
+}
 
 // Initialize Firebase
 const app = initializeApp(firebaseConfig);
@@ -62,6 +83,10 @@ function handleRoute(): void {
     // Dispatch to specific controllers
     if (mode === "uebungsleitung") {
         const uebungId = params[0];
+        const idEl = document.getElementById("uebungsId");
+        if (idEl) {
+            idEl.textContent = uebungId || "-";
+        }
         if (uebungId) {
             store.setState({ aktuelleUebungId: uebungId });
             initUebungsleitung(db);
@@ -70,6 +95,10 @@ function handleRoute(): void {
     }
 
     if (mode === "teilnehmer") {
+        const idEl = document.getElementById("uebungsId");
+        if (idEl) {
+            idEl.textContent = params[0] || "-";
+        }
         initTeilnehmer(db);
         return;
     }
@@ -96,9 +125,10 @@ window.addEventListener("DOMContentLoaded", () => {
     themeManager.init();
     appView.initModals();
     appView.initGlobalListeners();
-    
-    // Start Routing
-    handleRoute();
+    loadBuildVersion().finally(() => {
+        // Start Routing
+        handleRoute();
+    });
 });
 
 router.subscribe(() => handleRoute());

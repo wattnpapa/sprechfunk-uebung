@@ -101,11 +101,6 @@ export class TeilnehmerController {
         if (!this.uebung) {
             return;
         }
-        const isLocal = ["localhost", "127.0.0.1", "0.0.0.0"].includes(window.location.hostname);
-        const versionEl = document.getElementById("version");
-        if (versionEl) {
-            versionEl.textContent = isLocal ? "dev" : (this.uebung.buildVersion || "dev");
-        }
         const idEl = document.getElementById("uebungsId");
         if (idEl) {
             idEl.textContent = this.uebung.id || "-";

@@ -162,16 +162,7 @@ export class AdminController {
     }
 
     private updateFooterInfo(version?: string) {
-        const isLocal = ["localhost", "127.0.0.1", "0.0.0.0"].includes(window.location.hostname);
-        const versionEl = document.getElementById("version");
-        if (versionEl && isLocal) {
-            versionEl.textContent = "dev";
-        } else if (versionEl && version) {
-            versionEl.textContent = version;
-        } else if (versionEl && !versionEl.textContent?.trim()) {
-            versionEl.textContent = "dev";
-        }
-
+        void version;
         const idEl = document.getElementById("uebungsId");
         if (idEl) {
             idEl.textContent = "-";
