@@ -83,7 +83,8 @@ export class TeilnehmerController {
             () => this.changeDocPage(-1),
             () => this.changeDocPage(1),
             () => this.setDocMode("table"),
-            () => this.toggleCurrentDocMessage()
+            () => this.toggleCurrentDocMessage(),
+            () => this.downloadTeilnehmerZip()
         );
     }
 
@@ -274,6 +275,21 @@ export class TeilnehmerController {
             }
         }
         void this.renderDocPage();
+    }
+
+    private async downloadTeilnehmerZip() {
+        if (!this.uebung || !this.teilnehmerName) {
+            return;
+        }
+
+        const zipBlob = await pdfGenerator.generateTeilnehmerPDFsAsZip(this.uebung as FunkUebung, this.teilnehmerName);
+        const link = document.createElement("a");
+        link.href = URL.createObjectURL(zipBlob);
+        link.download = `${pdfGenerator.sanitizeFileName(this.teilnehmerName)}_${pdfGenerator.sanitizeFileName(this.uebung.name)}.zip`;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        URL.revokeObjectURL(link.href);
     }
 
     private invalidateDocCache() {

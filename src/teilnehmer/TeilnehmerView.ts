@@ -43,9 +43,14 @@ export class TeilnehmerView {
             <div class="card mb-4">
                 <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
                     <h3 class="card-title mb-0">Sprechfunkübung: ${uebung.name}</h3>
-                    <button class="btn btn-sm btn-outline-light" id="btn-reset-teilnehmer-data">
-                        <i class="fas fa-undo"></i> Lokale Daten löschen
-                    </button>
+                    <div class="d-flex gap-2">
+                        <button class="btn btn-sm btn-outline-light" id="btn-download-teilnehmer-zip">
+                            <i class="fas fa-file-archive"></i> ZIP herunterladen
+                        </button>
+                        <button class="btn btn-sm btn-outline-light" id="btn-reset-teilnehmer-data">
+                            <i class="fas fa-undo"></i> Lokale Daten löschen
+                        </button>
+                    </div>
                 </div>
                 <div class="card-body">
                     <div class="row">
@@ -190,7 +195,8 @@ export class TeilnehmerView {
         onDocPrev: () => void,
         onDocNext: () => void,
         onDocClose: () => void,
-        onDocToggleCurrent: () => void
+        onDocToggleCurrent: () => void,
+        onDownloadZip: () => void
     ) {
         const container = document.getElementById("teilnehmerContent");
         if (!container) {
@@ -199,6 +205,7 @@ export class TeilnehmerView {
 
         // Reset Button
         document.getElementById("btn-reset-teilnehmer-data")?.addEventListener("click", onReset);
+        document.getElementById("btn-download-teilnehmer-zip")?.addEventListener("click", onDownloadZip);
 
         // Hide Toggle
         document.getElementById("toggle-hide-transmitted")?.addEventListener("change", e => {

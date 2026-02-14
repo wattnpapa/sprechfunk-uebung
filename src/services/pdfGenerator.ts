@@ -674,6 +674,44 @@ class PDFGenerator {
         URL.revokeObjectURL(link.href);
     }
 
+    async generateTeilnehmerPDFsAsZip(funkUebung: FunkUebung, teilnehmer: string): Promise<Blob> {
+        const zip = new JSZip();
+        const safeTeilnehmer = this.sanitizeFileName(teilnehmer);
+        const basePath = `Teilnehmer/${safeTeilnehmer}`;
+
+        const teilnehmerBlobs = await this.generateTeilnehmerPDFsBlob(funkUebung);
+        const uebersichtBlob = teilnehmerBlobs.get(teilnehmer);
+        if (uebersichtBlob) {
+            zip.file(`${basePath}/Übersicht_${safeTeilnehmer}.pdf`, uebersichtBlob);
+        }
+
+        const nachrichtA5 = await this.generateNachrichtenvordruckPDFForTeilnehmer(funkUebung, teilnehmer);
+        zip.file(`${basePath}/Nachrichtenvordruck_${safeTeilnehmer}_A5.pdf`, nachrichtA5.blob);
+
+        const nachrichtNadelA5 = await this.generateNachrichtenvordruckPDFForTeilnehmer(funkUebung, teilnehmer, true, true);
+        zip.file(`${basePath}/Nachrichtenvordruck_${safeTeilnehmer}_Nadeldrucker_A5.pdf`, nachrichtNadelA5.blob);
+
+        const nachrichtA4Blobs = await this.generateNachrichtenvordruckA4PDFsBlob(funkUebung);
+        const nachrichtA4 = nachrichtA4Blobs.get(teilnehmer);
+        if (nachrichtA4) {
+            zip.file(`${basePath}/Nachrichtenvordruck_${safeTeilnehmer}_A4.pdf`, nachrichtA4);
+        }
+
+        const meldeA5 = await this.generateMeldevordruckPDFForTeilnehmer(funkUebung, teilnehmer);
+        zip.file(`${basePath}/Meldevordruck_${safeTeilnehmer}_A5.pdf`, meldeA5.blob);
+
+        const meldeNadelA5 = await this.generateMeldevordruckPDFForTeilnehmer(funkUebung, teilnehmer, true, true);
+        zip.file(`${basePath}/Meldevordruck_${safeTeilnehmer}_Nadeldrucker_A5.pdf`, meldeNadelA5.blob);
+
+        const meldeA4Blobs = await this.generateMeldevordruckA4PDFsBlob(funkUebung);
+        const meldeA4 = meldeA4Blobs.get(teilnehmer);
+        if (meldeA4) {
+            zip.file(`${basePath}/Meldevordruck_${safeTeilnehmer}_A4.pdf`, meldeA4);
+        }
+
+        return zip.generateAsync({ type: "blob" });
+    }
+
     /**
      * Erstellt eine Druck-PDF mit allen Nachrichtenvordrucken inkl. Deckblatt pro Teilnehmer.
      */
