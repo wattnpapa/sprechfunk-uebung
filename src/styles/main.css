@@ -139,6 +139,9 @@ body {
     /* Status Success (abgesetzte Nachrichten) */
     --status-success-bg: #0b3a2e;
     --status-success-text: #d1fae5;
+
+    /* Bootstrap body text */
+    --bs-body-color: #e5e7eb;
 }
 
 body {
@@ -356,6 +359,40 @@ body {
 [data-theme="dark"] .modal-header,
 [data-theme="dark"] .modal-footer {
     border-color: var(--border);
+}
+
+[data-theme="dark"] .btn-close {
+    filter: invert(1);
+}
+
+[data-theme="dark"] .dropdown-menu {
+    background-color: var(--surface);
+    border-color: var(--border);
+}
+
+[data-theme="dark"] .dropdown-item {
+    color: var(--text);
+}
+
+[data-theme="dark"] .dropdown-item:hover,
+[data-theme="dark"] .dropdown-item:focus {
+    background-color: var(--surface-alt);
+    color: var(--text);
+}
+
+[data-theme="dark"] .alert {
+    background-color: var(--surface-alt);
+    color: var(--text);
+    border-color: var(--border);
+}
+
+[data-theme="dark"] .text-dark {
+    color: var(--text) !important;
+}
+
+[data-theme="dark"] .badge.bg-light {
+    background-color: #2a2a2a;
+    color: #f0f0f0;
 }
 
 /* Charts canvas background helper */
