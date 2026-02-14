@@ -1,4 +1,3 @@
-import { v4 as uuidv4 } from "uuid";
 import { NAMENS_POOL } from "../data/namen-funkuebungen";
 import type { Uebung } from "../types/Uebung";
 import type { Nachricht } from "../types/Nachricht";
@@ -31,7 +30,7 @@ export class FunkUebung implements Uebung {
     istStandardKonfiguration?: boolean;
 
     constructor(buildVersion: string) {
-        this.id = uuidv4();
+        this.id = this.generateId();
 
         this.createDate = new Date();
 
@@ -68,6 +67,15 @@ export class FunkUebung implements Uebung {
         this.funksprueche = [];
         this.anmeldungAktiv = true;
         this.teilnehmerIds = {};
+    }
+
+    private generateId(): string {
+        const c = globalThis.crypto;
+        if (c && typeof c.randomUUID === "function") {
+            return c.randomUUID();
+        }
+        // Fallback for older runtimes
+        return `${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 10)}`;
     }
 
     updateChecksum() {
