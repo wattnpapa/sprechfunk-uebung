@@ -25,7 +25,7 @@ export default tseslint.config(
     },
     languageOptions: {
       parserOptions: {
-        project: './tsconfig.json',
+        project: './tsconfig.eslint.json',
         tsconfigRootDir: import.meta.dirname,
       },
     },
@@ -50,5 +50,15 @@ export default tseslint.config(
       'eqeqeq': ['error', 'always'], // === statt ==
       'curly': ['error', 'all'], // {} immer nutzen
     },
+  }
+  ,
+  {
+    files: ["scripts/**/*.mjs"],
+    languageOptions: {
+      globals: {
+        console: "readonly",
+        process: "readonly"
+      }
+    }
   }
 );

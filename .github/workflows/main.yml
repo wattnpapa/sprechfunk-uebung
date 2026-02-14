@@ -33,6 +33,20 @@ jobs:
 
       - name: Install dependencies
         run: npm ci
+
+      - name: Update coverage report link in README
+        run: npm run coverage:readme
+
+      - name: Run tests with coverage
+        run: npm run test:coverage
+
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@v4
+        with:
+          files: coverage/lcov.info
+          fail_ci_if_error: false
+        env:
+          CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
       
       - name: Generate firebase-config.js from secrets
         run: |
@@ -59,6 +73,11 @@ jobs:
           echo "📦 Generiere build.json"
           echo "{\"buildDate\":\"$BUILD_DATE\",\"buildTime\":\"$BUILD_TIME\",\"commit\":\"$COMMIT_SHA\",\"runNumber\":$BUILD_NR}" > dist/build.json
 
+      - name: Copy coverage report into dist
+        run: |
+          mkdir -p dist/coverage
+          cp -r coverage/* dist/coverage/
+
       - name: Setup Pages
         uses: actions/configure-pages@v5
 
@@ -66,6 +85,18 @@ jobs:
         uses: actions/upload-pages-artifact@v3
         with:
           path: 'dist'
+
+      - name: Upload coverage artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage
+          path: coverage
+
+      - name: Upload coverage HTML report
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-html
+          path: coverage/index.html
 
       - name: Deploy to GitHub Pages
         id: deployment

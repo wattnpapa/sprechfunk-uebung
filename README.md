@@ -2,6 +2,9 @@
 
 [![GitHub](https://img.shields.io/badge/GitHub-Repository-blue?logo=github)](https://github.com/wattnpapa/sprechfunk-uebung)
 [![Live Demo](https://img.shields.io/badge/Demo-Online-green)](https://sprechfunk-uebung.de//)
+[![Build](https://github.com/wattnpapa/sprechfunk-uebung/actions/workflows/main.yml/badge.svg)](https://github.com/wattnpapa/sprechfunk-uebung/actions/workflows/main.yml)
+[![Coverage](https://codecov.io/gh/wattnpapa/sprechfunk-uebung/branch/main/graph/badge.svg)](https://codecov.io/gh/wattnpapa/sprechfunk-uebung)
+[![Coverage Report](https://img.shields.io/badge/Coverage%20Report-HTML-blue)](https://github.com/wattnpapa/sprechfunk-uebung#readme/coverage/)
 
 Ein **Web-Tool zur automatischen Generierung von Sprechfunk-Übungen** mit individuellen Funksprüchen für jeden Teilnehmer.  
 Erstellt druckbare **PDF-Dokumente** für Teilnehmer inkl. Funknachrichten und exportiert sie direkt.

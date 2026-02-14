@@ -3,3 +3,4 @@ src/firebase-config.js
 node_modules
 dist
 .idea
+coverage
