@@ -19,25 +19,32 @@ export class UebungsleitungView {
             return;
         }
 
+        const safeName = escapeHtml(uebung.name || "–");
+        const safeDatum = escapeHtml(formatNatoDate(uebung.datum));
+        const safeRufgruppe = escapeHtml(uebung.rufgruppe || "–");
+        const safeLeitung = escapeHtml(uebung.leitung || "–");
+        const safeCount = escapeHtml(String(uebung.teilnehmerListe?.length ?? 0));
+        const safeUebungId = escapeHtml(uebungId);
+
         metaEl.innerHTML = `
           <div class="row">
             <div class="col-md-6 mb-2">
-              <strong>Name der Übung:</strong><br>${uebung.name || "–"}
+              <strong>Name der Übung:</strong><br>${safeName}
             </div>
             <div class="col-md-6 mb-2">
-              <strong>Datum:</strong><br>${formatNatoDate(uebung.datum)}
+              <strong>Datum:</strong><br>${safeDatum}
             </div>
             <div class="col-md-6 mb-2">
-              <strong>Rufgruppe:</strong><br>${uebung.rufgruppe || "–"}
+              <strong>Rufgruppe:</strong><br>${safeRufgruppe}
             </div>
             <div class="col-md-6 mb-2">
-              <strong>Übungsleitung:</strong><br>${uebung.leitung || "–"}
+              <strong>Übungsleitung:</strong><br>${safeLeitung}
             </div>
             <div class="col-md-6 mb-2">
-              <strong>Anzahl Teilnehmer:</strong><br>${uebung.teilnehmerListe?.length ?? 0}
+              <strong>Anzahl Teilnehmer:</strong><br>${safeCount}
             </div>
             <div class="col-md-6 mb-2">
-              <strong>Übungs-ID:</strong><br><code>${uebungId}</code>
+              <strong>Übungs-ID:</strong><br><code>${safeUebungId}</code>
             </div>
             <div class="col-12 mt-3 d-flex justify-content-end">
             <button
