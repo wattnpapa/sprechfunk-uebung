@@ -82,6 +82,7 @@
     "showdown": "^2.1.0"
   },
   "overrides": {
-    "braces": "3.0.3"
+    "braces": "3.0.3",
+    "tar": "7.5.7"
   }
 }
