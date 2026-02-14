@@ -75,6 +75,10 @@ function handleRoute(): void {
     }
 
     if (mode === "admin") {
+        const idEl = document.getElementById("uebungsId");
+        if (idEl) {
+            idEl.textContent = "-";
+        }
         admin.db = db;
         admin.ladeAlleUebungen();
         admin.renderUebungsStatistik();

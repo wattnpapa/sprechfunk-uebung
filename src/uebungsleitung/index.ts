@@ -50,6 +50,7 @@ export class UebungsleitungController {
 
         store.setState({ aktuelleUebung: this.uebung, aktuelleUebungId: this.uebungId });
         this.storage = loadUebungsleitungStorage(this.uebungId);
+        this.updateFooterInfo();
 
         // Initial Render
         this.view.renderMeta(this.uebung, this.uebungId);
@@ -251,6 +252,21 @@ export class UebungsleitungController {
     private save() {
         if (this.storage) {
             saveUebungsleitungStorage(this.storage);
+        }
+    }
+
+    private updateFooterInfo() {
+        if (!this.uebung) {
+            return;
+        }
+        const isLocal = ["localhost", "127.0.0.1", "0.0.0.0"].includes(window.location.hostname);
+        const versionEl = document.getElementById("version");
+        if (versionEl) {
+            versionEl.textContent = isLocal ? "dev" : (this.uebung.buildVersion || "dev");
+        }
+        const idEl = document.getElementById("uebungsId");
+        if (idEl) {
+            idEl.textContent = this.uebung.id || "-";
         }
     }
 }

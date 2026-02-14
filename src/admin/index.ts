@@ -101,6 +101,7 @@ export class AdminController {
             result.uebungen.length, 
             this.pagination.totalCount
         );
+        this.updateFooterInfo(result.uebungen[0]?.buildVersion);
     }
 
     async loescheUebung(uebungId: string) {
@@ -158,6 +159,23 @@ export class AdminController {
         const labels = ["Jan", "Feb", "Mär", "Apr", "Mai", "Jun", "Jul", "Aug", "Sep", "Okt", "Nov", "Dez"];
         
         this.view.renderChart(data, labels);
+    }
+
+    private updateFooterInfo(version?: string) {
+        const isLocal = ["localhost", "127.0.0.1", "0.0.0.0"].includes(window.location.hostname);
+        const versionEl = document.getElementById("version");
+        if (versionEl && isLocal) {
+            versionEl.textContent = "dev";
+        } else if (versionEl && version) {
+            versionEl.textContent = version;
+        } else if (versionEl && !versionEl.textContent?.trim()) {
+            versionEl.textContent = "dev";
+        }
+
+        const idEl = document.getElementById("uebungsId");
+        if (idEl) {
+            idEl.textContent = "-";
+        }
     }
 }
 
