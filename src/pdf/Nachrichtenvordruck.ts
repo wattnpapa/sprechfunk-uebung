@@ -40,10 +40,13 @@ export class Nachrichtenvordruck extends BasePDFTeilnehmer {
         this.pdf.setFontSize(12);
         this.pdf.text(`${this.teilnehmer}`, offsetX + 44, 155);
 
-        const funkrufnamenEmpfaenger = this.nachricht.empfaenger.includes("Alle") ? "Alle" : this.nachricht.empfaenger.join(", ");
+        const empfaengerNamen = this.nachricht.empfaenger.includes("Alle")
+            ? this.funkUebung.teilnehmerListe.filter(name => name !== this.teilnehmer)
+            : this.nachricht.empfaenger;
+        const funkrufnamenEmpfaenger = empfaengerNamen.join(", ");
         const stellen = this.funkUebung.teilnehmerStellen;
 
-        const stellenEmpfaenger = this.nachricht.empfaenger
+        const stellenEmpfaenger = empfaengerNamen
             .map((funkrufname: string) => {
                 const stellenName = stellen?.[funkrufname];
                 return (stellenName && stellenName.trim().length > 0)

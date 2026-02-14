@@ -1,4 +1,4 @@
-import { doc, deleteDoc, getFirestore, getCountFromServer, collection } from "firebase/firestore";
+import { doc, deleteDoc, getFirestore } from "firebase/firestore";
 import type { Firestore, QueryDocumentSnapshot } from "firebase/firestore";
 import { initializeApp } from "firebase/app";
 import { firebaseConfig } from "../firebase-config.js";
@@ -42,7 +42,14 @@ export class AdminController {
     }
 
     async ladeAdminStatistik() {
-        const stats = await this.firebaseService.getAdminStats();
+        let stats;
+        try {
+            stats = await this.firebaseService.getAdminStats();
+        } catch (error) {
+            console.error("Admin-Statistik konnte nicht geladen werden:", error);
+            alert("Admin-Statistik konnte wegen Firestore-Quota aktuell nicht geladen werden.");
+            return;
+        }
 
         const avgTeilnehmer = stats.total > 0 ? (stats.totalTeilnehmer / stats.total).toFixed(1) : "0";
         const totalKB = (stats.totalBytes / 1024).toFixed(1) + " kB";
@@ -83,10 +90,9 @@ export class AdminController {
         );
 
         if (direction === "initial") {
-            // Total count nur einmal laden
-            const uebungenCol = collection(this.db, "uebungen");
-            const totalSnap = await getCountFromServer(uebungenCol);
-            this.pagination.totalCount = totalSnap.data().count;
+            // Keine AggregationQuery (Quota): Count über Snapshotgröße ermitteln
+            const totalSnap = await this.firebaseService.getUebungenSnapshot();
+            this.pagination.totalCount = totalSnap.size;
             this.pagination.currentPage = 0;
         } else if (direction === "next") {
             this.pagination.currentPage++;

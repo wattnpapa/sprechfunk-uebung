@@ -85,7 +85,8 @@ export class TeilnehmerController {
             () => this.changeDocPage(1),
             () => this.setDocMode("table"),
             () => this.toggleCurrentDocMessage(),
-            () => this.downloadTeilnehmerZip()
+            () => this.downloadTeilnehmerZip(),
+            () => this.renderNachrichten()
         );
     }
 

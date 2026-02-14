@@ -61,7 +61,6 @@ export class TeilnehmerView {
                         <div class="col-md-6">
                             <p><strong>Rufgruppe:</strong> ${uebung.rufgruppe}</p>
                             <p><strong>Übungsleitung:</strong> ${uebung.leitung}</p>
-                            ${uebung.loesungswoerter?.[teilnehmer] ? `<p><strong>Lösungswort:</strong> <code class="fs-5">${uebung.loesungswoerter[teilnehmer]}</code></p>` : ""}
                         </div>
                     </div>
                 </div>
@@ -78,6 +77,9 @@ export class TeilnehmerView {
                     <input class="form-check-input" type="checkbox" id="toggle-hide-transmitted">
                     <label class="form-check-label" for="toggle-hide-transmitted">Übertragene ausblenden</label>
                 </div>
+            </div>
+            <div class="mb-2">
+                <input type="search" class="form-control form-control-sm" id="teilnehmerSearchInput" placeholder="Nachrichten filtern (Nr, Empfänger, Text)">
             </div>
 
             <div id="teilnehmerTableView" class="table-responsive">
@@ -158,6 +160,13 @@ export class TeilnehmerView {
 
         const rows = nachrichten
             .filter(n => {
+                const search = (document.getElementById("teilnehmerSearchInput") as HTMLInputElement | null)?.value?.trim().toLowerCase() ?? "";
+                if (search) {
+                    const haystack = `${n.id} ${n.empfaenger.join(" ")} ${n.nachricht}`.toLowerCase();
+                    if (!haystack.includes(search)) {
+                        return false;
+                    }
+                }
                 if (storage.hideTransmitted) {
                     return !storage.nachrichten[n.id]?.uebertragen;
                 }
@@ -166,17 +175,24 @@ export class TeilnehmerView {
             .map(n => {
                 const status = storage.nachrichten[n.id];
                 const isUebertragen = !!status?.uebertragen;
+                const toggleId = `toggle-uebertragen-${n.id}`;
 
                 return `
-            <tr class="${isUebertragen ? "table-success opacity-50" : ""}">
+            <tr class="${isUebertragen ? "status-ok-row" : "status-pending-row"}">
                 <td>${n.id}</td>
                 <td>${n.empfaenger.join(", ")}</td>
                 <td>${escapeHtml(n.nachricht).replace(/\\n/g, "<br>").replace(/\n/g, "<br>")}</td>
                 <td>
-                    <div class="form-check form-switch">
+                    <div class="form-check form-switch d-flex align-items-center gap-2">
+                        <button type="button"
+                            class="status-chip ${isUebertragen ? "status-chip--ok" : "status-chip--pending"} btn-toggle-uebertragen-chip"
+                            data-id="${n.id}"
+                            data-checked="${isUebertragen ? "1" : "0"}">
+                            ${isUebertragen ? "übertragen" : "offen"}
+                        </button>
                         <input class="form-check-input btn-toggle-uebertragen" type="checkbox" 
+                            id="${toggleId}"
                             data-id="${n.id}" ${isUebertragen ? "checked" : ""}>
-                        <label class="form-check-label small">Übertragen</label>
                     </div>
                 </td>
             </tr>
@@ -196,7 +212,8 @@ export class TeilnehmerView {
         onDocNext: () => void,
         onDocClose: () => void,
         onDocToggleCurrent: () => void,
-        onDownloadZip: () => void
+        onDownloadZip: () => void,
+        onSearch: () => void
     ) {
         const container = document.getElementById("teilnehmerContent");
         if (!container) {
@@ -214,6 +231,7 @@ export class TeilnehmerView {
         document.getElementById("toggle-hide-transmitted-modal")?.addEventListener("change", e => {
             onToggleHide((e.target as HTMLInputElement).checked);
         });
+        document.getElementById("teilnehmerSearchInput")?.addEventListener("input", () => onSearch());
 
         document.querySelectorAll<HTMLButtonElement>("[data-doc-view]").forEach(btn => {
             btn.addEventListener("click", () => {
@@ -229,7 +247,15 @@ export class TeilnehmerView {
         document.getElementById("btn-doc-close")?.addEventListener("click", onDocClose);
 
         document.addEventListener("keydown", e => {
-            if (e.code === "Space") {
+            const target = e.target as HTMLElement | null;
+            const isTypingTarget = !!target && (
+                target.tagName === "INPUT" ||
+                target.tagName === "TEXTAREA" ||
+                target.tagName === "SELECT" ||
+                target.isContentEditable
+            );
+
+            if (e.code === "Space" && !isTypingTarget && document.getElementById("teilnehmerDocModal")?.classList.contains("show")) {
                 e.preventDefault();
                 onDocToggleCurrent();
                 return;
@@ -266,12 +292,31 @@ export class TeilnehmerView {
         // Delegation for dynamic rows
         const tbody = document.getElementById("teilnehmerNachrichtenBody");
         if (tbody) {
-            tbody.addEventListener("change", e => {
-                const target = e.target as HTMLInputElement;
-                if (target.classList.contains("btn-toggle-uebertragen")) {
-                    const id = Number(target.dataset["id"]);
-                    onToggleUebertragen(id, target.checked);
+            const handleToggleEvent = (event: Event) => {
+                const target = event.target as HTMLInputElement;
+                if (!target.classList.contains("btn-toggle-uebertragen")) {
+                    return;
                 }
+                const id = Number(target.dataset["id"]);
+                if (!Number.isFinite(id)) {
+                    return;
+                }
+                onToggleUebertragen(id, target.checked);
+            };
+            tbody.addEventListener("change", handleToggleEvent);
+            tbody.addEventListener("click", handleToggleEvent);
+            tbody.addEventListener("click", event => {
+                const target = event.target as HTMLElement;
+                const chip = target.closest(".btn-toggle-uebertragen-chip") as HTMLElement | null;
+                if (!chip) {
+                    return;
+                }
+                const id = Number(chip.dataset["id"]);
+                const checked = chip.dataset["checked"] === "1";
+                if (!Number.isFinite(id)) {
+                    return;
+                }
+                onToggleUebertragen(id, !checked);
             });
         }
 

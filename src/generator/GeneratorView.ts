@@ -3,6 +3,7 @@ import { Chart } from "chart.js";
 import $ from "../core/select2-setup";
 import type { UebungsDauerStats, VerteilungsStats } from "./GeneratorStatsService";
 import type { PreviewPage } from "./GeneratorPreviewService";
+import pdfGenerator from "../services/pdfGenerator";
 
 export class GeneratorView {
     private bindingController = new AbortController();
@@ -115,18 +116,29 @@ export class GeneratorView {
         
         if (!loesungswoerter || Object.keys(loesungswoerter).length === 0) {
             noneRadio.checked = true;
-            container.style.display = "none";
-            shuffleBtn.style.display = "none";
         } else if (zentraleWorte.size === 1) {
             centralRadio.checked = true;
             centralInput.value = [...zentraleWorte][0] ?? "";
-            container.style.display = "block";
-            shuffleBtn.style.display = "block";
         } else {
             indivRadio.checked = true;
-            container.style.display = "none";
-            shuffleBtn.style.display = "block";
         }
+
+        this.updateLoesungswortOptionUI();
+    }
+
+    public updateLoesungswortOptionUI() {
+        const centralRadio = document.getElementById("zentralLoesungswort") as HTMLInputElement | null;
+        const noneRadio = document.getElementById("keineLoesungswoerter") as HTMLInputElement | null;
+        const container = document.getElementById("zentralLoesungswortContainer") as HTMLElement | null;
+        const shuffleBtn = document.getElementById("shuffleButton") as HTMLElement | null;
+
+        if (!centralRadio || !noneRadio || !container || !shuffleBtn) {
+            return;
+        }
+
+        const option = this.getSelectedLoesungswortOption();
+        container.style.display = centralRadio.checked ? "block" : "none";
+        shuffleBtn.style.display = option === "none" ? "none" : "block";
     }
 
     public getSelectedLoesungswortOption(): "none" | "central" | "individual" {
@@ -317,7 +329,7 @@ export class GeneratorView {
         showStellenname: boolean
     ) {
         this.renderTeilnehmerListe(teilnehmerListe, teilnehmerStellen, loesungswoerter, showStellenname);
-        this.setLoesungswortUI(loesungswoerter);
+        this.updateLoesungswortOptionUI();
     }
 
     public populateTemplateSelect(templates: Record<string, { text: string }>, selected: string[] = []) {
@@ -377,6 +389,24 @@ export class GeneratorView {
         }
     }
 
+    public renderGeneratorStatus(uebung: FunkUebung, stats: UebungsDauerStats) {
+        const set = (id: string, value: string) => {
+            const el = document.getElementById(id);
+            if (el) {
+                el.textContent = value;
+            }
+        };
+        const teilnehmerCount = uebung.teilnehmerListe?.filter(Boolean).length ?? 0;
+        const nachrichtenCount = Object.values(uebung.nachrichten || {}).reduce((sum, list) => sum + list.length, 0);
+        const mode = this.getSelectedLoesungswortOption();
+        const modeLabel = mode === "none" ? "Keine" : mode === "central" ? "Zentral" : "Individuell";
+
+        set("statusTeilnehmerCount", String(teilnehmerCount));
+        set("statusNachrichtenCount", String(nachrichtenCount));
+        set("statusLoesungswortMode", modeLabel);
+        set("statusDauerEstimate", `${stats.optimal.toFixed(0)} Min`);
+    }
+
     public renderLinks(uebung: FunkUebung) {
         const linkContainer = document.getElementById("uebung-links");
         const teilnehmerLinksContainer = document.getElementById("links-teilnehmer-container");
@@ -391,8 +421,21 @@ export class GeneratorView {
             const urlUebungLeitung = `${baseUrl}#/uebungsleitung/${uebung.id}`;
 
             teilnehmerLinksContainer.innerHTML = "";
-            this.appendLinkRow(teilnehmerLinksContainer, "Übung", "-", urlUebung);
-            this.appendLinkRow(teilnehmerLinksContainer, "Übungsleitung", "-", urlUebungLeitung);
+            this.appendLinkRow(
+                teilnehmerLinksContainer,
+                "Übung",
+                "-",
+                urlUebung,
+                this.createUebungMailtoLink(uebung.name || "Sprechfunk-Übung", urlUebung),
+                uebung
+            );
+            this.appendLinkRow(
+                teilnehmerLinksContainer,
+                "Übungsleitung",
+                "-",
+                urlUebungLeitung,
+                this.createUebungsleitungMailtoLink(uebung.name || "Sprechfunk-Übung", urlUebungLeitung)
+            );
 
             if (uebung.teilnehmerIds) {
                 Object.entries(uebung.teilnehmerIds).forEach(([id, name]) => {
@@ -402,7 +445,8 @@ export class GeneratorView {
                         "Teilnehmer",
                         name,
                         url,
-                        this.createMailtoLink(uebung.name || "Sprechfunk-Übung", name, url)
+                        this.createMailtoLink(uebung.name || "Sprechfunk-Übung", name, url),
+                        uebung
                     );
                 });
             }
@@ -411,39 +455,61 @@ export class GeneratorView {
         }
     }
 
-    private appendLinkRow(container: HTMLElement, typ: string, name: string, url: string, mailtoUrl?: string) {
-        const tr = document.createElement("tr");
+    private appendLinkRow(
+        container: HTMLElement,
+        typ: string,
+        name: string,
+        url: string,
+        mailtoUrl?: string,
+        uebung?: FunkUebung
+    ) {
+        const row = document.createElement("div");
+        row.className = "generator-link-row";
+        row.setAttribute("data-link-type", typ.toLowerCase());
 
-        const tdTyp = document.createElement("td");
-        tdTyp.textContent = typ;
-        tr.appendChild(tdTyp);
+        const typeCell = document.createElement("div");
+        typeCell.className = "generator-link-type";
+        const typeBadge = document.createElement("span");
+        typeBadge.className = `generator-link-badge ${this.getTypeBadgeClass(typ)}`;
+        typeBadge.textContent = typ;
+        typeCell.appendChild(typeBadge);
+        row.appendChild(typeCell);
 
-        const tdName = document.createElement("td");
-        tdName.textContent = name;
-        tr.appendChild(tdName);
+        const nameCell = document.createElement("div");
+        nameCell.className = "generator-link-name";
+        nameCell.textContent = name === "-" ? "Allgemein" : name;
+        row.appendChild(nameCell);
 
-        const tdLink = document.createElement("td");
-        const link = document.createElement("a");
-        link.href = url;
-        link.target = "_blank";
-        link.className = "text-break";
-        link.textContent = url;
-        tdLink.appendChild(link);
-        tr.appendChild(tdLink);
+        const linkCell = document.createElement("div");
+        linkCell.className = "generator-link-url";
+        const shortUrl = document.createElement("code");
+        shortUrl.className = "small";
+        shortUrl.title = url;
+        shortUrl.textContent = this.shortenUrl(url, 70);
+        linkCell.appendChild(shortUrl);
+        row.appendChild(linkCell);
 
-        const tdActions = document.createElement("td");
-        tdActions.className = "text-nowrap";
+        const actionsCell = document.createElement("div");
+        actionsCell.className = "generator-link-actions";
+
+        const openLink = document.createElement("a");
+        openLink.href = url;
+        openLink.target = "_blank";
+        openLink.rel = "noopener noreferrer";
+        openLink.className = "btn btn-outline-primary btn-sm";
+        openLink.innerHTML = "<i class=\"fas fa-arrow-up-right-from-square\"></i> Öffnen";
+        actionsCell.appendChild(openLink);
 
         const copyButton = document.createElement("button");
         copyButton.type = "button";
-        copyButton.className = "btn btn-outline-secondary btn-sm me-2";
+        copyButton.className = "btn btn-outline-secondary btn-sm";
         copyButton.innerHTML = "<i class=\"fas fa-copy\"></i> Kopieren";
         copyButton.addEventListener("click", () => {
             this.copyTextToClipboard(url)
-                .then(() => alert("Link wurde kopiert."))
-                .catch(() => alert("Kopieren fehlgeschlagen."));
+                .then(() => this.showLinkActionFeedback("Link wurde kopiert.", false))
+                .catch(() => this.showLinkActionFeedback("Kopieren fehlgeschlagen.", true));
         });
-        tdActions.appendChild(copyButton);
+        actionsCell.appendChild(copyButton);
 
         if (mailtoUrl) {
             const mailButton = document.createElement("button");
@@ -453,11 +519,69 @@ export class GeneratorView {
             mailButton.addEventListener("click", () => {
                 window.location.href = mailtoUrl;
             });
-            tdActions.appendChild(mailButton);
+            actionsCell.appendChild(mailButton);
         }
 
-        tr.appendChild(tdActions);
-        container.appendChild(tr);
+        if (uebung && typ === "Teilnehmer") {
+            const downloadButton = document.createElement("button");
+            downloadButton.type = "button";
+            downloadButton.className = "btn btn-outline-success btn-sm";
+            downloadButton.innerHTML = "<i class=\"fas fa-file-archive\"></i> Druckdaten";
+            downloadButton.addEventListener("click", async () => {
+                const prevHtml = downloadButton.innerHTML;
+                downloadButton.disabled = true;
+                downloadButton.innerHTML = "<i class=\"fas fa-spinner fa-spin\"></i> Erstelle ZIP...";
+                try {
+                    await this.downloadTeilnehmerZip(uebung, name);
+                    this.showLinkActionFeedback(`ZIP für ${name} heruntergeladen.`, false);
+                } catch {
+                    this.showLinkActionFeedback(`ZIP für ${name} konnte nicht erstellt werden.`, true);
+                } finally {
+                    downloadButton.disabled = false;
+                    downloadButton.innerHTML = prevHtml;
+                }
+            });
+            actionsCell.appendChild(downloadButton);
+        }
+
+        row.appendChild(actionsCell);
+        container.appendChild(row);
+    }
+
+    private getTypeBadgeClass(typ: string): string {
+        switch (typ.toLowerCase()) {
+            case "übung":
+                return "is-uebung";
+            case "übungsleitung":
+                return "is-leitung";
+            case "teilnehmer":
+                return "is-teilnehmer";
+            default:
+                return "";
+        }
+    }
+
+    private shortenUrl(url: string, max: number): string {
+        if (url.length <= max) {
+            return url;
+        }
+        return `${url.slice(0, max - 1)}…`;
+    }
+
+    private showLinkActionFeedback(message: string, isError: boolean) {
+        const el = document.getElementById("link-action-feedback");
+        if (!el) {
+            return;
+        }
+        el.textContent = message;
+        el.classList.toggle("text-danger", isError);
+        el.classList.toggle("text-success", !isError);
+        window.setTimeout(() => {
+            if (el.textContent === message) {
+                el.textContent = "";
+                el.classList.remove("text-danger", "text-success");
+            }
+        }, 2200);
     }
 
     private async copyTextToClipboard(text: string): Promise<void> {
@@ -492,6 +616,43 @@ export class GeneratorView {
         ];
 
         return `mailto:?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(bodyLines.join("\n"))}`;
+    }
+
+    private createUebungMailtoLink(uebungsName: string, uebungUrl: string): string {
+        const subject = `Sprechfunk-Übung: ${uebungsName}`;
+        const bodyLines = [
+            "Hallo,",
+            "",
+            `hier ist der Link zur Übung "${uebungsName}":`,
+            uebungUrl,
+            "",
+            "Viele Grüße"
+        ];
+        return `mailto:?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(bodyLines.join("\n"))}`;
+    }
+
+    private createUebungsleitungMailtoLink(uebungsName: string, uebungsleitungUrl: string): string {
+        const subject = `Sprechfunk-Übung: ${uebungsName} - Übungsleitung`;
+        const bodyLines = [
+            "Hallo,",
+            "",
+            `hier ist der Link für die Übungsleitung der Übung "${uebungsName}":`,
+            uebungsleitungUrl,
+            "",
+            "Viele Grüße"
+        ];
+        return `mailto:?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(bodyLines.join("\n"))}`;
+    }
+
+    private async downloadTeilnehmerZip(uebung: FunkUebung, teilnehmer: string): Promise<void> {
+        const zipBlob = await pdfGenerator.generateTeilnehmerPDFsAsZip(uebung, teilnehmer);
+        const link = document.createElement("a");
+        link.href = URL.createObjectURL(zipBlob);
+        link.download = `${pdfGenerator.sanitizeFileName(teilnehmer)}_${pdfGenerator.sanitizeFileName(uebung.name)}.zip`;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        URL.revokeObjectURL(link.href);
     }
 
     private getBaseUrl(): string {
@@ -581,7 +742,27 @@ export class GeneratorView {
 
     public copyJsonToClipboard(json: string) {
         this.showJsonModal(json);
-        navigator.clipboard.writeText(json).then(() => alert("Kopiert!"));
+        navigator.clipboard.writeText(json)
+            .then(() => this.showToast("JSON wurde kopiert."))
+            .catch(() => this.showToast("Kopieren fehlgeschlagen.", true));
+    }
+
+    private showToast(message: string, isError = false) {
+        const container = document.getElementById("appToastContainer");
+        if (!container) {
+            return;
+        }
+        const toast = document.createElement("div");
+        toast.className = `app-toast ${isError ? "is-error" : "is-success"}`;
+        toast.textContent = message;
+        container.appendChild(toast);
+        window.setTimeout(() => {
+            toast.classList.add("is-visible");
+        }, 10);
+        window.setTimeout(() => {
+            toast.classList.remove("is-visible");
+            window.setTimeout(() => toast.remove(), 220);
+        }, 2400);
     }
 
     public renderUebungResult(
@@ -590,6 +771,7 @@ export class GeneratorView {
         chart: VerteilungsStats
     ) {
         this.showOutputContainer();
+        this.renderGeneratorStatus(uebung, stats);
         this.renderLinks(uebung);
         this.renderDuration(stats);
         this.renderChart(chart.labels, chart.counts);
@@ -602,8 +784,9 @@ export class GeneratorView {
         }
 
         container.innerHTML = `
+            <div class="app-view-shell">
             <!-- Hauptbereich mit Kopfdaten, Einstellungen und Teilnehmerverwaltung nebeneinander -->
-            <div class="row">
+            <div class="row g-3 generator-setup-layout">
 
                 <!-- Card für Kopfdaten (links) -->
                 <div class="col-md-4">
@@ -642,7 +825,9 @@ export class GeneratorView {
                             <h4><i class="fas fa-comment"></i> Einstellungen</h4>
                         </div>
                         <div class="card-body">
-                            <div class="row">
+                            <div class="generator-settings-section">
+                                <div class="generator-settings-title">Nachrichtenverteilung</div>
+                                <div class="row">
                                 <!-- Anzahl Funksprüche pro Teilnehmer -->
                                 <div class="col-md-6 mb-3">
                                     <label class="form-label">Funksprüche pro Teilnehmer:</label>
@@ -686,93 +871,100 @@ export class GeneratorView {
                                     <input type="hidden" id="spruecheAnBuchstabieren" value="0">
                                 </div>
                             </div>
-
-                            <div id="vorlagenUploadToggle" class="mb-3">
-                                <label class="form-label fw-bold">Funksprüche auswählen:</label>
-                                <div>
-                                    <input type="radio" id="optionVorlagen" name="funkspruchQuelle" value="vorlagen"
-                                           checked>
-                                    <label for="optionVorlagen">Vorlagen verwenden</label>
-                                </div>
-                                <div>
-                                    <input type="radio" id="optionUpload" name="funkspruchQuelle" value="upload">
-                                    <label for="optionUpload">Eigene Datei hochladen</label>
-                                </div>
                             </div>
 
-                            <div class="mb-3">
-                                <label for="funkspruchVorlage" class="form-label">Funkspruch-Vorlagen auswählen:</label>
-                                <small class="text-muted d-block mb-2">Tipp: Du kannst mehrere Vorlagen gleichzeitig
-                                    auswählen.</small>
-                                <select class="form-select" id="funkspruchVorlage" multiple="multiple"></select>
-                                <small class="text-muted">Wähle eine oder mehrere Vorlagen (mit Suchfunktion)</small>
-                                <p class="text-muted mt-2">
-                                    📬 Wenn du möchtest, dass deine eigenen Funksprüche mit in den Datenpool aufgenommen
-                                    werden,
-                                    sende sie bitte an <a
-                                        href="mailto:johannes.rudolph@thw-oldenburg.de">johannes.rudolph@thw-oldenburg.de</a>.
-                                </p>
-                            </div>
+                            <div class="generator-settings-section">
+                                <div class="generator-settings-title">Quelle</div>
+                                <div id="vorlagenUploadToggle" class="mb-3">
+                                    <label class="form-label fw-bold">Funksprüche auswählen:</label>
+                                    <div>
+                                        <input type="radio" id="optionVorlagen" name="funkspruchQuelle" value="vorlagen"
+                                            checked>
+                                        <label for="optionVorlagen">Vorlagen verwenden</label>
+                                    </div>
+                                    <div>
+                                        <input type="radio" id="optionUpload" name="funkspruchQuelle" value="upload">
+                                        <label for="optionUpload">Eigene Datei hochladen</label>
+                                    </div>
+                                </div>
 
-                            <!-- Container für den Datei-Upload -->
-                            <div class="mb-3" id="fileUploadContainer" style="display: none;">
-                                <label class="form-label">Funksprüche hochladen:</label>
-                                <input type="file" class="form-control" id="funksprueche" accept=".txt">
-                            </div>
+                                <div class="mb-3">
+                                    <label for="funkspruchVorlage" class="form-label">Funkspruch-Vorlagen auswählen:</label>
+                                    <small class="text-muted d-block mb-2">Tipp: Du kannst mehrere Vorlagen gleichzeitig
+                                        auswählen.</small>
+                                    <select class="form-select" id="funkspruchVorlage" multiple="multiple"></select>
+                                    <small class="text-muted">Wähle eine oder mehrere Vorlagen (mit Suchfunktion)</small>
+                                    <p class="text-muted mt-2">
+                                        📬 Wenn du möchtest, dass deine eigenen Funksprüche mit in den Datenpool aufgenommen
+                                        werden,
+                                        sende sie bitte an <a
+                                            href="mailto:johannes.rudolph@thw-oldenburg.de">johannes.rudolph@thw-oldenburg.de</a>.
+                                    </p>
+                                </div>
 
-                            <!-- Lösungswörter -->
-                            <div class="mb-3">
-                                <label class="form-label">Lösungswörter:</label>
-                                <div class="form-check">
-                                    <input class="form-check-input" type="radio" id="keineLoesungswoerter"
-                                           name="loesungswortOption" checked>
-                                    <label class="form-check-label" for="keineLoesungswoerter">Keine
-                                        Lösungswörter</label>
-                                </div>
-                                <div class="form-check">
-                                    <input class="form-check-input" type="radio" id="zentralLoesungswort"
-                                           name="loesungswortOption">
-                                    <label class="form-check-label" for="zentralLoesungswort">Zentrales
-                                        Lösungswort</label>
-                                </div>
-                                <div class="form-check">
-                                    <input class="form-check-input" type="radio" id="individuelleLoesungswoerter"
-                                           name="loesungswortOption">
-                                    <label class="form-check-label" for="individuelleLoesungswoerter">Individuelle
-                                        Lösungswörter</label>
-                                </div>
-                                <div id="zentralLoesungswortContainer" style="display: none;">
-                                    <input type="text" id="zentralLoesungswortInput" class="form-control mt-2"
-                                           placeholder="Zentrales Lösungswort">
+                                <!-- Container für den Datei-Upload -->
+                                <div class="mb-3" id="fileUploadContainer" style="display: none;">
+                                    <label class="form-label">Funksprüche hochladen:</label>
+                                    <input type="file" class="form-control" id="funksprueche" accept=".txt">
                                 </div>
                             </div>
 
-                            <div class="form-check mt-3">
-                                <input class="form-check-input" type="checkbox" id="autoStaerkeErgaenzen" checked>
-                                <label class="form-check-label" for="autoStaerkeErgaenzen">
-                                    Automatische Ergänzung von Stärkemeldungen aktivieren
-                                </label>
-                            </div>
-                            <div class="form-check mt-3">
-                                <input class="form-check-input"
-                                       type="checkbox"
-                                       id="anmeldungAktiv"
-                                       checked>
-                                <label class="form-check-label" for="anmeldungAktiv">
-                                    Anmeldungs-Funkspruch generieren
-                                </label>
-                            </div>
+                            <div class="generator-settings-section">
+                                <div class="generator-settings-title">Lösungswörter & Optionen</div>
+                                <!-- Lösungswörter -->
+                                <div class="mb-3">
+                                    <label class="form-label">Lösungswörter:</label>
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="radio" id="keineLoesungswoerter"
+                                            name="loesungswortOption" checked>
+                                        <label class="form-check-label" for="keineLoesungswoerter">Keine
+                                            Lösungswörter</label>
+                                    </div>
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="radio" id="zentralLoesungswort"
+                                            name="loesungswortOption">
+                                        <label class="form-check-label" for="zentralLoesungswort">Zentrales
+                                            Lösungswort</label>
+                                    </div>
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="radio" id="individuelleLoesungswoerter"
+                                            name="loesungswortOption">
+                                        <label class="form-check-label" for="individuelleLoesungswoerter">Individuelle
+                                            Lösungswörter</label>
+                                    </div>
+                                    <div id="zentralLoesungswortContainer" style="display: none;">
+                                        <input type="text" id="zentralLoesungswortInput" class="form-control mt-2"
+                                            placeholder="Zentrales Lösungswort">
+                                    </div>
+                                </div>
 
-                            <button id="shuffleButton" class="btn btn-primary"
-                                    style="display: none;">
-                                🔀 Lösungswörter Zufällig neu zuweisen
-                            </button>
+                                <div class="form-check mt-3">
+                                    <input class="form-check-input" type="checkbox" id="autoStaerkeErgaenzen" checked>
+                                    <label class="form-check-label" for="autoStaerkeErgaenzen">
+                                        Automatische Ergänzung von Stärkemeldungen aktivieren
+                                    </label>
+                                </div>
+                                <div class="form-check mt-3">
+                                    <input class="form-check-input"
+                                        type="checkbox"
+                                        id="anmeldungAktiv"
+                                        checked>
+                                    <label class="form-check-label" for="anmeldungAktiv">
+                                        Anmeldungs-Funkspruch generieren
+                                    </label>
+                                </div>
+
+                                <button id="shuffleButton" class="btn btn-primary"
+                                        style="display: none;">
+                                    🔀 Lösungswörter Zufällig neu zuweisen
+                                </button>
+                            </div>
                         </div>
                     </div>
                 </div>
 
                 <!-- Card für Teilnehmerverwaltung (rechts) -->
-                <div class="col-md-4">
+                <div class="col-lg-4">
                     <div class="card">
                         <div class="card-header">
                             <h4 class="text-primary"><i class="fas fa-users"></i> Teilnehmerverwaltung</h4>
@@ -791,50 +983,157 @@ export class GeneratorView {
                 </div>
             </div>
 
-            <button id="startUebungBtn" class="btn btn-success w-100 mt-4">
-                <i class="fas fa-cogs"></i> Übung generieren
-            </button>
+            <div class="generator-action-bar mt-3">
+                <div class="generator-action-inner">
+                    <small class="text-muted">Prüfe Einstellungen und Teilnehmer, dann starte die Generierung.</small>
+                    <button id="startUebungBtn" class="btn btn-success">
+                        <i class="fas fa-cogs"></i> Übung generieren
+                    </button>
+                </div>
+            </div>
+
+            <div class="generator-statusbar mt-3">
+                <span class="generator-status-chip">Teilnehmer: <strong id="statusTeilnehmerCount">0</strong></span>
+                <span class="generator-status-chip">Nachrichten: <strong id="statusNachrichtenCount">0</strong></span>
+                <span class="generator-status-chip">Lösungswörter: <strong id="statusLoesungswortMode">Keine</strong></span>
+                <span class="generator-status-chip">Dauer (opt.): <strong id="statusDauerEstimate">-</strong></span>
+            </div>
 
             <div id="output-container" style="display: none; margin-top: 20px;">
-                <div id="uebung-links" class="card mt-4" style="display: none;">
-                    <div class="card-header bg-primary text-white">
-                        🔗 Links zur Übung
+                <div class="card generator-result-card">
+                    <div class="card-header">
+                        <h5 class="mb-0"><i class="fas fa-layer-group"></i> Ergebnis</h5>
                     </div>
                     <div class="card-body">
-                        <p class="card-text">
-                            Mit diesem Link kannst du die Übung jederzeit wieder aufrufen:
-                        </p>
-                        <div class="table-responsive">
-                            <table class="table table-sm table-striped align-middle">
-                                <thead>
-                                    <tr>
-                                        <th>Typ</th>
-                                        <th>Name</th>
-                                        <th>Link</th>
-                                        <th>Aktionen</th>
-                                    </tr>
-                                </thead>
-                                <tbody id="links-teilnehmer-container"></tbody>
-                            </table>
-                        </div>
-                    </div>
-                </div>
+                        <ul class="nav nav-pills generator-result-tabs mb-3" id="generatorResultTabs" role="tablist">
+                            <li class="nav-item" role="presentation">
+                                <button class="nav-link active"
+                                        id="tab-links-btn"
+                                        data-bs-toggle="tab"
+                                        data-bs-target="#tab-links"
+                                        type="button"
+                                        role="tab"
+                                        aria-controls="tab-links"
+                                        aria-selected="true">
+                                    Links
+                                </button>
+                            </li>
+                            <li class="nav-item" role="presentation">
+                                <button class="nav-link"
+                                        id="tab-stats-btn"
+                                        data-bs-toggle="tab"
+                                        data-bs-target="#tab-stats"
+                                        type="button"
+                                        role="tab"
+                                        aria-controls="tab-stats"
+                                        aria-selected="false">
+                                    Statistik
+                                </button>
+                            </li>
+                        </ul>
 
-                <div class="card mb-3">
-                    <div class="card-header">
-                        <h5 class="d-flex justify-content-between align-items-center">
-                            <span><i class="fas fa-file-archive"></i> Export</span>
-                            <button class="btn btn-sm btn-outline-secondary" data-bs-toggle="collapse"
-                                    data-bs-target="#collapseExport">
-                                <i class="fas fa-chevron-down"></i>
-                            </button>
-                        </h5>
-                    </div>
-                    <div id="collapseExport" class="collapse show">
-                        <div class="card-body text-center">
-                            <button id="zipAllPdfsBtn" class="btn btn-primary">📦 Alle PDFs als ZIP
-                                herunterladen
-                            </button>
+                        <div class="tab-content" id="generatorResultTabsContent">
+                            <div class="tab-pane fade show active" id="tab-links" role="tabpanel" aria-labelledby="tab-links-btn">
+                                <div id="uebung-links" style="display: none;">
+                                    <p class="text-muted small mb-3">
+                                        Alle relevanten Links in einer Übersicht. Pro Zeile kannst du direkt öffnen, kopieren oder per Mail senden.
+                                    </p>
+                                    <div class="generator-link-grid-header">
+                                        <span>Typ</span>
+                                        <span>Name</span>
+                                        <span>Link</span>
+                                        <span>Aktionen</span>
+                                    </div>
+                                    <div id="links-teilnehmer-container" class="generator-link-grid"></div>
+                                    <div class="mt-3">
+                                        <button id="zipAllPdfsBtn" class="btn btn-primary btn-lg w-100 generator-zip-btn">
+                                            📦 Alle Druckdaten als ZIP herunterladen
+                                        </button>
+                                        <p class="text-muted small mb-0 mt-2">
+                                            Enthält alle Teilnehmer-PDFs und Vordrucke in einer Datei.
+                                        </p>
+                                    </div>
+                                    <p id="link-action-feedback" class="small mt-2 mb-0"></p>
+                                </div>
+                            </div>
+
+                            <div class="tab-pane fade" id="tab-stats" role="tabpanel" aria-labelledby="tab-stats-btn">
+                                <div class="row">
+                                    <div class="col-lg-5">
+                                        <div class="card mb-3 mb-lg-0">
+                                            <div class="card-header">
+                                                <h6 class="mb-0"><i class="fas fa-chart-bar"></i> Nachrichtenverteilung</h6>
+                                            </div>
+                                            <div class="card-body">
+                                                <canvas id="distributionChart"></canvas>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-lg-7">
+                                        <div class="card mb-0">
+                                            <div class="card-header">
+                                                <h6 class="mb-0"><i class="fas fa-clock"></i> Geschätzte Dauer der Übung</h6>
+                                            </div>
+                                            <div class="card-body">
+                                                <table class="table table-bordered">
+                                                    <thead class="table-dark">
+                                                    <tr>
+                                                        <th></th>
+                                                        <th>Dauer in Minuten</th>
+                                                        <th>Dauer in Stunden und Minuten</th>
+                                                        <th>Durchschnittliche Zeit pro Funkspruch (Sek.)</th>
+                                                    </tr>
+                                                    </thead>
+                                                    <tbody>
+                                                    <tr>
+                                                        <td>Optimal</td>
+                                                        <td id="dauerOptimalMinuten">- Min</td>
+                                                        <td id="dauerOptimalStundenMinuten">- Std - Min</td>
+                                                        <td id="durchschnittOptimal">- Sek</td>
+                                                    </tr>
+                                                    <tr>
+                                                        <td>Langsam</td>
+                                                        <td id="dauerLangsamMinuten">- Min</td>
+                                                        <td id="dauerLangsamStundenMinuten">- Std - Min</td>
+                                                        <td id="durchschnittLangsam">- Sek</td>
+                                                    </tr>
+                                                    </tbody>
+                                                </table>
+                                                <div class="mt-3">
+                                                    <h6>📘 Rechenformeln & Annahmen:</h6>
+                                                    <p class="mb-1"><strong>Basis-Einheit:</strong> Alle Berechnungen basieren auf
+                                                        Sekunden.</p>
+                                                    <p class="mb-1"><strong>Annahmen:</strong></p>
+                                                    <ul class="mb-2">
+                                                        <li>Wir schaffen es, <strong>1 Zeichen pro Sekunde</strong> mitzuschreiben.
+                                                        </li>
+                                                        <li>Wir benötigen <strong>2 Zeichen pro Sekunde</strong>, um eine Nachricht
+                                                            zu
+                                                            übermitteln (sprechen).
+                                                        </li>
+                                                    </ul>
+                                                    <p class="mb-1"><strong>Optimale Dauer:</strong>
+                                                        <code>Sprechzeit + Mitschrift + Empfänger-Zeit + Verbindungsaufbau + Verbindungsabbau</code>
+                                                    </p>
+                                                    <ul class="mb-2">
+                                                        <li><strong>Sprechzeit:</strong> Zeichenlänge / 2</li>
+                                                        <li><strong>Mitschrift:</strong> Zeichenlänge</li>
+                                                        <li><strong>Empfänger-Zeit:</strong> (Empfängerzahl - 1) × 2 Sekunden</li>
+                                                        <li><strong>Verbindungsaufbau:</strong> 5 Sekunden + 3 Sekunden je
+                                                            zusätzlichem
+                                                            Empfänger
+                                                        <li><strong>Verbindungsabbau:</strong> 3 Sekunden</li>
+                                                    </ul>
+                                                    <p class="mb-1"><strong>Langsame Dauer:</strong> Optimale Dauer × 1.5 (wenn
+                                                        Wiederholung erforderlich)</p>
+                                                    <p class="text-muted">Diese Formeln dienen zur realistischen Einschätzung der
+                                                        Gesamtdauer anhand der Nachrichteninhalte und Teilnehmeranzahl.</p>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -862,100 +1161,8 @@ export class GeneratorView {
                     </div>
                 </div>
 
-                <div class="row">
-                    <div class="col-md-6">
-                        <!-- Nachrichtenverteilung -->
-                        <div class="card mb-3">
-                            <div class="card-header">
-                                <h5 class="d-flex justify-content-between align-items-center">
-                                    <span><i class="fas fa-chart-bar"></i> Nachrichtenverteilung</span>
-                                    <button class="btn btn-sm btn-outline-secondary" data-bs-toggle="collapse"
-                                            data-bs-target="#collapseDiagramm">
-                                        <i class="fas fa-chevron-down"></i>
-                                    </button>
-                                </h5>
-                            </div>
-                            <div id="collapseDiagramm" class="collapse show">
-                                <div class="card-body">
-                                    <canvas id="distributionChart"></canvas>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="col-md-6">
-                        <!-- Dauer der Übung-->
-                        <div class="card mb-3">
-                            <div class="card-header">
-                                <h5 class="d-flex justify-content-between align-items-center">
-                                    <span><i class="fas fa-clock"></i> Geschätzte Dauer der Übung</span>
-                                    <button class="btn btn-sm btn-outline-secondary" data-bs-toggle="collapse"
-                                            data-bs-target="#collapseDauer">
-                                        <i class="fas fa-chevron-down"></i>
-                                    </button>
-                                </h5>
-                            </div>
-                            <div id="collapseDauer" class="collapse show">
-                                <div class="card-body">
-                                    <table class="table table-bordered">
-                                        <thead class="table-dark">
-                                        <tr>
-                                            <th></th>
-                                            <th>Dauer in Minuten</th>
-                                            <th>Dauer in Stunden und Minuten</th>
-                                            <th>Durchschnittliche Zeit pro Funkspruch (Sek.)</th>
-                                        </tr>
-                                        </thead>
-                                        <tbody>
-                                        <tr>
-                                            <td>Optimal</td>
-                                            <td id="dauerOptimalMinuten">- Min</td>
-                                            <td id="dauerOptimalStundenMinuten">- Std - Min</td>
-                                            <td id="durchschnittOptimal">- Sek</td>
-                                        </tr>
-                                        <tr>
-                                            <td>Langsam</td>
-                                            <td id="dauerLangsamMinuten">- Min</td>
-                                            <td id="dauerLangsamStundenMinuten">- Std - Min</td>
-                                            <td id="durchschnittLangsam">- Sek</td>
-                                        </tr>
-                                        </tbody>
-                                    </table>
-                                    <div class="mt-3">
-                                        <h6>📘 Rechenformeln & Annahmen:</h6>
-                                        <p class="mb-1"><strong>Basis-Einheit:</strong> Alle Berechnungen basieren auf
-                                            Sekunden.</p>
-                                        <p class="mb-1"><strong>Annahmen:</strong></p>
-                                        <ul class="mb-2">
-                                            <li>Wir schaffen es, <strong>1 Zeichen pro Sekunde</strong> mitzuschreiben.
-                                            </li>
-                                            <li>Wir benötigen <strong>2 Zeichen pro Sekunde</strong>, um eine Nachricht
-                                                zu
-                                                übermitteln (sprechen).
-                                            </li>
-                                        </ul>
-                                        <p class="mb-1"><strong>Optimale Dauer:</strong>
-                                            <code>Sprechzeit + Mitschrift + Empfänger-Zeit + Verbindungsaufbau + Verbindungsabbau</code>
-                                        </p>
-                                        <ul class="mb-2">
-                                            <li><strong>Sprechzeit:</strong> Zeichenlänge / 2</li>
-                                            <li><strong>Mitschrift:</strong> Zeichenlänge</li>
-                                            <li><strong>Empfänger-Zeit:</strong> (Empfängerzahl - 1) × 2 Sekunden</li>
-                                            <li><strong>Verbindungsaufbau:</strong> 5 Sekunden + 3 Sekunden je
-                                                zusätzlichem
-                                                Empfänger
-                                            <li><strong>Verbindungsabbau:</strong> 3 Sekunden</li>
-                                        </ul>
-                                        <p class="mb-1"><strong>Langsame Dauer:</strong> Optimale Dauer × 1.5 (wenn
-                                            Wiederholung erforderlich)</p>
-                                        <p class="text-muted">Diese Formeln dienen zur realistischen Einschätzung der
-                                            Gesamtdauer anhand der Nachrichteninhalte und Teilnehmeranzahl.</p>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
+            </div>
+            <div id="appToastContainer" class="app-toast-container" aria-live="polite" aria-atomic="true"></div>
             </div>
         `;
     }

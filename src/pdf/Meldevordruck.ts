@@ -88,13 +88,9 @@ export class Meldevordruck extends BasePDFTeilnehmer {
 
         const maxY = startY + maxHeight;
         this.pdf.setFontSize(8);
-        let empfaengerListe: string[] = [];
-
-        if (this.nachricht.empfaenger.includes("Alle")) {
-            empfaengerListe = ["Alle"];
-        } else {
-            empfaengerListe = this.nachricht.empfaenger;
-        }
+        const empfaengerListe = this.nachricht.empfaenger.includes("Alle")
+            ? this.funkUebung.teilnehmerListe.filter(name => name !== this.teilnehmer)
+            : this.nachricht.empfaenger;
 
         let currentY = startY;
         let currentLine = "";

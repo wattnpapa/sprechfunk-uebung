@@ -107,8 +107,14 @@ export class GeneratorController {
         });
         this.view.bindSourceToggle();
         this.view.bindLoesungswortOptionChange(() => {
-            this.view.setLoesungswortUI(this.funkUebung.loesungswoerter); 
-            this.renderTeilnehmer(false);
+            this.view.updateLoesungswortOptionUI();
+            const option = this.view.getSelectedLoesungswortOption();
+            if (option === "none") {
+                this.stateService.resetLoesungswoerter(this.funkUebung);
+                this.renderTeilnehmer(false);
+                return;
+            }
+            this.shuffleLoesungswoerter();
         });
         this.view.bindTeilnehmerEvents(
             (index, newVal) => this.updateTeilnehmerName(index, newVal),

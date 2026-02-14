@@ -20,13 +20,25 @@ const makeDocument = () => {
         textContent: "",
         addEventListener: vi.fn()
     };
+    const toggleBtnMobile = {
+        textContent: "",
+        addEventListener: vi.fn()
+    };
 
     const doc = {
         body,
-        getElementById: (id: string) => (id === "themeToggle" ? toggleBtn : null)
+        getElementById: (id: string) => {
+            if (id === "themeToggle") {
+                return toggleBtn;
+            }
+            if (id === "themeToggleMobile") {
+                return toggleBtnMobile;
+            }
+            return null;
+        }
     };
 
-    return { document: doc, toggleBtn, attrs };
+    return { document: doc, toggleBtn, toggleBtnMobile, attrs };
 };
 
 describe("ThemeManager", () => {
@@ -36,7 +48,7 @@ describe("ThemeManager", () => {
     });
 
     it("applies stored theme on init", () => {
-        const { document, toggleBtn, attrs } = makeDocument();
+        const { document, toggleBtn, toggleBtnMobile, attrs } = makeDocument();
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         (globalThis as any).document = document;
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -54,6 +66,7 @@ describe("ThemeManager", () => {
 
         expect(attrs.get("data-theme")).toBe("dark");
         expect(toggleBtn.textContent).toBe("☀️ Light Mode");
+        expect(toggleBtnMobile.textContent).toBe("☀️ Light Mode");
     });
 
     it("falls back to system theme and toggles on click", () => {
@@ -77,7 +90,8 @@ describe("ThemeManager", () => {
 
         expect(attrs.get("data-theme")).toBe("dark");
 
-        const clickHandler = (toggleBtn.addEventListener as unknown as ReturnType<typeof vi.fn>).mock.calls[0]?.[1];
+        const clickHandler = (toggleBtn.addEventListener as unknown as ReturnType<typeof vi.fn>).mock.calls
+            .find(call => call[0] === "click")?.[1];
         clickHandler?.();
 
         expect(attrs.get("data-theme")).toBe("light");
@@ -86,5 +100,29 @@ describe("ThemeManager", () => {
 
         matchMediaListeners[0]?.({ matches: false });
         expect(attrs.get("data-theme")).toBe("light");
+    });
+
+    it("activates star trek on double click", () => {
+        const { document, toggleBtn, attrs } = makeDocument();
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        (globalThis as any).document = document;
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        (globalThis as any).window = {
+            matchMedia: vi.fn().mockReturnValue({
+                matches: false,
+                addEventListener: vi.fn()
+            })
+        };
+
+        const manager = new ThemeManager();
+        manager.init();
+
+        const dblClickHandler = (toggleBtn.addEventListener as unknown as ReturnType<typeof vi.fn>).mock.calls
+            .find(call => call[0] === "dblclick")?.[1];
+        dblClickHandler?.();
+
+        expect(attrs.get("data-theme")).toBe("startrek");
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        expect((globalThis as any).localStorage.getItem("theme")).toBe("startrek");
     });
 });

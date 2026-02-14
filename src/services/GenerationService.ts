@@ -98,7 +98,7 @@ export class GenerationService {
                     sender: teilnehmer,
                     nachricht: {
                         text: spruch,
-                        empfaenger: ["Alle"]
+                        empfaenger: uebung.teilnehmerListe.filter(t => t !== teilnehmer)
                     }
                 });
             }

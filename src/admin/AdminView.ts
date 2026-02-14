@@ -25,6 +25,7 @@ export class AdminView {
 
         uebungen.forEach(uebung => {
             const tr = document.createElement("tr");
+            tr.setAttribute("data-search", `${uebung.id} ${uebung.name} ${uebung.rufgruppe} ${uebung.leitung}`.toLowerCase());
             if (uebung.istStandardKonfiguration) {
                 tr.classList.add("admin-standard-uebung-row");
             }
@@ -49,6 +50,8 @@ export class AdminView {
             `;
             tbody.appendChild(tr);
         });
+
+        this.applySearchFilter();
     }
 
     public renderPaginationInfo(currentPage: number, pageSize: number, currentCount: number, totalCount: number) {
@@ -123,6 +126,19 @@ export class AdminView {
                     onDelete(id);
                 }
             }
+        });
+
+        document.getElementById("adminSearchInput")?.addEventListener("input", () => {
+            this.applySearchFilter();
+        });
+    }
+
+    private applySearchFilter() {
+        const q = (document.getElementById("adminSearchInput") as HTMLInputElement | null)?.value?.trim().toLowerCase() ?? "";
+        const rows = document.querySelectorAll<HTMLTableRowElement>("#adminUebungslisteBody tr");
+        rows.forEach(row => {
+            const haystack = row.getAttribute("data-search") || "";
+            row.style.display = !q || haystack.includes(q) ? "" : "none";
         });
     }
 

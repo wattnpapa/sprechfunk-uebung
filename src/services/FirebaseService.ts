@@ -9,8 +9,6 @@ import {
     limit, 
     startAfter, 
     getDocs,
-    getCountFromServer,
-    where,
     Timestamp,
     QuerySnapshot,
     DocumentData
@@ -158,6 +156,15 @@ export class FirebaseService {
             verwendeteVorlagen: toStringArray(data.verwendeteVorlagen),
             istStandardKonfiguration: typeof data.istStandardKonfiguration === "boolean" ? data.istStandardKonfiguration : false
         });
+
+        // Legacy-Daten kompatibel machen: "Alle" immer in explizite Empfängerliste auflösen.
+        Object.entries(uebung.nachrichten || {}).forEach(([sender, list]) => {
+            list.forEach(n => {
+                if (n.empfaenger.includes("Alle")) {
+                    n.empfaenger = uebung.teilnehmerListe.filter(t => t !== sender);
+                }
+            });
+        });
         return uebung;
     }
 
@@ -231,26 +238,34 @@ export class FirebaseService {
      */
     async getAdminStats() {
         const uebungenCol = collection(this.db, "uebungen");
-
-        // Parallele Abfragen für Performance
-        const [totalSnap, loesungsSnap, staerkeSnap, buchstabierSnap] = await Promise.all([
-            getCountFromServer(uebungenCol),
-            getCountFromServer(query(uebungenCol, where("loesungswoerter", "!=", null))), // Check auf Existenz (nicht null)
-            getCountFromServer(query(uebungenCol, where("loesungsStaerken", "!=", null))),
-            getCountFromServer(query(uebungenCol, where("buchstabierenAn", ">", 0)))
-        ]);
-
-        // Für Durchschnittswerte müssen wir leider alle Dokumente laden (Firestore Limitation)
-        // Optimierung: Nur benötigte Felder laden, wenn möglich (hier laden wir alles, da wir Arrays zählen müssen)
         const allDocsSnap = await getDocs(uebungenCol);
         
+        const hasNonEmptyRecord = (val: unknown): boolean => {
+            if (!val || typeof val !== "object") {
+                return false;
+            }
+            return Object.keys(val as Record<string, unknown>).length > 0;
+        };
+
         let totalTeilnehmer = 0;
         let totalBytes = 0;
         let totalSprueche = 0;
+        let loesungsCount = 0;
+        let staerkeCount = 0;
+        let buchstabierCount = 0;
 
         allDocsSnap.forEach(doc => {
             const data = doc.data();
             totalTeilnehmer += (data["teilnehmerListe"]?.length || 0);
+            if (hasNonEmptyRecord(data["loesungswoerter"])) {
+                loesungsCount++;
+            }
+            if (hasNonEmptyRecord(data["loesungsStaerken"])) {
+                staerkeCount++;
+            }
+            if ((data["buchstabierenAn"] || 0) > 0) {
+                buchstabierCount++;
+            }
             // Grobe Schätzung der Größe
             totalBytes += JSON.stringify(data).length;
             // Anzahl Nachrichten zählen
@@ -264,13 +279,13 @@ export class FirebaseService {
         });
 
         return {
-            total: totalSnap.data().count,
+            total: allDocsSnap.size,
             totalTeilnehmer,
             totalBytes,
             totalSprueche,
-            loesungsCount: loesungsSnap.data().count,
-            staerkeCount: staerkeSnap.data().count,
-            buchstabierCount: buchstabierSnap.data().count
+            loesungsCount,
+            staerkeCount,
+            buchstabierCount
         };
     }
 }

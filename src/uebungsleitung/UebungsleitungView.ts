@@ -324,7 +324,8 @@ export class UebungsleitungView {
         nachrichtenStatus: Record<string, NachrichtenStatus>,
         hideAbgesetzt: boolean,
         senderFilter: string,
-        empfaengerFilter: string
+        empfaengerFilter: string,
+        textFilter: string
     ) {
         const container = document.getElementById("uebungsleitungNachrichten");
         if (!container) {
@@ -349,6 +350,9 @@ export class UebungsleitungView {
                 if (empfaengerFilter && !n.empfaenger.includes(empfaengerFilter)) {
                     return false;
                 }
+                if (textFilter && !`${n.nr} ${n.sender} ${n.empfaenger.join(" ")} ${n.text}`.toLowerCase().includes(textFilter.toLowerCase())) {
+                    return false;
+                }
                 
                 const key = `${n.sender}__${n.nr}`;
                 const status = nachrichtenStatus[key];
@@ -365,7 +369,7 @@ export class UebungsleitungView {
                 const notiz = status?.notiz ?? "";
 
                 return `
-                <tr class="${abgesetzt ? "table-success" : ""}">
+                <tr class="${abgesetzt ? "status-ok-row" : "status-pending-row"}">
                   <td class="text-center fw-bold">${n.nr}</td>
                   <td>${n.empfaenger.map((e: string) => `<div>${e}</div>`).join("")}</td>
                   <td>${n.sender}</td>
@@ -381,11 +385,14 @@ export class UebungsleitungView {
                   <td class="text-center">
                     ${abgesetzt ? `
                       <div class="d-flex gap-2 justify-content-center">
-                        <span class="badge bg-success">abgesetzt</span>
+                        <span class="status-chip status-chip--ok">abgesetzt</span>
                         <button class="btn btn-sm btn-outline-danger" data-action="reset" data-nr="${n.nr}" data-sender="${this.escapeAttr(n.sender)}" title="Status zurücksetzen">↺</button>
                       </div>
                     ` : `
-                       <button class="btn btn-sm btn-outline-success" data-action="abgesetzt" data-nr="${n.nr}" data-sender="${this.escapeAttr(n.sender)}">✓ abgesetzt</button>
+                      <div class="d-flex gap-2 justify-content-center">
+                        <span class="status-chip status-chip--pending">offen</span>
+                        <button class="btn btn-sm btn-outline-success" data-action="abgesetzt" data-nr="${n.nr}" data-sender="${this.escapeAttr(n.sender)}">✓ abgesetzt</button>
+                      </div>
                     `}
                   </td>
                   <td>${status?.abgesetztUm ? formatNatoDate(status.abgesetztUm) : ""}</td>
@@ -394,6 +401,9 @@ export class UebungsleitungView {
             }).join("");
 
         container.innerHTML = `
+            <div class="mb-2">
+                <input id="nachrichtenTextFilterInput" type="search" class="form-control form-control-sm" placeholder="Nachrichten filtern (Nr, Sender, Empfänger, Text)" value="${this.escapeAttr(textFilter)}">
+            </div>
             <div class="table-responsive">
                 <table class="table table-bordered table-striped align-middle">
                     <thead>
@@ -449,7 +459,8 @@ export class UebungsleitungView {
         onNotiz: (sender: string, nr: number, val: string) => void,
         onFilterSender: (val: string) => void,
         onFilterEmpfaenger: (val: string) => void,
-        onToggleHide: (val: boolean) => void
+        onToggleHide: (val: boolean) => void,
+        onFilterText: (val: string) => void
     ) {
         const container = document.getElementById("uebungsleitungNachrichten");
         if (!container) {
@@ -489,12 +500,16 @@ export class UebungsleitungView {
         });
 
         container.addEventListener("input", e => {
-            const target = e.target as HTMLTextAreaElement;
+            const target = e.target as HTMLTextAreaElement | HTMLInputElement;
+            if (target.id === "nachrichtenTextFilterInput") {
+                onFilterText(target.value);
+                return;
+            }
             if (target.classList.contains("nachricht-notiz")) {
                 const nr = Number(target.dataset["nr"]);
                 const sender = target.dataset["sender"];
                 if (sender) {
-                    onNotiz(sender, nr, target.value);
+                    onNotiz(sender, nr, (target as HTMLTextAreaElement).value);
                 }
             }
         });

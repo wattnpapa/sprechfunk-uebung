@@ -25,6 +25,7 @@ export class UebungsleitungController {
     private hideAbgesetzt = false;
     private senderFilter = "";
     private empfaengerFilter = "";
+    private textFilter = "";
     private showStaerkeDetails = false;
 
     constructor(db: Firestore) {
@@ -83,6 +84,9 @@ export class UebungsleitungController {
             },
             val => {
                 this.hideAbgesetzt = val; this.renderNachrichten(); 
+            },
+            val => {
+                this.textFilter = val; this.renderNachrichten();
             }
         );
     }
@@ -136,7 +140,8 @@ export class UebungsleitungController {
             storage.nachrichten,
             this.hideAbgesetzt,
             this.senderFilter,
-            this.empfaengerFilter
+            this.empfaengerFilter,
+            this.textFilter
         );
     }
 
