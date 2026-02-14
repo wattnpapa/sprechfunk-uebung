@@ -14,7 +14,7 @@ export function generateHTMLPage(teilnehmer: string, funkUebung: Uebung): string
         .map((name: string) => `<tr><td>${name}</td></tr>`)
         .join("");
 
-    const nachrichtenHTML = (funkUebung.nachrichten["teilnehmer"] ?? [])
+    const nachrichtenHTML = (funkUebung.nachrichten[teilnehmer] ?? [])
         .map((n: Nachricht) =>
             `<tr>
             <td>${n.id}</td>

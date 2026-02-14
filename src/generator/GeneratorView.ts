@@ -1,11 +1,19 @@
 import { FunkUebung } from "../models/FunkUebung";
 import { Chart } from "chart.js";
 import $ from "../core/select2-setup";
+import type { UebungsDauerStats, VerteilungsStats } from "./GeneratorStatsService";
+import type { PreviewPage } from "./GeneratorPreviewService";
 
 export class GeneratorView {
+    private bindingController = new AbortController();
     
     // Cache für DOM-Elemente könnte hier angelegt werden, 
     // aber für diesen Refactor reicht der direkte Zugriff über gekapselte Methoden.
+
+    public resetBindings() {
+        this.bindingController.abort();
+        this.bindingController = new AbortController();
+    }
 
     public setVersionInfo(id: string, version: string) {
         const idEl = document.getElementById("uebungsId");
@@ -135,6 +143,95 @@ export class GeneratorView {
         return (document.getElementById("zentralLoesungswortInput") as HTMLInputElement).value;
     }
 
+    public bindDistributionInputs(onChange: (data: Partial<FunkUebung>) => void) {
+        const ids = ["spruecheProTeilnehmer", "prozentAnAlle", "prozentAnMehrere", "prozentAnBuchstabieren"];
+        ids.forEach(id => {
+            document.getElementById(id)?.addEventListener("input", () => {
+                const data = this.getFormData();
+                onChange(data);
+            }, { signal: this.bindingController.signal });
+        });
+    }
+
+    public bindSourceToggle() {
+        document.getElementById("optionVorlagen")?.addEventListener("change", () => {
+            this.toggleSourceView("vorlagen");
+        }, { signal: this.bindingController.signal });
+        document.getElementById("optionUpload")?.addEventListener("change", () => {
+            this.toggleSourceView("upload");
+        }, { signal: this.bindingController.signal });
+    }
+
+    public bindLoesungswortOptionChange(onChange: () => void) {
+        document.querySelectorAll("input[name=\"loesungswortOption\"]").forEach(el => {
+            el.addEventListener("change", () => onChange(), { signal: this.bindingController.signal });
+        });
+    }
+
+    public bindTeilnehmerEvents(
+        onTeilnehmerNameChange: (index: number, val: string) => void,
+        onStellennameChange: (teilnehmer: string, val: string) => void,
+        onDelete: (index: number) => void,
+        onShowStellennameToggle: (checked: boolean) => void
+    ) {
+        const container = document.getElementById("teilnehmer-container");
+        if (!container) {
+            return;
+        }
+        container.addEventListener("input", e => {
+            const target = e.target as HTMLElement;
+            if (target.classList.contains("teilnehmer-input")) {
+                const index = Number(target.dataset["index"]);
+                const newVal = (target as HTMLInputElement).value;
+                onTeilnehmerNameChange(index, newVal);
+            }
+            if (target.classList.contains("stellenname-input")) {
+                const teilnehmer = decodeURIComponent(target.getAttribute("data-teilnehmer") || "");
+                const newVal = (target as HTMLInputElement).value;
+                onStellennameChange(teilnehmer, newVal);
+            }
+        }, { signal: this.bindingController.signal });
+
+        container.addEventListener("click", e => {
+            const target = e.target as HTMLElement;
+            const btn = target.closest(".delete-teilnehmer") as HTMLElement;
+            if (btn) {
+                const index = Number(btn.dataset["index"]);
+                onDelete(index);
+            }
+        }, { signal: this.bindingController.signal });
+
+        container.addEventListener("change", e => {
+            const target = e.target as HTMLInputElement;
+            if (target.id === "showStellennameCheckbox") {
+                onShowStellennameToggle(target.checked);
+            }
+        }, { signal: this.bindingController.signal });
+    }
+
+    public bindAnmeldungToggle(onToggle: (checked: boolean) => void) {
+        document.getElementById("anmeldungAktiv")?.addEventListener("change", e => {
+            const target = e.target as HTMLInputElement;
+            onToggle(target.checked);
+        }, { signal: this.bindingController.signal });
+    }
+
+    public bindPrimaryActions(handlers: {
+        onAddTeilnehmer: () => void;
+        onStartUebung: () => void;
+        onChangePage: (step: number) => void;
+        onCopyJson: () => void;
+        onZipAllPdfs: () => void;
+    }) {
+        document.getElementById("addTeilnehmerBtn")?.addEventListener("click", handlers.onAddTeilnehmer, { signal: this.bindingController.signal });
+        document.getElementById("startUebungBtn")?.addEventListener("click", handlers.onStartUebung, { signal: this.bindingController.signal });
+        document.getElementById("pagePrevBtn")?.addEventListener("click", () => handlers.onChangePage(-1), { signal: this.bindingController.signal });
+        document.getElementById("pageNextBtn")?.addEventListener("click", () => handlers.onChangePage(1), { signal: this.bindingController.signal });
+        document.getElementById("copyJsonBtn")?.addEventListener("click", handlers.onCopyJson, { signal: this.bindingController.signal });
+        document.getElementById("copyJsonBtnFooter")?.addEventListener("click", handlers.onCopyJson, { signal: this.bindingController.signal });
+        document.getElementById("zipAllPdfsBtn")?.addEventListener("click", handlers.onZipAllPdfs, { signal: this.bindingController.signal });
+    }
+
     public renderTeilnehmerListe(
         teilnehmerListe: string[], 
         teilnehmerStellen: Record<string, string>, 
@@ -213,6 +310,16 @@ export class GeneratorView {
         });
     }
 
+    public renderTeilnehmerSection(
+        teilnehmerListe: string[],
+        teilnehmerStellen: Record<string, string>,
+        loesungswoerter: Record<string, string>,
+        showStellenname: boolean
+    ) {
+        this.renderTeilnehmerListe(teilnehmerListe, teilnehmerStellen, loesungswoerter, showStellenname);
+        this.setLoesungswortUI(loesungswoerter);
+    }
+
     public populateTemplateSelect(templates: Record<string, { text: string }>, selected: string[] = []) {
         const selectBox = document.getElementById("funkspruchVorlage") as HTMLSelectElement;
         if (!selectBox) {
@@ -281,8 +388,7 @@ export class GeneratorView {
         }
 
         if (uebung.id) {
-            const baseUrl = `${window.location.origin}${window.location.pathname}`;
-
+            const baseUrl = this.getBaseUrl();
             const urlUebung = `${baseUrl}#/generator/${uebung.id}`;
             linkElement.href = urlUebung;
             linkElement.textContent = urlUebung;
@@ -306,6 +412,10 @@ export class GeneratorView {
         }
     }
 
+    private getBaseUrl(): string {
+        return `${window.location.origin}${window.location.pathname}`;
+    }
+
     public renderPreview(html: string, index: number, total: number) {
         const iframe = document.getElementById("resultFrame") as HTMLIFrameElement;
         if (iframe) {
@@ -318,8 +428,14 @@ export class GeneratorView {
         }
     }
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    public renderDuration(stats: any) {
+    public renderPreviewPage(page: PreviewPage | null) {
+        if (!page) {
+            return;
+        }
+        this.renderPreview(page.html, page.index, page.total);
+    }
+
+    public renderDuration(stats: UebungsDauerStats) {
         const set = (id: string, val: string) => {
             const el = document.getElementById(id);
             if (el) {
@@ -379,6 +495,26 @@ export class GeneratorView {
         if(el) {
             el.textContent = json;
         }
+    }
+
+    public copyJsonToClipboard(json: string) {
+        this.showJsonModal(json);
+        navigator.clipboard.writeText(json).then(() => alert("Kopiert!"));
+    }
+
+    public renderUebungResult(
+        uebung: FunkUebung,
+        page: PreviewPage | null,
+        stats: UebungsDauerStats,
+        chart: VerteilungsStats
+    ) {
+        this.showOutputContainer();
+        if (page) {
+            this.renderPreview(page.html, page.index, page.total);
+        }
+        this.renderLinks(uebung);
+        this.renderDuration(stats);
+        this.renderChart(chart.labels, chart.counts);
     }
 
     public render(): void {
@@ -569,7 +705,7 @@ export class GeneratorView {
                                 <!-- Hier wird per JS die Tabelle eingefügt -->
                             </div>
                             <!-- Teilnehmer hinzufügen Button -->
-                            <button class="btn btn-success mt-3" onclick="app.addTeilnehmer()">Teilnehmer
+                            <button id="addTeilnehmerBtn" class="btn btn-success mt-3">Teilnehmer
                                 hinzufügen
                             </button>
                         </div>
@@ -577,7 +713,7 @@ export class GeneratorView {
                 </div>
             </div>
 
-            <button class="btn btn-success w-100 mt-4" onclick="app.startUebung()">
+            <button id="startUebungBtn" class="btn btn-success w-100 mt-4">
                 <i class="fas fa-cogs"></i> Übung generieren
             </button>
 
@@ -611,11 +747,10 @@ export class GeneratorView {
                     </div>
                     <div id="collapseVorschau" class="collapse show">
                         <div class="card-body text-center">
-                            <button class="btn btn-secondary" onclick="app.changePage(-1)">⬅ Zurück</button>
+                            <button id="pagePrevBtn" class="btn btn-secondary">⬅ Zurück</button>
                             <span id="current-page">Seite 1 / 1</span>
-                            <button class="btn btn-secondary" onclick="app.changePage(1)">Weiter ➡</button>
-                            <button id="downloadZip" class="btn btn-primary"
-                                    onclick="pdfGenerator.generateAllPDFsAsZip(window.app.funkUebung)">📦 Alle PDFs als ZIP
+                            <button id="pageNextBtn" class="btn btn-secondary">Weiter ➡</button>
+                            <button id="zipAllPdfsBtn" class="btn btn-primary">📦 Alle PDFs als ZIP
                                 herunterladen
                             </button>
                             <iframe id="resultFrame"
@@ -639,7 +774,7 @@ export class GeneratorView {
                             </div>
                             <div class="modal-footer">
                                 <button class="btn btn-secondary" data-bs-dismiss="modal">Schließen</button>
-                                <button class="btn btn-primary" onclick="app.copyJSONToClipboard()">📋 In Zwischenablage
+                                <button id="copyJsonBtn" class="btn btn-primary">📋 In Zwischenablage
                                     kopieren
                                 </button>
                             </div>

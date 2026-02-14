@@ -16,6 +16,7 @@ import {
     DocumentData
 } from "firebase/firestore";
 import { Uebung } from "../types/Uebung";
+import type { Nachricht } from "../types/Nachricht";
 import { FunkUebung } from "../models/FunkUebung";
 
 export class FirebaseService {
@@ -39,29 +40,122 @@ export class FirebaseService {
             return val instanceof Date ? val : new Date();
         };
 
-        const uebung = new FunkUebung(data.buildVersion || "");
+        const toStringArray = (val: unknown): string[] => {
+            if (!Array.isArray(val)) {
+                return [];
+            }
+            return val.filter(v => typeof v === "string") as string[];
+        };
+
+        const toRecordString = (val: unknown): Record<string, string> => {
+            if (!val || typeof val !== "object") {
+                return {};
+            }
+            return Object.entries(val as Record<string, unknown>)
+                .filter(([, v]) => typeof v === "string")
+                .reduce<Record<string, string>>((acc, [k, v]) => {
+                    acc[k] = v as string;
+                    return acc;
+                }, {});
+        };
+
+        const toNumber = (val: unknown, fallback = 0): number => {
+            if (typeof val === "number" && Number.isFinite(val)) {
+                return val;
+            }
+            if (typeof val === "string" && val.trim() !== "") {
+                const parsed = Number(val);
+                return Number.isFinite(parsed) ? parsed : fallback;
+            }
+            return fallback;
+        };
+
+        const parseNachricht = (val: unknown): Nachricht | null => {
+            if (!val || typeof val !== "object") {
+                return null;
+            }
+            const obj = val as Record<string, unknown>;
+            const id = toNumber(obj["id"], NaN);
+            const nachricht = typeof obj["nachricht"] === "string" ? obj["nachricht"] : "";
+            const empfaenger = toStringArray(obj["empfaenger"]);
+            if (!Number.isFinite(id) || !nachricht || empfaenger.length === 0) {
+                return null;
+            }
+            const loesungsbuchstaben = Array.isArray(obj["loesungsbuchstaben"])
+                ? (obj["loesungsbuchstaben"] as unknown[]).filter(v => typeof v === "string") as string[]
+                : undefined;
+            const staerken = Array.isArray(obj["staerken"])
+                ? (obj["staerken"] as unknown[])
+                    .map(s => {
+                        if (!s || typeof s !== "object") {
+                            return null;
+                        }
+                        const st = s as Record<string, unknown>;
+                        const fuehrer = toNumber(st["fuehrer"], NaN);
+                        const unterfuehrer = toNumber(st["unterfuehrer"], NaN);
+                        const helfer = toNumber(st["helfer"], NaN);
+                        if (!Number.isFinite(fuehrer) || !Number.isFinite(unterfuehrer) || !Number.isFinite(helfer)) {
+                            return null;
+                        }
+                        return { fuehrer, unterfuehrer, helfer };
+                    })
+                    .filter(Boolean) as { fuehrer: number; unterfuehrer: number; helfer: number }[]
+                : undefined;
+
+            const base: Nachricht = {
+                id,
+                empfaenger,
+                nachricht
+            };
+            if (loesungsbuchstaben && loesungsbuchstaben.length > 0) {
+                base.loesungsbuchstaben = loesungsbuchstaben;
+            }
+            if (staerken && staerken.length > 0) {
+                base.staerken = staerken;
+            }
+            return base;
+        };
+
+        const toNachrichtenRecord = (val: unknown): Record<string, Nachricht[]> => {
+            if (!val || typeof val !== "object") {
+                return {};
+            }
+            const entries = Object.entries(val as Record<string, unknown>);
+            return entries.reduce<Record<string, Nachricht[]>>((acc, [sender, list]) => {
+                if (!Array.isArray(list)) {
+                    acc[sender] = [];
+                    return acc;
+                }
+                acc[sender] = list
+                    .map(parseNachricht)
+                    .filter((n): n is Nachricht => n !== null);
+                return acc;
+            }, {});
+        };
+
+        const uebung = new FunkUebung(typeof data.buildVersion === "string" ? data.buildVersion : "");
         Object.assign(uebung, {
             id: id,
-            name: data.name || "",
+            name: typeof data.name === "string" ? data.name : "",
             datum: toDate(data.datum),
             createDate: toDate(data.createDate),
-            buildVersion: data.buildVersion || "",
-            leitung: data.leitung || "",
-            rufgruppe: data.rufgruppe || "",
-            teilnehmerListe: data.teilnehmerListe || [],
-            teilnehmerIds: data.teilnehmerIds || {},
-            teilnehmerStellen: data.teilnehmerStellen || {},
-            nachrichten: data.nachrichten || {},
-            spruecheProTeilnehmer: data.spruecheProTeilnehmer || 0,
-            spruecheAnAlle: data.spruecheAnAlle || 0,
-            spruecheAnMehrere: data.spruecheAnMehrere || 0,
-            buchstabierenAn: data.buchstabierenAn || 0,
-            loesungswoerter: data.loesungswoerter || {},
-            loesungsStaerken: data.loesungsStaerken || {},
-            checksumme: data.checksumme || "",
-            funksprueche: data.funksprueche || [],
-            anmeldungAktiv: data.anmeldungAktiv ?? true,
-            verwendeteVorlagen: data.verwendeteVorlagen
+            buildVersion: typeof data.buildVersion === "string" ? data.buildVersion : "",
+            leitung: typeof data.leitung === "string" ? data.leitung : "",
+            rufgruppe: typeof data.rufgruppe === "string" ? data.rufgruppe : "",
+            teilnehmerListe: toStringArray(data.teilnehmerListe),
+            teilnehmerIds: toRecordString(data.teilnehmerIds),
+            teilnehmerStellen: toRecordString(data.teilnehmerStellen),
+            nachrichten: toNachrichtenRecord(data.nachrichten),
+            spruecheProTeilnehmer: toNumber(data.spruecheProTeilnehmer, 0),
+            spruecheAnAlle: toNumber(data.spruecheAnAlle, 0),
+            spruecheAnMehrere: toNumber(data.spruecheAnMehrere, 0),
+            buchstabierenAn: toNumber(data.buchstabierenAn, 0),
+            loesungswoerter: toRecordString(data.loesungswoerter),
+            loesungsStaerken: toRecordString(data.loesungsStaerken),
+            checksumme: typeof data.checksumme === "string" ? data.checksumme : "",
+            funksprueche: toStringArray(data.funksprueche),
+            anmeldungAktiv: typeof data.anmeldungAktiv === "boolean" ? data.anmeldungAktiv : true,
+            verwendeteVorlagen: toStringArray(data.verwendeteVorlagen)
         });
         return uebung;
     }

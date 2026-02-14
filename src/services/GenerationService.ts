@@ -64,9 +64,11 @@ export class GenerationService {
         }
         const alleNachrichten: PoolEntry[] = [];
 
-        const anAlle = uebung.spruecheAnAlle;
-        const anMehrere = uebung.spruecheAnMehrere;
-        const anEinzeln = uebung.spruecheProTeilnehmer - 1 - anAlle - anMehrere;
+        const anAlle = Math.max(0, uebung.spruecheAnAlle);
+        const anMehrere = Math.max(0, uebung.spruecheAnMehrere);
+        const anmeldungsOffset = uebung.anmeldungAktiv ? 1 : 0;
+        const anEinzeln = Math.max(0, uebung.spruecheProTeilnehmer - anmeldungsOffset - anAlle - anMehrere);
+        const hasSprueche = uebung.funksprueche.length > 0;
         if (uebung.funksprueche.length === 0) {
             return nachrichtenVerteilung;
         }
@@ -85,6 +87,9 @@ export class GenerationService {
 
             // Nachrichten an 'Alle'
             for (let i = 0; i < anAlle; i++) {
+                if (!hasSprueche) {
+                    break;
+                }
                 const spruch = uebung.funksprueche[nachrichtenIndex++ % uebung.funksprueche.length];
                 if (!spruch) {
                     continue;
@@ -100,6 +105,9 @@ export class GenerationService {
 
             // Nachrichten an 'Mehrere'
             for (let i = 0; i < anMehrere; i++) {
+                if (!hasSprueche) {
+                    break;
+                }
                 const spruch = uebung.funksprueche[nachrichtenIndex++ % uebung.funksprueche.length];
                 if (!spruch) {
                     continue;
@@ -116,6 +124,9 @@ export class GenerationService {
 
             // Einzel-Nachrichten
             for (let i = 0; i < anEinzeln; i++) {
+                if (!hasSprueche) {
+                    break;
+                }
                 const spruch = uebung.funksprueche[nachrichtenIndex++ % uebung.funksprueche.length];
                 if (!spruch) {
                     continue;

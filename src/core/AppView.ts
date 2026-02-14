@@ -22,20 +22,25 @@ export class AppView {
             }
         });
 
-        // Specific Button Tracking
-        const startBtn = document.querySelector("button[onclick=\"app.startUebung()\"]");
-        if (startBtn) {
-            startBtn.addEventListener("click", function () {
+        // Specific Button Tracking (delegated)
+        document.addEventListener("click", event => {
+            const target = event.target as HTMLElement | null;
+            if (!target) {
+                return;
+            }
+            const btn = target.closest("#startUebungBtn");
+            if (!btn) {
+                return;
+            }
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            if (typeof (window as any).gtag === "function") {
                 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                if (typeof (window as any).gtag === "function") {
-                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                    (window as any).gtag("event", "Übung_generieren", {
-                        "event_category": "Button Click",
-                        "event_label": "Übung generieren Button geklickt"
-                    });
-                }
-            });
-        }
+                (window as any).gtag("event", "Übung_generieren", {
+                    "event_category": "Button Click",
+                    "event_label": "Übung generieren Button geklickt"
+                });
+            }
+        });
 
         // Select2 Init
         $(document).ready(() => {

@@ -1,10 +1,12 @@
 import { FunkUebung } from "../models/FunkUebung";
 import { store } from "../state/store";
-import { UebungHTMLGenerator } from "../services/UebungHTMLGenerator";
-import type { Nachricht } from "../types/Nachricht";
 import { FirebaseService } from "../services/FirebaseService";
 import { GenerationService } from "../services/GenerationService";
 import { GeneratorView } from "./GeneratorView";
+import { GeneratorStateService, type LoesungswortOption } from "./GeneratorStateService";
+import { GeneratorStatsService } from "./GeneratorStatsService";
+import { GeneratorPreviewService } from "./GeneratorPreviewService";
+import pdfGenerator from "../services/pdfGenerator";
 import { Chart, registerables } from "chart.js";
 
 Chart.register(...registerables);
@@ -15,11 +17,12 @@ export class GeneratorController {
     public funkUebung!: FunkUebung;
     private predefinedLoesungswoerter: string[] = [];
     private templatesFunksprueche: Record<string, { text: string; filename: string }> = {};
-    private htmlSeitenTeilnehmer: string[] = [];
-    private currentPageIndex = 0;
     private showStellenname = false;
     private firebaseService: FirebaseService;
     private generationService: GenerationService;
+    private stateService: GeneratorStateService;
+    private statsService: GeneratorStatsService;
+    private previewService: GeneratorPreviewService;
     private view: GeneratorView;
     private buildInfo = "dev";
 
@@ -37,6 +40,9 @@ export class GeneratorController {
         }
         this.firebaseService = new FirebaseService(db);
         this.generationService = new GenerationService();
+        this.stateService = new GeneratorStateService();
+        this.statsService = new GeneratorStatsService();
+        this.previewService = new GeneratorPreviewService();
         this.view = new GeneratorView();
         
         this.predefinedLoesungswoerter = [
@@ -59,9 +65,6 @@ export class GeneratorController {
         };
 
         this.fetchBuildInfo();
-        this.bindEvents();
-        this.exposeToWindow();
-        
         // Initial placeholder
         this.funkUebung = new FunkUebung(this.buildInfo);
     }
@@ -71,146 +74,88 @@ export class GeneratorController {
             const res = await fetch("build.json");
             const data = await res.json();
             this.buildInfo = data.buildDate + "-" + data.runNumber + "-" + data.commit;
-            this.view.setVersionInfo(this.funkUebung?.id || "-", this.buildInfo);
-            if(this.funkUebung) {
-                this.funkUebung.buildVersion = this.buildInfo;
-            }
         } catch {
             // console.warn("⚠️ Build-Info nicht gefunden, setze 'dev'");
         }
     }
 
     public async handleRoute(params: string[]) {
-        let uebungId: string | null = null;
-        if (params.length >= 1) {
-            uebungId = params[0] ?? null;
-        }
-
-        if (uebungId) {
-            if (this.funkUebung && this.funkUebung.id === uebungId) {
-                this.updateUI();
-                return;
-            }
-
-            const uebung = await this.firebaseService.getUebung(uebungId);
-            if (uebung) {
-                this.funkUebung = Object.assign(new FunkUebung(this.buildInfo), uebung);
-                if (!this.funkUebung.teilnehmerStellen) {
-                    this.funkUebung.teilnehmerStellen = {};
-                }
-                //console.log("📦 Übung aus Datenbank geladen:", this.funkUebung.id);
-            } else {
-                // console.warn("⚠️ Keine Übung mit dieser ID gefunden. Neue Übung wird erstellt.");
-                this.funkUebung = new FunkUebung(this.buildInfo);
-            }
-        } else {
-            this.funkUebung = new FunkUebung(this.buildInfo);
-        }
-
+        const uebungId = params.length >= 1 ? (params[0] ?? null) : null;
+        const uebung = await this.loadUebung(uebungId);
+        this.funkUebung = uebung;
         this.updateUI();
     }
 
     private updateUI() {
         this.view.render(); // RENDER FIRST!
+        this.view.resetBindings();
+        this.bindEvents();
 
-        this.view.setVersionInfo(this.funkUebung.id, this.buildInfo);
-        this.funkUebung.buildVersion = this.buildInfo;
-        
-        this.view.populateTemplateSelect(this.templatesFunksprueche, this.funkUebung.verwendeteVorlagen);
-        this.view.setFormData(this.funkUebung);
-        this.view.toggleSourceView("vorlagen"); 
-
+        this.applyUebungToView();
         this.renderTeilnehmer();
-        
-        if (this.funkUebung.nachrichten && Object.keys(this.funkUebung.nachrichten).length > 0) {
-            this.renderUebungResult();
-        }
-        
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        (window as any).app.funkUebung = this.funkUebung;
+        this.renderResultIfAvailable();
     }
 
     private bindEvents() {
-        // Input changes for distribution
-        const inputs = ["spruecheProTeilnehmer", "prozentAnAlle", "prozentAnMehrere", "prozentAnBuchstabieren"];
-        inputs.forEach(id => {
-            document.getElementById(id)?.addEventListener("input", () => {
-                const data = this.view.getFormData();
-                Object.assign(this.funkUebung, data);
-                this.view.updateDistributionInputs(this.funkUebung);
-            });
+        this.view.bindDistributionInputs(data => {
+            Object.assign(this.funkUebung, data);
+            this.view.updateDistributionInputs(this.funkUebung);
         });
-
-        document.getElementById("optionVorlagen")?.addEventListener("change", () => this.view.toggleSourceView("vorlagen"));
-        document.getElementById("optionUpload")?.addEventListener("change", () => this.view.toggleSourceView("upload"));
-
-        document.getElementById("showStellennameCheckbox")?.addEventListener("change", e => {
-            this.showStellenname = (e.target as HTMLInputElement).checked;
+        this.view.bindSourceToggle();
+        this.view.bindLoesungswortOptionChange(() => {
+            this.view.setLoesungswortUI(this.funkUebung.loesungswoerter); 
             this.renderTeilnehmer(false);
         });
-        
-        document.querySelectorAll("input[name=\"loesungswortOption\"]").forEach(el => {
-            el.addEventListener("change", () => {
-                this.view.setLoesungswortUI(this.funkUebung.loesungswoerter); 
+        this.view.bindTeilnehmerEvents(
+            (index, newVal) => this.updateTeilnehmerName(index, newVal),
+            (teilnehmer, newVal) => this.updateTeilnehmerStelle(teilnehmer, newVal),
+            index => this.removeTeilnehmer(index),
+            checked => {
+                this.showStellenname = checked;
                 this.renderTeilnehmer(false);
-            });
+            }
+        );
+        this.view.bindAnmeldungToggle(checked => {
+            this.funkUebung.anmeldungAktiv = checked;
         });
-
-        const container = document.getElementById("teilnehmer-container");
-        if (container) {
-            container.addEventListener("input", e => {
-                const target = e.target as HTMLElement;
-                if (target.classList.contains("teilnehmer-input")) {
-                    const index = Number(target.dataset["index"]);
-                    const newVal = (target as HTMLInputElement).value;
-                    this.updateTeilnehmerName(index, newVal);
-                }
-                if (target.classList.contains("stellenname-input")) {
-                    const teilnehmer = decodeURIComponent(target.getAttribute("data-teilnehmer") || "");
-                    const newVal = (target as HTMLInputElement).value;
-                    this.updateTeilnehmerStelle(teilnehmer, newVal);
-                }
-            });
-
-            container.addEventListener("click", e => {
-                const target = e.target as HTMLElement;
-                const btn = target.closest(".delete-teilnehmer") as HTMLElement;
-                if (btn) {
-                    const index = Number(btn.dataset["index"]);
-                    this.removeTeilnehmer(index);
-                }
-            });
-            
-            container.addEventListener("change", e => {
-                const target = e.target as HTMLInputElement;
-                if (target.id === "showStellennameCheckbox") {
-                    this.showStellenname = target.checked;
-                    this.renderTeilnehmer(false);
-                }
-            });
-        }
-        
-        document.getElementById("anmeldungAktiv")?.addEventListener("change", e => {
-            const target = e.target as HTMLInputElement;
-            this.funkUebung.anmeldungAktiv = target.checked;
+        this.view.bindPrimaryActions({
+            onAddTeilnehmer: () => this.addTeilnehmer(),
+            onStartUebung: () => this.startUebung(),
+            onChangePage: (step: number) => this.changePage(step),
+            onCopyJson: () => this.copyJSONToClipboard(),
+            onZipAllPdfs: () => pdfGenerator.generateAllPDFsAsZip(this.funkUebung)
         });
     }
 
-    private exposeToWindow() {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const app = (window as any).app || {};
-        
-        app.startUebung = () => this.startUebung();
-        app.addTeilnehmer = () => this.addTeilnehmer();
-        app.shuffleLoesungswoerter = () => this.shuffleLoesungswoerter();
-        app.renderTeilnehmer = () => this.renderTeilnehmer();
-        app.calcMsgCount = () => { /* handled by input event now */ };
-        app.changePage = (step: number) => this.changePage(step);
-        app.copyJSONToClipboard = () => this.copyJSONToClipboard();
-        app.funkUebung = this.funkUebung;
+    private async loadUebung(uebungId: string | null): Promise<FunkUebung> {
+        if (uebungId) {
+            if (this.funkUebung && this.funkUebung.id === uebungId) {
+                return this.funkUebung;
+            }
+            const uebung = await this.firebaseService.getUebung(uebungId);
+            if (uebung) {
+                const loaded = Object.assign(new FunkUebung(this.buildInfo), uebung);
+                if (!loaded.teilnehmerStellen) {
+                    loaded.teilnehmerStellen = {};
+                }
+                return loaded;
+            }
+        }
+        return new FunkUebung(this.buildInfo);
+    }
 
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        (window as any).app = app;
+    private applyUebungToView() {
+        this.funkUebung.buildVersion = this.buildInfo;
+        this.view.setVersionInfo(this.funkUebung.id, this.buildInfo);
+        this.view.populateTemplateSelect(this.templatesFunksprueche, this.funkUebung.verwendeteVorlagen);
+        this.view.setFormData(this.funkUebung);
+        this.view.toggleSourceView("vorlagen");
+    }
+
+    private renderResultIfAvailable() {
+        if (this.funkUebung.nachrichten && Object.keys(this.funkUebung.nachrichten).length > 0) {
+            this.renderUebungResult();
+        }
     }
 
     // --- Logic Methods ---
@@ -220,14 +165,12 @@ export class GeneratorController {
             this.showStellenname = true;
         }
 
-        this.view.renderTeilnehmerListe(
+        this.view.renderTeilnehmerSection(
             this.funkUebung.teilnehmerListe,
             this.funkUebung.teilnehmerStellen || {},
             this.funkUebung.loesungswoerter || {},
             this.showStellenname
         );
-        
-        this.view.setLoesungswortUI(this.funkUebung.loesungswoerter);
 
         if (triggerShuffle) {
             this.shuffleLoesungswoerter();
@@ -235,107 +178,59 @@ export class GeneratorController {
     }
 
     updateTeilnehmerName(index: number, newName: string) {
-        const oldName = this.funkUebung.teilnehmerListe[index];
-        if (!oldName) {
-            return;
-        }
-        if (oldName !== newName) {
-            if (this.funkUebung.teilnehmerStellen && this.funkUebung.teilnehmerStellen[oldName] !== undefined) {
-                this.funkUebung.teilnehmerStellen[newName] = this.funkUebung.teilnehmerStellen[oldName];
-                this.funkUebung.teilnehmerStellen = this.omitKey(this.funkUebung.teilnehmerStellen, oldName);
-            }
-            if (this.funkUebung.loesungswoerter && this.funkUebung.loesungswoerter[oldName] !== undefined) {
-                this.funkUebung.loesungswoerter[newName] = this.funkUebung.loesungswoerter[oldName];
-                this.funkUebung.loesungswoerter = this.omitKey(this.funkUebung.loesungswoerter, oldName);
-            }
-        }
-        this.funkUebung.teilnehmerListe[index] = newName;
+        this.stateService.updateTeilnehmerName(this.funkUebung, index, newName);
     }
 
     updateTeilnehmerStelle(teilnehmer: string, stelle: string) {
-        if (!this.funkUebung.teilnehmerStellen) {
-            this.funkUebung.teilnehmerStellen = {};
-        }
-        if (stelle.trim() === "") {
-            this.funkUebung.teilnehmerStellen = this.omitKey(this.funkUebung.teilnehmerStellen, teilnehmer);
-        } else {
-            this.funkUebung.teilnehmerStellen[teilnehmer] = stelle;
-        }
+        this.stateService.updateTeilnehmerStelle(this.funkUebung, teilnehmer, stelle);
     }
 
     addTeilnehmer() {
-        this.funkUebung.teilnehmerListe.push("");
+        this.stateService.addTeilnehmer(this.funkUebung);
         this.renderTeilnehmer();
     }
 
     removeTeilnehmer(index: number) {
-        const teilnehmer = this.funkUebung.teilnehmerListe[index];
-        if (!teilnehmer) {
-            return;
-        }
-         
-        if (this.funkUebung.teilnehmerStellen) {
-            this.funkUebung.teilnehmerStellen = this.omitKey(this.funkUebung.teilnehmerStellen, teilnehmer);
-        }
-         
-        if (this.funkUebung.loesungswoerter) {
-            this.funkUebung.loesungswoerter = this.omitKey(this.funkUebung.loesungswoerter, teilnehmer);
-        }
-        
-        this.funkUebung.teilnehmerListe.splice(index, 1);
+        this.stateService.removeTeilnehmer(this.funkUebung, index);
         this.renderTeilnehmer();
     }
 
     shuffleLoesungswoerter() {
-        const option = this.view.getSelectedLoesungswortOption();
-        
-        // Reset
-        this.funkUebung.loesungswoerter = {};
-
-        if (option === "central") {
-            if (this.predefinedLoesungswoerter.length === 0) {
-                alert("Keine vordefinierten Lösungswörter verfügbar.");
-                return;
-            }
-            const zentralesWort = this.predefinedLoesungswoerter[
-                Math.floor(Math.random() * this.predefinedLoesungswoerter.length)
-            ] ?? "";
-            (document.getElementById("zentralLoesungswortInput") as HTMLInputElement).value = zentralesWort;
-            
-            this.funkUebung.teilnehmerListe.forEach(t => {
-                this.funkUebung.loesungswoerter[t] = zentralesWort;
-            });
-
-        } else if (option === "individual") {
-            const shuffledWords = [...this.predefinedLoesungswoerter].sort(() => Math.random() - 0.5);
-            if (shuffledWords.length === 0) {
-                return;
-            }
-            this.funkUebung.teilnehmerListe.forEach((t, i) => {
-                const word = shuffledWords[i % shuffledWords.length];
-                if (word) {
-                    this.funkUebung.loesungswoerter[t] = word;
-                }
-            });
+        const option: LoesungswortOption = this.view.getSelectedLoesungswortOption();
+        const result = this.stateService.shuffleLoesungswoerter(
+            this.funkUebung,
+            option,
+            this.predefinedLoesungswoerter
+        );
+        if (result.error) {
+            alert(result.error);
+            return;
         }
-        
+        if (result.centralWord !== undefined) {
+            const input = document.getElementById("zentralLoesungswortInput") as HTMLInputElement | null;
+            if (input) {
+                input.value = result.centralWord;
+            }
+        }
         this.renderTeilnehmer(false);
     }
 
     readLoesungswoerterFromView() {
-        const option = this.view.getSelectedLoesungswortOption();
-        this.funkUebung.loesungswoerter = {};
+        const option: LoesungswortOption = this.view.getSelectedLoesungswortOption();
+        this.stateService.resetLoesungswoerter(this.funkUebung);
         
         if (option === "central") {
             const val = this.view.getZentralesLoesungswort().trim().toUpperCase();
-            this.funkUebung.teilnehmerListe.forEach(t => this.funkUebung.loesungswoerter[t] = val);
+            this.stateService.setZentralesLoesungswort(this.funkUebung, val);
         } else if (option === "individual") {
-            this.funkUebung.teilnehmerListe.forEach((t, i) => {
-                const input = document.getElementById(`loesungswort-${i}`) as HTMLInputElement;
+            const woerter: string[] = [];
+            this.funkUebung.teilnehmerListe.forEach((_, i) => {
+                const input = document.getElementById(`loesungswort-${i}`) as HTMLInputElement | null;
                 if (input) {
-                    this.funkUebung.loesungswoerter[t] = input.value.trim().toUpperCase();
+                    woerter.push(input.value.trim().toUpperCase());
                 }
             });
+            this.stateService.setIndividuelleLoesungswoerter(this.funkUebung, woerter);
         }
     }
 
@@ -350,6 +245,10 @@ export class GeneratorController {
         const formData = this.view.getFormData();
         Object.assign(this.funkUebung, formData);
         this.readLoesungswoerterFromView();
+
+        if (!this.validateSpruchVerteilung()) {
+            return;
+        }
 
         // 2. Funksprüche laden
         const source = this.view.getSelectedSource();
@@ -406,129 +305,40 @@ export class GeneratorController {
     }
 
     renderUebungResult() {
-        this.currentPageIndex = 0;
-        this.htmlSeitenTeilnehmer = this.funkUebung.teilnehmerListe.map(t => 
-            UebungHTMLGenerator.generateHTMLPage(t, this.funkUebung)
-        );
-
-        this.view.showOutputContainer();
-        this.displayPage(0);
-        this.view.renderLinks(this.funkUebung);
-        
-        // Stats berechnen
+        this.previewService.generate(this.funkUebung);
+        const page = this.previewService.getAt(0);
         const allMsgs = Object.values(this.funkUebung.nachrichten).flat();
-        const stats = this.berechneUebungsdauer(allMsgs);
-        this.view.renderDuration(stats);
-        
-        // Chart
-        this.berechneVerteilungUndZeigeDiagramm();
+        const stats = this.statsService.berechneUebungsdauer(allMsgs);
+        const chart = this.statsService.berechneVerteilung(this.funkUebung);
+
+        this.view.renderUebungResult(this.funkUebung, page, stats, chart);
     }
 
     displayPage(index: number) {
-        if (index < 0 || index >= this.htmlSeitenTeilnehmer.length) {
-            return;
-        }
-        this.currentPageIndex = index;
-        const html = this.htmlSeitenTeilnehmer[index];
-        if (!html) {
-            return;
-        }
-        this.view.renderPreview(html, index, this.htmlSeitenTeilnehmer.length);
+        this.view.renderPreviewPage(this.previewService.getAt(index));
     }
 
     changePage(step: number) {
-        this.displayPage(this.currentPageIndex + step);
+        this.view.renderPreviewPage(this.previewService.change(step));
     }
 
     copyJSONToClipboard() {
         const json = this.funkUebung.toJson();
-        this.view.showJsonModal(json); // Populate modal
-        navigator.clipboard.writeText(json).then(() => alert("Kopiert!"));
+        this.view.copyJsonToClipboard(json);
     }
 
-    private omitKey<T extends Record<string, string>>(obj: T, key: string): T {
-        return Object.fromEntries(
-            Object.entries(obj).filter(([k]) => k !== key)
-        ) as T;
+    private validateSpruchVerteilung(): boolean {
+        const anmeldungOffset = this.funkUebung.anmeldungAktiv ? 1 : 0;
+        const minRequired = anmeldungOffset + this.funkUebung.spruecheAnAlle + this.funkUebung.spruecheAnMehrere;
+        if (this.funkUebung.spruecheProTeilnehmer < minRequired) {
+            alert("Ungültige Verteilung: 'Sprüche pro Teilnehmer' ist kleiner als die Summe aus Anmeldung + An Alle + An Mehrere.");
+            return false;
+        }
+        if (this.funkUebung.spruecheProTeilnehmer < anmeldungOffset) {
+            alert("Ungültige Verteilung: 'Sprüche pro Teilnehmer' darf nicht kleiner als die Anmelde-Nachricht sein.");
+            return false;
+        }
+        return true;
     }
 
-    // --- Helper for Stats (could be moved to Service or Utils) ---
-    
-    berechneUebungsdauer(nachrichtenDaten: Nachricht[]) {
-        let gesamtDauerOptimal = 0;
-        let gesamtDauerSchlecht = 0;
-        let totalMessages = 0;
-
-        nachrichtenDaten.forEach((nachricht: Nachricht) => {
-            const textLaenge = nachricht.nachricht.length;
-            const empfaengerAnzahl = nachricht.empfaenger.length;
-
-            const zeitVerbindungsaufbau = 5 + (empfaengerAnzahl - 1) * 3;
-            const zeitVerbindungsabbau = 3;
-            const zeitSprechen = textLaenge / 2;
-            const zeitMitschrift = textLaenge;
-            const zeitEmpfaenger = (empfaengerAnzahl - 1) * 2;
-
-            const zeitOptimal = zeitSprechen + zeitMitschrift + zeitEmpfaenger + zeitVerbindungsaufbau + zeitVerbindungsabbau;
-            gesamtDauerOptimal += zeitOptimal;
-
-            const wiederholungsFaktor = Math.random() < 0.3 ? 1.5 : 1;
-            const zeitSchlecht = zeitOptimal * wiederholungsFaktor;
-            gesamtDauerSchlecht += zeitSchlecht;
-
-            totalMessages++;
-        });
-
-        const format = (min: number) => ({
-            stunden: Math.floor(min / 60),
-            minuten: Math.floor(min % 60)
-        });
-
-        return {
-            optimal: gesamtDauerOptimal / 60,
-            schlecht: gesamtDauerSchlecht / 60,
-            durchschnittOptimal: totalMessages ? gesamtDauerOptimal / totalMessages : 0,
-            durchschnittSchlecht: totalMessages ? gesamtDauerSchlecht / totalMessages : 0,
-            optimalFormatted: format(gesamtDauerOptimal / 60),
-            schlechtFormatted: format(gesamtDauerSchlecht / 60)
-        };
-    }
-
-    berechneVerteilungUndZeigeDiagramm() {
-        const labels: string[] = [];
-        const counts: number[] = [];
-        const dist: Record<string, number> = {};
-        const leitung = this.funkUebung.leitung;
-
-        this.funkUebung.teilnehmerListe.forEach(t => {
-            if (t !== leitung) {
-                labels.push(t);
-                dist[t] = 0;
-            }
-        });
-
-        this.funkUebung.teilnehmerListe.forEach(t => {
-            if (t !== leitung) {
-                this.funkUebung.nachrichten[t]?.forEach(n => {
-                    n.empfaenger.forEach(e => {
-                        if (e === "Alle") {
-                            this.funkUebung.teilnehmerListe.forEach(ta => {
-                                if (ta !== t && dist[ta] !== undefined) {
-                                    dist[ta]++;
-                                }
-                            });
-                        } else if (dist[e] !== undefined) {
-                            dist[e]++;
-                        }
-                    });
-                    if (n.empfaenger.includes(t) && dist[t] !== undefined) {
-                        dist[t]++;
-                    }
-                });
-            }
-        });
-
-        labels.forEach(t => counts.push(dist[t] ?? 0));
-        this.view.renderChart(labels, counts);
-    }
 }
