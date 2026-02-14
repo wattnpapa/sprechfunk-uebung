@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { jsPDF } from "jspdf";
-import autoTable from "jspdf-autotable";
+import { applyPlugin } from "jspdf-autotable";
 import type { Nachricht } from "../types/Nachricht";
 
 import JSZip from "jszip";
@@ -16,8 +16,7 @@ import { uiFeedback } from "../core/UiFeedback";
 class PDFGenerator {
     constructor() {
         if (typeof (jsPDF as any).API.autoTable !== "function") {
-            // @ts-expect-error Plugin-Binding für jsPDF
-            autoTable(jsPDF);
+            applyPlugin(jsPDF);
         }
     }
 
