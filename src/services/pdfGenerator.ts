@@ -12,6 +12,7 @@ import { Teilnehmer } from "../pdf/Teilnehmer.js";
 import { Uebungsleitung } from "../pdf/Uebungsleitung.js";
 import { formatNatoDate } from "../utils/date";
 import { uiFeedback } from "../core/UiFeedback";
+import { UebungsleitungStorage } from "../types/Storage";
 
 class PDFGenerator {
     constructor() {
@@ -54,6 +55,98 @@ class PDFGenerator {
         });
 
         return blobMap;
+    }
+
+    async generateTeilnehmerDebriefPdfBlob(
+        funkUebung: FunkUebung,
+        storage: UebungsleitungStorage,
+        teilnehmer: string
+    ): Promise<Blob> {
+        const pdf = new jsPDF({ orientation: "landscape", unit: "mm", format: "a4" });
+        const pageWidth = pdf.internal.pageSize.getWidth();
+        const marginX = 10;
+        let y = 16;
+
+        pdf.setFont("helvetica", "bold");
+        pdf.setFontSize(16);
+        pdf.text(`Debriefing: ${teilnehmer}`, pageWidth / 2, y, { align: "center" });
+        y += 7;
+
+        pdf.setFont("helvetica", "normal");
+        pdf.setFontSize(11);
+        pdf.text(`${funkUebung.name} | ${formatNatoDate(funkUebung.datum, false)} | ID: ${funkUebung.id}`, pageWidth / 2, y, { align: "center" });
+        y += 6;
+
+        const participantStatus = storage.teilnehmer[teilnehmer] ?? {};
+        const sollWort = funkUebung.loesungswoerter?.[teilnehmer] ?? "–";
+        const istWort = participantStatus.loesungswortGesendet || "–";
+        const sollStaerke = funkUebung.loesungsStaerken?.[teilnehmer] ?? "–";
+        const istStaerke = (participantStatus.teilstaerken ?? []).join("/") || "–";
+        const anmeldung = participantStatus.angemeldetUm ? formatNatoDate(participantStatus.angemeldetUm) : "–";
+
+        (pdf as any).autoTable({
+            startY: y,
+            head: [["Anmeldung", "Lösungswort (Soll/Ist)", "Stärke (Soll/Ist)", "Notiz"]],
+            body: [[
+                anmeldung,
+                `${sollWort} / ${istWort}`,
+                `${sollStaerke} / ${istStaerke}`,
+                participantStatus.notizen || ""
+            ]],
+            margin: { left: marginX, right: marginX },
+            tableWidth: "auto",
+            theme: "grid",
+            styles: { fontSize: 10, cellPadding: 2, lineWidth: 0.1, lineColor: [0, 0, 0] },
+            headStyles: { fillColor: [200, 200, 200] }
+        });
+
+        const sent = (funkUebung.nachrichten[teilnehmer] ?? []).map(msg => {
+            const key = `${teilnehmer}__${msg.id}`;
+            const status = storage.nachrichten[key];
+            return [
+                String(msg.id),
+                msg.empfaenger.join(", "),
+                msg.nachricht,
+                status?.abgesetztUm ? formatNatoDate(status.abgesetztUm) : "offen",
+                status?.notiz ?? ""
+            ];
+        });
+
+        (pdf as any).autoTable({
+            startY: (pdf as any).lastAutoTable.finalY + 6,
+            head: [["Nr", "Empfänger", "Nachricht", "Abgesetzt", "Notiz Übungsleitung"]],
+            body: sent.length ? sent : [["–", "–", "Keine gesendeten Nachrichten", "–", "–"]],
+            margin: { left: marginX, right: marginX },
+            tableWidth: "auto",
+            theme: "grid",
+            styles: { fontSize: 9, cellPadding: 2, lineWidth: 0.1, lineColor: [0, 0, 0], overflow: "linebreak" },
+            headStyles: { fillColor: [200, 200, 200] }
+        });
+
+        const received: [string, string, string][] = [];
+        Object.entries(funkUebung.nachrichten).forEach(([sender, list]) => {
+            list.forEach(msg => {
+                if (sender === teilnehmer) {
+                    return;
+                }
+                if (msg.empfaenger.includes("Alle") || msg.empfaenger.includes(teilnehmer)) {
+                    received.push([String(msg.id), sender, msg.nachricht]);
+                }
+            });
+        });
+
+        (pdf as any).autoTable({
+            startY: (pdf as any).lastAutoTable.finalY + 6,
+            head: [["Nr", "Von", "Empfangene Nachricht"]],
+            body: received.length ? received : [["–", "–", "Keine empfangenen Nachrichten"]],
+            margin: { left: marginX, right: marginX, bottom: 16 },
+            tableWidth: "auto",
+            theme: "grid",
+            styles: { fontSize: 9, cellPadding: 2, lineWidth: 0.1, lineColor: [0, 0, 0], overflow: "linebreak" },
+            headStyles: { fillColor: [200, 200, 200] }
+        });
+
+        return pdf.output("blob");
     }
 
     /**

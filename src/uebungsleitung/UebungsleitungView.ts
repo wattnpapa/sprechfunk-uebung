@@ -3,12 +3,36 @@ import type { Nachricht } from "../types/Nachricht";
 import { formatNatoDate } from "../utils/date";
 import { TeilnehmerStatus, NachrichtenStatus } from "../types/Storage";
 import { escapeHtml } from "../utils/html";
+import { Chart } from "chart.js/auto";
 
 interface FlattenedNachricht {
     nr: number;
     sender: string;
     empfaenger: string[];
     text: string;
+}
+
+interface HeatmapBin {
+    bucket: number;
+    count: number;
+}
+
+interface TimelineEvent {
+    ts: number;
+    type: "S" | "E";
+    nr: number;
+}
+
+interface TeilnehmerTimeline {
+    teilnehmer: string;
+    events: TimelineEvent[];
+}
+
+interface TimelinePoint {
+    x: number;
+    y: number;
+    nr: number;
+    kind: "S" | "E";
 }
 
 export class UebungsleitungView {
@@ -166,6 +190,14 @@ export class UebungsleitungView {
                 data-teilnehmer="${name}"
               >${status?.notizen ?? ""}</textarea>
             </td>
+            <td>
+              <button
+                class="btn btn-sm btn-outline-secondary"
+                data-action="download-debrief"
+                data-teilnehmer="${this.escapeAttr(name)}">
+                Debrief PDF
+              </button>
+            </td>
           </tr>
         `;
         }).join("");
@@ -187,6 +219,7 @@ export class UebungsleitungView {
                   </button>
                 </th>` : ""}
                 <th>Notizen</th>
+                <th style="width:150px;">Debrief</th>
               </tr>
             </thead>
             <tbody>
@@ -234,7 +267,8 @@ export class UebungsleitungView {
         onLoesungswort: (name: string, val: string) => void,
         onStaerke: (name: string, idx: number, val: string) => void,
         onNotiz: (name: string, val: string) => void,
-        onToggleDetails: () => void
+        onToggleDetails: () => void,
+        onDownloadDebrief: (name: string) => void
     ) {
         const container = document.getElementById("uebungsleitungTeilnehmer");
         if (!container) {
@@ -257,6 +291,14 @@ export class UebungsleitungView {
             const btnToggle = target.closest("button[data-action=\"toggle-staerke-details\"]");
             if (btnToggle) {
                 onToggleDetails();
+            }
+
+            const btnDebrief = target.closest("button[data-action=\"download-debrief\"]") as HTMLElement | null;
+            if (btnDebrief) {
+                const teilnehmer = btnDebrief.dataset["teilnehmer"];
+                if (teilnehmer) {
+                    onDownloadDebrief(teilnehmer);
+                }
             }
 
         });
@@ -410,6 +452,14 @@ export class UebungsleitungView {
                     <tbody>${rows}</tbody>
                 </table>
             </div>
+            <div class="mt-3">
+              <div class="small text-body-secondary mb-2">Heatmap (5 Minuten)</div>
+              <div id="nachrichtenHeatmapChart" class="d-flex align-items-end gap-1" style="height: 110px;"></div>
+            </div>
+            <div class="mt-3">
+              <div class="small text-body-secondary mb-2">Timeline je Teilnehmer</div>
+              <div id="nachrichtenTeilnehmerTimeline"></div>
+            </div>
         `;
     }
 
@@ -426,6 +476,178 @@ export class UebungsleitungView {
         bar.setAttribute("aria-valuenow", String(percent));
         label.textContent = `${done} / ${total}`;
         eta.textContent = etaLabel;
+    }
+
+    public updateOperationalStats(tempoLabel: string, loadLabel: string, heatmapLabel: string) {
+        const tempo = document.getElementById("nachrichtenTempoLabel");
+        const load = document.getElementById("nachrichtenLoadLabel");
+        const heatmap = document.getElementById("nachrichtenHeatmapLabel");
+        if (!tempo || !load || !heatmap) {
+            return;
+        }
+
+        tempo.textContent = tempoLabel;
+        load.textContent = loadLabel;
+        heatmap.textContent = heatmapLabel;
+    }
+
+    public updateHeatmap(bins: HeatmapBin[]) {
+        const chart = document.getElementById("nachrichtenHeatmapChart");
+        if (!chart) {
+            return;
+        }
+        if (!bins.length) {
+            chart.innerHTML = "<small class=\"text-body-secondary\">Noch keine Daten</small>";
+            return;
+        }
+
+        const max = Math.max(...bins.map(b => b.count), 1);
+        chart.innerHTML = bins
+            .map((bin, idx) => {
+                const d = new Date(bin.bucket);
+                const hh = String(d.getHours()).padStart(2, "0");
+                const mm = String(d.getMinutes()).padStart(2, "0");
+                const label = `${hh}:${mm}`;
+                const height = Math.max(8, Math.round((bin.count / max) * 86));
+                const showTick = idx % 3 === 0 || idx === bins.length - 1;
+                const alpha = bin.count === 0 ? 0.16 : Math.min(0.28 + (bin.count / max) * 0.64, 0.92);
+                return `
+                  <div class="d-flex flex-column align-items-center flex-fill" title="${label}: ${bin.count}">
+                    <div style="width:100%;height:${height}px;background:rgba(54,162,235,${alpha});border-radius:4px 4px 0 0;"></div>
+                    <small class="text-body-secondary mt-1" style="font-size:.65rem;line-height:1;">${showTick ? label : "&nbsp;"}</small>
+                  </div>
+                `;
+            })
+            .join("");
+    }
+
+    public updateTeilnehmerTimeline(entries: TeilnehmerTimeline[]) {
+        const container = document.getElementById("nachrichtenTeilnehmerTimeline");
+        if (!container) {
+            return;
+        }
+
+        const withEvents = entries
+            .map(entry => ({
+                teilnehmer: entry.teilnehmer,
+                events: entry.events.slice().sort((a, b) => a.ts - b.ts)
+            }))
+            .filter(entry => entry.events.length > 0);
+
+        if (!withEvents.length) {
+            container.innerHTML = "<small class=\"text-body-secondary\">Noch keine Daten</small>";
+            return;
+        }
+
+        const toClock = (ts: number): string => {
+            const d = new Date(ts);
+            const hh = String(d.getHours()).padStart(2, "0");
+            const mm = String(d.getMinutes()).padStart(2, "0");
+            return `${hh}:${mm}`;
+        };
+
+        const labels = withEvents.map(entry => entry.teilnehmer);
+        const sendPoints: TimelinePoint[] = [];
+        const receivePoints: TimelinePoint[] = [];
+        withEvents.forEach((entry, idx) => {
+            entry.events.forEach(event => {
+                if (event.type === "S") {
+                    sendPoints.push({ x: event.ts, y: idx, nr: event.nr, kind: "S" });
+                } else {
+                    receivePoints.push({ x: event.ts, y: idx, nr: event.nr, kind: "E" });
+                }
+            });
+        });
+
+        if (!sendPoints.length && !receivePoints.length) {
+            container.innerHTML = "<small class=\"text-body-secondary\">Noch keine Daten</small>";
+            return;
+        }
+
+        const laneHeight = Math.max(180, Math.min(700, labels.length * 26 + 40));
+        container.innerHTML = `<div style="height:${laneHeight}px"><canvas id="nachrichtenTimelineChart"></canvas></div>`;
+        const canvas = document.getElementById("nachrichtenTimelineChart") as HTMLCanvasElement | null;
+        if (!canvas) {
+            return;
+        }
+
+        const existingChart = Chart.getChart(canvas);
+        if (existingChart) {
+            existingChart.destroy();
+        }
+
+        new Chart(canvas, {
+            type: "scatter",
+            data: {
+                datasets: [
+                    {
+                        label: "Senden",
+                        data: sendPoints,
+                        pointRadius: 4,
+                        pointHoverRadius: 6,
+                        pointBackgroundColor: "#3b82f6"
+                    },
+                    {
+                        label: "Empfangen",
+                        data: receivePoints,
+                        pointRadius: 4,
+                        pointHoverRadius: 6,
+                        pointBackgroundColor: "#9ca3af"
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                animation: false,
+                scales: {
+                    x: {
+                        type: "linear",
+                        ticks: {
+                            callback: value => toClock(Number(value))
+                        },
+                        title: {
+                            display: true,
+                            text: "Zeit"
+                        }
+                    },
+                    y: {
+                        type: "linear",
+                        min: -0.5,
+                        max: labels.length - 0.5,
+                        reverse: true,
+                        ticks: {
+                            stepSize: 1,
+                            callback: value => {
+                                const idx = Number(value);
+                                return Number.isInteger(idx) && idx >= 0 && idx < labels.length ? labels[idx] : "";
+                            }
+                        },
+                        title: {
+                            display: true,
+                            text: "Teilnehmer"
+                        }
+                    }
+                },
+                plugins: {
+                    legend: {
+                        position: "top"
+                    },
+                    tooltip: {
+                        callbacks: {
+                            label: context => {
+                                const raw = context.raw as TimelinePoint;
+                                if (!raw) {
+                                    return "";
+                                }
+                                const participant = labels[raw.y] ?? "";
+                                return `${participant} · ${raw.kind}${raw.nr} · ${toClock(raw.x)}`;
+                            }
+                        }
+                    }
+                }
+            }
+        });
     }
 
     public bindNachrichtenEvents(
