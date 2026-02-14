@@ -1,0 +1,90 @@
+import { beforeEach, describe, expect, it, vi } from "vitest";
+import { ThemeManager } from "../../src/core/ThemeManager";
+
+const makeLocalStorage = () => {
+    const store = new Map<string, string>();
+    return {
+        getItem: (key: string) => store.get(key) ?? null,
+        setItem: (key: string, value: string) => { store.set(key, value); },
+        removeItem: (key: string) => { store.delete(key); }
+    };
+};
+
+const makeDocument = () => {
+    const attrs = new Map<string, string>();
+    const body = {
+        setAttribute: (key: string, value: string) => { attrs.set(key, value); },
+        getAttribute: (key: string) => attrs.get(key) ?? null
+    };
+    const toggleBtn = {
+        textContent: "",
+        addEventListener: vi.fn()
+    };
+
+    const doc = {
+        body,
+        getElementById: (id: string) => (id === "themeToggle" ? toggleBtn : null)
+    };
+
+    return { document: doc, toggleBtn, attrs };
+};
+
+describe("ThemeManager", () => {
+    beforeEach(() => {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        (globalThis as any).localStorage = makeLocalStorage();
+    });
+
+    it("applies stored theme on init", () => {
+        const { document, toggleBtn, attrs } = makeDocument();
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        (globalThis as any).document = document;
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        (globalThis as any).window = {
+            matchMedia: vi.fn().mockReturnValue({
+                matches: false,
+                addEventListener: vi.fn()
+            })
+        };
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        (globalThis as any).localStorage.setItem("theme", "dark");
+
+        const manager = new ThemeManager();
+        manager.init();
+
+        expect(attrs.get("data-theme")).toBe("dark");
+        expect(toggleBtn.textContent).toBe("☀️ Light Mode");
+    });
+
+    it("falls back to system theme and toggles on click", () => {
+        const { document, toggleBtn, attrs } = makeDocument();
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        (globalThis as any).document = document;
+
+        const matchMediaListeners: Array<(e: { matches: boolean }) => void> = [];
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        (globalThis as any).window = {
+            matchMedia: vi.fn().mockReturnValue({
+                matches: true,
+                addEventListener: (_event: string, cb: (e: { matches: boolean }) => void) => {
+                    matchMediaListeners.push(cb);
+                }
+            })
+        };
+
+        const manager = new ThemeManager();
+        manager.init();
+
+        expect(attrs.get("data-theme")).toBe("dark");
+
+        const clickHandler = (toggleBtn.addEventListener as unknown as ReturnType<typeof vi.fn>).mock.calls[0]?.[1];
+        clickHandler?.();
+
+        expect(attrs.get("data-theme")).toBe("light");
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        expect((globalThis as any).localStorage.getItem("theme")).toBe("light");
+
+        matchMediaListeners[0]?.({ matches: false });
+        expect(attrs.get("data-theme")).toBe("light");
+    });
+});

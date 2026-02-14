@@ -60,5 +60,19 @@ export default tseslint.config(
         process: "readonly"
       }
     }
+  },
+  {
+    files: ["tests/**/*.ts", "e2e/**/*.ts"],
+    linterOptions: {
+      reportUnusedDisableDirectives: "off"
+    },
+    rules: {
+      "@typescript-eslint/no-explicit-any": "off",
+      "@typescript-eslint/no-empty-function": "off",
+      "@typescript-eslint/no-useless-constructor": "off",
+      "@typescript-eslint/array-type": "off",
+      "@stylistic/brace-style": "off",
+      "curly": "off"
+    }
   }
 );

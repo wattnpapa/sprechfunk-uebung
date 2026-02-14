@@ -227,6 +227,56 @@ class PDFGenerator {
         return blobMap;
     }
 
+    async generateNachrichtenvordruckPDFForTeilnehmer(
+        funkUebung: FunkUebung,
+        teilnehmer: string,
+        hideBackground = false,
+        hideFooter = false
+    ): Promise<{ blob: Blob; totalPages: number }> {
+        const nachrichten = funkUebung.nachrichten[teilnehmer] || [];
+        const pdf = new jsPDF("p", "mm", "a5");
+        const deckblatt = new DeckblattTeilnehmer(teilnehmer, funkUebung, pdf);
+        deckblatt.draw();
+        pdf.addPage();
+
+        nachrichten.forEach((nachricht: Nachricht, index: number) => {
+            new Nachrichtenvordruck(teilnehmer, funkUebung, pdf, nachricht, hideBackground, hideFooter).draw();
+            if (index < nachrichten.length - 1) {
+                pdf.addPage();
+            }
+        });
+
+        const totalPages = (pdf as any).getNumberOfPages();
+        for (let j = 2; j <= totalPages; j++) {
+            pdf.setPage(j);
+        }
+
+        return { blob: pdf.output("blob"), totalPages };
+    }
+
+    async generateNachrichtenvordruckPageBlob(
+        funkUebung: FunkUebung,
+        teilnehmer: string,
+        page: number,
+        hideBackground = false,
+        hideFooter = false
+    ): Promise<Blob> {
+        const nachrichten = funkUebung.nachrichten[teilnehmer] || [];
+        const totalPages = nachrichten.length;
+        if (page < 1 || page > totalPages) {
+            throw new Error("Ungültige Seite");
+        }
+
+        const pdf = new jsPDF("p", "mm", "a5");
+        const msg = nachrichten[page - 1];
+        if (!msg) {
+            throw new Error("Nachricht nicht gefunden");
+        }
+        new Nachrichtenvordruck(teilnehmer, funkUebung, pdf, msg, hideBackground, hideFooter).draw();
+
+        return pdf.output("blob");
+    }
+
     generateMeldevordruckPDFs(funkUebung: FunkUebung) {
         this.generateMeldevordruckPDFsBlob(funkUebung).then(blobMap => {
             blobMap.forEach((blob, teilnehmer) => {
@@ -275,6 +325,56 @@ class PDFGenerator {
         });
 
         return blobMap;
+    }
+
+    async generateMeldevordruckPDFForTeilnehmer(
+        funkUebung: FunkUebung,
+        teilnehmer: string,
+        hideBackground = false,
+        hideFooter = false
+    ): Promise<{ blob: Blob; totalPages: number }> {
+        const nachrichten = funkUebung.nachrichten[teilnehmer] || [];
+        const pdf = new jsPDF("p", "mm", "a5");
+        const deckblatt = new DeckblattTeilnehmer(teilnehmer, funkUebung, pdf);
+        deckblatt.draw();
+        pdf.addPage();
+
+        nachrichten.forEach((nachricht: Nachricht, index: number) => {
+            new Meldevordruck(teilnehmer, funkUebung, pdf, nachricht, hideBackground, hideFooter).draw();
+            if (index < nachrichten.length - 1) {
+                pdf.addPage();
+            }
+        });
+
+        const totalPages = (pdf as any).getNumberOfPages();
+        for (let j = 2; j <= totalPages; j++) {
+            pdf.setPage(j);
+        }
+
+        return { blob: pdf.output("blob"), totalPages };
+    }
+
+    async generateMeldevordruckPageBlob(
+        funkUebung: FunkUebung,
+        teilnehmer: string,
+        page: number,
+        hideBackground = false,
+        hideFooter = false
+    ): Promise<Blob> {
+        const nachrichten = funkUebung.nachrichten[teilnehmer] || [];
+        const totalPages = nachrichten.length;
+        if (page < 1 || page > totalPages) {
+            throw new Error("Ungültige Seite");
+        }
+
+        const pdf = new jsPDF("p", "mm", "a5");
+        const msg = nachrichten[page - 1];
+        if (!msg) {
+            throw new Error("Nachricht nicht gefunden");
+        }
+        new Meldevordruck(teilnehmer, funkUebung, pdf, msg, hideBackground, hideFooter).draw();
+
+        return pdf.output("blob");
     }
 
     generateInstructorPDF(funkUebung: FunkUebung) {

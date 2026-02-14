@@ -18,7 +18,7 @@ export default {
     resolve({
       browser: true,
       preferBuiltins: false,
-      extensions: ['.js', '.ts'],
+      extensions: ['.mjs', '.js', '.ts'],
       dedupe: ['jspdf', 'jquery']
     }),
     commonjs({
@@ -37,6 +37,16 @@ export default {
         {
           src: 'node_modules/@fortawesome/fontawesome-free/webfonts/*',
           dest: 'dist/webfonts'
+        },
+        {
+          src: 'node_modules/pdfjs-dist/build/pdf.min.mjs',
+          dest: 'dist/pdfjs',
+          rename: 'pdf.min.js'
+        },
+        {
+          src: 'node_modules/pdfjs-dist/build/pdf.worker.min.mjs',
+          dest: 'dist/pdfjs',
+          rename: 'pdf.worker.min.js'
         }
       ]
     })
