@@ -105,7 +105,6 @@ export class GeneratorController {
     private bindEvents() {
         this.view.bindDistributionInputs(data => {
             Object.assign(this.funkUebung, data);
-            this.view.updateDistributionInputs(this.funkUebung);
         });
         this.view.bindSourceToggle();
         this.view.bindLoesungswortOptionChange(() => {

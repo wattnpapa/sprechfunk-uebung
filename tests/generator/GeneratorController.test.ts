@@ -733,7 +733,7 @@ describe("GeneratorController", () => {
         const onDistribution = bindDistributionInputs.mock.calls[0]?.[0];
         onDistribution?.({ spruecheProTeilnehmer: 9 });
         expect(controller.funkUebung.spruecheProTeilnehmer).toBe(9);
-        expect(updateDistributionInputs).toHaveBeenCalledWith(controller.funkUebung);
+        expect(updateDistributionInputs).not.toHaveBeenCalled();
 
         const onLoesungswortOption = bindLoesungswortOptionChange.mock.calls[0]?.[0];
         onLoesungswortOption?.();

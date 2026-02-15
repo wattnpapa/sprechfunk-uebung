@@ -2,6 +2,11 @@ import { defineConfig, devices } from "@playwright/test";
 
 export default defineConfig({
     testDir: "e2e",
+    reporter: [
+        ["line"],
+        ["html", { outputFolder: "playwright-report", open: "never" }],
+        ["junit", { outputFile: "test-results/e2e-junit.xml" }]
+    ],
     timeout: 60_000,
     expect: {
         timeout: 10_000

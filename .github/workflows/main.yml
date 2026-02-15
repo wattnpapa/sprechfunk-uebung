@@ -54,6 +54,15 @@ jobs:
       - name: Run e2e suite (${{ matrix.suite }})
         run: npm run test:e2e:${{ matrix.suite }}
 
+      - name: Upload e2e test results to Codecov (${{ matrix.suite }})
+        if: ${{ !cancelled() }}
+        uses: codecov/test-results-action@v1
+        with:
+          token: ${{ secrets.CODECOV_TOKEN || vars.CODECOV_TOKEN }}
+          files: test-results/e2e-junit.xml
+          flags: e2e,${{ matrix.suite }}
+          fail_ci_if_error: false
+
       - name: Upload e2e artifacts (${{ matrix.suite }})
         if: always()
         uses: actions/upload-artifact@v4

@@ -58,8 +58,11 @@ describe("GeneratorView", () => {
         view.render();
         const name = document.getElementById("nameDerUebung") as HTMLInputElement;
         name.value = "Alpha";
+        const auto = document.getElementById("autoStaerkeErgaenzen") as HTMLInputElement;
+        auto.checked = false;
         const data = view.getFormData();
         expect(data.name).toBe("Alpha");
+        expect(data.autoStaerkeErgaenzen).toBe(false);
     });
 
     it("sets form values, version info and source toggles", () => {
@@ -68,10 +71,12 @@ describe("GeneratorView", () => {
         const u = new FunkUebung("dev");
         u.name = "X";
         u.leitung = "L";
+        u.autoStaerkeErgaenzen = false;
         view.setFormData(u);
         view.setVersionInfo("u1", "dev");
         expect(document.getElementById("uebungsId")?.textContent).toBe("u1");
         expect((document.getElementById("nameDerUebung") as HTMLInputElement).value).toBe("X");
+        expect((document.getElementById("autoStaerkeErgaenzen") as HTMLInputElement).checked).toBe(false);
         view.toggleSourceView("upload");
         expect((document.getElementById("fileUploadContainer") as HTMLElement).style.display).toBe("block");
     });
@@ -528,5 +533,26 @@ describe("GeneratorView", () => {
 
         document.getElementById("teilnehmer-container")?.remove();
         view.bindTeilnehmerEvents(vi.fn(), vi.fn(), vi.fn(), vi.fn());
+    });
+
+    it("updates hidden distribution values when percent inputs change", () => {
+        const view = new GeneratorView();
+        view.render();
+        const onChange = vi.fn();
+        view.bindDistributionInputs(onChange);
+
+        (document.getElementById("spruecheProTeilnehmer") as HTMLInputElement).value = "20";
+        const mehr = document.getElementById("prozentAnMehrere") as HTMLInputElement;
+        mehr.value = "25";
+        mehr.dispatchEvent(new window.Event("input"));
+        expect((document.getElementById("spruecheAnMehrere") as HTMLInputElement).value).toBe("5");
+        expect(document.getElementById("calcAnMehrere")?.textContent).toBe("5");
+
+        const buch = document.getElementById("prozentAnBuchstabieren") as HTMLInputElement;
+        buch.value = "10";
+        buch.dispatchEvent(new window.Event("input"));
+        expect((document.getElementById("spruecheAnBuchstabieren") as HTMLInputElement).value).toBe("2");
+        expect(document.getElementById("calcAnBuchstabieren")?.textContent).toBe("2");
+        expect(onChange).toHaveBeenCalled();
     });
 });

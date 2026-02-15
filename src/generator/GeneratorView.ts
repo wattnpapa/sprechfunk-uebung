@@ -41,7 +41,8 @@ export class GeneratorView {
             spruecheAnMehrere: Number((document.getElementById("spruecheAnMehrere") as HTMLInputElement).value),
             buchstabierenAn: Number((document.getElementById("spruecheAnBuchstabieren") as HTMLInputElement).value),
             datum: datumVal ? new Date(datumVal) : new Date(),
-            anmeldungAktiv: (document.getElementById("anmeldungAktiv") as HTMLInputElement).checked
+            anmeldungAktiv: (document.getElementById("anmeldungAktiv") as HTMLInputElement).checked,
+            autoStaerkeErgaenzen: (document.getElementById("autoStaerkeErgaenzen") as HTMLInputElement).checked
         };
     }
 
@@ -58,6 +59,7 @@ export class GeneratorView {
         (document.getElementById("datum") as HTMLInputElement).value = isoDate;
 
         (document.getElementById("anmeldungAktiv") as HTMLInputElement).checked = uebung.anmeldungAktiv;
+        (document.getElementById("autoStaerkeErgaenzen") as HTMLInputElement).checked = uebung.autoStaerkeErgaenzen;
 
         // Prozentwerte und absolute Werte setzen
         this.updateDistributionInputs(uebung);
@@ -160,10 +162,37 @@ export class GeneratorView {
         const ids = ["spruecheProTeilnehmer", "prozentAnAlle", "prozentAnMehrere", "prozentAnBuchstabieren"];
         ids.forEach(id => {
             document.getElementById(id)?.addEventListener("input", () => {
+                this.syncDistributionFromPercentInputs();
                 const data = this.getFormData();
                 onChange(data);
             }, { signal: this.bindingController.signal });
         });
+    }
+
+    private syncDistributionFromPercentInputs() {
+        const proTeilnehmerInput = document.getElementById("spruecheProTeilnehmer") as HTMLInputElement | null;
+        const proTeilnehmer = Math.max(1, Number(proTeilnehmerInput?.value) || 0);
+
+        const sync = (idProzent: string, idAnzahl: string) => {
+            const prozentInput = document.getElementById(idProzent) as HTMLInputElement | null;
+            const anzahlInput = document.getElementById(idAnzahl) as HTMLInputElement | null;
+            const simpleName = idAnzahl.replace("sprueche", "");
+            const span = document.getElementById("calc" + simpleName);
+            if (!prozentInput || !anzahlInput) {
+                return;
+            }
+
+            const prozent = Math.max(0, Math.min(100, Number(prozentInput.value) || 0));
+            const anzahl = Math.round((proTeilnehmer * prozent) / 100);
+            anzahlInput.value = String(anzahl);
+            if (span) {
+                span.textContent = String(anzahl);
+            }
+        };
+
+        sync("prozentAnAlle", "spruecheAnAlle");
+        sync("prozentAnMehrere", "spruecheAnMehrere");
+        sync("prozentAnBuchstabieren", "spruecheAnBuchstabieren");
     }
 
     public bindSourceToggle() {

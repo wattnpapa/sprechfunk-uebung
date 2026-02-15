@@ -1,0 +1,6 @@
+<testsuites id="" name="" tests="1" failures="0" skipped="0" errors="0" time="9.256791999999999">
+<testsuite name="app.spec.ts" timestamp="2026-02-15T19:30:57.130Z" hostname="chromium" tests="1" failures="0" skipped="0" time="1.54" errors="0">
+<testcase name="@generator distribution percent inputs are editable and update absolute values" classname="app.spec.ts" time="1.54">
+</testcase>
+</testsuite>
+</testsuites>

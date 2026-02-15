@@ -104,6 +104,31 @@ test("@generator generator source toggle switches between templates and upload",
     await expect(uploadContainer).toBeHidden();
 });
 
+test("@generator distribution percent inputs are editable and update absolute values", async ({ page }) => {
+    await page.goto("/");
+
+    const proTeilnehmer = page.locator("#spruecheProTeilnehmer");
+    const prozentMehrere = page.locator("#prozentAnMehrere");
+    const prozentBuchstabieren = page.locator("#prozentAnBuchstabieren");
+
+    await proTeilnehmer.fill("100");
+
+    await prozentMehrere.fill("6");
+    await expect(prozentMehrere).toHaveValue("6");
+    await expect(page.locator("#spruecheAnMehrere")).toHaveValue("6");
+    await expect(page.locator("#calcAnMehrere")).toHaveText("6");
+
+    await prozentBuchstabieren.fill("1");
+    await expect(prozentBuchstabieren).toHaveValue("1");
+    await expect(page.locator("#spruecheAnBuchstabieren")).toHaveValue("1");
+    await expect(page.locator("#calcAnBuchstabieren")).toHaveText("1");
+
+    await prozentBuchstabieren.press("ArrowUp");
+    await expect(prozentBuchstabieren).toHaveValue("2");
+    await expect(page.locator("#spruecheAnBuchstabieren")).toHaveValue("2");
+    await expect(page.locator("#calcAnBuchstabieren")).toHaveText("2");
+});
+
 test("@generator can add participant row in generator table", async ({ page }) => {
     await page.goto("/");
     const rows = page.locator("#teilnehmer-body tr");
@@ -112,6 +137,71 @@ test("@generator can add participant row in generator table", async ({ page }) =
     const before = await rows.count();
     await addBtn.click();
     await expect(rows).toHaveCount(before + 1);
+});
+
+test("@generator all generator inputs are editable and keep values", async ({ page }) => {
+    await page.goto("/");
+
+    await page.locator("#datum").fill("2026-02-15");
+    await page.locator("#nameDerUebung").fill("E2E Übung");
+    await page.locator("#rufgruppe").fill("RG-42");
+    await page.locator("#leitung").fill("Heros Test 1");
+    await page.locator("#spruecheProTeilnehmer").fill("12");
+    await page.locator("#prozentAnAlle").fill("8");
+    await page.locator("#prozentAnMehrere").fill("16");
+    await page.locator("#prozentAnBuchstabieren").fill("4");
+    await page.locator("#anmeldungAktiv").uncheck();
+    await page.locator("#autoStaerkeErgaenzen").check();
+
+    await expect(page.locator("#datum")).toHaveValue("2026-02-15");
+    await expect(page.locator("#nameDerUebung")).toHaveValue("E2E Übung");
+    await expect(page.locator("#rufgruppe")).toHaveValue("RG-42");
+    await expect(page.locator("#leitung")).toHaveValue("Heros Test 1");
+    await expect(page.locator("#spruecheProTeilnehmer")).toHaveValue("12");
+    await expect(page.locator("#prozentAnAlle")).toHaveValue("8");
+    await expect(page.locator("#prozentAnMehrere")).toHaveValue("16");
+    await expect(page.locator("#prozentAnBuchstabieren")).toHaveValue("4");
+    await expect(page.locator("#spruecheAnAlle")).toHaveValue("1");
+    await expect(page.locator("#spruecheAnMehrere")).toHaveValue("2");
+    await expect(page.locator("#spruecheAnBuchstabieren")).toHaveValue("0");
+    await expect(page.locator("#anmeldungAktiv")).not.toBeChecked();
+    await expect(page.locator("#autoStaerkeErgaenzen")).toBeChecked();
+
+    await page.locator("#optionUpload").check();
+    await expect(page.locator("#fileUploadContainer")).toBeVisible();
+    await page.locator("#funksprueche").setInputFiles({
+        name: "funksprueche.txt",
+        mimeType: "text/plain",
+        buffer: Buffer.from("TEST 1\nTEST 2\n")
+    });
+    const uploadedName = await page.locator("#funksprueche").evaluate(el => (el as HTMLInputElement).files?.[0]?.name ?? "");
+    expect(uploadedName).toBe("funksprueche.txt");
+
+    await page.locator("#optionVorlagen").check();
+    await expect(page.locator("#fileUploadContainer")).toBeHidden();
+    await expect(page.locator("#funkspruchVorlage option")).toHaveCount(5);
+    await page.selectOption("#funkspruchVorlage", ["thwleer", "thwmelle"]);
+    const selectedTemplates = await page.locator("#funkspruchVorlage").evaluate(el =>
+        Array.from((el as HTMLSelectElement).selectedOptions).map(o => o.value)
+    );
+    expect(selectedTemplates).toEqual(["thwleer", "thwmelle"]);
+
+    await page.locator("#zentralLoesungswort").check();
+    await expect(page.locator("#zentralLoesungswortContainer")).toBeVisible();
+    await page.locator("#zentralLoesungswortInput").fill("DELTA");
+    await expect(page.locator("#zentralLoesungswortInput")).toHaveValue("DELTA");
+    await page.locator("#individuelleLoesungswoerter").check();
+    await expect(page.locator("#loesungswortHeader")).toBeVisible();
+    await page.locator("#keineLoesungswoerter").check();
+    await expect(page.locator("#zentralLoesungswortContainer")).toBeHidden();
+
+    const firstTeilnehmer = page.locator("#teilnehmer-body .teilnehmer-input").first();
+    await firstTeilnehmer.fill("Heros E2E 11/1");
+    await expect(firstTeilnehmer).toHaveValue("Heros E2E 11/1");
+    await page.locator("#showStellennameCheckbox").check();
+    const firstStelle = page.locator("#teilnehmer-body .stellenname-input").first();
+    await firstStelle.fill("FGr 1");
+    await expect(firstStelle).toHaveValue("FGr 1");
 });
 
 test("@generator individual loesungswoerter shows per-participant inputs", async ({ page }) => {
