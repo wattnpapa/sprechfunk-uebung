@@ -23,7 +23,7 @@
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
     "test": "vitest",
-    "test:coverage": "vitest run --coverage",
+    "test:coverage": "mkdir -p test-results && vitest run --coverage --reporter=default --reporter=junit --outputFile.junit=test-results/junit.xml",
     "test:e2e": "playwright test",
     "test:e2e:smoke": "playwright test -g \"@smoke\"",
     "test:e2e:generator": "playwright test -g \"@generator\"",

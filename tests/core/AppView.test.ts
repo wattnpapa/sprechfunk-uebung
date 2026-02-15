@@ -1,4 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
+import { JSDOM } from "jsdom";
 
 vi.mock("../../src/core/select2-setup", () => ({
     default: (arg: unknown) => {
@@ -13,7 +14,9 @@ import { AppView } from "../../src/core/AppView";
 
 const makeDocument = () => {
     const listeners: Record<string, Array<(event: { target: unknown }) => void>> = {
-        click: []
+        click: [],
+        change: [],
+        submit: []
     };
 
     const modalHandlers: Array<() => void> = [];
@@ -244,5 +247,62 @@ describe("AppView", () => {
         view.applyAppMode("admin");
         view.applyAppMode("uebungsleitung");
         view.applyAppMode("teilnehmer");
+    });
+
+    it("tracks change/submit events via real DOM elements", () => {
+        const dom = new JSDOM(`
+            <form id="f1" class="c1">
+              <input id="i1" type="checkbox" />
+              <input id="i2" type="text" />
+              <select id="s1"><option>a</option></select>
+              <textarea id="t1"></textarea>
+            </form>
+            <select id="funkspruchVorlage"></select>
+        `);
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        (globalThis as any).document = dom.window.document;
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        (globalThis as any).window = {
+            gtag: vi.fn(),
+            $: vi.fn(() => ({ select2: vi.fn() })),
+            jQuery: vi.fn()
+        };
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        (globalThis as any).HTMLInputElement = dom.window.HTMLInputElement;
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        (globalThis as any).HTMLSelectElement = dom.window.HTMLSelectElement;
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        (globalThis as any).HTMLTextAreaElement = dom.window.HTMLTextAreaElement;
+
+        const view = new AppView();
+        view.initGlobalListeners();
+
+        const i1 = dom.window.document.getElementById("i1") as HTMLInputElement;
+        i1.checked = true;
+        i1.dispatchEvent(new dom.window.Event("change", { bubbles: true }));
+        const i2 = dom.window.document.getElementById("i2") as HTMLInputElement;
+        i2.value = "x";
+        i2.dispatchEvent(new dom.window.Event("change", { bubbles: true }));
+        const s1 = dom.window.document.getElementById("s1") as HTMLSelectElement;
+        s1.dispatchEvent(new dom.window.Event("change", { bubbles: true }));
+        const t1 = dom.window.document.getElementById("t1") as HTMLTextAreaElement;
+        t1.dispatchEvent(new dom.window.Event("change", { bubbles: true }));
+        const form = dom.window.document.getElementById("f1") as HTMLFormElement;
+        form.dispatchEvent(new dom.window.Event("submit", { bubbles: true }));
+
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        expect((globalThis as any).window.gtag).toHaveBeenCalled();
+    });
+
+    it("ignores invalid change and submit targets", () => {
+        const view = new AppView();
+        view.initGlobalListeners();
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const { listeners } = (globalThis as any)._test;
+        listeners.change[0]?.({ target: null });
+        listeners.change[0]?.({ target: {} });
+        listeners.submit[0]?.({ target: null });
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        expect((globalThis as any).window.gtag).not.toHaveBeenCalledWith("event", "ui_submit", expect.anything());
     });
 });
