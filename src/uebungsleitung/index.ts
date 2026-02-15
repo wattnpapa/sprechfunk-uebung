@@ -10,6 +10,7 @@ import { uiFeedback } from "../core/UiFeedback";
 import { debounce } from "../utils/debounce";
 import { formatNatoDate } from "../utils/date";
 import pdfGenerator from "../services/pdfGenerator";
+import { analytics } from "../services/analytics";
 
 interface FlattenedNachricht {
     nr: number;
@@ -408,6 +409,7 @@ export class UebungsleitungController {
         this.storage.teilnehmer[name].angemeldetUm = new Date().toISOString();
         this.save();
         this.renderTeilnehmer();
+        analytics.track("uebungsleitung_mark_angemeldet");
     }
 
     private updateLoesungswort(name: string, val: string) {
@@ -441,6 +443,7 @@ export class UebungsleitungController {
     private toggleStaerkeDetails() {
         this.showStaerkeDetails = !this.showStaerkeDetails;
         this.renderTeilnehmer();
+        analytics.track("uebungsleitung_toggle_staerke_details", { enabled: this.showStaerkeDetails });
     }
 
     private async downloadTeilnehmerDebrief(name: string) {
@@ -457,6 +460,7 @@ export class UebungsleitungController {
             document.body.removeChild(link);
             URL.revokeObjectURL(link.href);
             uiFeedback.success(`Debriefing PDF für ${name} erstellt.`);
+            analytics.track("uebungsleitung_download_debrief_pdf");
         } catch {
             uiFeedback.error(`Debriefing PDF für ${name} konnte nicht erstellt werden.`);
         }
@@ -471,6 +475,7 @@ export class UebungsleitungController {
         this.storage.nachrichten[key].abgesetztUm = new Date().toISOString();
         this.save();
         this.renderNachrichten();
+        analytics.track("uebungsleitung_mark_abgesetzt", { nr });
     }
 
     private resetNachricht(sender: string, nr: number) {
@@ -483,6 +488,7 @@ export class UebungsleitungController {
         }
         this.save();
         this.renderNachrichten();
+        analytics.track("uebungsleitung_reset_nachricht", { nr });
     }
 
     private updateNachrichtNotiz(sender: string, nr: number, val: string) {
@@ -514,6 +520,7 @@ export class UebungsleitungController {
             
             const filename = `Uebungsleitung_${this.uebung.name}_${this.uebung.id}.pdf`.replace(/\s+/g, "_");
             pdf.save(filename);
+            analytics.track("uebungsleitung_export_pdf");
         } catch (err) {
             console.error(err);
             uiFeedback.error("Fehler beim PDF Export");

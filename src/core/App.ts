@@ -11,6 +11,7 @@ import { NatoClock } from "./NatoClock";
 import { ThemeManager } from "./ThemeManager";
 import { AppView } from "./AppView";
 import pdfGenerator from "../services/pdfGenerator";
+import { analytics } from "../services/analytics";
 
 export class App {
     private appView: AppView;
@@ -27,6 +28,7 @@ export class App {
     public init(): void {
         // 1. Initialize Firebase
         const firebaseApp = initializeApp(firebaseConfig);
+        analytics.init(firebaseConfig.measurementId);
         this.db = getFirestore(firebaseApp);
         const shouldUseEmulator = (() => {
             const search = window.location?.search ?? "";
@@ -62,6 +64,11 @@ export class App {
 
     private handleRoute(): void {
         const { mode, params } = router.parseHash();
+        analytics.trackPage(window.location?.hash || "#/");
+        analytics.track("route_change", {
+            mode,
+            has_params: params.length > 0
+        });
         store.setState({ mode });
 
         if (!this.db) {

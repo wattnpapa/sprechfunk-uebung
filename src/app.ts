@@ -19,6 +19,7 @@ import "./core/select2-setup";
 import { NatoClock } from "./core/NatoClock";
 import { ThemeManager } from "./core/ThemeManager";
 import { AppView } from "./core/AppView";
+import { analytics } from "./services/analytics";
 
 import { Chart, registerables } from "chart.js";
 Chart.register(...registerables);
@@ -64,6 +65,7 @@ async function loadBuildVersion(): Promise<void> {
 // Initialize Firebase
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
+analytics.init(firebaseConfig.measurementId);
 const shouldUseEmulator = (() => {
     const search = window.location?.search ?? "";
     const byQuery = new URLSearchParams(search).get("emulator") === "1";
@@ -83,6 +85,11 @@ store.setState({ db });
 // Main Routing Logic
 function handleRoute(): void {
     const { mode, params } = router.parseHash();
+    analytics.trackPage(window.location?.hash || "#/");
+    analytics.track("route_change", {
+        mode,
+        has_params: params.length > 0
+    });
 
     store.setState({ mode });
 

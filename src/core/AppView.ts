@@ -5,41 +5,58 @@ import $ from "./select2-setup";
 export class AppView {
     
     public initGlobalListeners(): void {
-        // Global Button Tracking
+        // Global button tracking
         document.addEventListener("click", event => {
             const targetEl = event.target as HTMLElement | null;
-            if (targetEl && targetEl.closest("button")) {
-                const button = (targetEl.closest("button") as HTMLButtonElement);
-                const label = button.innerText.trim() || button.getAttribute("aria-label") || "Unbekannter Button";
-                // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                if (typeof (window as any).gtag === "function") {
-                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                    (window as any).gtag("event", "button_click", {
-                        "event_category": "Interaktion",
-                        "event_label": label
-                    });
-                }
+            if (!targetEl || typeof targetEl.closest !== "function") {
+                return;
             }
-        });
+            const button = targetEl.closest("button") as HTMLElement | null;
+            if (!button) {
+                return;
+            }
+            this.emitTracking("ui_click", this.getElementTrackingPayload(button));
+        }, { capture: true });
 
-        // Specific Button Tracking (delegated)
+        // Specific tracking for primary start action
         document.addEventListener("click", event => {
             const target = event.target as HTMLElement | null;
-            if (!target) {
+            if (!target || typeof target.closest !== "function") {
                 return;
             }
-            const btn = target.closest("#startUebungBtn");
-            if (!btn) {
+            const startBtn = target.closest("#startUebungBtn") as HTMLElement | null;
+            if (!startBtn) {
                 return;
             }
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            if (typeof (window as any).gtag === "function") {
-                // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                (window as any).gtag("event", "Übung_generieren", {
-                    "event_category": "Button Click",
-                    "event_label": "Übung generieren Button geklickt"
-                });
+            this.emitTracking("generator_start_button_click", this.getElementTrackingPayload(startBtn));
+        }, { capture: true });
+
+        document.addEventListener("change", event => {
+            const el = event.target as HTMLElement | null;
+            if (!el) {
+                return;
             }
+            if (!(el instanceof HTMLInputElement || el instanceof HTMLSelectElement || el instanceof HTMLTextAreaElement)) {
+                return;
+            }
+            const payload = this.getElementTrackingPayload(el);
+            if (el instanceof HTMLInputElement && (el.type === "checkbox" || el.type === "radio")) {
+                payload["value"] = String(el.checked);
+            } else {
+                payload["value"] = "changed";
+            }
+            this.emitTracking("ui_change", payload);
+        }, { capture: true });
+
+        document.addEventListener("submit", event => {
+            const form = event.target as HTMLFormElement | null;
+            if (!form) {
+                return;
+            }
+            this.emitTracking("ui_submit", {
+                form_id: form.id || "(none)",
+                form_class: form.className || "(none)"
+            });
         });
 
         // Select2 Init
@@ -56,6 +73,31 @@ export class AppView {
                 });
             }
         });
+    }
+
+    private getElementTrackingPayload(element: HTMLElement): Record<string, string> {
+        const el = element as Partial<HTMLElement> & Record<string, unknown>;
+        const rawText = typeof el.textContent === "string" ? el.textContent : "";
+        const text = rawText.trim().replace(/\s+/g, " ");
+        const tagName = typeof el.tagName === "string" ? el.tagName.toLowerCase() : "(unknown)";
+        const id = typeof el.id === "string" && el.id ? el.id : "(none)";
+        const className = typeof el.className === "string" && el.className ? el.className : "(none)";
+        return {
+            tag: tagName,
+            id,
+            class_name: className,
+            action: element.getAttribute?.("data-action") || "(none)",
+            name: element.getAttribute?.("name") || "(none)",
+            label: (element.getAttribute?.("aria-label") || text || "(empty)").slice(0, 80)
+        };
+    }
+
+    private emitTracking(eventName: string, payload: Record<string, string>): void {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        if (typeof (window as any)?.gtag === "function") {
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            (window as any).gtag("event", eventName, payload);
+        }
     }
 
     public initModals(): void {

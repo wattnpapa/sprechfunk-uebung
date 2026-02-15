@@ -5,6 +5,7 @@ import { firebaseConfig } from "../firebase-config.js";
 import { FirebaseService } from "../services/FirebaseService";
 import { AdminView } from "./AdminView";
 import { uiFeedback } from "../core/UiFeedback";
+import { analytics } from "../services/analytics";
 
 export class AdminController {
     // Firestore database reference
@@ -123,6 +124,7 @@ export class AdminController {
 
         try {
             await this.firebaseService.deleteUebung(uebungId);
+            analytics.track("admin_delete_uebung");
             // console.log("✅ Übung gelöscht:", uebungId); // Removed console.log
             this.ladeAlleUebungen(); // Ansicht aktualisieren
         } catch (error) {
@@ -132,10 +134,12 @@ export class AdminController {
     };
 
     offeneUebungsleitung(uebungId: string): void {
+        analytics.track("admin_open_uebungsleitung");
         window.open(`#/uebungsleitung/${uebungId}`, "_blank");
     }
 
     uebungAnschauen(uebungId: string): void {
+        analytics.track("admin_open_generator");
         window.open(`#/generator/${uebungId}`, "_blank");
     }
 

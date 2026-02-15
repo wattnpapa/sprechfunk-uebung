@@ -11,6 +11,7 @@ import { FunkUebung } from "../models/FunkUebung";
 import { Nachricht } from "../types/Nachricht";
 import { uiFeedback } from "../core/UiFeedback";
 import { debounce } from "../utils/debounce";
+import { analytics } from "../services/analytics";
 
 type DocMode = "table" | "meldevordruck" | "nachrichtenvordruck";
 
@@ -129,6 +130,7 @@ export class TeilnehmerController {
 
         saveTeilnehmerStorage(this.storage);
         this.renderNachrichten();
+        analytics.track("teilnehmer_toggle_uebertragen", { checked });
     }
 
     private toggleHide(checked: boolean) {
@@ -146,6 +148,7 @@ export class TeilnehmerController {
             }
             void this.renderDocPage();
         }
+        analytics.track("teilnehmer_toggle_hide_transmitted", { checked });
     }
 
     private resetData() {
@@ -166,6 +169,7 @@ export class TeilnehmerController {
         this.view.setDocMode(mode);
 
         if (mode === "table") {
+            analytics.track("teilnehmer_set_doc_mode", { mode });
             return;
         }
 
@@ -175,6 +179,7 @@ export class TeilnehmerController {
         }
         await this.renderDocPage();
         this.preloadPages(mode);
+        analytics.track("teilnehmer_set_doc_mode", { mode });
     }
 
     private getVisibleNachrichten(): Nachricht[] {
@@ -220,6 +225,7 @@ export class TeilnehmerController {
         }
         this.docPage = next;
         void this.renderDocPage();
+        analytics.track("teilnehmer_change_doc_page", { mode: this.docMode, page: this.docPage });
     }
 
     private async renderDocPage() {
@@ -303,6 +309,7 @@ export class TeilnehmerController {
             document.body.removeChild(link);
             URL.revokeObjectURL(link.href);
             uiFeedback.success("ZIP wurde heruntergeladen.");
+            analytics.track("teilnehmer_download_zip");
         } catch {
             uiFeedback.error("ZIP konnte nicht erstellt werden.");
         }
