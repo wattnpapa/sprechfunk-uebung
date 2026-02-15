@@ -332,6 +332,20 @@ test("@routing hash navigation switches between generator and admin mode", async
     await expect(page.locator("#mainAppArea")).toBeHidden();
 });
 
+test("@routing sets html title per module route", async ({ page }) => {
+    await page.goto("/#/generator");
+    await expect(page).toHaveTitle("Sprechfunkuebung - Generator");
+
+    await page.goto("/#/admin");
+    await expect(page).toHaveTitle("Sprechfunkuebung - Admin");
+
+    await page.goto("/#/uebungsleitung/u1");
+    await expect(page).toHaveTitle("Sprechfunkuebung - Uebungsleitung");
+
+    await page.goto("/#/teilnehmer/u1/t1");
+    await expect(page).toHaveTitle("Sprechfunkuebung - Teilnehmer");
+});
+
 test("@admin admin route renders seeded data", async ({ page }) => {
     await page.goto("/#/admin");
 

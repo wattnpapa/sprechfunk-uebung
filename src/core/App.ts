@@ -12,6 +12,7 @@ import { ThemeManager } from "./ThemeManager";
 import { AppView } from "./AppView";
 import pdfGenerator from "../services/pdfGenerator";
 import { analytics } from "../services/analytics";
+import { AppMode } from "./appModes";
 
 export class App {
     private appView: AppView;
@@ -64,7 +65,9 @@ export class App {
 
     private handleRoute(): void {
         const { mode, params } = router.parseHash();
-        analytics.trackPage(window.location?.hash || "#/");
+        const pageTitle = this.getPageTitle(mode);
+        this.setDocumentTitle(pageTitle);
+        analytics.trackPage(window.location?.hash || "#/", pageTitle);
         analytics.track("route_change", {
             mode,
             has_params: params.length > 0
@@ -116,5 +119,26 @@ export class App {
         (window as any).pdfGenerator = pdfGenerator;
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         (window as any).admin = admin;
+    }
+
+    private getPageTitle(mode: AppMode): string {
+        switch (mode) {
+            case "admin":
+                return "Sprechfunkuebung - Admin";
+            case "uebungsleitung":
+                return "Sprechfunkuebung - Uebungsleitung";
+            case "teilnehmer":
+                return "Sprechfunkuebung - Teilnehmer";
+            case "generator":
+            default:
+                return "Sprechfunkuebung - Generator";
+        }
+    }
+
+    private setDocumentTitle(title: string): void {
+        if (typeof document === "undefined") {
+            return;
+        }
+        document.title = title;
     }
 }

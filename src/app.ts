@@ -42,6 +42,20 @@ const natoClock = new NatoClock();
 const themeManager = new ThemeManager();
 let appBuildVersion = "dev";
 
+function getPageTitle(mode: string): string {
+    switch (mode) {
+        case "admin":
+            return "Sprechfunkuebung - Admin";
+        case "uebungsleitung":
+            return "Sprechfunkuebung - Uebungsleitung";
+        case "teilnehmer":
+            return "Sprechfunkuebung - Teilnehmer";
+        case "generator":
+        default:
+            return "Sprechfunkuebung - Generator";
+    }
+}
+
 async function loadBuildVersion(): Promise<void> {
     const isLocal = ["localhost", "127.0.0.1", "0.0.0.0"].includes(window.location.hostname);
     if (isLocal) {
@@ -85,7 +99,9 @@ store.setState({ db });
 // Main Routing Logic
 function handleRoute(): void {
     const { mode, params } = router.parseHash();
-    analytics.trackPage(window.location?.hash || "#/");
+    const pageTitle = getPageTitle(mode);
+    document.title = pageTitle;
+    analytics.trackPage(window.location?.hash || "#/", pageTitle);
     analytics.track("route_change", {
         mode,
         has_params: params.length > 0
