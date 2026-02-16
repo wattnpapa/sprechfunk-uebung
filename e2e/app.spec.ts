@@ -69,12 +69,12 @@ test("@smoke @generator loads main app shell", async ({ page }) => {
     await page.goto("/");
 
     await expect(page.getByRole("heading", { name: "Sprechfunk Übungsgenerator" })).toBeVisible();
-    await expect(page.locator("#mainAppArea")).toBeVisible();
+    await expect(page.getByTestId("route-generator")).toBeVisible();
 });
 
 test("@smoke @generator double click on theme toggle enables startrek theme", async ({ page }) => {
     await page.goto("/");
-    const btn = page.locator("#themeToggle");
+    const btn = page.getByTestId("theme-toggle-desktop");
     await btn.dblclick();
     await expect(page.locator("body")).toHaveAttribute("data-theme", "startrek");
 });
@@ -248,7 +248,7 @@ test("@generator delete participant removes a row", async ({ page }) => {
 test("@smoke @generator theme toggle click switches between light and dark", async ({ page }) => {
     await page.goto("/");
     const body = page.locator("body");
-    const btn = page.locator("#themeToggle");
+    const btn = page.getByTestId("theme-toggle-desktop");
 
     await expect(body).toHaveAttribute("data-theme", "light");
     await btn.click();

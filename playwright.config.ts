@@ -10,12 +10,16 @@ export default defineConfig({
     ],
     timeout: 60_000,
     expect: {
-        timeout: 10_000
+        timeout: 10_000,
+        toHaveScreenshot: {
+            maxDiffPixelRatio: 0.02
+        }
     },
     use: {
         baseURL: "http://localhost:3000",
         headless: true,
-        trace: "retain-on-failure"
+        trace: "retain-on-failure",
+        testIdAttribute: "data-testid"
     },
     webServer: {
         command: "npm run build && npm run serve",

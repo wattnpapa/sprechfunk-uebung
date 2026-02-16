@@ -32,7 +32,9 @@
     "test:e2e:uebungsleitung": "playwright test -g \"@uebungsleitung\"",
     "test:e2e:routing": "playwright test -g \"@routing\"",
     "test:e2e:split": "npm run test:e2e:smoke && npm run test:e2e:generator && npm run test:e2e:admin && npm run test:e2e:teilnehmer && npm run test:e2e:uebungsleitung && npm run test:e2e:routing",
-    "coverage:readme": "node scripts/update-coverage-link.mjs"
+    "coverage:readme": "node scripts/update-coverage-link.mjs",
+    "deps:audit": "npm audit --omit=dev --audit-level=high",
+    "perf:budget": "node scripts/check-performance-budget.mjs"
   },
   "devDependencies": {
     "@playwright/test": "^1.58.2",

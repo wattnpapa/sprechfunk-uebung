@@ -1,4 +1,5 @@
 import { uiFeedback } from "./UiFeedback";
+import { featureFlags } from "../services/featureFlags";
 
 export class ThemeManager {
     private toggleBtns: HTMLElement[];
@@ -47,6 +48,9 @@ export class ThemeManager {
             });
 
             btn.addEventListener("dblclick", () => {
+                if (!featureFlags.isEnabled("enableStartrekTheme")) {
+                    return;
+                }
                 localStorage.setItem("theme", "startrek");
                 this.applyTheme("startrek");
                 uiFeedback.info("Star Trek Theme aktiviert.");

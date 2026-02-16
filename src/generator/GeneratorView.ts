@@ -969,7 +969,7 @@ export class GeneratorView {
                                     </label>
                                 </div>
 
-                                <button id="shuffleButton" class="btn btn-primary" data-analytics-id="generator-shuffle-loesungswoerter"
+                                <button id="shuffleButton" class="btn btn-primary" data-testid="generator-shuffle-loesungswoerter" data-analytics-id="generator-shuffle-loesungswoerter"
                                         style="display: none;">
                                     🔀 Lösungswörter Zufällig neu zuweisen
                                 </button>
@@ -990,7 +990,7 @@ export class GeneratorView {
                                 <!-- Hier wird per JS die Tabelle eingefügt -->
                             </div>
                             <!-- Teilnehmer hinzufügen Button -->
-                            <button id="addTeilnehmerBtn" class="btn btn-success mt-3" data-analytics-id="generator-add-teilnehmer">Teilnehmer
+                            <button id="addTeilnehmerBtn" class="btn btn-success mt-3" data-testid="generator-add-teilnehmer" data-analytics-id="generator-add-teilnehmer">Teilnehmer
                                 hinzufügen
                             </button>
                         </div>
@@ -1001,7 +1001,7 @@ export class GeneratorView {
             <div class="generator-action-bar mt-3">
                 <div class="generator-action-inner">
                     <small class="text-muted">Prüfe Einstellungen und Teilnehmer, dann starte die Generierung.</small>
-                    <button id="startUebungBtn" class="btn btn-success" data-analytics-id="generator-start-uebung">
+                    <button id="startUebungBtn" class="btn btn-success" data-testid="generator-start-uebung" data-analytics-id="generator-start-uebung">
                         <i class="fas fa-cogs"></i> Übung generieren
                     </button>
                 </div>

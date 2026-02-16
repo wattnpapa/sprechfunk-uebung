@@ -27,15 +27,6 @@
     <meta name="twitter:description" content="Erstelle realistische Sprechfunk-Übungen für Ausbildung und Training mit dem Sprechfunk Übungsgenerator.">
     <meta name="twitter:image" content="https://sprechfunk-uebung.de/assets/favicon.png">
 
-    <!-- Google tag (gtag.js) -->
-    <script async src="https://www.googletagmanager.com/gtag/js?id=G-7FN1RQ6MK4"></script>
-    <script>
-        window.dataLayer = window.dataLayer || [];
-        function gtag() { dataLayer.push(arguments); }
-        gtag('js', new Date());
-        gtag('config', 'G-7FN1RQ6MK4');
-    </script>
-
     <link rel="stylesheet" href="bundle.css">
     <link rel="stylesheet" href="style.css">
     <script type="application/ld+json">
@@ -73,7 +64,7 @@
             <button class="btn btn-secondary" data-bs-toggle="modal" data-bs-target="#authorModal" data-analytics-id="header-open-author">
                 <i class="fas fa-user"></i> Über den Autor
             </button>
-            <button class="btn btn-outline-secondary" id="themeToggle" data-analytics-id="header-toggle-theme">
+            <button class="btn btn-outline-secondary" id="themeToggle" data-testid="theme-toggle-desktop" data-analytics-id="header-toggle-theme">
                 🌙 Dark Mode
             </button>
         </div>
@@ -99,7 +90,7 @@
                     </button>
                 </li>
                 <li>
-                    <button class="dropdown-item" id="themeToggleMobile" data-analytics-id="mobile-toggle-theme">
+                    <button class="dropdown-item" id="themeToggleMobile" data-testid="theme-toggle-mobile" data-analytics-id="mobile-toggle-theme">
                         🌙 Dark Mode
                     </button>
                 </li>
@@ -109,7 +100,7 @@
 </header>
 
 <!-- Container für die verschiedenen Views -->
-<div id="uebungsleitungArea" style="display:none;">
+<div id="uebungsleitungArea" data-testid="route-uebungsleitung" style="display:none;">
     <div class="container my-4 app-view-shell">
         <div class="card mb-3">
             <div class="card-header"><h4 class="mb-0"><i class="fas fa-eye"></i> Übungsüberwachung – Übungsleitung</h4></div>
@@ -142,17 +133,17 @@
     </div>
 </div>
 
-<div id="teilnehmerArea" style="display:none;">
+<div id="teilnehmerArea" data-testid="route-teilnehmer" style="display:none;">
     <div class="container my-4 app-view-shell">
         <div id="teilnehmerContent"></div>
     </div>
 </div>
 
-<div id="mainAppArea" style="display: block;">
+<div id="mainAppArea" data-testid="route-generator" style="display: block;">
     <!-- Wird von GeneratorView.ts befüllt -->
 </div>
 
-<div id="adminArea" style="display: none;">
+<div id="adminArea" data-testid="route-admin" style="display: none;">
     <div class="container my-4 app-view-shell">
     <div class="card mt-4" id="adminUebungsliste">
         <div class="card-header">

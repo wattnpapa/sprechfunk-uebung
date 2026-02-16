@@ -20,6 +20,8 @@ import { NatoClock } from "./core/NatoClock";
 import { ThemeManager } from "./core/ThemeManager";
 import { AppView } from "./core/AppView";
 import { analytics } from "./services/analytics";
+import { featureFlags } from "./services/featureFlags";
+import { errorMonitoring } from "./services/errorMonitoring";
 
 import { Chart, registerables } from "chart.js";
 Chart.register(...registerables);
@@ -113,7 +115,12 @@ async function loadBuildVersion(): Promise<void> {
 // Initialize Firebase
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
+featureFlags.init();
 analytics.init(firebaseConfig.measurementId);
+errorMonitoring.init({
+    getMode: () => store.getState().mode,
+    getVersion: () => appBuildVersion
+});
 const shouldUseEmulator = (() => {
     const search = window.location?.search ?? "";
     const byQuery = new URLSearchParams(search).get("emulator") === "1";

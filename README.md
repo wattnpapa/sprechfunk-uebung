@@ -88,11 +88,19 @@ Workflow: `.github/workflows/main.yml`
 - Consent-Mode: Tracking standardmäßig aus, per Footer-Button aktivierbar
 - Event-Schema: `docs/analytics-events.md`
 - Dashboard-Vorschlag: `docs/analytics-dashboard.md`
+- Error Monitoring: `docs/error-monitoring.md`
 - Architekturentscheidungen: `docs/adr/`
 
 ## Sicherheit / Dependencies
 - Sicherheitsupdates regelmäßig über Dependabot/NPM Audit
 - `jspdf`/`jspdf-autotable` auf aktuellem Stand
+- Dependabot Konfiguration: `.github/dependabot.yml`
+- Geplanter Hygiene-Workflow: `.github/workflows/dependency-hygiene.yml`
+
+## Betrieb / Performance
+- Feature Flags: `docs/feature-flags.md`
+- Performance Budget: `docs/performance-budget.md`
+- Backup/Restore Playbook: `docs/backup-restore-firestore.md`
 
 ## Lizenz
 MIT

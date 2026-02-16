@@ -1,10 +1,17 @@
 import { AppMode } from "./appModes";
 import { Converter } from "showdown";
 import $ from "./select2-setup";
+import { analytics } from "../services/analytics";
+import { featureFlags } from "../services/featureFlags";
+import type { AnalyticsEventMap } from "../services/analyticsEvents";
 
 export class AppView {
     
     public initGlobalListeners(): void {
+        if (!featureFlags.isEnabled("enableUiInteractionTracking")) {
+            return;
+        }
+
         // Global button tracking
         document.addEventListener("click", event => {
             const targetEl = event.target as HTMLElement | null;
@@ -15,7 +22,7 @@ export class AppView {
             if (!button) {
                 return;
             }
-            this.emitTracking("ui_click", this.getElementTrackingPayload(button));
+            analytics.track("ui_click", this.getElementTrackingPayload(button));
         }, { capture: true });
 
         // Specific tracking for primary start action
@@ -28,7 +35,7 @@ export class AppView {
             if (!startBtn) {
                 return;
             }
-            this.emitTracking("generator_start_button_click", this.getElementTrackingPayload(startBtn));
+            analytics.track("generator_start_button_click", this.getElementTrackingPayload(startBtn));
         }, { capture: true });
 
         document.addEventListener("change", event => {
@@ -39,13 +46,14 @@ export class AppView {
             if (!(el instanceof HTMLInputElement || el instanceof HTMLSelectElement || el instanceof HTMLTextAreaElement)) {
                 return;
             }
-            const payload = this.getElementTrackingPayload(el);
+            const payload: AnalyticsEventMap["ui_change"] = {
+                ...this.getElementTrackingPayload(el),
+                value: "changed"
+            };
             if (el instanceof HTMLInputElement && (el.type === "checkbox" || el.type === "radio")) {
-                payload["value"] = String(el.checked);
-            } else {
-                payload["value"] = "changed";
+                payload.value = String(el.checked);
             }
-            this.emitTracking("ui_change", payload);
+            analytics.track("ui_change", payload);
         }, { capture: true });
 
         document.addEventListener("submit", event => {
@@ -53,7 +61,7 @@ export class AppView {
             if (!form) {
                 return;
             }
-            this.emitTracking("ui_submit", {
+            analytics.track("ui_submit", {
                 form_id: form.id || "(none)",
                 form_class: form.className || "(none)"
             });
@@ -75,7 +83,7 @@ export class AppView {
         });
     }
 
-    private getElementTrackingPayload(element: HTMLElement): Record<string, string> {
+    private getElementTrackingPayload(element: HTMLElement): AnalyticsEventMap["ui_click"] {
         const el = element as Partial<HTMLElement> & Record<string, unknown>;
         const rawText = typeof el.textContent === "string" ? el.textContent : "";
         const text = rawText.trim().replace(/\s+/g, " ");
@@ -137,14 +145,6 @@ export class AppView {
             guard++;
         }
         return parts.join(">");
-    }
-
-    private emitTracking(eventName: string, payload: Record<string, string>): void {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        if (typeof (window as any)?.gtag === "function") {
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            (window as any).gtag("event", eventName, payload);
-        }
     }
 
     public initModals(): void {

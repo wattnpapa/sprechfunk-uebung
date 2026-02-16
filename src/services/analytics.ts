@@ -1,4 +1,4 @@
-type AnalyticsParams = Record<string, string | number | boolean | null | undefined>;
+import type { AnalyticsEventMap, AnalyticsEventName, AnalyticsParams } from "./analyticsEvents";
 
 declare global {
     interface Window {
@@ -10,8 +10,6 @@ declare global {
 class AnalyticsService {
     private measurementId: string | null = null;
     private initialized = false;
-    private errorHandlersBound = false;
-    private recentErrorKeys = new Set<string>();
     private consentGranted = false;
     private readonly consentStorageKey = "ga_consent";
 
@@ -58,7 +56,6 @@ class AnalyticsService {
         if (storedConsent !== null) {
             this.setConsent(storedConsent);
         }
-        this.bindGlobalErrorHandlers();
         this.initialized = true;
     }
 
@@ -75,6 +72,8 @@ class AnalyticsService {
         });
     }
 
+    public track<K extends AnalyticsEventName>(eventName: K, params: AnalyticsEventMap[K]): void;
+    public track(eventName: string, params?: AnalyticsParams): void;
     public track(eventName: string, params: AnalyticsParams = {}): void {
         if (typeof window === "undefined") {
             return;
@@ -126,73 +125,6 @@ class AnalyticsService {
             out[key] = value;
         });
         return out;
-    }
-
-    private bindGlobalErrorHandlers(): void {
-        if (this.errorHandlersBound) {
-            return;
-        }
-        if (typeof window.addEventListener !== "function") {
-            return;
-        }
-
-        window.addEventListener("error", event => {
-            const filename = event.filename || "(unknown)";
-            const line = event.lineno || 0;
-            const col = event.colno || 0;
-            const message = event.message || "UnknownError";
-            const key = `error:${filename}:${line}:${col}:${message}`;
-            if (this.recentErrorKeys.has(key)) {
-                return;
-            }
-            this.rememberErrorKey(key);
-            this.track("js_error", {
-                kind: "window_error",
-                message,
-                source: filename,
-                line,
-                col
-            });
-        });
-
-        window.addEventListener("unhandledrejection", event => {
-            const reason = this.getReasonMessage(event.reason);
-            const key = `rejection:${reason}`;
-            if (this.recentErrorKeys.has(key)) {
-                return;
-            }
-            this.rememberErrorKey(key);
-            this.track("js_error", {
-                kind: "unhandled_rejection",
-                message: reason
-            });
-        });
-
-        this.errorHandlersBound = true;
-    }
-
-    private rememberErrorKey(key: string): void {
-        this.recentErrorKeys.add(key);
-        if (this.recentErrorKeys.size > 200) {
-            const first = this.recentErrorKeys.values().next().value;
-            if (typeof first === "string") {
-                this.recentErrorKeys.delete(first);
-            }
-        }
-    }
-
-    private getReasonMessage(reason: unknown): string {
-        if (reason instanceof Error) {
-            return reason.message || reason.name || "Error";
-        }
-        if (typeof reason === "string") {
-            return reason;
-        }
-        try {
-            return JSON.stringify(reason).slice(0, 120);
-        } catch {
-            return "UnknownRejection";
-        }
     }
 
     private readStoredConsent(): boolean | null {

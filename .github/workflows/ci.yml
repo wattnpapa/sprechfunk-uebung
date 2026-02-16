@@ -29,6 +29,12 @@ jobs:
       - name: Unit tests with coverage
         run: npm run test:coverage
 
+      - name: Build project
+        run: npm run build
+
+      - name: Check performance budget
+        run: npm run perf:budget
+
       - name: Upload unit test results to Codecov
         if: ${{ !cancelled() }}
         uses: codecov/test-results-action@v1

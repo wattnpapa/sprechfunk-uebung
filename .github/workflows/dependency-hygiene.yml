@@ -1,0 +1,28 @@
+name: Dependency Hygiene
+
+on:
+  schedule:
+    - cron: "0 5 * * 1"
+  workflow_dispatch:
+
+jobs:
+  audit-and-outdated:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run production audit (high+)
+        run: npm run deps:audit
+
+      - name: Report outdated dependencies
+        run: npm outdated || true
+

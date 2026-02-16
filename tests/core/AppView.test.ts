@@ -1,12 +1,22 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { JSDOM } from "jsdom";
 
+const mocks = vi.hoisted(() => ({
+    analyticsTrack: vi.fn()
+}));
+
 vi.mock("../../src/core/select2-setup", () => ({
     default: (arg: unknown) => {
         if (arg === (globalThis as any).document) {
             return { ready: (cb: () => void) => cb() };
         }
         return { select2: vi.fn() };
+    }
+}));
+
+vi.mock("../../src/services/analytics", () => ({
+    analytics: {
+        track: mocks.analyticsTrack
     }
 }));
 
@@ -55,6 +65,7 @@ const makeDocument = () => {
 
 describe("AppView", () => {
     beforeEach(() => {
+        mocks.analyticsTrack.mockReset();
         const { document, listeners, howtoContent, modalHandlers, elements } = makeDocument();
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         (globalThis as any).document = document;
@@ -88,16 +99,14 @@ describe("AppView", () => {
         };
 
         listeners.click[0]?.({ target });
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        expect((globalThis as any).window.gtag).toHaveBeenCalled();
+        expect(mocks.analyticsTrack).toHaveBeenCalled();
 
         const startButton = {};
         const startTarget = {
             closest: (sel: string) => (sel === "#startUebungBtn" ? startButton : null)
         };
         listeners.click[1]?.({ target: startTarget });
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        expect((globalThis as any).window.gtag).toHaveBeenCalled();
+        expect(mocks.analyticsTrack).toHaveBeenCalled();
     });
 
     it("uses fallback labels and skips tracking when gtag missing", () => {
@@ -141,12 +150,7 @@ describe("AppView", () => {
         listeners.click[1]?.({ target: null });
         listeners.click[1]?.({ target: { closest: () => null } });
 
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        expect((globalThis as any).window.gtag).not.toHaveBeenCalledWith(
-            "event",
-            "Übung_generieren",
-            expect.anything()
-        );
+        expect(mocks.analyticsTrack).not.toHaveBeenCalledWith("Übung_generieren", expect.anything());
     });
 
     it("does not track delegated event when gtag is unavailable", () => {
@@ -290,8 +294,7 @@ describe("AppView", () => {
         const form = dom.window.document.getElementById("f1") as HTMLFormElement;
         form.dispatchEvent(new dom.window.Event("submit", { bubbles: true }));
 
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        expect((globalThis as any).window.gtag).toHaveBeenCalled();
+        expect(mocks.analyticsTrack).toHaveBeenCalled();
     });
 
     it("ignores invalid change and submit targets", () => {
@@ -302,8 +305,7 @@ describe("AppView", () => {
         listeners.change[0]?.({ target: null });
         listeners.change[0]?.({ target: {} });
         listeners.submit[0]?.({ target: null });
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        expect((globalThis as any).window.gtag).not.toHaveBeenCalledWith("event", "ui_submit", expect.anything());
+        expect(mocks.analyticsTrack).not.toHaveBeenCalledWith("ui_submit", expect.anything());
     });
 
     it("tracks unique click keys for different buttons", () => {
@@ -312,12 +314,10 @@ describe("AppView", () => {
             <div><button>Start</button></div>
             <select id="funkspruchVorlage"></select>
         `);
-        const gtag = vi.fn();
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         (globalThis as any).document = dom.window.document;
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         (globalThis as any).window = {
-            gtag,
             $: vi.fn(() => ({ select2: vi.fn() })),
             jQuery: vi.fn(),
             location: { hash: "#/generator" }
@@ -329,10 +329,10 @@ describe("AppView", () => {
         buttons[0]?.dispatchEvent(new dom.window.Event("click", { bubbles: true }));
         buttons[1]?.dispatchEvent(new dom.window.Event("click", { bubbles: true }));
 
-        const uiClickCalls = gtag.mock.calls.filter(call => call[0] === "event" && call[1] === "ui_click");
+        const uiClickCalls = mocks.analyticsTrack.mock.calls.filter(call => call[0] === "ui_click");
         expect(uiClickCalls.length).toBeGreaterThanOrEqual(2);
-        const firstKey = uiClickCalls[0]?.[2]?.click_key;
-        const secondKey = uiClickCalls[1]?.[2]?.click_key;
+        const firstKey = uiClickCalls[0]?.[1]?.click_key;
+        const secondKey = uiClickCalls[1]?.[1]?.click_key;
         expect(firstKey).toBeDefined();
         expect(secondKey).toBeDefined();
         expect(firstKey).not.toBe(secondKey);

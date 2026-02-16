@@ -157,6 +157,9 @@ jobs:
       - name: Build project
         run: npm run build
 
+      - name: Check performance budget
+        run: npm run perf:budget
+
       - name: Create build.json with commit SHA and run number
         run: |
           BUILD_DATE=$(date +%Y%m%d)
