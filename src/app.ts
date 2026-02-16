@@ -56,6 +56,25 @@ function getPageTitle(mode: string): string {
     }
 }
 
+function initAnalyticsConsentToggle(): void {
+    const btn = document.getElementById("analyticsConsentToggle") as HTMLButtonElement | null;
+    if (!btn) {
+        return;
+    }
+
+    const render = () => {
+        const enabled = analytics.isConsentGranted();
+        btn.textContent = enabled ? "Analytics: an" : "Analytics: aus";
+        btn.setAttribute("aria-pressed", enabled ? "true" : "false");
+    };
+
+    btn.addEventListener("click", () => {
+        analytics.setConsent(!analytics.isConsentGranted());
+        render();
+    });
+    render();
+}
+
 async function loadBuildVersion(): Promise<void> {
     const isLocal = ["localhost", "127.0.0.1", "0.0.0.0"].includes(window.location.hostname);
     if (isLocal) {
@@ -162,6 +181,7 @@ window.addEventListener("DOMContentLoaded", () => {
     themeManager.init();
     appView.initModals();
     appView.initGlobalListeners();
+    initAnalyticsConsentToggle();
     loadBuildVersion().finally(() => {
         // Start Routing
         handleRoute();

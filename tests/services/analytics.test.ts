@@ -4,14 +4,20 @@ import { analytics } from "../../src/services/analytics";
 describe("analytics service", () => {
     beforeEach(() => {
         vi.restoreAllMocks();
+        const addEventListener = vi.fn();
         vi.stubGlobal("window", {
             location: {
                 hostname: "example.com",
                 search: "",
                 hash: "#/generator"
             },
+            localStorage: {
+                getItem: vi.fn(() => "granted"),
+                setItem: vi.fn()
+            },
             dataLayer: [],
-            gtag: vi.fn()
+            gtag: vi.fn(),
+            addEventListener
         });
         vi.stubGlobal("document", {
             head: {
@@ -61,5 +67,18 @@ describe("analytics service", () => {
             enabled: true,
             count: 2
         }));
+    });
+
+    it("respects consent toggle", () => {
+        analytics.init("G-TEST123");
+        const gtagSpy = vi.spyOn(window, "gtag");
+        analytics.setConsent(false);
+        analytics.track("ui_click", { label: "x" });
+        const before = gtagSpy.mock.calls.length;
+
+        analytics.setConsent(true);
+        analytics.track("ui_click", { label: "x" });
+        const after = gtagSpy.mock.calls.length;
+        expect(after).toBeGreaterThan(before);
     });
 });

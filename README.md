@@ -76,12 +76,18 @@ Workflow: `.github/workflows/main.yml`
 - E2E JUnit-Resultate werden zu Codecov hochgeladen
 - Deployment auf GitHub Pages nach erfolgreichen Jobs
 - Nightly Full E2E: `.github/workflows/e2e-nightly.yml`
+- PR-Validierung: `.github/workflows/ci.yml`
+- Empfohlene Required Checks (Branch Protection):
+- `validate`
+- `e2e-smoke-routing`
 
 ## Analytics
 - GA4 Tracking mit generischem `ui_click` Event + Feature-Events
 - Eindeutige Klick-Zuordnung via `click_key` und `data-analytics-id`
 - Route-spezifische Page-Titel für bessere Auswertung pro Modul
+- Consent-Mode: Tracking standardmäßig aus, per Footer-Button aktivierbar
 - Event-Schema: `docs/analytics-events.md`
+- Architekturentscheidungen: `docs/adr/`
 
 ## Sicherheit / Dependencies
 - Sicherheitsupdates regelmäßig über Dependabot/NPM Audit

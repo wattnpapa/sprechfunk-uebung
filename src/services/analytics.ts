@@ -12,6 +12,8 @@ class AnalyticsService {
     private initialized = false;
     private errorHandlersBound = false;
     private recentErrorKeys = new Set<string>();
+    private consentGranted = false;
+    private readonly consentStorageKey = "ga_consent";
 
     public init(measurementId: string | undefined): void {
         if (!measurementId || this.initialized) {
@@ -26,6 +28,7 @@ class AnalyticsService {
         const isLocal = ["localhost", "127.0.0.1", "0.0.0.0"].includes(hostname);
         const force = new URLSearchParams(search).get("ga") === "1";
         if (isLocal && !force) {
+            this.consentGranted = this.readStoredConsent() === true;
             return;
         }
 
@@ -41,10 +44,20 @@ class AnalyticsService {
             window.dataLayer?.push(args);
         };
         window.gtag("js", new Date());
+        window.gtag("consent", "default", {
+            analytics_storage: "denied",
+            ad_storage: "denied",
+            ad_user_data: "denied",
+            ad_personalization: "denied"
+        });
         window.gtag("config", measurementId, {
             anonymize_ip: true,
             send_page_view: false
         });
+        const storedConsent = this.readStoredConsent();
+        if (storedConsent !== null) {
+            this.setConsent(storedConsent);
+        }
         this.bindGlobalErrorHandlers();
         this.initialized = true;
     }
@@ -53,7 +66,7 @@ class AnalyticsService {
         if (typeof window === "undefined" || typeof document === "undefined") {
             return;
         }
-        if (!this.initialized || !this.measurementId || typeof window.gtag !== "function") {
+        if (!this.initialized || !this.measurementId || typeof window.gtag !== "function" || !this.consentGranted) {
             return;
         }
         window.gtag("event", "page_view", {
@@ -66,10 +79,38 @@ class AnalyticsService {
         if (typeof window === "undefined") {
             return;
         }
-        if (!this.initialized || !this.measurementId || typeof window.gtag !== "function") {
+        if (!this.initialized || !this.measurementId || typeof window.gtag !== "function" || !this.consentGranted) {
             return;
         }
         window.gtag("event", eventName, this.sanitizeParams(params));
+    }
+
+    public isConsentGranted(): boolean {
+        const stored = this.readStoredConsent();
+        if (stored !== null) {
+            this.consentGranted = stored;
+        }
+        return this.consentGranted;
+    }
+
+    public setConsent(granted: boolean): void {
+        this.consentGranted = granted;
+        if (typeof window !== "undefined") {
+            try {
+                window.localStorage.setItem(this.consentStorageKey, granted ? "granted" : "denied");
+            } catch {
+                // ignore storage write errors
+            }
+        }
+        if (!this.initialized || typeof window === "undefined" || typeof window.gtag !== "function") {
+            return;
+        }
+        window.gtag("consent", "update", {
+            analytics_storage: granted ? "granted" : "denied",
+            ad_storage: "denied",
+            ad_user_data: "denied",
+            ad_personalization: "denied"
+        });
     }
 
     private sanitizeParams(params: AnalyticsParams): AnalyticsParams {
@@ -152,6 +193,24 @@ class AnalyticsService {
         } catch {
             return "UnknownRejection";
         }
+    }
+
+    private readStoredConsent(): boolean | null {
+        if (typeof window === "undefined") {
+            return null;
+        }
+        try {
+            const value = window.localStorage.getItem(this.consentStorageKey);
+            if (value === "granted") {
+                return true;
+            }
+            if (value === "denied") {
+                return false;
+            }
+        } catch {
+            return null;
+        }
+        return null;
     }
 }
 

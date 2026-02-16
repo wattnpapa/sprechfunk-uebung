@@ -122,13 +122,14 @@ export class AppView {
                 parts.unshift(`${tag}#${current.id}`);
                 break;
             }
-            const parentEl = current.parentElement;
+            const parentEl: HTMLElement | null = current.parentElement;
             if (!parentEl) {
                 parts.unshift(tag);
                 break;
             }
+            const currentTagName = current.tagName;
             const siblings = Array.from(parentEl.children).filter(
-                child => (child as HTMLElement).tagName === current?.tagName
+                child => (child as HTMLElement).tagName === currentTagName
             );
             const index = Math.max(1, siblings.indexOf(current) + 1);
             parts.unshift(`${tag}:nth-of-type(${index})`);

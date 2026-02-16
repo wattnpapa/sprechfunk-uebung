@@ -1,0 +1,80 @@
+name: CI
+
+on:
+  pull_request:
+    branches: ["main"]
+  workflow_dispatch:
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: "20"
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Ensure firebase-config.js exists for tests
+        run: cp src/firebase-config.template.js src/firebase-config.js
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Unit tests with coverage
+        run: npm run test:coverage
+
+      - name: Upload unit test results to Codecov
+        if: ${{ !cancelled() }}
+        uses: codecov/test-results-action@v1
+        with:
+          token: ${{ secrets.CODECOV_TOKEN || vars.CODECOV_TOKEN }}
+          files: test-results/junit.xml
+          flags: unit,pr
+          fail_ci_if_error: false
+
+      - name: Upload coverage to Codecov
+        if: ${{ !cancelled() }}
+        uses: codecov/codecov-action@v4
+        with:
+          token: ${{ secrets.CODECOV_TOKEN || vars.CODECOV_TOKEN }}
+          files: coverage/lcov.info
+          flags: unit,pr
+          fail_ci_if_error: false
+
+  e2e-smoke-routing:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: "20"
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Ensure firebase-config.js exists for app build
+        run: cp src/firebase-config.template.js src/firebase-config.js
+
+      - name: Install Playwright browsers
+        run: npx playwright install --with-deps
+
+      - name: Run e2e smoke + routing
+        run: npx playwright test -g "@smoke|@routing"
+
+      - name: Upload e2e test results to Codecov
+        if: ${{ !cancelled() }}
+        uses: codecov/test-results-action@v1
+        with:
+          token: ${{ secrets.CODECOV_TOKEN || vars.CODECOV_TOKEN }}
+          files: test-results/e2e-junit.xml
+          flags: e2e,smoke,routing,pr
+          fail_ci_if_error: false
