@@ -17,7 +17,30 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
+  changes:
+    runs-on: ubuntu-latest
+    outputs:
+      run_e2e: ${{ steps.filter.outputs.e2e }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Detect relevant changes
+        id: filter
+        uses: dorny/paths-filter@v3
+        with:
+          filters: |
+            e2e:
+              - 'src/**'
+              - 'e2e/**'
+              - 'playwright.config.ts'
+              - 'package.json'
+              - 'package-lock.json'
+              - 'rollup.config.js'
+              - '.github/workflows/main.yml'
+
   e2e-matrix:
+    needs: changes
+    if: ${{ needs.changes.outputs.run_e2e == 'true' || github.event_name == 'workflow_dispatch' }}
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
@@ -74,7 +97,8 @@ jobs:
           if-no-files-found: ignore
 
   deploy:
-    needs: e2e-matrix
+    needs: [changes, e2e-matrix]
+    if: ${{ !cancelled() && (((needs.changes.outputs.run_e2e == 'true' || github.event_name == 'workflow_dispatch') && needs.e2e-matrix.result == 'success') || (needs.changes.outputs.run_e2e != 'true' && github.event_name != 'workflow_dispatch')) }}
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}

@@ -69,9 +69,19 @@ Workflow: `.github/workflows/main.yml`
 - Codecov-Upload (`CODECOV_TOKEN` via Secret/Variable)
 - E2E als Matrix-Jobs:
 - `smoke`, `generator`, `admin`, `teilnehmer`, `uebungsleitung`, `routing`
+- E2E Matrix läuft nur bei relevanten Code-Änderungen (Path Filter)
+- Playwright mit Retry in CI (`retries: 1`)
 - Pro E2E-Suite werden Artefakte hochgeladen:
 - `test-results`, `playwright-report`
+- E2E JUnit-Resultate werden zu Codecov hochgeladen
 - Deployment auf GitHub Pages nach erfolgreichen Jobs
+- Nightly Full E2E: `.github/workflows/e2e-nightly.yml`
+
+## Analytics
+- GA4 Tracking mit generischem `ui_click` Event + Feature-Events
+- Eindeutige Klick-Zuordnung via `click_key` und `data-analytics-id`
+- Route-spezifische Page-Titel für bessere Auswertung pro Modul
+- Event-Schema: `docs/analytics-events.md`
 
 ## Sicherheit / Dependencies
 - Sicherheitsupdates regelmäßig über Dependabot/NPM Audit

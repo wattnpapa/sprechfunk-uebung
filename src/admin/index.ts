@@ -1,5 +1,5 @@
 import { getFirestore } from "firebase/firestore";
-import type { Firestore, QueryDocumentSnapshot } from "firebase/firestore";
+import type { Firestore, QueryDocumentSnapshot, QuerySnapshot, DocumentData } from "firebase/firestore";
 import { initializeApp } from "firebase/app";
 import { firebaseConfig } from "../firebase-config.js";
 import { FirebaseService } from "../services/FirebaseService";
@@ -19,6 +19,9 @@ export class AdminController {
     };
     private firebaseService: FirebaseService;
     private view: AdminView;
+    private statsCache: { ts: number; data: Awaited<ReturnType<FirebaseService["getAdminStats"]>> } | null = null;
+    private snapshotCache: { ts: number; data: QuerySnapshot<DocumentData> } | null = null;
+    private readonly cacheTtlMs = 120000;
 
     constructor() {
         // Initialize Firebase App
@@ -49,13 +52,16 @@ export class AdminController {
     }
 
     async ladeAdminStatistik() {
-        let stats;
-        try {
-            stats = await this.firebaseService.getAdminStats();
-        } catch (error) {
-            console.error("Admin-Statistik konnte nicht geladen werden:", error);
-            uiFeedback.error("Admin-Statistik konnte wegen Firestore-Quota aktuell nicht geladen werden.");
-            return;
+        let stats = this.getCachedStats();
+        if (!stats) {
+            try {
+                stats = await this.firebaseService.getAdminStats();
+                this.statsCache = { ts: Date.now(), data: stats };
+            } catch (error) {
+                console.error("Admin-Statistik konnte nicht geladen werden:", error);
+                uiFeedback.error("Admin-Statistik konnte wegen Firestore-Quota aktuell nicht geladen werden.");
+                return;
+            }
         }
 
         const avgTeilnehmer = stats.total > 0 ? (stats.totalTeilnehmer / stats.total).toFixed(1) : "0";
@@ -98,7 +104,7 @@ export class AdminController {
 
         if (direction === "initial") {
             // Keine AggregationQuery (Quota): Count über Snapshotgröße ermitteln
-            const totalSnap = await this.firebaseService.getUebungenSnapshot();
+            const totalSnap = await this.getUebungenSnapshotCached();
             this.pagination.totalCount = totalSnap.size;
             this.pagination.currentPage = 0;
         } else if (direction === "next") {
@@ -145,7 +151,7 @@ export class AdminController {
 
 
     async ladeUebungsStatistik() {
-        const snapshot = await this.firebaseService.getUebungenSnapshot();
+        const snapshot = await this.getUebungenSnapshotCached();
         const countsByMonth = Array(12).fill(0); // Index 0 = Januar, ..., 11 = Dezember
 
         snapshot.forEach(doc => {
@@ -175,6 +181,26 @@ export class AdminController {
         const labels = ["Jan", "Feb", "Mär", "Apr", "Mai", "Jun", "Jul", "Aug", "Sep", "Okt", "Nov", "Dez"];
         
         this.view.renderChart(data, labels);
+    }
+
+    private getCachedStats() {
+        if (!this.statsCache) {
+            return null;
+        }
+        if ((Date.now() - this.statsCache.ts) > this.cacheTtlMs) {
+            this.statsCache = null;
+            return null;
+        }
+        return this.statsCache.data;
+    }
+
+    private async getUebungenSnapshotCached() {
+        if (this.snapshotCache && (Date.now() - this.snapshotCache.ts) <= this.cacheTtlMs) {
+            return this.snapshotCache.data;
+        }
+        const snap = await this.firebaseService.getUebungenSnapshot();
+        this.snapshotCache = { ts: Date.now(), data: snap };
+        return snap;
     }
 
     private updateFooterInfo(version?: string) {

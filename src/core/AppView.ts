@@ -122,17 +122,17 @@ export class AppView {
                 parts.unshift(`${tag}#${current.id}`);
                 break;
             }
-            const parent = current.parentElement;
-            if (!parent) {
+            const parentEl = current.parentElement;
+            if (!parentEl) {
                 parts.unshift(tag);
                 break;
             }
-            const siblings = Array.from(parent.children).filter(
+            const siblings = Array.from(parentEl.children).filter(
                 child => (child as HTMLElement).tagName === current?.tagName
             );
             const index = Math.max(1, siblings.indexOf(current) + 1);
             parts.unshift(`${tag}:nth-of-type(${index})`);
-            current = parent;
+            current = parentEl;
             guard++;
         }
         return parts.join(">");

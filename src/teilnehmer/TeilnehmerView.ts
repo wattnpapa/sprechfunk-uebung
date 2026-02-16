@@ -116,7 +116,7 @@ export class TeilnehmerView {
                                     <div id="teilnehmerPdfView" class="teilnehmer-doc-container">
                                         <canvas id="teilnehmerPdfCanvas" class="teilnehmer-doc-canvas"></canvas>
                                     </div>
-                                    <span id="teilnehmerDocPage" class="text-muted teilnehmer-doc-page"></span>
+                                    <span id="teilnehmerDocPage" class="text-muted teilnehmer-doc-page" aria-live="polite"></span>
                                 </div>
                                 <button class="btn btn-outline-secondary teilnehmer-doc-nav" type="button" id="btn-doc-next" data-analytics-id="teilnehmer-doc-next">
                                     Weiter <i class="fas fa-chevron-right"></i>
@@ -405,6 +405,9 @@ export class TeilnehmerView {
             const instance = bootstrapModal.getOrCreateInstance(modalEl);
             if (show) {
                 instance.show();
+                window.setTimeout(() => {
+                    (document.getElementById("btn-doc-close") as HTMLButtonElement | null)?.focus();
+                }, 0);
             } else {
                 instance.hide();
             }
@@ -413,5 +416,10 @@ export class TeilnehmerView {
         modalEl.classList.toggle("show", show);
         modalEl.style.display = show ? "block" : "none";
         document.body.classList.toggle("modal-open", show);
+        if (show) {
+            window.setTimeout(() => {
+                (document.getElementById("btn-doc-close") as HTMLButtonElement | null)?.focus();
+            }, 0);
+        }
     }
 }

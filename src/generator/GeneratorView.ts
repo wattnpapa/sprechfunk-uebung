@@ -1068,7 +1068,7 @@ export class GeneratorView {
                                             Enthält alle Teilnehmer-PDFs und Vordrucke in einer Datei.
                                         </p>
                                     </div>
-                                    <p id="link-action-feedback" class="small mt-2 mb-0"></p>
+                                    <p id="link-action-feedback" class="small mt-2 mb-0" aria-live="polite"></p>
                                 </div>
                             </div>
 
