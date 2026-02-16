@@ -294,10 +294,89 @@
     </div>
 </div>
 
+<div class="modal fade" id="impressumModal" tabindex="-1" aria-labelledby="impressumModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-scrollable">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="impressumModalLabel">Impressum</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Schließen" data-analytics-id="impressum-close"></button>
+            </div>
+            <div class="modal-body">
+                <p><strong>Angaben gemaess § 5 DDG</strong></p>
+                <p>
+                    Johannes Rudolph<br>
+                    Kniphauser Straße 16<br>
+                    26419 Schortens<br>
+                    Deutschland
+                </p>
+                <p><strong>Kontakt</strong></p>
+                <p>
+                    E-Mail: <a href="mailto:johannes.rudolph@thw-oldenburg.de">johannes.rudolph@thw-oldenburg.de</a>
+                </p>
+                <p><strong>Verantwortlich fuer den Inhalt nach § 18 Abs. 2 MStV</strong></p>
+                <p>
+                    Johannes Rudolph<br>
+                </p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" data-analytics-id="impressum-close-footer">Schließen</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="datenschutzModal" tabindex="-1" aria-labelledby="datenschutzModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-scrollable">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="datenschutzModalLabel">Datenschutz</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Schließen" data-analytics-id="datenschutz-close"></button>
+            </div>
+            <div class="modal-body">
+                <h6>1. Verantwortlicher</h6>
+                <p>
+                    Johannes Rudolph<br>
+                    E-Mail: <a href="mailto:johannes.rudolph@thw-oldenburg.de">johannes.rudolph@thw-oldenburg.de</a>
+                </p>
+                <h6>2. Verarbeitung beim Aufruf der Website</h6>
+                <p>
+                    Beim Aufruf werden technisch notwendige Informationen verarbeitet
+                    (z. B. IP-Adresse, Zeitstempel, Browserinformationen), um den Betrieb zu ermoeglichen.
+                </p>
+                <h6>3. Analyse / Tracking (Google Analytics)</h6>
+                <p>
+                    Diese Anwendung nutzt Google Analytics fuer Nutzungsanalysen.
+                    Tracking kann im Footer ein- oder ausgeschaltet werden.
+                </p>
+                <h6>4. Firebase</h6>
+                <p>
+                    Zur Speicherung und Bereitstellung von Uebungsdaten wird Firebase (Google) verwendet.
+                </p>
+                <h6>5. Rechte nach DSGVO</h6>
+                <p>
+                    Du hast u. a. Rechte auf Auskunft, Berichtigung, Loeschung, Einschraenkung
+                    der Verarbeitung und Widerspruch.
+                </p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" data-analytics-id="datenschutz-close-footer">Schließen</button>
+            </div>
+        </div>
+    </div>
+</div>
+
 <footer class="main-footer">
-    <b>Version</b> <span id="version">dev</span> | <b>Übung ID:</b> <span id="uebungsId">-</span> |
-    <button id="analyticsConsentToggle" class="btn btn-sm btn-outline-secondary" type="button" data-analytics-id="footer-toggle-analytics-consent" aria-pressed="false">Analytics: aus</button>
-    <strong>© Johannes Rudolph (<a href="mailto:johannes.rudolph@thw-oldenburg.de">johannes.rudolph@thw-oldenburg.de</a>) | <a href="https://sprechfunk-uebung.de/" target="_blank">Generator</a> | <a href="https://github.com/wattnpapa/sprechfunk-uebung" target="_blank">GitHub-Repository</a></strong>
+    <span><b>Version</b> <span id="version">dev</span></span>
+    <span><b>Übung ID:</b> <span id="uebungsId">-</span></span>
+    <button id="analyticsConsentToggle" class="btn btn-sm btn-outline-secondary" type="button" data-analytics-id="footer-toggle-analytics-consent" aria-pressed="false">Analytics: an</button>
+    <span class="footer-links">
+        <button class="btn btn-sm btn-outline-secondary" type="button" data-bs-toggle="modal" data-bs-target="#impressumModal" data-analytics-id="footer-open-impressum">Impressum</button>
+        <button class="btn btn-sm btn-outline-secondary" type="button" data-bs-toggle="modal" data-bs-target="#datenschutzModal" data-analytics-id="footer-open-datenschutz">Datenschutz</button>
+    </span>
+    <span class="footer-links">
+        <a href="mailto:johannes.rudolph@thw-oldenburg.de">Kontakt</a>
+        <a href="https://github.com/wattnpapa/sprechfunk-uebung" target="_blank" rel="noopener noreferrer">GitHub</a>
+    </span>
 </footer>
 
 </body>

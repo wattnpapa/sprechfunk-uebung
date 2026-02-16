@@ -729,6 +729,39 @@ body {
 
     font-size: 0.8rem;
     padding: 0.75rem 1.25rem;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.55rem 0.9rem;
+}
+
+.main-footer .footer-links {
+    display: inline-flex;
+    flex-wrap: wrap;
+    gap: 0.35rem 0.8rem;
+}
+
+.main-footer a {
+    color: inherit;
+    text-decoration: underline;
+    text-decoration-color: color-mix(in srgb, var(--text-muted) 65%, transparent);
+}
+
+.main-footer a:hover {
+    text-decoration-color: currentColor;
+}
+
+@media (max-width: 768px) {
+    .main-footer {
+        padding: 0.65rem 0.8rem;
+        font-size: 0.75rem;
+        gap: 0.4rem 0.6rem;
+    }
+
+    .main-footer .btn {
+        font-size: 0.7rem;
+        padding: 0.2rem 0.45rem;
+    }
 }
 
 /* Sticky App Header with strong separation */
