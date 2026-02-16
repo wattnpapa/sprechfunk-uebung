@@ -5,6 +5,9 @@ on:
     - cron: "0 5 * * 1"
   workflow_dispatch:
 
+permissions:
+  contents: read
+
 jobs:
   audit-and-outdated:
     runs-on: ubuntu-latest
@@ -25,4 +28,3 @@ jobs:
 
       - name: Report outdated dependencies
         run: npm outdated || true
-

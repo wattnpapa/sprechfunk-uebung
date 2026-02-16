@@ -5,6 +5,9 @@ on:
     - cron: "0 2 * * *"
   workflow_dispatch:
 
+permissions:
+  contents: read
+
 jobs:
   e2e-full:
     runs-on: ubuntu-latest
