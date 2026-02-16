@@ -24,6 +24,7 @@ body {
 }
 
 /* Title */
+.app-header-title h1,
 .app-header-title h2 {
     margin: 0;
     white-space: nowrap;
@@ -736,6 +737,7 @@ body {
     margin-left: 0.25rem;
 }
 
+.app-header-title h1,
 .app-header-title h2 {
     letter-spacing: 0.04em;
     text-transform: uppercase;
@@ -833,6 +835,7 @@ body {
     pointer-events: none;
 }
 
+[data-theme="startrek"] .app-header-title h1,
 [data-theme="startrek"] .app-header-title h2 {
     font-family: var(--lcars-font);
     letter-spacing: 0.1em;

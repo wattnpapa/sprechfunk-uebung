@@ -15,7 +15,7 @@
   "type": "module",
   "main": "app.js",
   "scripts": {
-    "build": "rollup -c && mkdir -p dist && cp -r assets dist/ && cp src/index.html dist/index.html && cp howto.md dist/howto.md && cp src/styles/main.css dist/style.css && cp src/firebase-config.js dist/firebase-config.js",
+    "build": "rollup -c && mkdir -p dist && cp -r assets dist/ && cp src/index.html dist/index.html && cp howto.md dist/howto.md && cp src/styles/main.css dist/style.css && cp src/firebase-config.js dist/firebase-config.js && cp src/robots.txt dist/robots.txt && cp src/sitemap.xml dist/sitemap.xml",
     "watch": "chokidar \"src/**/*\" \"assets/**/*\" \"rollup.config.js\" -c \"npm run build\"",
     "serve": "serve dist -l tcp://127.0.0.1:3000",
     "start": "npm run build && npm run serve",
