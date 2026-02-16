@@ -10,7 +10,7 @@ declare global {
 class AnalyticsService {
     private measurementId: string | null = null;
     private initialized = false;
-    private consentGranted = false;
+    private consentGranted = true;
     private readonly consentStorageKey = "ga_consent";
 
     public init(measurementId: string | undefined): void {
@@ -26,7 +26,8 @@ class AnalyticsService {
         const isLocal = ["localhost", "127.0.0.1", "0.0.0.0"].includes(hostname);
         const force = new URLSearchParams(search).get("ga") === "1";
         if (isLocal && !force) {
-            this.consentGranted = this.readStoredConsent() === true;
+            const storedConsent = this.readStoredConsent();
+            this.consentGranted = storedConsent ?? true;
             return;
         }
 
@@ -43,7 +44,7 @@ class AnalyticsService {
         };
         window.gtag("js", new Date());
         window.gtag("consent", "default", {
-            analytics_storage: "denied",
+            analytics_storage: "granted",
             ad_storage: "denied",
             ad_user_data: "denied",
             ad_personalization: "denied"
@@ -53,9 +54,7 @@ class AnalyticsService {
             send_page_view: false
         });
         const storedConsent = this.readStoredConsent();
-        if (storedConsent !== null) {
-            this.setConsent(storedConsent);
-        }
+        this.setConsent(storedConsent ?? true);
         this.initialized = true;
     }
 

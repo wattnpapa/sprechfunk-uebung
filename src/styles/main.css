@@ -1,5 +1,7 @@
 html, body {
     min-height: 100%;
+    width: 100%;
+    overflow-x: hidden;
 }
 
 body {
@@ -208,6 +210,42 @@ body {
         radial-gradient(900px 360px at 95% 0%, rgba(34, 211, 238, 0.08), transparent 55%),
         var(--bg);
     color: var(--text);
+}
+
+/* iPhone/small-screen overflow hardening for header + mobile menu */
+@media (max-width: 768px) {
+    .app-header .container {
+        grid-template-columns: 1fr auto;
+        text-align: left;
+        align-items: start;
+    }
+
+    .app-header-title {
+        min-width: 0;
+    }
+
+    .app-header-title h1,
+    .app-header-title h2 {
+        white-space: normal;
+        overflow-wrap: anywhere;
+        line-height: 1.15;
+        font-size: 0.92rem;
+    }
+
+    .nato-time {
+        white-space: normal;
+        text-align: center;
+        letter-spacing: 0.04em;
+        font-size: 0.82rem;
+    }
+
+    .app-header-burger .dropdown-menu {
+        max-width: calc(100vw - 1rem);
+    }
+
+    .app-header-burger .dropdown-item {
+        white-space: normal;
+    }
 }
 
 .container {

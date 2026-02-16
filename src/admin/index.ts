@@ -1,7 +1,4 @@
-import { getFirestore } from "firebase/firestore";
 import type { Firestore, QueryDocumentSnapshot, QuerySnapshot, DocumentData } from "firebase/firestore";
-import { initializeApp } from "firebase/app";
-import { firebaseConfig } from "../firebase-config.js";
 import { FirebaseService } from "../services/FirebaseService";
 import { AdminView } from "./AdminView";
 import { uiFeedback } from "../core/UiFeedback";
@@ -9,7 +6,7 @@ import { analytics } from "../services/analytics";
 
 export class AdminController {
     // Firestore database reference
-    db: Firestore;
+    db: Firestore | null = null;
     // Pagination state
     pagination: {
         totalCount: number;
@@ -17,18 +14,13 @@ export class AdminController {
         currentPage: number;
         lastVisible: QueryDocumentSnapshot | { __mockIndex: number } | null;
     };
-    private firebaseService: FirebaseService;
+    private firebaseService: FirebaseService | null = null;
     private view: AdminView;
     private statsCache: { ts: number; data: Awaited<ReturnType<FirebaseService["getAdminStats"]>> } | null = null;
     private snapshotCache: { ts: number; data: QuerySnapshot<DocumentData> } | null = null;
     private readonly cacheTtlMs = 120000;
 
     constructor() {
-        // Initialize Firebase App
-        initializeApp(firebaseConfig);
-        // Then get Firestore
-        this.db = getFirestore();
-        this.firebaseService = new FirebaseService(this.db);
         this.view = new AdminView();
         
         this.pagination = {
@@ -52,10 +44,14 @@ export class AdminController {
     }
 
     async ladeAdminStatistik() {
+        const service = this.getFirebaseService();
+        if (!service) {
+            return;
+        }
         let stats = this.getCachedStats();
         if (!stats) {
             try {
-                stats = await this.firebaseService.getAdminStats();
+                stats = await service.getAdminStats();
                 this.statsCache = { ts: Date.now(), data: stats };
             } catch (error) {
                 console.error("Admin-Statistik konnte nicht geladen werden:", error);
@@ -96,7 +92,11 @@ export class AdminController {
     }
 
     async ladeAlleUebungen(direction: "next" | "prev" | "initial" = "initial") {
-        const result = await this.firebaseService.getUebungenPaged(
+        const service = this.getFirebaseService();
+        if (!service) {
+            return;
+        }
+        const result = await service.getUebungenPaged(
             this.pagination.pageSize, 
             this.pagination.lastVisible, 
             direction
@@ -124,12 +124,16 @@ export class AdminController {
     }
 
     async loescheUebung(uebungId: string) {
+        const service = this.getFirebaseService();
+        if (!service) {
+            return;
+        }
         if (!uiFeedback.confirm("Möchtest du diese Übung wirklich löschen?")) {
             return;
         }
 
         try {
-            await this.firebaseService.deleteUebung(uebungId);
+            await service.deleteUebung(uebungId);
             analytics.track("admin_delete_uebung");
             // console.log("✅ Übung gelöscht:", uebungId); // Removed console.log
             this.ladeAlleUebungen(); // Ansicht aktualisieren
@@ -151,6 +155,9 @@ export class AdminController {
 
 
     async ladeUebungsStatistik() {
+        if (!this.ensureDbReady()) {
+            return Array(12).fill(0);
+        }
         const snapshot = await this.getUebungenSnapshotCached();
         const countsByMonth = Array(12).fill(0); // Index 0 = Januar, ..., 11 = Dezember
 
@@ -195,12 +202,31 @@ export class AdminController {
     }
 
     private async getUebungenSnapshotCached() {
+        const service = this.getFirebaseService();
+        if (!service) {
+            throw new Error("AdminController DB is not initialized");
+        }
         if (this.snapshotCache && (Date.now() - this.snapshotCache.ts) <= this.cacheTtlMs) {
             return this.snapshotCache.data;
         }
-        const snap = await this.firebaseService.getUebungenSnapshot();
+        const snap = await service.getUebungenSnapshot();
         this.snapshotCache = { ts: Date.now(), data: snap };
         return snap;
+    }
+
+    private getFirebaseService(): FirebaseService | null {
+        if (!this.ensureDbReady()) {
+            return null;
+        }
+        return this.firebaseService;
+    }
+
+    private ensureDbReady(): boolean {
+        if (this.db && this.firebaseService) {
+            return true;
+        }
+        console.warn("AdminController: DB ist noch nicht initialisiert. setDb() fehlt.");
+        return false;
     }
 
     private updateFooterInfo(version?: string) {

@@ -60,6 +60,7 @@ describe("AdminController", () => {
             loesungsCount: 1, staerkeCount: 1, buchstabierCount: 1
         });
         const c = new AdminController();
+        c.setDb({ db: true } as never);
         await c.ladeAdminStatistik();
         expect(mocks.renderStatistik).toHaveBeenCalled();
     });
@@ -68,6 +69,7 @@ describe("AdminController", () => {
         const { AdminController } = await import("../../src/admin/index");
         mocks.getAdminStats.mockRejectedValue(new Error("quota"));
         const c = new AdminController();
+        c.setDb({ db: true } as never);
         await c.ladeAdminStatistik();
         expect(mocks.uiError).toHaveBeenCalled();
     });
@@ -77,6 +79,7 @@ describe("AdminController", () => {
         mocks.getUebungenPaged.mockResolvedValue({ uebungen: [{ buildVersion: "v1" }], lastVisible: null });
         mocks.getUebungenSnapshot.mockResolvedValue({ size: 5 });
         const c = new AdminController();
+        c.setDb({ db: true } as never);
         await c.ladeAlleUebungen("initial");
         expect(mocks.renderUebungsListe).toHaveBeenCalled();
         expect(mocks.renderPaginationInfo).toHaveBeenCalled();
@@ -85,6 +88,7 @@ describe("AdminController", () => {
     it("delete flow tracks analytics and refreshes list", async () => {
         const { AdminController } = await import("../../src/admin/index");
         const c = new AdminController();
+        c.setDb({ db: true } as never);
         const reload = vi.spyOn(c, "ladeAlleUebungen").mockResolvedValue();
         await c.loescheUebung("u1");
         expect(mocks.deleteUebung).toHaveBeenCalledWith("u1");
@@ -95,6 +99,7 @@ describe("AdminController", () => {
     it("supports pagination next and renders statistik chart", async () => {
         const { AdminController } = await import("../../src/admin/index");
         const c = new AdminController();
+        c.setDb({ db: true } as never);
         mocks.getUebungenPaged.mockResolvedValueOnce({
             uebungen: [{ id: "u1" }],
             lastVisible: { __mockIndex: 0 }
@@ -121,6 +126,7 @@ describe("AdminController", () => {
     it("handles open handlers, deletion cancel/error and setDb", async () => {
         const { AdminController } = await import("../../src/admin/index");
         const c = new AdminController();
+        c.setDb({ db: true } as never);
         c.uebungAnschauen("u7");
         c.offeneUebungsleitung("u8");
         expect(window.open).toHaveBeenCalledWith("#/generator/u7", "_blank");
