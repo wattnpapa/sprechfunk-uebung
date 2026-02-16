@@ -99,7 +99,11 @@ export class Teilnehmer extends BasePDFTeilnehmer {
 
         (this.pdf as any).autoTable({
             head: [["Nr.", "Empfänger", "Nachrichtentext"]],
-            body: nachrichten.map((n: Nachricht) => [n.id, n.empfaenger.join("\n"), n.nachricht]),
+            body: nachrichten.map((n: Nachricht) => [
+                n.id,
+                n.empfaenger.join("\n"),
+                String(n.nachricht ?? "").replace(/\\n/g, "\n")
+            ]),
             startY: y,
             theme: "grid",
             margin: { left: pageMarginLeft, top: secondPageTableTopMargin, bottom: pageMarginBottom },
