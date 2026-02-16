@@ -88,7 +88,7 @@ jobs:
 
       - name: Upload e2e artifacts (${{ matrix.suite }})
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         with:
           name: e2e-${{ matrix.suite }}-artifacts
           path: |
@@ -183,13 +183,13 @@ jobs:
           path: 'dist'
 
       - name: Upload coverage artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         with:
           name: coverage
           path: coverage
 
       - name: Upload coverage HTML report
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         with:
           name: coverage-html
           path: coverage/index.html
