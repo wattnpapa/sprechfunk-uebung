@@ -23,7 +23,7 @@ jobs:
       run_e2e: ${{ steps.filter.outputs.e2e }}
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
       - name: Detect relevant changes
         id: filter
         uses: dorny/paths-filter@v3
@@ -48,7 +48,7 @@ jobs:
         suite: [smoke, generator, admin, teilnehmer, uebungsleitung, routing]
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
       - name: Setup Node.js
         uses: actions/setup-node@v3
@@ -105,7 +105,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
       - name: Setup Node.js
         uses: actions/setup-node@v3
