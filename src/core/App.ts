@@ -67,6 +67,7 @@ export class App {
         const { mode, params } = router.parseHash();
         const pageTitle = this.getPageTitle(mode);
         this.setDocumentTitle(pageTitle);
+        this.updateSeoIndexing(mode, params);
         analytics.trackPage(window.location?.hash || "#/", pageTitle);
         analytics.track("route_change", {
             mode,
@@ -140,5 +141,24 @@ export class App {
             return;
         }
         document.title = title;
+    }
+
+    private updateSeoIndexing(mode: AppMode, params: string[]): void {
+        if (typeof document === "undefined") {
+            return;
+        }
+
+        const robotsMeta = document.querySelector("meta[name=\"robots\"]");
+        if (!robotsMeta) {
+            return;
+        }
+
+        const shouldIndex = mode === "generator" && params.length === 0;
+        robotsMeta.setAttribute(
+            "content",
+            shouldIndex
+                ? "index,follow,max-image-preview:large,max-snippet:-1,max-video-preview:-1"
+                : "noindex,nofollow,noarchive"
+        );
     }
 }

@@ -1,4 +1,8 @@
 User-agent: *
 Allow: /
+Disallow: /admin
+Disallow: /teilnehmer
+Disallow: /uebungsleitung
+Disallow: /api/
 
 Sitemap: https://sprechfunk-uebung.de/sitemap.xml

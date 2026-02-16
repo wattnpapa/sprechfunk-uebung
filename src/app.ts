@@ -56,6 +56,21 @@ function getPageTitle(mode: string): string {
     }
 }
 
+function updateSeoIndexing(mode: string, params: string[]): void {
+    const robotsMeta = document.querySelector("meta[name=\"robots\"]");
+    if (!robotsMeta) {
+        return;
+    }
+
+    const shouldIndex = mode === "generator" && params.length === 0;
+    robotsMeta.setAttribute(
+        "content",
+        shouldIndex
+            ? "index,follow,max-image-preview:large,max-snippet:-1,max-video-preview:-1"
+            : "noindex,nofollow,noarchive"
+    );
+}
+
 function initAnalyticsConsentToggle(): void {
     const btn = document.getElementById("analyticsConsentToggle") as HTMLButtonElement | null;
     if (!btn) {
@@ -120,6 +135,7 @@ function handleRoute(): void {
     const { mode, params } = router.parseHash();
     const pageTitle = getPageTitle(mode);
     document.title = pageTitle;
+    updateSeoIndexing(mode, params);
     analytics.trackPage(window.location?.hash || "#/", pageTitle);
     analytics.track("route_change", {
         mode,
