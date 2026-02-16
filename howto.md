@@ -135,6 +135,12 @@ Ja, das ist der einfachste Weg. Eigene `.txt`-Dateien sind optional.
 ### Kann ich nachträglich etwas ändern?
 Ja. Du kannst Übung neu generieren oder in Übungsleitung/Teilnehmeransicht Status und Notizen anpassen.
 
+### Werden Nutzungsdaten erfasst?
+Ja, aber nur wenn du es aktiv erlaubst.  
+Im Footer gibt es den Schalter **„Analytics: aus/an“**.
+- Standard ist **aus**.
+- Erst nach Aktivierung werden Seitenaufrufe und Button-Klicks zu Analysezwecken erfasst.
+
 ---
 
 Viel Erfolg bei der Durchführung deiner Übung.

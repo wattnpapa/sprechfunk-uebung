@@ -70,6 +70,40 @@ describe("FirebaseService firestore path", () => {
         expect(missing).toBeNull();
     });
 
+    it("maps malformed firestore payload safely (contract guard)", async () => {
+        const { FirebaseService } = await import("../../src/services/FirebaseService");
+        const s = new FirebaseService({} as never);
+        mocks.getDoc.mockResolvedValueOnce({
+            exists: () => true,
+            id: "uX",
+            data: () => ({
+                name: 123,
+                datum: "invalid-date",
+                createDate: null,
+                teilnehmerListe: ["A", 99],
+                teilnehmerIds: { t1: "A", t2: 2 },
+                nachrichten: {
+                    A: [
+                        { id: "1", nachricht: "ok", empfaenger: ["Alle"] },
+                        { id: "x", nachricht: "", empfaenger: [] }
+                    ],
+                    B: "bad"
+                },
+                anmeldungAktiv: "yes",
+                verwendeteVorlagen: ["v1", 2]
+            })
+        });
+
+        const mapped = await s.getUebung("uX");
+        expect(mapped?.name).toBe("");
+        expect(mapped?.teilnehmerListe).toEqual(["A"]);
+        expect(mapped?.teilnehmerIds).toEqual({ t1: "A" });
+        expect(mapped?.nachrichten.A?.[0]?.empfaenger).toEqual([]);
+        expect(mapped?.nachrichten.B).toEqual([]);
+        expect(mapped?.anmeldungAktiv).toBe(true);
+        expect(mapped?.verwendeteVorlagen).toEqual(["v1"]);
+    });
+
     it("save/delete/paging/snapshot use firestore functions", async () => {
         const { FirebaseService } = await import("../../src/services/FirebaseService");
         const s = new FirebaseService({} as never);
@@ -100,6 +134,14 @@ describe("FirebaseService firestore path", () => {
         mocks.getDocs.mockResolvedValueOnce({ size: 3, docs: [], forEach: vi.fn() });
         const snap = await s.getUebungenSnapshot();
         expect(snap.size).toBe(3);
+    });
+
+    it("uses initial paging query for prev direction (contract)", async () => {
+        const { FirebaseService } = await import("../../src/services/FirebaseService");
+        const s = new FirebaseService({} as never);
+        mocks.getDocs.mockResolvedValueOnce({ docs: [], size: 0 });
+        await s.getUebungenPaged(5, "last", "prev");
+        expect(mocks.startAfter).not.toHaveBeenCalled();
     });
 
     it("computes admin stats from firestore snapshot", async () => {

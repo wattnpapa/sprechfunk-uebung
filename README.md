@@ -87,6 +87,7 @@ Workflow: `.github/workflows/main.yml`
 - Route-spezifische Page-Titel für bessere Auswertung pro Modul
 - Consent-Mode: Tracking standardmäßig aus, per Footer-Button aktivierbar
 - Event-Schema: `docs/analytics-events.md`
+- Dashboard-Vorschlag: `docs/analytics-dashboard.md`
 - Architekturentscheidungen: `docs/adr/`
 
 ## Sicherheit / Dependencies
