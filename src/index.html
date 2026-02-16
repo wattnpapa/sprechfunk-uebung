@@ -49,19 +49,19 @@
             <a href="https://github.com/wattnpapa/sprechfunk-uebung" class="btn btn-dark">
                 <i class="fab fa-github"></i> GitHub
             </a>
-            <button class="btn btn-info" data-bs-toggle="modal" data-bs-target="#howtoModal">
+            <button class="btn btn-info" data-bs-toggle="modal" data-bs-target="#howtoModal" data-analytics-id="header-open-howto">
                 <i class="fas fa-question-circle"></i> Anleitung
             </button>
-            <button class="btn btn-secondary" data-bs-toggle="modal" data-bs-target="#authorModal">
+            <button class="btn btn-secondary" data-bs-toggle="modal" data-bs-target="#authorModal" data-analytics-id="header-open-author">
                 <i class="fas fa-user"></i> Über den Autor
             </button>
-            <button class="btn btn-outline-secondary" id="themeToggle">
+            <button class="btn btn-outline-secondary" id="themeToggle" data-analytics-id="header-toggle-theme">
                 🌙 Dark Mode
             </button>
         </div>
 
         <div class="app-header-burger d-md-none">
-            <button class="btn btn-primary dropdown-toggle" type="button" data-bs-toggle="dropdown">
+            <button class="btn btn-primary dropdown-toggle" type="button" data-bs-toggle="dropdown" data-analytics-id="header-open-mobile-menu">
                 <i class="fas fa-bars"></i>
             </button>
             <ul class="dropdown-menu dropdown-menu-end">
@@ -71,17 +71,17 @@
                     </a>
                 </li>
                 <li>
-                    <button class="dropdown-item" data-bs-toggle="modal" data-bs-target="#howtoModal">
+                    <button class="dropdown-item" data-bs-toggle="modal" data-bs-target="#howtoModal" data-analytics-id="mobile-open-howto">
                         <i class="fas fa-question-circle"></i> Anleitung
                     </button>
                 </li>
                 <li>
-                    <button class="dropdown-item" data-bs-toggle="modal" data-bs-target="#authorModal">
+                    <button class="dropdown-item" data-bs-toggle="modal" data-bs-target="#authorModal" data-analytics-id="mobile-open-author">
                         <i class="fas fa-user"></i> Über den Autor
                     </button>
                 </li>
                 <li>
-                    <button class="dropdown-item" id="themeToggleMobile">
+                    <button class="dropdown-item" id="themeToggleMobile" data-analytics-id="mobile-toggle-theme">
                         🌙 Dark Mode
                     </button>
                 </li>
@@ -140,7 +140,7 @@
         <div class="card-header">
             <h5 class="d-flex justify-content-between align-items-center">
                 <span><i class="fas fa-database"></i> Gespeicherte Übungen</span>
-                <button class="btn btn-sm btn-outline-secondary" data-bs-toggle="collapse" data-bs-target="#collapseAdminUebungen">
+                <button class="btn btn-sm btn-outline-secondary" data-bs-toggle="collapse" data-bs-target="#collapseAdminUebungen" data-analytics-id="admin-collapse-uebungen">
                     <i class="fas fa-chevron-down"></i>
                 </button>
             </h5>
@@ -167,8 +167,8 @@
                     <div class="d-flex justify-content-between align-items-center px-3 py-2">
                         <div id="adminUebungslisteInfo" class="small text-muted"></div>
                         <div>
-                            <button class="btn btn-sm btn-outline-secondary me-2" onclick="admin.ladeAlleUebungen('prev')">← Vorherige</button>
-                            <button class="btn btn-sm btn-outline-secondary" onclick="admin.ladeAlleUebungen('next')">Nächste →</button>
+                            <button class="btn btn-sm btn-outline-secondary me-2" data-analytics-id="admin-pagination-prev" onclick="admin.ladeAlleUebungen('prev')">← Vorherige</button>
+                            <button class="btn btn-sm btn-outline-secondary" data-analytics-id="admin-pagination-next" onclick="admin.ladeAlleUebungen('next')">Nächste →</button>
                         </div>
                     </div>
                 </div>
@@ -180,7 +180,7 @@
         <div class="card-header">
             <h5 class="d-flex justify-content-between align-items-center">
                 <span><i class="fas fa-chart-line"></i> Statistik: Übungen pro Zeit</span>
-                <button class="btn btn-sm btn-outline-secondary" data-bs-toggle="collapse" data-bs-target="#collapseAdminStats">
+                <button class="btn btn-sm btn-outline-secondary" data-bs-toggle="collapse" data-bs-target="#collapseAdminStats" data-analytics-id="admin-collapse-stats">
                     <i class="fas fa-chevron-down"></i>
                 </button>
             </h5>
@@ -197,7 +197,7 @@
         <div class="card-header">
             <h5 class="d-flex justify-content-between align-items-center">
                 <span><i class="fas fa-chart-pie"></i> Übersicht: Kennzahlen</span>
-                <button class="btn btn-sm btn-outline-secondary" data-bs-toggle="collapse" data-bs-target="#collapseAdminSummary">
+                <button class="btn btn-sm btn-outline-secondary" data-bs-toggle="collapse" data-bs-target="#collapseAdminSummary" data-analytics-id="admin-collapse-summary">
                     <i class="fas fa-chevron-down"></i>
                 </button>
             </h5>
@@ -226,10 +226,10 @@
         <div class="modal-content">
             <div class="modal-header">
                 <h5 class="modal-title" id="howtoModalLabel">Anleitung</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close" data-analytics-id="howto-close"></button>
             </div>
             <div class="modal-body"><div id="howtoContent">Lädt...</div></div>
-            <div class="modal-footer"><button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Schließen</button></div>
+            <div class="modal-footer"><button type="button" class="btn btn-secondary" data-bs-dismiss="modal" data-analytics-id="howto-close-footer">Schließen</button></div>
         </div>
     </div>
 </div>
@@ -239,7 +239,7 @@
         <div class="modal-content">
             <div class="modal-header">
                 <h5 class="modal-title" id="authorModalLabel">Über den Autor</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Schließen"></button>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Schließen" data-analytics-id="author-close"></button>
             </div>
             <div class="modal-body text-center">
                 <img src="https://www.gravatar.com/avatar/b4d8c8a87a392586b9caee287180163b?s=200" alt="Johannes Rudolph" class="rounded-circle mb-3" width="150" height="150">
@@ -261,7 +261,7 @@
                     <li>✔ Katastrophenschutz & Führungsstrukturen</li>
                 </ul>
             </div>
-            <div class="modal-footer"><button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Schließen</button></div>
+            <div class="modal-footer"><button type="button" class="btn btn-secondary" data-bs-dismiss="modal" data-analytics-id="author-close-footer">Schließen</button></div>
         </div>
     </div>
 </div>
@@ -272,14 +272,14 @@
         <div class="modal-content">
             <div class="modal-header">
                 <h5 class="modal-title" id="jsonModalLabel">Übungsdaten als JSON</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Schließen"></button>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Schließen" data-analytics-id="json-close"></button>
             </div>
             <div class="modal-body">
                 <pre id="jsonOutput" style="white-space: pre-wrap; word-wrap: break-word; background-color: #f8f9fa; padding: 1rem; border-radius: .3rem;"></pre>
             </div>
             <div class="modal-footer">
-                <button class="btn btn-secondary" data-bs-dismiss="modal">Schließen</button>
-                <button id="copyJsonBtnFooter" class="btn btn-primary">📋 In Zwischenablage kopieren</button>
+                <button class="btn btn-secondary" data-bs-dismiss="modal" data-analytics-id="json-close-footer">Schließen</button>
+                <button id="copyJsonBtnFooter" class="btn btn-primary" data-analytics-id="generator-copy-json-footer">📋 In Zwischenablage kopieren</button>
             </div>
         </div>
     </div>

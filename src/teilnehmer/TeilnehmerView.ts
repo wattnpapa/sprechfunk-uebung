@@ -44,10 +44,10 @@ export class TeilnehmerView {
                 <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
                     <h3 class="card-title mb-0">Sprechfunkübung: ${uebung.name}</h3>
                     <div class="d-flex gap-2">
-                        <button class="btn btn-sm btn-outline-light" id="btn-download-teilnehmer-zip">
+                        <button class="btn btn-sm btn-outline-light" id="btn-download-teilnehmer-zip" data-analytics-id="teilnehmer-download-zip">
                             <i class="fas fa-file-archive"></i> ZIP herunterladen
                         </button>
-                        <button class="btn btn-sm btn-outline-light" id="btn-reset-teilnehmer-data">
+                        <button class="btn btn-sm btn-outline-light" id="btn-reset-teilnehmer-data" data-analytics-id="teilnehmer-reset-local-data">
                             <i class="fas fa-undo"></i> Lokale Daten löschen
                         </button>
                     </div>
@@ -69,9 +69,9 @@ export class TeilnehmerView {
             <div class="d-flex flex-wrap justify-content-between align-items-center mb-3 gap-2">
                 <h4 class="mb-0">Meine Funksprüche</h4>
                 <div class="btn-group" role="group" aria-label="Ansicht wählen">
-                    <button class="btn btn-outline-primary active" type="button" data-doc-view="table">Tabelle</button>
-                    <button class="btn btn-outline-primary" type="button" data-doc-view="meldevordruck">Meldevordruck</button>
-                    <button class="btn btn-outline-primary" type="button" data-doc-view="nachrichtenvordruck">Nachrichtenvordruck</button>
+                    <button class="btn btn-outline-primary active" type="button" data-doc-view="table" data-analytics-id="teilnehmer-docmode-table">Tabelle</button>
+                    <button class="btn btn-outline-primary" type="button" data-doc-view="meldevordruck" data-analytics-id="teilnehmer-docmode-melde">Meldevordruck</button>
+                    <button class="btn btn-outline-primary" type="button" data-doc-view="nachrichtenvordruck" data-analytics-id="teilnehmer-docmode-nachricht">Nachrichtenvordruck</button>
                 </div>
                 <div class="form-check form-switch">
                     <input class="form-check-input" type="checkbox" id="toggle-hide-transmitted">
@@ -105,11 +105,11 @@ export class TeilnehmerView {
                                 <input class="form-check-input" type="checkbox" id="toggle-hide-transmitted-modal">
                                 <label class="form-check-label small" for="toggle-hide-transmitted-modal">Übertragene ausblenden</label>
                             </div>
-                            <button type="button" class="btn-close" id="btn-doc-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                            <button type="button" class="btn-close" id="btn-doc-close" data-analytics-id="teilnehmer-doc-close" data-bs-dismiss="modal" aria-label="Close"></button>
                         </div>
                         <div class="modal-body">
                             <div class="teilnehmer-doc-layout">
-                                <button class="btn btn-outline-secondary teilnehmer-doc-nav" type="button" id="btn-doc-prev">
+                                <button class="btn btn-outline-secondary teilnehmer-doc-nav" type="button" id="btn-doc-prev" data-analytics-id="teilnehmer-doc-prev">
                                     <i class="fas fa-chevron-left"></i> Zurück
                                 </button>
                                 <div class="teilnehmer-doc-center">
@@ -118,7 +118,7 @@ export class TeilnehmerView {
                                     </div>
                                     <span id="teilnehmerDocPage" class="text-muted teilnehmer-doc-page"></span>
                                 </div>
-                                <button class="btn btn-outline-secondary teilnehmer-doc-nav" type="button" id="btn-doc-next">
+                                <button class="btn btn-outline-secondary teilnehmer-doc-nav" type="button" id="btn-doc-next" data-analytics-id="teilnehmer-doc-next">
                                     Weiter <i class="fas fa-chevron-right"></i>
                                 </button>
                                 <div class="teilnehmer-doc-legend">
@@ -187,6 +187,7 @@ export class TeilnehmerView {
                         <button type="button"
                             class="status-chip ${isUebertragen ? "status-chip--ok" : "status-chip--pending"} btn-toggle-uebertragen-chip"
                             data-id="${n.id}"
+                            data-analytics-id="teilnehmer-toggle-chip-${n.id}"
                             data-checked="${isUebertragen ? "1" : "0"}">
                             ${isUebertragen ? "übertragen" : "offen"}
                         </button>

@@ -73,13 +73,15 @@ export class UebungsleitungView {
             <div class="col-12 mt-3 d-flex justify-content-end">
             <button
               class="btn btn-outline-secondary me-2"
-              id="exportUebungsleitungPdf">
+              id="exportUebungsleitungPdf"
+              data-analytics-id="uebungsleitung-export-pdf">
               📄 Übungsleitung als PDF
             </button>
     
               <button
                 class="btn btn-outline-danger"
-                id="resetUebungsleitungLocalData">
+                id="resetUebungsleitungLocalData"
+                data-analytics-id="uebungsleitung-reset-local-data">
                 ⟲ Lokale Übungsdaten zurücksetzen
               </button>
             </div>
@@ -133,6 +135,7 @@ export class UebungsleitungView {
                         ? `<span class="badge bg-success">${formatNatoDate(status.angemeldetUm)}</span>`
                         : `<button class="btn btn-sm btn-outline-primary"
                     data-action="anmelden"
+                    data-analytics-id="uebungsleitung-anmelden-${this.escapeAttr(name)}"
                     data-teilnehmer="${name}">
                     Anmelden
                   </button>`
@@ -194,6 +197,7 @@ export class UebungsleitungView {
               <button
                 class="btn btn-sm btn-outline-secondary"
                 data-action="download-debrief"
+                data-analytics-id="uebungsleitung-download-debrief-${this.escapeAttr(name)}"
                 data-teilnehmer="${this.escapeAttr(name)}">
                 Debrief PDF
               </button>
@@ -214,7 +218,8 @@ export class UebungsleitungView {
                   Stärke
                   <button
                     class="btn btn-sm btn-outline-secondary ms-2"
-                    data-action="toggle-staerke-details">
+                    data-action="toggle-staerke-details"
+                    data-analytics-id="uebungsleitung-toggle-staerke-details">
                     Details
                   </button>
                 </th>` : ""}
@@ -401,12 +406,12 @@ export class UebungsleitungView {
                     ${abgesetzt ? `
                       <div class="d-flex gap-2 justify-content-center">
                         <span class="status-chip status-chip--ok">abgesetzt</span>
-                        <button class="btn btn-sm btn-outline-danger" data-action="reset" data-nr="${n.nr}" data-sender="${this.escapeAttr(n.sender)}" title="Status zurücksetzen">↺</button>
+                        <button class="btn btn-sm btn-outline-danger" data-action="reset" data-analytics-id="uebungsleitung-reset-nachricht-${n.nr}" data-nr="${n.nr}" data-sender="${this.escapeAttr(n.sender)}" title="Status zurücksetzen">↺</button>
                       </div>
                     ` : `
                       <div class="d-flex gap-2 justify-content-center">
                         <span class="status-chip status-chip--pending">offen</span>
-                        <button class="btn btn-sm btn-outline-success" data-action="abgesetzt" data-nr="${n.nr}" data-sender="${this.escapeAttr(n.sender)}">✓ abgesetzt</button>
+                        <button class="btn btn-sm btn-outline-success" data-action="abgesetzt" data-analytics-id="uebungsleitung-abgesetzt-${n.nr}" data-nr="${n.nr}" data-sender="${this.escapeAttr(n.sender)}">✓ abgesetzt</button>
                       </div>
                     `}
                   </td>

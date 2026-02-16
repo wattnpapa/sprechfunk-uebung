@@ -305,4 +305,36 @@ describe("AppView", () => {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         expect((globalThis as any).window.gtag).not.toHaveBeenCalledWith("event", "ui_submit", expect.anything());
     });
+
+    it("tracks unique click keys for different buttons", () => {
+        const dom = new JSDOM(`
+            <button id="btn-a">Start</button>
+            <div><button>Start</button></div>
+            <select id="funkspruchVorlage"></select>
+        `);
+        const gtag = vi.fn();
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        (globalThis as any).document = dom.window.document;
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        (globalThis as any).window = {
+            gtag,
+            $: vi.fn(() => ({ select2: vi.fn() })),
+            jQuery: vi.fn(),
+            location: { hash: "#/generator" }
+        };
+        const view = new AppView();
+        view.initGlobalListeners();
+
+        const buttons = dom.window.document.querySelectorAll("button");
+        buttons[0]?.dispatchEvent(new dom.window.Event("click", { bubbles: true }));
+        buttons[1]?.dispatchEvent(new dom.window.Event("click", { bubbles: true }));
+
+        const uiClickCalls = gtag.mock.calls.filter(call => call[0] === "event" && call[1] === "ui_click");
+        expect(uiClickCalls.length).toBeGreaterThanOrEqual(2);
+        const firstKey = uiClickCalls[0]?.[2]?.click_key;
+        const secondKey = uiClickCalls[1]?.[2]?.click_key;
+        expect(firstKey).toBeDefined();
+        expect(secondKey).toBeDefined();
+        expect(firstKey).not.toBe(secondKey);
+    });
 });

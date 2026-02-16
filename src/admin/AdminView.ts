@@ -37,13 +37,13 @@ export class AdminView {
                 <td>${uebung.leitung}</td>
                 <td title="${(uebung.teilnehmerListe || []).join("\n")}">${uebung.teilnehmerListe?.length ?? 0}</td>
                 <td>
-                     <button class="btn btn-sm btn-warning" data-action="view" data-id="${uebung.id}">
+                     <button class="btn btn-sm btn-warning" data-action="view" data-analytics-id="admin-view-${uebung.id}" data-id="${uebung.id}">
                         <i class="fa-solid fa-magnifying-glass"></i>
                     </button>
-                    <button class="btn btn-sm btn-success" data-action="monitor" data-id="${uebung.id}">
+                    <button class="btn btn-sm btn-success" data-action="monitor" data-analytics-id="admin-monitor-${uebung.id}" data-id="${uebung.id}">
                         <i class="fas fa-display"></i>
                     </button>
-                    <button class="btn btn-sm btn-danger" data-action="delete" data-id="${uebung.id}">
+                    <button class="btn btn-sm btn-danger" data-action="delete" data-analytics-id="admin-delete-${uebung.id}" data-id="${uebung.id}">
                         <i class="fas fa-trash-alt"></i>
                     </button>
                 </td>

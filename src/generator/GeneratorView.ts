@@ -346,7 +346,7 @@ export class GeneratorView {
                 </td>
                 ${stellenInput}
                 ${loesungswortInput}
-                <td><button class="btn btn-danger btn-sm delete-teilnehmer" data-index="${index}"><i class="fas fa-trash"></i></button></td>
+                <td><button class="btn btn-danger btn-sm delete-teilnehmer" data-index="${index}" data-analytics-id="generator-delete-teilnehmer-${index}"><i class="fas fa-trash"></i></button></td>
             `;
             tbody.appendChild(row);
         });
@@ -533,6 +533,7 @@ export class GeneratorView {
         const copyButton = document.createElement("button");
         copyButton.type = "button";
         copyButton.className = "btn btn-outline-secondary btn-sm";
+        copyButton.setAttribute("data-analytics-id", `generator-link-copy-${typ.toLowerCase()}`);
         copyButton.innerHTML = "<i class=\"fas fa-copy\"></i> Kopieren";
         copyButton.addEventListener("click", () => {
             this.copyTextToClipboard(url)
@@ -545,6 +546,7 @@ export class GeneratorView {
             const mailButton = document.createElement("button");
             mailButton.type = "button";
             mailButton.className = "btn btn-outline-primary btn-sm";
+            mailButton.setAttribute("data-analytics-id", `generator-link-mail-${typ.toLowerCase()}`);
             mailButton.innerHTML = "<i class=\"fas fa-envelope\"></i> Mail";
             mailButton.addEventListener("click", () => {
                 window.location.href = mailtoUrl;
@@ -556,6 +558,7 @@ export class GeneratorView {
             const downloadButton = document.createElement("button");
             downloadButton.type = "button";
             downloadButton.className = "btn btn-outline-success btn-sm";
+            downloadButton.setAttribute("data-analytics-id", `generator-link-download-${name}`);
             downloadButton.innerHTML = "<i class=\"fas fa-file-archive\"></i> Druckdaten";
             downloadButton.addEventListener("click", async () => {
                 const prevHtml = downloadButton.innerHTML;
@@ -966,7 +969,7 @@ export class GeneratorView {
                                     </label>
                                 </div>
 
-                                <button id="shuffleButton" class="btn btn-primary"
+                                <button id="shuffleButton" class="btn btn-primary" data-analytics-id="generator-shuffle-loesungswoerter"
                                         style="display: none;">
                                     🔀 Lösungswörter Zufällig neu zuweisen
                                 </button>
@@ -987,7 +990,7 @@ export class GeneratorView {
                                 <!-- Hier wird per JS die Tabelle eingefügt -->
                             </div>
                             <!-- Teilnehmer hinzufügen Button -->
-                            <button id="addTeilnehmerBtn" class="btn btn-success mt-3">Teilnehmer
+                            <button id="addTeilnehmerBtn" class="btn btn-success mt-3" data-analytics-id="generator-add-teilnehmer">Teilnehmer
                                 hinzufügen
                             </button>
                         </div>
@@ -998,7 +1001,7 @@ export class GeneratorView {
             <div class="generator-action-bar mt-3">
                 <div class="generator-action-inner">
                     <small class="text-muted">Prüfe Einstellungen und Teilnehmer, dann starte die Generierung.</small>
-                    <button id="startUebungBtn" class="btn btn-success">
+                    <button id="startUebungBtn" class="btn btn-success" data-analytics-id="generator-start-uebung">
                         <i class="fas fa-cogs"></i> Übung generieren
                     </button>
                 </div>
@@ -1019,7 +1022,7 @@ export class GeneratorView {
                     <div class="card-body">
                         <ul class="nav nav-pills generator-result-tabs mb-3" id="generatorResultTabs" role="tablist">
                             <li class="nav-item" role="presentation">
-                                <button class="nav-link active"
+                                <button class="nav-link active" data-analytics-id="generator-tab-links"
                                         id="tab-links-btn"
                                         data-bs-toggle="tab"
                                         data-bs-target="#tab-links"
@@ -1031,7 +1034,7 @@ export class GeneratorView {
                                 </button>
                             </li>
                             <li class="nav-item" role="presentation">
-                                <button class="nav-link"
+                                <button class="nav-link" data-analytics-id="generator-tab-stats"
                                         id="tab-stats-btn"
                                         data-bs-toggle="tab"
                                         data-bs-target="#tab-stats"
@@ -1058,7 +1061,7 @@ export class GeneratorView {
                                     </div>
                                     <div id="links-teilnehmer-container" class="generator-link-grid"></div>
                                     <div class="mt-3">
-                                        <button id="zipAllPdfsBtn" class="btn btn-primary btn-lg w-100 generator-zip-btn">
+                                        <button id="zipAllPdfsBtn" class="btn btn-primary btn-lg w-100 generator-zip-btn" data-analytics-id="generator-download-all-pdfs">
                                             📦 Alle Druckdaten als ZIP herunterladen
                                         </button>
                                         <p class="text-muted small mb-0 mt-2">
@@ -1164,8 +1167,8 @@ export class GeneratorView {
                                          style="white-space: pre-wrap; word-wrap: break-word; background-color: #f8f9fa; padding: 1rem; border-radius: .3rem;"></pre>
                             </div>
                             <div class="modal-footer">
-                                <button class="btn btn-secondary" data-bs-dismiss="modal">Schließen</button>
-                                <button id="copyJsonBtn" class="btn btn-primary">📋 In Zwischenablage
+                                <button class="btn btn-secondary" data-bs-dismiss="modal" data-analytics-id="generator-json-modal-close">Schließen</button>
+                                <button id="copyJsonBtn" class="btn btn-primary" data-analytics-id="generator-copy-json-modal">📋 In Zwischenablage
                                     kopieren
                                 </button>
                             </div>

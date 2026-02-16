@@ -88,8 +88,54 @@ export class AppView {
             class_name: className,
             action: element.getAttribute?.("data-action") || "(none)",
             name: element.getAttribute?.("name") || "(none)",
-            label: (element.getAttribute?.("aria-label") || text || "(empty)").slice(0, 80)
+            label: (element.getAttribute?.("aria-label") || text || "(empty)").slice(0, 80),
+            click_key: this.getElementTrackingKey(element),
+            route_hash: window.location?.hash || "#/"
         };
+    }
+
+    private getElementTrackingKey(element: HTMLElement): string {
+        const id = element.id?.trim();
+        if (id) {
+            return `id:${id}`;
+        }
+        const analyticsId = element.getAttribute?.("data-analytics-id")?.trim();
+        if (analyticsId) {
+            return `analytics:${analyticsId}`;
+        }
+        const action = element.getAttribute?.("data-action")?.trim();
+        if (action) {
+            return `action:${action}`;
+        }
+        const path = this.getElementDomPath(element);
+        const text = (element.textContent || "").trim().replace(/\s+/g, " ").slice(0, 40) || "(empty)";
+        return `path:${path}|label:${text}`;
+    }
+
+    private getElementDomPath(element: HTMLElement): string {
+        const parts: string[] = [];
+        let current: HTMLElement | null = element;
+        let guard = 0;
+        while (current && guard < 6) {
+            const tag = current.tagName?.toLowerCase() || "unknown";
+            if (current.id) {
+                parts.unshift(`${tag}#${current.id}`);
+                break;
+            }
+            const parent = current.parentElement;
+            if (!parent) {
+                parts.unshift(tag);
+                break;
+            }
+            const siblings = Array.from(parent.children).filter(
+                child => (child as HTMLElement).tagName === current?.tagName
+            );
+            const index = Math.max(1, siblings.indexOf(current) + 1);
+            parts.unshift(`${tag}:nth-of-type(${index})`);
+            current = parent;
+            guard++;
+        }
+        return parts.join(">");
     }
 
     private emitTracking(eventName: string, payload: Record<string, string>): void {
