@@ -141,6 +141,16 @@ export class GeneratorController {
                 });
             }
         });
+        this.view.bindQuickJoin((uebungCode, teilnehmerCode) => {
+            if (!uebungCode || !teilnehmerCode) {
+                uiFeedback.error("Bitte Übungscode und Teilnehmercode eingeben.");
+                return;
+            }
+            window.location.hash = `#/teilnehmer?${new URLSearchParams({
+                uc: uebungCode,
+                tc: teilnehmerCode
+            }).toString()}`;
+        });
     }
 
     private async loadUebung(uebungId: string | null): Promise<FunkUebung> {

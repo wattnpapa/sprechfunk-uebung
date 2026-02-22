@@ -274,6 +274,22 @@ export class GeneratorView {
         document.getElementById("zipAllPdfsBtn")?.addEventListener("click", handlers.onZipAllPdfs, { signal: this.bindingController.signal });
     }
 
+    public bindQuickJoin(onSubmit: (uebungCode: string, teilnehmerCode: string) => void): void {
+        const form = document.getElementById("generatorQuickJoinForm") as HTMLFormElement | null;
+        if (!form) {
+            return;
+        }
+
+        form.addEventListener("submit", event => {
+            event.preventDefault();
+            const uebungCodeInput = document.getElementById("generatorQuickJoinUebungCode") as HTMLInputElement | null;
+            const teilnehmerCodeInput = document.getElementById("generatorQuickJoinTeilnehmerCode") as HTMLInputElement | null;
+            const uebungCode = (uebungCodeInput?.value || "").trim().toUpperCase();
+            const teilnehmerCode = (teilnehmerCodeInput?.value || "").trim().toUpperCase();
+            onSubmit(uebungCode, teilnehmerCode);
+        }, { signal: this.bindingController.signal });
+    }
+
     public renderTeilnehmerListe(
         teilnehmerListe: string[], 
         teilnehmerStellen: Record<string, string>, 
@@ -840,6 +856,25 @@ export class GeneratorView {
 
         container.innerHTML = `
             <div class="app-view-shell">
+            <div class="card mb-3 generator-quick-join-card">
+                <div class="card-body py-2">
+                    <form id="generatorQuickJoinForm" class="row g-2 align-items-end">
+                        <div class="col-12 col-md-auto">
+                            <label for="generatorQuickJoinUebungCode" class="form-label mb-1 small text-muted">Übungscode</label>
+                            <input id="generatorQuickJoinUebungCode" class="form-control form-control-sm text-uppercase" maxlength="6" placeholder="K7M4Q2">
+                        </div>
+                        <div class="col-12 col-md-auto">
+                            <label for="generatorQuickJoinTeilnehmerCode" class="form-label mb-1 small text-muted">Teilnehmercode</label>
+                            <input id="generatorQuickJoinTeilnehmerCode" class="form-control form-control-sm text-uppercase" maxlength="4" placeholder="A1B2">
+                        </div>
+                        <div class="col-12 col-md-auto">
+                            <button class="btn btn-sm btn-outline-primary w-100" type="submit" data-analytics-id="generator-quick-join-submit">
+                                <i class="fas fa-right-to-bracket"></i> Teilnehmer-Zugang öffnen
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
             <!-- Hauptbereich mit Kopfdaten, Einstellungen und Teilnehmerverwaltung nebeneinander -->
             <div class="row g-3 generator-setup-layout">
 
