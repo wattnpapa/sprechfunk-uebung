@@ -439,19 +439,6 @@ body {
     mask-image: radial-gradient(circle at 40% 10%, black 50%, transparent 90%);
 }
 
-.app-view-shell::after {
-    content: "";
-    position: absolute;
-    left: 0;
-    right: 0;
-    top: 20%;
-    height: 2px;
-    pointer-events: none;
-    background: linear-gradient(90deg, transparent, rgba(34, 211, 238, 0.28), transparent);
-    animation: generatorScanline 7s linear infinite;
-    opacity: 0.65;
-}
-
 .app-view-shell .card {
     backdrop-filter: blur(4px);
     background: color-mix(in srgb, var(--surface) 90%, #0b3b56 10%);
@@ -639,15 +626,6 @@ body {
         radial-gradient(900px 320px at 105% 10%, rgba(14, 165, 233, 0.18), transparent 60%),
         linear-gradient(180deg, #020617, #020617);
     border-color: color-mix(in srgb, var(--border) 66%, #22d3ee 34%);
-}
-
-@keyframes generatorScanline {
-    0% {
-        transform: translateY(-180px);
-    }
-    100% {
-        transform: translateY(540px);
-    }
 }
 
 @keyframes statusPendingPulse {
@@ -924,10 +902,6 @@ body {
         radial-gradient(1100px 360px at -20% 0, rgba(255, 159, 28, 0.12), transparent 58%);
     border-color: color-mix(in srgb, var(--border) 48%, var(--lcars-orange) 52%);
     box-shadow: inset 0 0 0 2px rgba(255, 159, 28, 0.18);
-}
-
-[data-theme="startrek"] .app-view-shell::after {
-    background: linear-gradient(90deg, transparent, rgba(255, 159, 28, 0.4), transparent);
 }
 
 [data-theme="startrek"] .app-view-shell .card {
