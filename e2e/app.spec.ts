@@ -1,4 +1,19 @@
-import { expect, test } from "@playwright/test";
+import { expect, test, type Page } from "@playwright/test";
+
+const setParticipants = async (page: Page, names: string[]) => {
+    const addButton = page.locator("#addTeilnehmerBtn");
+    const inputs = page.locator("#teilnehmer-body .teilnehmer-input");
+
+    while ((await inputs.count()) < names.length) {
+        await addButton.click();
+    }
+
+    const total = await inputs.count();
+    for (let i = 0; i < total; i++) {
+        const input = inputs.nth(i);
+        await input.fill(names[i] ?? "");
+    }
+};
 
 const makeSeedData = () => {
     const base = {
@@ -202,6 +217,51 @@ test("@generator all generator inputs are editable and keep values", async ({ pa
     const firstStelle = page.locator("#teilnehmer-body .stellenname-input").first();
     await firstStelle.fill("FGr 1");
     await expect(firstStelle).toHaveValue("FGr 1");
+});
+
+test("@generator generates exercise with custom participant call signs", async ({ page }) => {
+    await page.goto("/");
+
+    await setParticipants(page, [
+        "Florian Musterstadt 33/44",
+        "Heros Beispielstadt 42/1",
+        ""
+    ]);
+    await page.locator("#nameDerUebung").fill("OV Funkprobe");
+    await page.selectOption("#funkspruchVorlage", ["thwleer"]);
+
+    await page.locator("#startUebungBtn").click();
+
+    await expect(page.locator("#uebung-links")).toBeVisible();
+    await expect(page.locator("#links-teilnehmer-container .generator-link-row[data-link-type='teilnehmer']")).toHaveCount(2);
+    await expect(page.locator("#links-teilnehmer-container")).toContainText("Florian Musterstadt 33/44");
+    await expect(page.locator("#links-teilnehmer-container")).toContainText("Heros Beispielstadt 42/1");
+    await expect(page.locator("#links-teilnehmer-container .generator-link-row[data-link-type='teilnehmer'] .generator-link-url code").first()).toContainText("#/teilnehmer/");
+});
+
+test("@generator blocks generation when participant names are duplicates", async ({ page }) => {
+    await page.goto("/");
+
+    await setParticipants(page, [
+        "Florian Musterstadt 33/44",
+        "Florian Musterstadt 33/44"
+    ]);
+
+    await page.locator("#startUebungBtn").click();
+
+    await expect(page.locator("#globalToastContainer")).toContainText("Teilnehmernamen müssen eindeutig sein.");
+    await expect(page.locator("#uebung-links")).toBeHidden();
+});
+
+test("@generator blocks generation when no participant name is provided", async ({ page }) => {
+    await page.goto("/");
+
+    await setParticipants(page, ["", ""]);
+
+    await page.locator("#startUebungBtn").click();
+
+    await expect(page.locator("#globalToastContainer")).toContainText("Bitte mindestens einen Teilnehmer mit Funkrufnamen angeben.");
+    await expect(page.locator("#uebung-links")).toBeHidden();
 });
 
 test("@generator individual loesungswoerter shows per-participant inputs", async ({ page }) => {

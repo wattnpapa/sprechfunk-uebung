@@ -270,6 +270,10 @@ export class GeneratorController {
         this.funkUebung.istStandardKonfiguration =
             this.isFreshExercise && this.createConfigFingerprint(this.funkUebung) === this.initialConfigFingerprint;
 
+        if (!this.validateTeilnehmerListe()) {
+            return;
+        }
+
         if (!this.validateSpruchVerteilung()) {
             return;
         }
@@ -322,7 +326,13 @@ export class GeneratorController {
         this.generationService.generate(this.funkUebung);
         
         // 4. Speichern
-        await this.firebaseService.saveUebung(this.funkUebung);
+        try {
+            await this.firebaseService.saveUebung(this.funkUebung);
+        } catch (error) {
+            console.error("Übung konnte nicht gespeichert werden:", error);
+            uiFeedback.error("Übung konnte nicht gespeichert werden. Bitte Teilnehmerdaten prüfen.");
+            return;
+        }
         analytics.track("generator_start_uebung", {
             teilnehmer_count: this.funkUebung.teilnehmerListe.length,
             sprueche_pro_teilnehmer: this.funkUebung.spruecheProTeilnehmer
@@ -365,6 +375,26 @@ export class GeneratorController {
             uiFeedback.error("Ungültige Verteilung: 'Sprüche pro Teilnehmer' darf nicht kleiner als die Anmelde-Nachricht sein.");
             return false;
         }
+        return true;
+    }
+
+    private validateTeilnehmerListe(): boolean {
+        const names = (this.funkUebung.teilnehmerListe || [])
+            .map(n => (n || "").trim())
+            .filter(n => n.length > 0);
+
+        if (names.length === 0) {
+            uiFeedback.error("Bitte mindestens einen Teilnehmer mit Funkrufnamen angeben.");
+            return false;
+        }
+
+        const unique = new Set(names);
+        if (unique.size !== names.length) {
+            uiFeedback.error("Teilnehmernamen müssen eindeutig sein.");
+            return false;
+        }
+
+        this.funkUebung.teilnehmerListe = names;
         return true;
     }
 

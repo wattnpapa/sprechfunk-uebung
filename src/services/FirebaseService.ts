@@ -21,6 +21,47 @@ import { FunkUebung } from "../models/FunkUebung";
 export class FirebaseService {
     constructor(private db: Firestore) {}
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    private cleanupRecordKeys(obj: any): Record<string, unknown> {
+        if (!obj || typeof obj !== "object" || Array.isArray(obj)) {
+            return {};
+        }
+        return Object.fromEntries(
+            Object.entries(obj).filter(([key, value]) => String(key).trim() !== "" && value !== undefined)
+        );
+    }
+
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    private sanitizeDataForSave(data: any): Record<string, unknown> {
+        if (!data || typeof data !== "object") {
+            return {};
+        }
+
+        const cleaned = { ...data } as Record<string, unknown>;
+        const teilnehmerListe = Array.isArray(cleaned["teilnehmerListe"])
+            ? (cleaned["teilnehmerListe"] as unknown[])
+                .map(t => typeof t === "string" ? t.trim() : "")
+                .filter((t): t is string => t.length > 0)
+            : [];
+
+        cleaned["teilnehmerListe"] = teilnehmerListe;
+
+        cleaned["nachrichten"] = this.cleanupRecordKeys(cleaned["nachrichten"]);
+        cleaned["loesungsStaerken"] = this.cleanupRecordKeys(cleaned["loesungsStaerken"]);
+        cleaned["loesungswoerter"] = this.cleanupRecordKeys(cleaned["loesungswoerter"]);
+        cleaned["teilnehmerIds"] = this.cleanupRecordKeys(cleaned["teilnehmerIds"]);
+        cleaned["teilnehmerStellen"] = this.cleanupRecordKeys(cleaned["teilnehmerStellen"]);
+
+        Object.keys(cleaned).forEach(key => {
+            if (cleaned[key] === undefined) {
+                // eslint-disable-next-line @typescript-eslint/no-dynamic-delete
+                delete cleaned[key];
+            }
+        });
+
+        return cleaned;
+    }
+
     private isLocalMockMode(): boolean {
         if (typeof window === "undefined") {
             return false;
@@ -258,7 +299,7 @@ export class FirebaseService {
             dataToSave = { ...uebung };
         }
 
-        await setDoc(docRef, dataToSave);
+        await setDoc(docRef, this.sanitizeDataForSave(dataToSave));
     }
 
     async deleteUebung(id: string): Promise<void> {
