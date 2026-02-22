@@ -49,6 +49,7 @@ export class UebungsleitungView {
         const safeLeitung = escapeHtml(uebung.leitung || "–");
         const safeCount = escapeHtml(String(uebung.teilnehmerListe?.length ?? 0));
         const safeUebungId = escapeHtml(uebungId);
+        const safeUebungCode = escapeHtml((uebung.uebungCode || "–").toUpperCase());
 
         metaEl.innerHTML = `
           <div class="row">
@@ -69,6 +70,9 @@ export class UebungsleitungView {
             </div>
             <div class="col-md-6 mb-2">
               <strong>Übungs-ID:</strong><br><code>${safeUebungId}</code>
+            </div>
+            <div class="col-md-6 mb-2">
+              <strong>Übungscode:</strong><br><code>${safeUebungCode}</code>
             </div>
             <div class="col-12 mt-3 d-flex justify-content-end">
             <button
@@ -116,14 +120,39 @@ export class UebungsleitungView {
 
         const showLoesungswort = Object.keys(loesungswoerter).length > 0;
         const showStaerke = Object.keys(staerken).length > 0;
+        const uebungCode = (uebung.uebungCode || "").toUpperCase();
+        const baseUrl = `${window.location.origin}${window.location.pathname}`;
+        const codeByTeilnehmer = Object.entries(uebung.teilnehmerIds || {}).reduce<Record<string, string>>((acc, [code, name]) => {
+            acc[name] = code.toUpperCase();
+            return acc;
+        }, {});
 
         const rows = teilnehmerListe.map(name => {
             const status = teilnehmerStatus[name];
+            const code = codeByTeilnehmer[name];
+            const joinLink = code
+                ? `${baseUrl}#/teilnehmer?${new URLSearchParams({ uc: uebungCode, tc: code }).toString()}`
+                : "";
+            const codeHtml = code
+                ? `<div class="d-flex align-items-center gap-2 text-muted mb-1">
+                    <small>Teilnehmer Code: ${escapeHtml(uebungCode)} / ${escapeHtml(code)}</small>
+                    <button
+                      class="btn btn-sm btn-outline-secondary py-0 px-1"
+                      type="button"
+                      data-action="copy-link"
+                      data-link="${escapeHtml(joinLink)}"
+                      aria-label="Teilnehmer-Link kopieren"
+                      title="Teilnehmer-Link kopieren">
+                      <i class="fas fa-copy" aria-hidden="true"></i>
+                    </button>
+                </div>`
+                : "";
+            const safeName = escapeHtml(name);
 
             // Name & Stelle
-            let nameHtml = `<strong>${name}</strong>`;
+            let nameHtml = `${codeHtml}<strong>${safeName}</strong>`;
             if (uebung.teilnehmerStellen && uebung.teilnehmerStellen[name]) {
-                nameHtml = `<strong>${uebung.teilnehmerStellen[name]}</strong><br><small class="text-muted">${name}</small>`;
+                nameHtml = `${codeHtml}<strong>${escapeHtml(uebung.teilnehmerStellen[name])}</strong><br><small class="text-muted">${safeName}</small>`;
             }
 
             return `
@@ -282,6 +311,25 @@ export class UebungsleitungView {
 
         container.addEventListener("click", e => {
             const target = e.target as HTMLElement;
+
+            const btnCopyLink = target.closest("button[data-action=\"copy-link\"]") as HTMLButtonElement | null;
+            if (btnCopyLink) {
+                const link = btnCopyLink.dataset["link"] || "";
+                const original = btnCopyLink.textContent || "Link kopieren";
+                if (navigator.clipboard?.writeText) {
+                    navigator.clipboard.writeText(link)
+                        .then(() => {
+                            btnCopyLink.textContent = "Kopiert";
+                            window.setTimeout(() => {
+                                btnCopyLink.textContent = original;
+                            }, 1200);
+                        })
+                        .catch(() => {
+                            btnCopyLink.textContent = original;
+                        });
+                }
+                return;
+            }
             
             // Anmelden
             const btnAnmelden = target.closest("button[data-action=\"anmelden\"]") as HTMLElement;

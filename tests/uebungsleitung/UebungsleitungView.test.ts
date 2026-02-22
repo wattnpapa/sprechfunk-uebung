@@ -51,6 +51,8 @@ describe("UebungsleitungView", () => {
                 rufgruppe: "RG",
                 leitung: "L",
                 teilnehmerListe: ["A"],
+                uebungCode: "ab12cd",
+                teilnehmerIds: { "a1b2": "A<script>" },
                 nachrichten: {},
                 id: "u1"
                 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -60,6 +62,8 @@ describe("UebungsleitungView", () => {
         view.bindMetaEvents(onPdf, onReset);
 
         expect(document.getElementById("uebungsleitungMeta")?.innerHTML).toContain("&lt;b&gt;XSS&lt;/b&gt;");
+        expect(document.getElementById("uebungsleitungMeta")?.textContent).toContain("Übungscode:");
+        expect(document.getElementById("uebungsleitungMeta")?.textContent).toContain("AB12CD");
         (document.getElementById("exportUebungsleitungPdf") as HTMLButtonElement).click();
         (document.getElementById("resetUebungsleitungLocalData") as HTMLButtonElement).click();
         expect(onPdf).toHaveBeenCalled();
@@ -78,6 +82,8 @@ describe("UebungsleitungView", () => {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const uebung: any = {
             teilnehmerListe: ["Alpha"],
+            teilnehmerIds: { A1B2: "Alpha" },
+            uebungCode: "K7M4Q2",
             teilnehmerStellen: { Alpha: "Stelle 1" },
             loesungswoerter: { Alpha: "WORT" },
             loesungsStaerken: { Alpha: "1/2/3/6" },
@@ -88,6 +94,10 @@ describe("UebungsleitungView", () => {
 
         view.renderTeilnehmerListe(uebung, {}, true);
         view.bindTeilnehmerEvents(onAnmelden, onLoesungswort, onStaerke, onNotiz, onToggleDetails, onDownloadDebrief);
+        expect(document.getElementById("uebungsleitungTeilnehmer")?.textContent).toContain("Teilnehmer Code: K7M4Q2 / A1B2");
+        const copyBtn = document.querySelector("button[data-action='copy-link']") as HTMLButtonElement | null;
+        expect(copyBtn).toBeTruthy();
+        expect(copyBtn?.getAttribute("aria-label")).toBe("Teilnehmer-Link kopieren");
 
         const container = document.getElementById("uebungsleitungTeilnehmer") as HTMLElement;
         (container.querySelector("button[data-action='anmelden']") as HTMLButtonElement).click();
