@@ -10,7 +10,7 @@ import stylistic from '@stylistic/eslint-plugin';
 export default tseslint.config(
   // Globale Ignorierungen
   {
-    ignores: ['dist/**', 'node_modules/**', 'coverage/**', '*.config.js', '*.config.mjs', '.eslintrc.js', '.eslintignore'],
+    ignores: ['dist/**', 'node_modules/**', 'coverage/**', 'electron/**', '*.config.js', '*.config.mjs', '.eslintrc.js', '.eslintignore'],
   },
   
   // Basis-Konfigurationen
