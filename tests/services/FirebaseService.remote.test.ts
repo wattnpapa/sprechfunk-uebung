@@ -11,6 +11,7 @@ const mocks = vi.hoisted(() => ({
     orderBy: vi.fn(),
     limit: vi.fn(),
     startAfter: vi.fn(),
+    where: vi.fn(),
     getDocs: vi.fn()
 }));
 
@@ -24,6 +25,7 @@ vi.mock("firebase/firestore", () => ({
     orderBy: mocks.orderBy,
     limit: mocks.limit,
     startAfter: mocks.startAfter,
+    where: mocks.where,
     getDocs: mocks.getDocs,
     Timestamp: class {
         private d: Date;
@@ -46,6 +48,7 @@ describe("FirebaseService firestore path", () => {
         mocks.orderBy.mockReturnValue("orderBy");
         mocks.limit.mockReturnValue("limit");
         mocks.startAfter.mockReturnValue("startAfter");
+        mocks.where.mockReturnValue("where");
     });
 
     it("getUebung returns mapped domain for existing doc and null for missing", async () => {
@@ -177,5 +180,26 @@ describe("FirebaseService firestore path", () => {
         expect(stats.staerkeCount).toBe(1);
         expect(stats.buchstabierCount).toBe(1);
         expect(stats.totalSprueche).toBe(1);
+    });
+
+    it("resolves join codes through firestore query", async () => {
+        const { FirebaseService } = await import("../../src/services/FirebaseService");
+        const s = new FirebaseService({} as never);
+        mocks.getDocs.mockResolvedValueOnce({
+            docs: [
+                {
+                    id: "u42",
+                    data: () => ({ teilnehmerIds: { A1B2: "Alpha" } })
+                }
+            ]
+        });
+
+        const resolved = await s.resolveTeilnehmerJoinCodes("K7M4Q2", "a1b2");
+        expect(resolved).toEqual({
+            uebungId: "u42",
+            teilnehmerId: "A1B2",
+            teilnehmerName: "Alpha"
+        });
+        expect(mocks.where).toHaveBeenCalledWith("uebungCode", "==", "K7M4Q2");
     });
 });

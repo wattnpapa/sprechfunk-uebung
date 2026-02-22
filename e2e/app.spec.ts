@@ -22,12 +22,13 @@ const makeSeedData = () => {
         datum: "2026-02-14T09:00:00.000Z",
         createDate: "2026-02-14T20:00:00.000Z",
         buildVersion: "dev",
+        uebungCode: "K7M4Q2",
         leitung: "Heros Wind 10",
         rufgruppe: "T_OL_GOLD-1",
         teilnehmerListe: ["Heros Oldenburg 16/11", "Heros Oldenburg 17/12"],
         teilnehmerIds: {
-            t1: "Heros Oldenburg 16/11",
-            t2: "Heros Oldenburg 17/12"
+            A1B2: "Heros Oldenburg 16/11",
+            C3D4: "Heros Oldenburg 17/12"
         },
         teilnehmerStellen: {
             "Heros Oldenburg 16/11": "Trupp Alpha",
@@ -239,7 +240,7 @@ test("@generator generates exercise with extended custom participant list", asyn
     await expect(page.locator("#links-teilnehmer-container")).toContainText("Heros Beispielstadt 42/1");
     await expect(page.locator("#links-teilnehmer-container")).toContainText("Florian Musterstadt 54/2");
     await expect(page.locator("#links-teilnehmer-container")).toContainText("Heros Beispielstadt 61/10");
-    await expect(page.locator("#links-teilnehmer-container .generator-link-row[data-link-type='teilnehmer'] .generator-link-url code").first()).toContainText("#/teilnehmer/");
+    await expect(page.locator("#links-teilnehmer-container .generator-link-row[data-link-type='teilnehmer'] .generator-link-url code").first()).toContainText("#/teilnehmer");
 });
 
 test("@generator blocks generation when participant names are duplicates", async ({ page }) => {
@@ -348,7 +349,9 @@ test("@routing @teilnehmer route #/teilnehmer without params shows invalid link 
 
     await expect(page.locator("#teilnehmerArea")).toBeVisible();
     await expect(page.locator("#mainAppArea")).toBeHidden();
-    await expect(page.locator("#teilnehmerContent")).toContainText("Ungültiger Link.");
+    await expect(page.locator("#teilnehmerJoinForm")).toBeVisible();
+    await expect(page.locator("#joinUebungCode")).toBeVisible();
+    await expect(page.locator("#joinTeilnehmerCode")).toBeVisible();
 });
 
 test("@routing @uebungsleitung route #/uebungsleitung without id still switches app mode", async ({ page }) => {
@@ -405,8 +408,19 @@ test("@routing sets html title per module route", async ({ page }) => {
     await page.goto("/#/uebungsleitung/u1");
     await expect(page).toHaveTitle("Sprechfunkuebung - Uebungsleitung");
 
-    await page.goto("/#/teilnehmer/u1/t1");
+    await page.goto("/#/teilnehmer/u1/A1B2");
     await expect(page).toHaveTitle("Sprechfunkuebung - Teilnehmer");
+});
+
+test("@teilnehmer join form resolves short codes and opens participant view", async ({ page }) => {
+    await page.goto("/#/teilnehmer");
+
+    await page.locator("#joinUebungCode").fill("k7m4q2");
+    await page.locator("#joinTeilnehmerCode").fill("a1b2");
+    await page.locator("#joinSubmitBtn").click();
+
+    await expect(page).toHaveURL(/#\/teilnehmer\/u1\/A1B2$/);
+    await expect(page.locator("#teilnehmerContent")).toContainText("Heros Oldenburg 16/11");
 });
 
 test("@admin admin route renders seeded data", async ({ page }) => {
@@ -481,7 +495,7 @@ test("@uebungsleitung uebungsleitung filters by sender, empfaenger and nachricht
 });
 
 test("@teilnehmer teilnehmer route renders seeded messages and toggles status chip", async ({ page }) => {
-    await page.goto("/#/teilnehmer/u1/t1");
+    await page.goto("/#/teilnehmer/u1/A1B2");
 
     await expect(page.locator("#teilnehmerArea")).toBeVisible();
     await expect(page.locator("#teilnehmerContent")).toContainText("Heros Oldenburg 16/11");
@@ -493,7 +507,7 @@ test("@teilnehmer teilnehmer route renders seeded messages and toggles status ch
 });
 
 test("@teilnehmer teilnehmer keyboard shortcuts work in modal", async ({ page }) => {
-    await page.goto("/#/teilnehmer/u1/t1");
+    await page.goto("/#/teilnehmer/u1/A1B2");
 
     await page.locator("[data-doc-view='meldevordruck']").click();
     await expect(page.locator("#teilnehmerDocModal")).toHaveClass(/show/);

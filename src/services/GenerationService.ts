@@ -3,6 +3,9 @@ import { Nachricht } from "../types/Nachricht";
 import CryptoJS from "crypto-js";
 
 export class GenerationService {
+    private static readonly SHORT_CODE_ALPHABET = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
+    private static readonly UEBUNG_CODE_LENGTH = 6;
+    private static readonly TEILNEHMER_CODE_LENGTH = 4;
 
     /**
      * Hauptfunktion zum Erstellen einer Übung.
@@ -12,28 +15,61 @@ export class GenerationService {
         uebung.createDate = new Date();
         uebung.nachrichten = this.verteileNachrichtenFair(uebung);
         this.verteileLoesungswoerterMitIndex(uebung);
-
-        // Generiere kryptische IDs für Teilnehmer, falls noch nicht vorhanden
-        if (!uebung.teilnehmerIds || Object.keys(uebung.teilnehmerIds).length === 0) {
-            uebung.teilnehmerIds = {};
-            const ids = uebung.teilnehmerIds;
-            uebung.teilnehmerListe.forEach(t => {
-                ids[this.generateUUID()] = t;
-            });
-        }
+        this.ensureJoinCodes(uebung);
 
         this.updateChecksum(uebung);
         this.berechneLoesungsStaerken(uebung);
     }
 
-    private generateUUID(): string {
-        if (typeof crypto !== "undefined" && crypto.randomUUID) {
-            return crypto.randomUUID();
+    private ensureJoinCodes(uebung: FunkUebung): void {
+        if (!this.isValidShortCode(uebung.uebungCode, GenerationService.UEBUNG_CODE_LENGTH)) {
+            uebung.uebungCode = this.generateShortCode(GenerationService.UEBUNG_CODE_LENGTH);
+        } else {
+            uebung.uebungCode = uebung.uebungCode.toUpperCase();
         }
-        return "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(/[xy]/g, function(c) {
-            const r = Math.random() * 16 | 0, v = c === "x" ? r : (r & 0x3 | 0x8);
-            return v.toString(16);
+
+        const existing = uebung.teilnehmerIds || {};
+        const next: Record<string, string> = {};
+        const used = new Set<string>();
+
+        uebung.teilnehmerListe.forEach(name => {
+            const reused = Object.entries(existing).find(([code, value]) =>
+                value === name && this.isValidShortCode(code, GenerationService.TEILNEHMER_CODE_LENGTH)
+            )?.[0];
+
+            const code = reused && !used.has(reused)
+                ? reused
+                : this.generateUniqueShortCode(GenerationService.TEILNEHMER_CODE_LENGTH, used);
+
+            used.add(code);
+            next[code] = name;
         });
+
+        uebung.teilnehmerIds = next;
+    }
+
+    private isValidShortCode(code: string | undefined, length: number): boolean {
+        if (!code || code.length !== length) {
+            return false;
+        }
+        return [...code.toUpperCase()].every(char => GenerationService.SHORT_CODE_ALPHABET.includes(char));
+    }
+
+    private generateUniqueShortCode(length: number, used: Set<string>): string {
+        let code = this.generateShortCode(length);
+        while (used.has(code)) {
+            code = this.generateShortCode(length);
+        }
+        return code;
+    }
+
+    private generateShortCode(length: number): string {
+        const alphabet = GenerationService.SHORT_CODE_ALPHABET;
+        let result = "";
+        for (let i = 0; i < length; i++) {
+            result += alphabet[Math.floor(Math.random() * alphabet.length)];
+        }
+        return result;
     }
 
     public updateChecksum(uebung: FunkUebung) {

@@ -2,6 +2,7 @@ import type { Nachricht } from "./Nachricht";
 
 export interface Uebung {
     id: string;
+    uebungCode?: string;
     name: string;
     datum: Date;
     buildVersion: string;

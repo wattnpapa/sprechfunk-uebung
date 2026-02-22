@@ -25,6 +25,26 @@ describe("TeilnehmerView", () => {
         return view;
     };
 
+    it("renders and validates join form inputs", () => {
+        const view = new TeilnehmerView();
+        const submit = vi.fn();
+        view.renderJoinForm("ab12cd");
+        view.bindJoinForm(submit);
+
+        const uebung = document.getElementById("joinUebungCode") as HTMLInputElement;
+        const teilnehmer = document.getElementById("joinTeilnehmerCode") as HTMLInputElement;
+        const form = document.getElementById("teilnehmerJoinForm") as HTMLFormElement;
+        uebung.value = "ab-12 cd";
+        teilnehmer.value = "9f_3k";
+        uebung.dispatchEvent(new window.Event("input"));
+        teilnehmer.dispatchEvent(new window.Event("input"));
+        form.dispatchEvent(new window.Event("submit"));
+
+        expect(submit).toHaveBeenCalledWith("AB12CD", "9F3K");
+        view.showJoinError("Fehler");
+        expect(document.getElementById("teilnehmerJoinError")?.textContent).toContain("Fehler");
+    });
+
     it("renders header and messages with filters, escaping and status", () => {
         const view = renderBase();
         view.renderNachrichten(

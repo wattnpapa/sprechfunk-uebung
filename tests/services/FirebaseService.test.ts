@@ -19,15 +19,35 @@ describe("FirebaseService local mock mode", () => {
         const s = new FirebaseService({} as never);
         const u = new FunkUebung("dev");
         u.id = "u1";
+        u.uebungCode = "ABC123";
         u.teilnehmerListe = ["A", "B"];
+        u.teilnehmerIds = { A1B2: "A", C3D4: "B" };
         u.nachrichten = {
             A: [{ id: 1, nachricht: "x", empfaenger: ["Alle"] }]
         };
         await s.saveUebung(u);
         const loaded = await s.getUebung("u1");
         expect(loaded?.id).toBe("u1");
+        expect(loaded?.uebungCode).toBe("ABC123");
         // "Alle" gets expanded
         expect(loaded?.nachrichten.A?.[0]?.empfaenger).toEqual(["B"]);
+    });
+
+    it("resolves participant join codes in mock mode", async () => {
+        const s = new FirebaseService({} as never);
+        const u = new FunkUebung("dev");
+        u.id = "join-1";
+        u.uebungCode = "K7M4Q2";
+        u.teilnehmerListe = ["Alpha"];
+        u.teilnehmerIds = { Z9K3: "Alpha" };
+        await s.saveUebung(u);
+
+        await expect(s.resolveTeilnehmerJoinCodes("k7m4q2", "z9k3")).resolves.toEqual({
+            uebungId: "join-1",
+            teilnehmerId: "Z9K3",
+            teilnehmerName: "Alpha"
+        });
+        await expect(s.resolveTeilnehmerJoinCodes("k7m4q2", "xxxx")).resolves.toBeNull();
     });
 
     it("deletes exercises from mock store", async () => {

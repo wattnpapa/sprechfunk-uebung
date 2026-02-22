@@ -15,6 +15,9 @@ const mocks = vi.hoisted(() => ({
     uiConfirm: vi.fn(() => true),
     analyticsTrack: vi.fn(),
     renderHeader: vi.fn(),
+    renderJoinForm: vi.fn(),
+    bindJoinForm: vi.fn(),
+    showJoinError: vi.fn(),
     renderNachrichten: vi.fn(),
     setDocMode: vi.fn(),
     bindEvents: vi.fn(),
@@ -24,6 +27,9 @@ const mocks = vi.hoisted(() => ({
 
 vi.mock("../../src/teilnehmer/TeilnehmerView", () => ({
     TeilnehmerView: class {
+        renderJoinForm = mocks.renderJoinForm;
+        bindJoinForm = mocks.bindJoinForm;
+        showJoinError = mocks.showJoinError;
         renderHeader = mocks.renderHeader;
         renderNachrichten = mocks.renderNachrichten;
         setDocMode = mocks.setDocMode;
@@ -162,7 +168,7 @@ describe("TeilnehmerController", () => {
         expect((controller as any).storage.nachrichten[3]).toBeUndefined();
     });
 
-    it("init handles invalid link and missing/unknown exercises", async () => {
+    it("init handles join mode and missing/unknown exercises", async () => {
         const { TeilnehmerController } = await import("../../src/teilnehmer");
         const content = { innerHTML: "" };
         vi.stubGlobal("document", {
@@ -174,7 +180,8 @@ describe("TeilnehmerController", () => {
         mocks.parseHash.mockReturnValueOnce({ params: [] });
         const controller1 = new TeilnehmerController({} as never);
         await controller1.init();
-        expect(content.innerHTML).toContain("Ungültiger Link");
+        expect(mocks.renderJoinForm).toHaveBeenCalled();
+        expect(mocks.bindJoinForm).toHaveBeenCalled();
 
         mocks.parseHash.mockReturnValueOnce({ params: ["u1", "t1"] });
         mocks.getUebung.mockResolvedValueOnce(null);
@@ -191,6 +198,36 @@ describe("TeilnehmerController", () => {
         const controller3 = new TeilnehmerController({} as never);
         await controller3.init();
         expect(content.innerHTML).toContain("Teilnehmer nicht in dieser Übung gefunden");
+    });
+
+    it("resolveJoinAndNavigate validates and routes by join codes", async () => {
+        const controller = await makeController();
+        const resolve = vi.fn()
+            .mockResolvedValueOnce(null)
+            .mockResolvedValueOnce({ uebungId: "u1", teilnehmerId: "A1B2", teilnehmerName: "Alpha" });
+        const hashState = { hash: "" };
+        vi.stubGlobal("window", {
+            addEventListener: vi.fn(),
+            location: hashState
+        });
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        (controller as any).firebaseService = { resolveTeilnehmerJoinCodes: resolve };
+
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        await (controller as any).resolveJoinAndNavigate("", "");
+        expect(mocks.showJoinError).toHaveBeenCalled();
+
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        await (controller as any).resolveJoinAndNavigate("ABC", "1234");
+        expect(mocks.showJoinError).toHaveBeenCalled();
+
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        await (controller as any).resolveJoinAndNavigate("ABC123", "1234");
+        expect(mocks.showJoinError).toHaveBeenCalledWith(expect.stringContaining("nicht gefunden"));
+
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        await (controller as any).resolveJoinAndNavigate("ABC123", "A1B2");
+        expect(hashState.hash).toBe("#/teilnehmer/u1/A1B2");
     });
 
     it("init success renders and binds events", async () => {

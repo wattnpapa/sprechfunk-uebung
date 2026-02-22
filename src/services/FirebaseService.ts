@@ -9,6 +9,7 @@ import {
     orderBy, 
     limit, 
     startAfter, 
+    where,
     getDocs,
     Timestamp,
     QuerySnapshot,
@@ -45,6 +46,9 @@ export class FirebaseService {
             : [];
 
         cleaned["teilnehmerListe"] = teilnehmerListe;
+        cleaned["uebungCode"] = typeof cleaned["uebungCode"] === "string"
+            ? cleaned["uebungCode"].trim().toUpperCase()
+            : "";
 
         cleaned["nachrichten"] = this.cleanupRecordKeys(cleaned["nachrichten"]);
         cleaned["loesungsStaerken"] = this.cleanupRecordKeys(cleaned["loesungsStaerken"]);
@@ -215,6 +219,7 @@ export class FirebaseService {
         const uebung = new FunkUebung(typeof data.buildVersion === "string" ? data.buildVersion : "");
         Object.assign(uebung, {
             id: id,
+            uebungCode: typeof data.uebungCode === "string" ? data.uebungCode.toUpperCase() : "",
             name: typeof data.name === "string" ? data.name : "",
             datum: toDate(data.datum),
             createDate: toDate(data.createDate),
@@ -265,6 +270,58 @@ export class FirebaseService {
             return this.mapToDomain(docSnap.id, docSnap.data());
         }
         return null;
+    }
+
+    async resolveTeilnehmerJoinCodes(
+        uebungCodeRaw: string,
+        teilnehmerCodeRaw: string
+    ): Promise<{ uebungId: string; teilnehmerId: string; teilnehmerName: string } | null> {
+        const uebungCode = uebungCodeRaw.trim().toUpperCase();
+        const teilnehmerCode = teilnehmerCodeRaw.trim().toUpperCase();
+        if (!uebungCode || !teilnehmerCode) {
+            return null;
+        }
+
+        if (this.isLocalMockMode()) {
+            const store = this.readMockStore();
+            const found = Object.entries(store).find(([, value]) =>
+                typeof value?.uebungCode === "string" && value.uebungCode.toUpperCase() === uebungCode
+            );
+            if (!found) {
+                return null;
+            }
+            const [uebungId, data] = found;
+            const teilnehmerIds = (data?.teilnehmerIds && typeof data.teilnehmerIds === "object")
+                ? data.teilnehmerIds as Record<string, unknown>
+                : {};
+            const matchedEntry = Object.entries(teilnehmerIds).find(([code]) => code.toUpperCase() === teilnehmerCode);
+            if (!matchedEntry || typeof matchedEntry[1] !== "string") {
+                return null;
+            }
+            return { uebungId, teilnehmerId: matchedEntry[0], teilnehmerName: matchedEntry[1] };
+        }
+
+        const q = query(
+            collection(this.db, "uebungen"),
+            where("uebungCode", "==", uebungCode),
+            limit(1)
+        );
+        const snapshot = await getDocs(q);
+        const docSnap = snapshot.docs[0];
+        if (!docSnap) {
+            return null;
+        }
+
+        const data = docSnap.data();
+        const teilnehmerIds = (data["teilnehmerIds"] && typeof data["teilnehmerIds"] === "object")
+            ? data["teilnehmerIds"] as Record<string, unknown>
+            : {};
+        const matchedEntry = Object.entries(teilnehmerIds).find(([code]) => code.toUpperCase() === teilnehmerCode);
+        if (!matchedEntry || typeof matchedEntry[1] !== "string") {
+            return null;
+        }
+
+        return { uebungId: docSnap.id, teilnehmerId: matchedEntry[0], teilnehmerName: matchedEntry[1] };
     }
 
     /**

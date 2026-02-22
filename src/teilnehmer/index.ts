@@ -53,7 +53,10 @@ export class TeilnehmerController {
         }
 
         if (!this.uebungId || !this.teilnehmerId) {
-            contentEl.innerHTML = "<div class=\"alert alert-danger\">Ungültiger Link.</div>";
+            this.view.renderJoinForm(this.uebungId ?? "");
+            this.view.bindJoinForm((uebungCode, teilnehmerCode) => {
+                void this.resolveJoinAndNavigate(uebungCode, teilnehmerCode);
+            });
             return;
         }
 
@@ -93,6 +96,23 @@ export class TeilnehmerController {
             () => this.downloadTeilnehmerZip(),
             () => this.debouncedRenderNachrichten()
         );
+    }
+
+    private async resolveJoinAndNavigate(uebungCode: string, teilnehmerCode: string): Promise<void> {
+        if (!uebungCode || !teilnehmerCode) {
+            this.view.showJoinError("Bitte beide Codes eingeben.");
+            return;
+        }
+        if (uebungCode.length !== 6 || teilnehmerCode.length !== 4) {
+            this.view.showJoinError("Codeformat ungültig. Übungscode: 6 Zeichen, Teilnehmercode: 4 Zeichen.");
+            return;
+        }
+        const result = await this.firebaseService.resolveTeilnehmerJoinCodes(uebungCode, teilnehmerCode);
+        if (!result) {
+            this.view.showJoinError("Kombination aus Übungscode und Teilnehmercode wurde nicht gefunden.");
+            return;
+        }
+        window.location.hash = `#/teilnehmer/${result.uebungId}/${result.teilnehmerId}`;
     }
 
     private renderNachrichten() {

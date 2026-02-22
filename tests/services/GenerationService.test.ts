@@ -26,6 +26,10 @@ describe("GenerationService", () => {
 
         expect(Object.keys(u.nachrichten).length).toBeGreaterThan(0);
         expect(Object.keys(u.teilnehmerIds || {}).length).toBe(3);
+        expect(u.uebungCode).toMatch(/^[A-Z2-9]{6}$/);
+        Object.keys(u.teilnehmerIds || {}).forEach(code => {
+            expect(code).toMatch(/^[A-Z2-9]{4}$/);
+        });
         expect(u.checksumme.length).toBeGreaterThan(0);
         expect(u.loesungsStaerken?.A).toBeDefined();
     });
@@ -50,13 +54,8 @@ describe("GenerationService", () => {
         expect(u.nachrichten).toEqual({});
     });
 
-    it("handles UUID fallback and random helper branches", () => {
+    it("covers random helper branches", () => {
         const service = new GenerationService();
-        vi.stubGlobal("crypto", undefined);
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const uuid = (service as any).generateUUID();
-        expect(uuid).toHaveLength(36);
-        vi.unstubAllGlobals();
 
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         expect((service as any).getRandomOther(["A"], "A")).toBe("A");
@@ -135,7 +134,7 @@ describe("GenerationService", () => {
         expect(Object.keys(v).length).toBe(8);
     });
 
-    it("covers subset random branches and existing ids in generate", () => {
+    it("covers subset random branches and reuses existing short participant codes", () => {
         const service = new GenerationService();
         const random = vi.spyOn(Math, "random");
         random.mockReturnValueOnce(0.85).mockReturnValueOnce(0.2).mockReturnValueOnce(0.96).mockReturnValue(0.4);
@@ -146,14 +145,33 @@ describe("GenerationService", () => {
 
         const u = new FunkUebung("dev");
         u.teilnehmerListe = ["A"];
-        u.teilnehmerIds = { fixed: "A" };
+        u.teilnehmerIds = { AB2C: "A" };
+        u.uebungCode = "C3DE45";
         u.funksprueche = ["TXT"];
         u.spruecheProTeilnehmer = 1;
         u.spruecheAnAlle = 0;
         u.spruecheAnMehrere = 0;
         u.buchstabierenAn = 0;
         service.generate(u);
-        expect(Object.keys(u.teilnehmerIds)).toEqual(["fixed"]);
+        expect(Object.keys(u.teilnehmerIds)).toEqual(["AB2C"]);
+        expect(u.uebungCode).toBe("C3DE45");
+    });
+
+    it("rebuilds participant id map for changed participant list", () => {
+        const service = new GenerationService();
+        const u = new FunkUebung("dev");
+        u.teilnehmerListe = ["A", "B"];
+        u.teilnehmerIds = { AB2C: "A", CD34: "X" };
+        u.funksprueche = ["TXT", "TXT2"];
+        u.spruecheProTeilnehmer = 1;
+        u.spruecheAnAlle = 0;
+        u.spruecheAnMehrere = 0;
+        u.buchstabierenAn = 0;
+
+        service.generate(u);
+
+        expect(Object.values(u.teilnehmerIds).sort()).toEqual(["A", "B"]);
+        expect(Object.keys(u.teilnehmerIds)).toContain("AB2C");
     });
 
     it("covers strength parsing without auto append and low-message branch", () => {

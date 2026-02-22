@@ -31,6 +31,76 @@ const loadPdfJs = async (): Promise<PdfJsModule> => {
 };
 
 export class TeilnehmerView {
+    public renderJoinForm(prefilledUebungCode = ""): void {
+        const container = document.getElementById("teilnehmerContent");
+        if (!container) {
+            return;
+        }
+        container.innerHTML = `
+            <div class="card mb-4">
+                <div class="card-header bg-primary text-white">
+                    <h3 class="card-title mb-0">Teilnehmer-Zugang</h3>
+                </div>
+                <div class="card-body">
+                    <p class="text-muted mb-3">Bitte Übungscode und Teilnehmercode eingeben.</p>
+                    <form id="teilnehmerJoinForm" class="row g-3" autocomplete="off">
+                        <div class="col-md-6">
+                            <label class="form-label" for="joinUebungCode">Übungscode</label>
+                            <input class="form-control text-uppercase" id="joinUebungCode" maxlength="6" placeholder="z. B. K7M4Q2" value="${prefilledUebungCode}">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label" for="joinTeilnehmerCode">Teilnehmercode</label>
+                            <input class="form-control text-uppercase" id="joinTeilnehmerCode" maxlength="4" placeholder="z. B. 9F3K">
+                        </div>
+                        <div class="col-12">
+                            <button type="submit" class="btn btn-primary" id="joinSubmitBtn" data-analytics-id="teilnehmer-join-submit">
+                                <i class="fas fa-right-to-bracket"></i> Zugang öffnen
+                            </button>
+                        </div>
+                    </form>
+                    <p id="teilnehmerJoinError" class="text-danger mt-3 mb-0 d-none" aria-live="polite"></p>
+                </div>
+            </div>
+        `;
+    }
+
+    public bindJoinForm(onSubmit: (uebungCode: string, teilnehmerCode: string) => void): void {
+        const form = document.getElementById("teilnehmerJoinForm") as HTMLFormElement | null;
+        if (!form) {
+            return;
+        }
+        const sanitize = (value: string) => value.toUpperCase().replace(/[^A-Z0-9]/g, "");
+        const uebungInput = document.getElementById("joinUebungCode") as HTMLInputElement | null;
+        const teilnehmerInput = document.getElementById("joinTeilnehmerCode") as HTMLInputElement | null;
+
+        const applySanitize = (input: HTMLInputElement | null) => {
+            if (!input) {
+                return;
+            }
+            input.addEventListener("input", () => {
+                input.value = sanitize(input.value);
+            });
+        };
+        applySanitize(uebungInput);
+        applySanitize(teilnehmerInput);
+
+        form.addEventListener("submit", event => {
+            event.preventDefault();
+            onSubmit(
+                sanitize(uebungInput?.value || ""),
+                sanitize(teilnehmerInput?.value || "")
+            );
+        });
+    }
+
+    public showJoinError(message: string): void {
+        const errorEl = document.getElementById("teilnehmerJoinError");
+        if (!errorEl) {
+            return;
+        }
+        errorEl.textContent = message;
+        errorEl.classList.remove("d-none");
+    }
 
     public renderHeader(uebung: Uebung, teilnehmer: string) {
         const container = document.getElementById("teilnehmerContent");

@@ -6,6 +6,7 @@ import CryptoJS from "crypto-js";
 export class FunkUebung implements Uebung {
 
     id: string;
+    uebungCode = "";
     autoStaerkeErgaenzen = true;
     name: string;
     datum: Date;
@@ -101,6 +102,7 @@ export class FunkUebung implements Uebung {
         this.updateChecksum();
         return JSON.stringify({
             id: this.id,
+            uebungCode: this.uebungCode,
             checksumme: this.checksumme,
             createDate: this.createDate,
             name: this.name,

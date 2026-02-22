@@ -449,6 +449,8 @@ export class GeneratorView {
             const baseUrl = this.getBaseUrl();
             const urlUebung = `${baseUrl}#/generator/${uebung.id}`;
             const urlUebungLeitung = `${baseUrl}#/uebungsleitung/${uebung.id}`;
+            const joinUrl = `${baseUrl}#/teilnehmer`;
+            const uebungCode = (uebung.uebungCode || "").toUpperCase();
 
             teilnehmerLinksContainer.innerHTML = "";
             this.appendLinkRow(
@@ -468,15 +470,30 @@ export class GeneratorView {
             );
 
             if (uebung.teilnehmerIds) {
-                Object.entries(uebung.teilnehmerIds).forEach(([id, name]) => {
-                    const url = `${baseUrl}#/teilnehmer/${uebung.id}/${id}`;
+                Object.entries(uebung.teilnehmerIds).forEach(([participantCode, name]) => {
+                    const joinText = [
+                        `Teilnehmer-Zugang für "${uebung.name || "Sprechfunk-Übung"}"`,
+                        `URL: ${joinUrl}`,
+                        `Übungscode: ${uebungCode}`,
+                        `Teilnehmercode: ${participantCode.toUpperCase()}`
+                    ].join("\n");
                     this.appendLinkRow(
                         teilnehmerLinksContainer,
                         "Teilnehmer",
                         name,
-                        url,
-                        this.createMailtoLink(uebung.name || "Sprechfunk-Übung", name, url),
-                        uebung
+                        joinUrl,
+                        this.createMailtoLink(
+                            uebung.name || "Sprechfunk-Übung",
+                            name,
+                            joinUrl,
+                            uebungCode,
+                            participantCode.toUpperCase()
+                        ),
+                        uebung,
+                        {
+                            codeText: `Übungscode ${uebungCode} · Teilnehmercode ${participantCode.toUpperCase()}`,
+                            copyValue: joinText
+                        }
                     );
                 });
             }
@@ -491,7 +508,8 @@ export class GeneratorView {
         name: string,
         url: string,
         mailtoUrl?: string,
-        uebung?: FunkUebung
+        uebung?: FunkUebung,
+        options?: { codeText?: string; copyValue?: string }
     ) {
         const row = document.createElement("div");
         row.className = "generator-link-row";
@@ -517,6 +535,12 @@ export class GeneratorView {
         shortUrl.title = url;
         shortUrl.textContent = this.shortenUrl(url, 70);
         linkCell.appendChild(shortUrl);
+        if (options?.codeText) {
+            const codes = document.createElement("div");
+            codes.className = "small mt-1 text-muted";
+            codes.textContent = options.codeText;
+            linkCell.appendChild(codes);
+        }
         row.appendChild(linkCell);
 
         const actionsCell = document.createElement("div");
@@ -536,8 +560,8 @@ export class GeneratorView {
         copyButton.setAttribute("data-analytics-id", `generator-link-copy-${typ.toLowerCase()}`);
         copyButton.innerHTML = "<i class=\"fas fa-copy\"></i> Kopieren";
         copyButton.addEventListener("click", () => {
-            this.copyTextToClipboard(url)
-                .then(() => this.showLinkActionFeedback("Link wurde kopiert.", false))
+            this.copyTextToClipboard(options?.copyValue || url)
+                .then(() => this.showLinkActionFeedback("Zugangsdaten wurden kopiert.", false))
                 .catch(() => this.showLinkActionFeedback("Kopieren fehlgeschlagen.", true));
         });
         actionsCell.appendChild(copyButton);
@@ -634,13 +658,22 @@ export class GeneratorView {
         document.body.removeChild(textarea);
     }
 
-    private createMailtoLink(uebungsName: string, teilnehmerName: string, teilnehmerUrl: string): string {
+    private createMailtoLink(
+        uebungsName: string,
+        teilnehmerName: string,
+        teilnehmerUrl: string,
+        uebungCode: string,
+        teilnehmerCode: string
+    ): string {
         const subject = `Sprechfunk-Übung: ${uebungsName} - ${teilnehmerName}`;
         const bodyLines = [
             `Hallo ${teilnehmerName},`,
             "",
-            `hier ist dein Link zur Teilnehmeransicht der Übung "${uebungsName}":`,
+            `hier ist dein Zugang zur Teilnehmeransicht der Übung "${uebungsName}":`,
             teilnehmerUrl,
+            "",
+            `Übungscode: ${uebungCode}`,
+            `Teilnehmercode: ${teilnehmerCode}`,
             "",
             "Du kannst die Ansicht während der Übung nutzen.",
             "Dort kannst du auch die Druckdaten herunterladen.",
