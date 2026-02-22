@@ -240,7 +240,8 @@ test("@generator generates exercise with extended custom participant list", asyn
     await expect(page.locator("#links-teilnehmer-container")).toContainText("Heros Beispielstadt 42/1");
     await expect(page.locator("#links-teilnehmer-container")).toContainText("Florian Musterstadt 54/2");
     await expect(page.locator("#links-teilnehmer-container")).toContainText("Heros Beispielstadt 61/10");
-    await expect(page.locator("#links-teilnehmer-container .generator-link-row[data-link-type='teilnehmer'] .generator-link-url code").first()).toContainText("#/teilnehmer");
+    await expect(page.locator("#links-teilnehmer-container .generator-link-row[data-link-type='teilnehmer'] .generator-link-url code").first()).toContainText("#/teilnehmer?uc=");
+    await expect(page.locator("#links-teilnehmer-container")).toContainText("Teilnehmer Code:");
 });
 
 test("@generator blocks generation when participant names are duplicates", async ({ page }) => {
@@ -354,6 +355,13 @@ test("@routing @teilnehmer route #/teilnehmer without params shows invalid link 
     await expect(page.locator("#joinTeilnehmerCode")).toBeVisible();
 });
 
+test("@routing @teilnehmer route #/teilnehmer with code params prefills join form", async ({ page }) => {
+    await page.goto("/#/teilnehmer?uc=k7m4q2&tc=a1b2");
+
+    await expect(page.locator("#joinUebungCode")).toHaveValue("K7M4Q2");
+    await expect(page.locator("#joinTeilnehmerCode")).toHaveValue("A1B2");
+});
+
 test("@routing @uebungsleitung route #/uebungsleitung without id still switches app mode", async ({ page }) => {
     await page.goto("/#/uebungsleitung");
 
@@ -420,6 +428,17 @@ test("@teilnehmer join form resolves short codes and opens participant view", as
     await page.locator("#joinUebungCode").fill("k7m4q2");
     await page.locator("#joinTeilnehmerCode").fill("a1b2");
     await page.locator("#joinSubmitBtn").click();
+
+    await expect(page).toHaveURL(/#\/teilnehmer\/u1\/A1B2$/);
+    await expect(page.locator("#teilnehmerContent")).toContainText("Heros Oldenburg 16/11");
+});
+
+test("@generator start page quick join opens participant view by codes", async ({ page }) => {
+    await page.goto("/#/generator");
+
+    await page.locator("#quickJoinUebungCode").fill("k7m4q2");
+    await page.locator("#quickJoinTeilnehmerCode").fill("a1b2");
+    await page.locator("#quickJoinForm").dispatchEvent("submit");
 
     await expect(page).toHaveURL(/#\/teilnehmer\/u1\/A1B2$/);
     await expect(page.locator("#teilnehmerContent")).toContainText("Heros Oldenburg 16/11");

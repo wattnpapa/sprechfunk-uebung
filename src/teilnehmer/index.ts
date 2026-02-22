@@ -46,6 +46,7 @@ export class TeilnehmerController {
         const {params} = router.parseHash();
         this.uebungId = params[0] ?? null;
         this.teilnehmerId = params[1] ?? null;
+        const prefilledCodes = this.getPrefilledJoinCodesFromHash();
 
         const contentEl = document.getElementById("teilnehmerContent");
         if (!contentEl) {
@@ -53,7 +54,7 @@ export class TeilnehmerController {
         }
 
         if (!this.uebungId || !this.teilnehmerId) {
-            this.view.renderJoinForm(this.uebungId ?? "");
+            this.view.renderJoinForm(prefilledCodes.uebungCode, prefilledCodes.teilnehmerCode);
             this.view.bindJoinForm((uebungCode, teilnehmerCode) => {
                 void this.resolveJoinAndNavigate(uebungCode, teilnehmerCode);
             });
@@ -113,6 +114,17 @@ export class TeilnehmerController {
             return;
         }
         window.location.hash = `#/teilnehmer/${result.uebungId}/${result.teilnehmerId}`;
+    }
+
+    private getPrefilledJoinCodesFromHash(): { uebungCode: string; teilnehmerCode: string } {
+        const hash = window.location.hash || "";
+        const query = hash.includes("?") ? hash.split("?")[1] ?? "" : "";
+        const params = new URLSearchParams(query);
+        const sanitize = (value: string) => value.toUpperCase().replace(/[^A-Z0-9]/g, "");
+        return {
+            uebungCode: sanitize(params.get("uc") || ""),
+            teilnehmerCode: sanitize(params.get("tc") || "")
+        };
     }
 
     private renderNachrichten() {

@@ -200,6 +200,26 @@ describe("TeilnehmerController", () => {
         expect(content.innerHTML).toContain("Teilnehmer nicht in dieser Übung gefunden");
     });
 
+    it("init prefills join form from hash query parameters", async () => {
+        const { TeilnehmerController } = await import("../../src/teilnehmer");
+        const content = { innerHTML: "" };
+        vi.stubGlobal("document", {
+            getElementById: (id: string) => (id === "teilnehmerContent" ? content : null),
+            createElement: () => ({ href: "", download: "", click: vi.fn() }),
+            body: { appendChild: vi.fn(), removeChild: vi.fn() }
+        });
+        vi.stubGlobal("window", {
+            addEventListener: vi.fn(),
+            location: { hash: "#/teilnehmer?uc=k7m4q2&tc=a1b2" }
+        });
+        mocks.parseHash.mockReturnValueOnce({ params: [] });
+
+        const controller = new TeilnehmerController({} as never);
+        await controller.init();
+
+        expect(mocks.renderJoinForm).toHaveBeenCalledWith("K7M4Q2", "A1B2");
+    });
+
     it("resolveJoinAndNavigate validates and routes by join codes", async () => {
         const controller = await makeController();
         const resolve = vi.fn()

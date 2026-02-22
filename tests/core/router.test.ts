@@ -64,4 +64,13 @@ describe("router", () => {
         const parsed = router.parseHash();
         expect(parsed).toEqual({ mode: "generator", params: [] });
     });
+
+    it("parses route path correctly when hash includes query params", async () => {
+        setupWindow();
+        const { router } = await import("../../src/core/router");
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        (globalThis as any).window.location.hash = "#/teilnehmer?uc=K7M4Q2&tc=A1B2";
+        const parsed = router.parseHash();
+        expect(parsed).toEqual({ mode: "teilnehmer", params: [] });
+    });
 });

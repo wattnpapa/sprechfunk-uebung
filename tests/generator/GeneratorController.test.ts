@@ -870,6 +870,37 @@ describe("GeneratorController", () => {
         expect(renderTeilnehmer).toHaveBeenCalledTimes(2);
     });
 
+    it("openTeilnehmerByCodes validates inputs and routes on success", async () => {
+        const controller = await makeController();
+        const showQuickJoinFeedback = vi.fn();
+        const resolveTeilnehmerJoinCodes = vi.fn()
+            .mockResolvedValueOnce(null)
+            .mockResolvedValueOnce({ uebungId: "u1", teilnehmerId: "AB12", teilnehmerName: "Alpha" });
+
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        (controller as any).view = { showQuickJoinFeedback };
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        (controller as any).firebaseService = { resolveTeilnehmerJoinCodes };
+        vi.stubGlobal("window", { location: { hash: "" } });
+
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        await (controller as any).openTeilnehmerByCodes("", "");
+        expect(showQuickJoinFeedback).toHaveBeenCalledWith("Bitte beide Codes eingeben.", true);
+
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        await (controller as any).openTeilnehmerByCodes("ABC", "1234");
+        expect(showQuickJoinFeedback).toHaveBeenCalledWith(expect.stringContaining("Ungültiges Format"), true);
+
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        await (controller as any).openTeilnehmerByCodes("ABC123", "ZZ99");
+        expect(showQuickJoinFeedback).toHaveBeenCalledWith("Code-Kombination nicht gefunden.", true);
+
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        await (controller as any).openTeilnehmerByCodes("ABC123", "AB12");
+        expect(showQuickJoinFeedback).toHaveBeenCalledWith("Teilnehmeransicht wird geöffnet...", false);
+        expect(window.location.hash).toBe("#/teilnehmer/u1/AB12");
+    });
+
     it("renderTeilnehmer triggers shuffle when requested", async () => {
         const controller = await makeController();
         const renderTeilnehmerSection = vi.fn();

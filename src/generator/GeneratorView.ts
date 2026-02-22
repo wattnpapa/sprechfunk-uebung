@@ -264,6 +264,7 @@ export class GeneratorView {
         onChangePage: (step: number) => void;
         onCopyJson: () => void;
         onZipAllPdfs: () => void;
+        onJoinByCodes?: (uebungCode: string, teilnehmerCode: string) => void;
     }) {
         document.getElementById("addTeilnehmerBtn")?.addEventListener("click", handlers.onAddTeilnehmer, { signal: this.bindingController.signal });
         document.getElementById("startUebungBtn")?.addEventListener("click", handlers.onStartUebung, { signal: this.bindingController.signal });
@@ -272,6 +273,30 @@ export class GeneratorView {
         document.getElementById("copyJsonBtn")?.addEventListener("click", handlers.onCopyJson, { signal: this.bindingController.signal });
         document.getElementById("copyJsonBtnFooter")?.addEventListener("click", handlers.onCopyJson, { signal: this.bindingController.signal });
         document.getElementById("zipAllPdfsBtn")?.addEventListener("click", handlers.onZipAllPdfs, { signal: this.bindingController.signal });
+        const joinForm = document.getElementById("quickJoinForm") as HTMLFormElement | null;
+        const onJoinByCodes = handlers.onJoinByCodes;
+        if (joinForm && onJoinByCodes) {
+            joinForm.addEventListener("submit", event => {
+                event.preventDefault();
+                const sanitize = (value: string) => value.toUpperCase().replace(/[^A-Z0-9]/g, "");
+                const uebungInput = document.getElementById("quickJoinUebungCode") as HTMLInputElement | null;
+                const teilnehmerInput = document.getElementById("quickJoinTeilnehmerCode") as HTMLInputElement | null;
+                onJoinByCodes(
+                    sanitize(uebungInput?.value || ""),
+                    sanitize(teilnehmerInput?.value || "")
+                );
+            }, { signal: this.bindingController.signal });
+        }
+    }
+
+    public showQuickJoinFeedback(message: string, isError: boolean) {
+        const el = document.getElementById("quickJoinFeedback");
+        if (!el) {
+            return;
+        }
+        el.textContent = message;
+        el.classList.toggle("text-danger", isError);
+        el.classList.toggle("text-success", !isError);
     }
 
     public renderTeilnehmerListe(
@@ -449,7 +474,6 @@ export class GeneratorView {
             const baseUrl = this.getBaseUrl();
             const urlUebung = `${baseUrl}#/generator/${uebung.id}`;
             const urlUebungLeitung = `${baseUrl}#/uebungsleitung/${uebung.id}`;
-            const joinUrl = `${baseUrl}#/teilnehmer`;
             const uebungCode = (uebung.uebungCode || "").toUpperCase();
 
             teilnehmerLinksContainer.innerHTML = "";
@@ -471,11 +495,12 @@ export class GeneratorView {
 
             if (uebung.teilnehmerIds) {
                 Object.entries(uebung.teilnehmerIds).forEach(([participantCode, name]) => {
+                    const normalizedParticipantCode = participantCode.toUpperCase();
+                    const joinUrl = this.createTeilnehmerJoinUrl(uebungCode, normalizedParticipantCode);
                     const joinText = [
                         `Teilnehmer-Zugang für "${uebung.name || "Sprechfunk-Übung"}"`,
                         `URL: ${joinUrl}`,
-                        `Übungscode: ${uebungCode}`,
-                        `Teilnehmercode: ${participantCode.toUpperCase()}`
+                        `Teilnehmer Code: ${uebungCode} / ${normalizedParticipantCode}`
                     ].join("\n");
                     this.appendLinkRow(
                         teilnehmerLinksContainer,
@@ -487,11 +512,11 @@ export class GeneratorView {
                             name,
                             joinUrl,
                             uebungCode,
-                            participantCode.toUpperCase()
+                            normalizedParticipantCode
                         ),
                         uebung,
                         {
-                            codeText: `Übungscode ${uebungCode} · Teilnehmercode ${participantCode.toUpperCase()}`,
+                            codeText: `Teilnehmer Code: ${uebungCode} / ${normalizedParticipantCode}`,
                             copyValue: joinText
                         }
                     );
@@ -725,6 +750,13 @@ export class GeneratorView {
         return `${window.location.origin}${window.location.pathname}`;
     }
 
+    private createTeilnehmerJoinUrl(uebungCode: string, teilnehmerCode: string): string {
+        const params = new URLSearchParams();
+        params.set("uc", uebungCode);
+        params.set("tc", teilnehmerCode);
+        return `${this.getBaseUrl()}#/teilnehmer?${params.toString()}`;
+    }
+
     public renderPreview(html: string, index: number, total: number) {
         const iframe = document.getElementById("resultFrame") as HTMLIFrameElement;
         if (iframe) {
@@ -833,6 +865,34 @@ export class GeneratorView {
 
         container.innerHTML = `
             <div class="app-view-shell">
+            <div class="card mb-3">
+                <div class="card-body py-2">
+                    <div class="row align-items-center g-2">
+                        <div class="col-lg-4">
+                            <strong>Teilnehmer-Zugang</strong>
+                            <div class="small text-muted">Direkt mit Übungs- und Teilnehmercode öffnen.</div>
+                        </div>
+                        <div class="col-lg-8">
+                            <form id="quickJoinForm" class="row g-2 justify-content-end">
+                                <div class="col-sm-5 col-md-4">
+                                    <input type="text" class="form-control text-uppercase form-control-sm" id="quickJoinUebungCode" maxlength="6" placeholder="Übungscode (6)">
+                                </div>
+                                <div class="col-sm-4 col-md-3">
+                                    <input type="text" class="form-control text-uppercase form-control-sm" id="quickJoinTeilnehmerCode" maxlength="4" placeholder="TN-Code (4)">
+                                </div>
+                                <div class="col-sm-3 col-md-3">
+                                    <button type="submit" class="btn btn-outline-primary btn-sm w-100" id="quickJoinBtn" data-analytics-id="generator-quick-join-submit">
+                                        Teilnehmer öffnen
+                                    </button>
+                                </div>
+                                <div class="col-12 text-end">
+                                    <span id="quickJoinFeedback" class="small" aria-live="polite"></span>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
             <!-- Hauptbereich mit Kopfdaten, Einstellungen und Teilnehmerverwaltung nebeneinander -->
             <div class="row g-3 generator-setup-layout">
 

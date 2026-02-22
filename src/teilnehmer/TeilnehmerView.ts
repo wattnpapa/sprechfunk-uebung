@@ -31,7 +31,7 @@ const loadPdfJs = async (): Promise<PdfJsModule> => {
 };
 
 export class TeilnehmerView {
-    public renderJoinForm(prefilledUebungCode = ""): void {
+    public renderJoinForm(prefilledUebungCode = "", prefilledTeilnehmerCode = ""): void {
         const container = document.getElementById("teilnehmerContent");
         if (!container) {
             return;
@@ -50,7 +50,7 @@ export class TeilnehmerView {
                         </div>
                         <div class="col-md-6">
                             <label class="form-label" for="joinTeilnehmerCode">Teilnehmercode</label>
-                            <input class="form-control text-uppercase" id="joinTeilnehmerCode" maxlength="4" placeholder="z. B. 9F3K">
+                            <input class="form-control text-uppercase" id="joinTeilnehmerCode" maxlength="4" placeholder="z. B. 9F3K" value="${prefilledTeilnehmerCode}">
                         </div>
                         <div class="col-12">
                             <button type="submit" class="btn btn-primary" id="joinSubmitBtn" data-analytics-id="teilnehmer-join-submit">

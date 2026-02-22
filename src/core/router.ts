@@ -21,7 +21,8 @@ class Router {
 
     public parseHash(): Route {
         const hash = window.location.hash.replace(/^#\/?/, "");
-        const parts = hash.split("/").filter(Boolean);
+        const [pathPart] = hash.split("?");
+        const parts = (pathPart || "").split("/").filter(Boolean);
         
         const mode = (parts[0] as AppMode) || "generator";
         const params = parts.slice(1);
