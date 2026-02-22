@@ -379,7 +379,9 @@ test("@routing hash navigation switches between generator and teilnehmer mode", 
         window.location.hash = "#/teilnehmer";
     });
     await expect(page.locator("#teilnehmerArea")).toBeVisible();
-    await expect(page.locator("#teilnehmerContent")).toContainText("Ungültiger Link.");
+    await expect(page.locator("#teilnehmerJoinForm")).toBeVisible();
+    await expect(page.locator("#joinUebungCode")).toBeVisible();
+    await expect(page.locator("#joinTeilnehmerCode")).toBeVisible();
 
     await page.evaluate(() => {
         window.location.hash = "#/generator";
