@@ -355,8 +355,7 @@ export class TeilnehmerView {
             const pdf = await pdfjs.getDocument({ data: buffer }).promise;
             const pdfPage = await pdf.getPage(1);
 
-            const rotation = pdfPage.rotate ?? 0;
-            const baseViewport = pdfPage.getViewport({ scale: 1, rotation });
+            const baseViewport = pdfPage.getViewport({ scale: 1, rotation: 0 });
             const rect = container.getBoundingClientRect();
             const containerWidth = rect.width || container.clientWidth || baseViewport.width;
             const containerHeight = rect.height || container.clientHeight || baseViewport.height;
@@ -365,8 +364,8 @@ export class TeilnehmerView {
                 containerHeight / baseViewport.height
             );
             const dpr = window.devicePixelRatio || 1;
-            const viewport = pdfPage.getViewport({ scale, rotation });
-            const hiResViewport = pdfPage.getViewport({ scale: scale * dpr, rotation });
+            const viewport = pdfPage.getViewport({ scale, rotation: 0 });
+            const hiResViewport = pdfPage.getViewport({ scale: scale * dpr, rotation: 0 });
 
             canvas.width = Math.floor(hiResViewport.width);
             canvas.height = Math.floor(hiResViewport.height);
