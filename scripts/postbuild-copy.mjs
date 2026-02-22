@@ -1,4 +1,4 @@
-import { cp, mkdir } from "node:fs/promises";
+import { cp, mkdir, readFile, writeFile } from "node:fs/promises";
 import path from "node:path";
 
 const root = process.cwd();
@@ -13,3 +13,14 @@ await cp(path.join(root, "src", "styles", "main.css"), path.join(dist, "style.cs
 await cp(path.join(root, "src", "firebase-config.js"), path.join(dist, "firebase-config.js"));
 await cp(path.join(root, "src", "robots.txt"), path.join(dist, "robots.txt"));
 await cp(path.join(root, "src", "sitemap.xml"), path.join(dist, "sitemap.xml"));
+
+const bundleCssPath = path.join(dist, "bundle.css");
+try {
+    const css = await readFile(bundleCssPath, "utf8");
+    const normalized = css.replaceAll("../webfonts/", "./webfonts/");
+    if (normalized !== css) {
+        await writeFile(bundleCssPath, normalized, "utf8");
+    }
+} catch {
+    // ignore if bundle.css does not exist yet
+}
