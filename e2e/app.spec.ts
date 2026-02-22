@@ -120,6 +120,28 @@ test("@generator generator source toggle switches between templates and upload",
     await expect(uploadContainer).toBeHidden();
 });
 
+test("@generator quick join strip is always visible on generator route", async ({ page }) => {
+    await page.goto("/#/generator");
+
+    const joinForm = page.locator("#generatorQuickJoinForm");
+    const uebungCodeInput = page.locator("#generatorQuickJoinUebungCode");
+    const teilnehmerCodeInput = page.locator("#generatorQuickJoinTeilnehmerCode");
+    const submitButton = page.locator("#generatorQuickJoinForm button[type='submit']");
+
+    await expect(joinForm).toBeVisible();
+    await expect(uebungCodeInput).toBeVisible();
+    await expect(teilnehmerCodeInput).toBeVisible();
+    await expect(submitButton).toBeVisible();
+
+    await page.goto("/#/teilnehmer");
+    await expect(page.locator("#teilnehmerArea")).toBeVisible();
+
+    await page.goto("/#/generator");
+    await expect(joinForm).toBeVisible();
+    await expect(uebungCodeInput).toBeVisible();
+    await expect(teilnehmerCodeInput).toBeVisible();
+});
+
 test("@generator distribution percent inputs are editable and update absolute values", async ({ page }) => {
     await page.goto("/");
 
