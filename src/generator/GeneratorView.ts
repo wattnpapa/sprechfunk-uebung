@@ -212,7 +212,7 @@ export class GeneratorView {
 
     public bindTeilnehmerEvents(
         onTeilnehmerNameChange: (index: number, val: string) => void,
-        onStellennameChange: (teilnehmer: string, val: string) => void,
+        onStellennameChange: (index: number, val: string) => void,
         onDelete: (index: number) => void,
         onShowStellennameToggle: (checked: boolean) => void
     ) {
@@ -228,9 +228,9 @@ export class GeneratorView {
                 onTeilnehmerNameChange(index, newVal);
             }
             if (target.classList.contains("stellenname-input")) {
-                const teilnehmer = decodeURIComponent(target.getAttribute("data-teilnehmer") || "");
+                const index = Number(target.dataset["index"]);
                 const newVal = (target as HTMLInputElement).value;
-                onStellennameChange(teilnehmer, newVal);
+                onStellennameChange(index, newVal);
             }
         }, { signal: this.bindingController.signal });
 
@@ -330,7 +330,7 @@ export class GeneratorView {
             if (showStellenname) {
                 const value = teilnehmerStellen?.[teilnehmer] ?? "";
                 stellenInput = `<td>
-                    <input type="text" class="form-control stellenname-input" data-teilnehmer="${encodeURIComponent(teilnehmer)}" value="${value}" placeholder="Name der Stelle">
+                    <input type="text" class="form-control stellenname-input" data-index="${index}" value="${value}" placeholder="Name der Stelle">
                 </td>`;
             }
 

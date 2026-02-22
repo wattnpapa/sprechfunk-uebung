@@ -119,7 +119,7 @@ export class GeneratorController {
         });
         this.view.bindTeilnehmerEvents(
             (index, newVal) => this.updateTeilnehmerName(index, newVal),
-            (teilnehmer, newVal) => this.updateTeilnehmerStelle(teilnehmer, newVal),
+            (index, newVal) => this.updateTeilnehmerStelle(index, newVal),
             index => this.removeTeilnehmer(index),
             checked => {
                 this.showStellenname = checked;
@@ -197,7 +197,8 @@ export class GeneratorController {
         this.stateService.updateTeilnehmerName(this.funkUebung, index, newName);
     }
 
-    updateTeilnehmerStelle(teilnehmer: string, stelle: string) {
+    updateTeilnehmerStelle(index: number, stelle: string) {
+        const teilnehmer = this.funkUebung.teilnehmerListe[index] ?? "";
         this.stateService.updateTeilnehmerStelle(this.funkUebung, teilnehmer, stelle);
     }
 

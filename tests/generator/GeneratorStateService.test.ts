@@ -48,6 +48,19 @@ describe("GeneratorStateService", () => {
         expect(uebung.teilnehmerListe[0]).toBe("B");
     });
 
+    it("updates empty participant placeholder and migrates mapping", () => {
+        const uebung = new FunkUebung("test");
+        uebung.teilnehmerListe = ["A", ""];
+        uebung.teilnehmerStellen = { "": "Trupp C" };
+
+        const svc = new GeneratorStateService();
+        svc.updateTeilnehmerName(uebung, 1, "C");
+
+        expect(uebung.teilnehmerListe[1]).toBe("C");
+        expect(uebung.teilnehmerStellen?.C).toBe("Trupp C");
+        expect(uebung.teilnehmerStellen?.[""]).toBeUndefined();
+    });
+
     it("removes teilnehmer and related data", () => {
         const uebung = new FunkUebung("test");
         uebung.teilnehmerListe = ["A", "B"];

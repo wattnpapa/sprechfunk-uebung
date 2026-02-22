@@ -4,10 +4,10 @@ export type LoesungswortOption = "none" | "central" | "individual";
 
 export class GeneratorStateService {
     updateTeilnehmerName(uebung: FunkUebung, index: number, newName: string): void {
-        const oldName = uebung.teilnehmerListe[index];
-        if (!oldName) {
+        if (index < 0 || index >= uebung.teilnehmerListe.length) {
             return;
         }
+        const oldName = uebung.teilnehmerListe[index] ?? "";
         if (oldName !== newName) {
             if (uebung.teilnehmerStellen && uebung.teilnehmerStellen[oldName] !== undefined) {
                 uebung.teilnehmerStellen[newName] = uebung.teilnehmerStellen[oldName];

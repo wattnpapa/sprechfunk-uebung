@@ -856,9 +856,10 @@ describe("GeneratorController", () => {
         (controller as any).stateService = stateService;
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         (controller as any).renderTeilnehmer = renderTeilnehmer;
+        controller.funkUebung.teilnehmerListe = ["A", "B", "C"];
 
         controller.updateTeilnehmerName(1, "Neu");
-        controller.updateTeilnehmerStelle("A", "Stelle");
+        controller.updateTeilnehmerStelle(0, "Stelle");
         controller.addTeilnehmer();
         controller.removeTeilnehmer(2);
 

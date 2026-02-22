@@ -137,7 +137,7 @@ describe("GeneratorView", () => {
         show.checked = false;
         show.dispatchEvent(new window.Event("change", { bubbles: true }));
         expect(onTeilnehmerNameChange).toHaveBeenCalled();
-        expect(onStellennameChange).toHaveBeenCalledWith("A", "Neu");
+        expect(onStellennameChange).toHaveBeenCalledWith(0, "Neu");
         expect(onShowStellennameToggle).toHaveBeenCalledWith(false);
         expect(onDelete).toHaveBeenCalled();
 

@@ -219,13 +219,14 @@ test("@generator all generator inputs are editable and keep values", async ({ pa
     await expect(firstStelle).toHaveValue("FGr 1");
 });
 
-test("@generator generates exercise with custom participant call signs", async ({ page }) => {
+test("@generator generates exercise with extended custom participant list", async ({ page }) => {
     await page.goto("/");
 
     await setParticipants(page, [
         "Florian Musterstadt 33/44",
         "Heros Beispielstadt 42/1",
-        ""
+        "Florian Musterstadt 54/2",
+        "Heros Beispielstadt 61/10"
     ]);
     await page.locator("#nameDerUebung").fill("OV Funkprobe");
     await page.selectOption("#funkspruchVorlage", ["thwleer"]);
@@ -233,9 +234,11 @@ test("@generator generates exercise with custom participant call signs", async (
     await page.locator("#startUebungBtn").click();
 
     await expect(page.locator("#uebung-links")).toBeVisible();
-    await expect(page.locator("#links-teilnehmer-container .generator-link-row[data-link-type='teilnehmer']")).toHaveCount(2);
+    await expect(page.locator("#links-teilnehmer-container .generator-link-row[data-link-type='teilnehmer']")).toHaveCount(4);
     await expect(page.locator("#links-teilnehmer-container")).toContainText("Florian Musterstadt 33/44");
     await expect(page.locator("#links-teilnehmer-container")).toContainText("Heros Beispielstadt 42/1");
+    await expect(page.locator("#links-teilnehmer-container")).toContainText("Florian Musterstadt 54/2");
+    await expect(page.locator("#links-teilnehmer-container")).toContainText("Heros Beispielstadt 61/10");
     await expect(page.locator("#links-teilnehmer-container .generator-link-row[data-link-type='teilnehmer'] .generator-link-url code").first()).toContainText("#/teilnehmer/");
 });
 
