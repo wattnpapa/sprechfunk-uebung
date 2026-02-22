@@ -26,6 +26,7 @@ export class AdminView {
         uebungen.forEach(uebung => {
             const tr = document.createElement("tr");
             tr.setAttribute("data-search", `${uebung.id} ${uebung.name} ${uebung.rufgruppe} ${uebung.leitung}`.toLowerCase());
+            tr.setAttribute("data-is-test", uebung.istStandardKonfiguration ? "1" : "0");
             if (uebung.istStandardKonfiguration) {
                 tr.classList.add("admin-standard-uebung-row");
             }
@@ -131,14 +132,21 @@ export class AdminView {
         document.getElementById("adminSearchInput")?.addEventListener("input", () => {
             this.applySearchFilter();
         });
+        document.getElementById("adminOnlyTestFilter")?.addEventListener("change", () => {
+            this.applySearchFilter();
+        });
     }
 
     private applySearchFilter() {
         const q = (document.getElementById("adminSearchInput") as HTMLInputElement | null)?.value?.trim().toLowerCase() ?? "";
+        const onlyTest = (document.getElementById("adminOnlyTestFilter") as HTMLInputElement | null)?.checked ?? false;
         const rows = document.querySelectorAll<HTMLTableRowElement>("#adminUebungslisteBody tr");
         rows.forEach(row => {
             const haystack = row.getAttribute("data-search") || "";
-            row.style.display = !q || haystack.includes(q) ? "" : "none";
+            const isTest = row.getAttribute("data-is-test") === "1";
+            const matchesSearch = !q || haystack.includes(q);
+            const matchesTestFilter = !onlyTest || isTest;
+            row.style.display = matchesSearch && matchesTestFilter ? "" : "none";
         });
     }
 

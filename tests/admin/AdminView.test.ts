@@ -30,6 +30,7 @@ describe("AdminView", () => {
           <div id="infoGesamtUebungen"></div>
           <div id="infoSpruecheProTeilnehmer"></div>
           <input id="adminSearchInput" />
+          <input id="adminOnlyTestFilter" type="checkbox" />
           <table><tbody id="adminUebungslisteBody"></tbody></table>
           <div id="adminUebungslisteInfo"></div>
           <canvas id="chartUebungenProTag"></canvas>
@@ -81,6 +82,13 @@ describe("AdminView", () => {
         search.value = "zzz";
         search.dispatchEvent(new window.Event("input"));
         expect((tbody.querySelector("tr") as HTMLTableRowElement).style.display).toBe("none");
+
+        search.value = "";
+        search.dispatchEvent(new window.Event("input"));
+        const onlyTest = document.getElementById("adminOnlyTestFilter") as HTMLInputElement;
+        onlyTest.checked = true;
+        onlyTest.dispatchEvent(new window.Event("change"));
+        expect((tbody.querySelector("tr") as HTMLTableRowElement).style.display).toBe("");
     });
 
     it("renders chart and destroys previous one", () => {
@@ -130,6 +138,12 @@ describe("AdminView", () => {
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             { id: "u1", name: "Alpha", rufgruppe: "R", leitung: "L", teilnehmerListe: ["A"], datum: null, createDate: null } as any
         ]);
+        view.renderUebungsListe([
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            { id: "u1", name: "Alpha", rufgruppe: "R", leitung: "L", teilnehmerListe: ["A"], datum: null, createDate: null, istStandardKonfiguration: true } as any,
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            { id: "u2", name: "Beta", rufgruppe: "R", leitung: "L", teilnehmerListe: ["A"], datum: null, createDate: null, istStandardKonfiguration: false } as any
+        ]);
         view.bindListEvents(onView, onMonitor, onDelete);
         const tbody = document.getElementById("adminUebungslisteBody") as HTMLElement;
         tbody.dispatchEvent(new window.Event("click", { bubbles: true }));
@@ -139,5 +153,12 @@ describe("AdminView", () => {
         search.value = "alpha";
         search.dispatchEvent(new window.Event("input"));
         expect((tbody.querySelector("tr") as HTMLTableRowElement).style.display).toBe("");
+
+        const rows = tbody.querySelectorAll("tr");
+        const onlyTest = document.getElementById("adminOnlyTestFilter") as HTMLInputElement;
+        onlyTest.checked = true;
+        onlyTest.dispatchEvent(new window.Event("change"));
+        expect((rows[0] as HTMLTableRowElement).style.display).toBe("");
+        expect((rows[1] as HTMLTableRowElement).style.display).toBe("none");
     });
 });
