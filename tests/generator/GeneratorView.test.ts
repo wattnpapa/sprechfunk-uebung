@@ -146,8 +146,7 @@ describe("GeneratorView", () => {
             onStartUebung: vi.fn(),
             onChangePage: vi.fn(),
             onCopyJson: vi.fn(),
-            onZipAllPdfs: vi.fn(),
-            onJoinByCodes: vi.fn()
+            onZipAllPdfs: vi.fn()
         };
         document.body.innerHTML += `
             <button id="pagePrevBtn"></button>
@@ -163,22 +162,16 @@ describe("GeneratorView", () => {
         (document.getElementById("copyJsonBtn") as HTMLButtonElement).click();
         (document.getElementById("copyJsonBtnFooter") as HTMLButtonElement).click();
         (document.getElementById("zipAllPdfsBtn") as HTMLButtonElement).click();
-        (document.getElementById("quickJoinUebungCode") as HTMLInputElement).value = "ab12cd";
-        (document.getElementById("quickJoinTeilnehmerCode") as HTMLInputElement).value = "x9_1";
-        (document.getElementById("quickJoinForm") as HTMLFormElement).dispatchEvent(new window.Event("submit", { bubbles: true, cancelable: true }));
         expect(actions.onAddTeilnehmer).toHaveBeenCalled();
         expect(actions.onStartUebung).toHaveBeenCalled();
         expect(actions.onChangePage).toHaveBeenCalledTimes(2);
         expect(actions.onCopyJson).toHaveBeenCalledTimes(2);
         expect(actions.onZipAllPdfs).toHaveBeenCalledTimes(1);
-        expect(actions.onJoinByCodes).toHaveBeenCalledWith("AB12CD", "X91");
     });
 
     it("handles templates, previews, status, chart and json copy", () => {
         const view = new GeneratorView();
         view.render();
-        view.showQuickJoinFeedback("ok", false);
-        expect(document.getElementById("quickJoinFeedback")?.textContent).toBe("ok");
         view.populateTemplateSelect({ a: { text: "A" }, b: { text: "B" } }, ["a"]);
         expect(mocks.selectTrigger).toHaveBeenCalledWith("change");
         mocks.selectVal.mockReturnValue(["a"]);

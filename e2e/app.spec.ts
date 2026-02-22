@@ -433,17 +433,6 @@ test("@teilnehmer join form resolves short codes and opens participant view", as
     await expect(page.locator("#teilnehmerContent")).toContainText("Heros Oldenburg 16/11");
 });
 
-test("@generator start page quick join opens participant view by codes", async ({ page }) => {
-    await page.goto("/#/generator");
-
-    await page.locator("#quickJoinUebungCode").fill("k7m4q2");
-    await page.locator("#quickJoinTeilnehmerCode").fill("a1b2");
-    await page.locator("#quickJoinForm").dispatchEvent("submit");
-
-    await expect(page).toHaveURL(/#\/teilnehmer\/u1\/A1B2$/);
-    await expect(page.locator("#teilnehmerContent")).toContainText("Heros Oldenburg 16/11");
-});
-
 test("@admin admin route renders seeded data", async ({ page }) => {
     await page.goto("/#/admin");
 

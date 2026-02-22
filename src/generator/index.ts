@@ -139,9 +139,6 @@ export class GeneratorController {
                 analytics.track("download_all_pdfs_zip", {
                     teilnehmer_count: this.funkUebung.teilnehmerListe.length
                 });
-            },
-            onJoinByCodes: (uebungCode, teilnehmerCode) => {
-                void this.openTeilnehmerByCodes(uebungCode, teilnehmerCode);
             }
         });
     }
@@ -366,24 +363,6 @@ export class GeneratorController {
         const json = this.funkUebung.toJson();
         this.view.copyJsonToClipboard(json);
         analytics.track("generator_copy_json");
-    }
-
-    private async openTeilnehmerByCodes(uebungCode: string, teilnehmerCode: string): Promise<void> {
-        if (!uebungCode || !teilnehmerCode) {
-            this.view.showQuickJoinFeedback("Bitte beide Codes eingeben.", true);
-            return;
-        }
-        if (uebungCode.length !== 6 || teilnehmerCode.length !== 4) {
-            this.view.showQuickJoinFeedback("Ungültiges Format: Übungscode 6, Teilnehmercode 4 Zeichen.", true);
-            return;
-        }
-        const resolved = await this.firebaseService.resolveTeilnehmerJoinCodes(uebungCode, teilnehmerCode);
-        if (!resolved) {
-            this.view.showQuickJoinFeedback("Code-Kombination nicht gefunden.", true);
-            return;
-        }
-        this.view.showQuickJoinFeedback("Teilnehmeransicht wird geöffnet...", false);
-        window.location.hash = `#/teilnehmer/${resolved.uebungId}/${resolved.teilnehmerId}`;
     }
 
     private validateSpruchVerteilung(): boolean {

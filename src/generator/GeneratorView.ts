@@ -264,7 +264,6 @@ export class GeneratorView {
         onChangePage: (step: number) => void;
         onCopyJson: () => void;
         onZipAllPdfs: () => void;
-        onJoinByCodes?: (uebungCode: string, teilnehmerCode: string) => void;
     }) {
         document.getElementById("addTeilnehmerBtn")?.addEventListener("click", handlers.onAddTeilnehmer, { signal: this.bindingController.signal });
         document.getElementById("startUebungBtn")?.addEventListener("click", handlers.onStartUebung, { signal: this.bindingController.signal });
@@ -273,30 +272,6 @@ export class GeneratorView {
         document.getElementById("copyJsonBtn")?.addEventListener("click", handlers.onCopyJson, { signal: this.bindingController.signal });
         document.getElementById("copyJsonBtnFooter")?.addEventListener("click", handlers.onCopyJson, { signal: this.bindingController.signal });
         document.getElementById("zipAllPdfsBtn")?.addEventListener("click", handlers.onZipAllPdfs, { signal: this.bindingController.signal });
-        const joinForm = document.getElementById("quickJoinForm") as HTMLFormElement | null;
-        const onJoinByCodes = handlers.onJoinByCodes;
-        if (joinForm && onJoinByCodes) {
-            joinForm.addEventListener("submit", event => {
-                event.preventDefault();
-                const sanitize = (value: string) => value.toUpperCase().replace(/[^A-Z0-9]/g, "");
-                const uebungInput = document.getElementById("quickJoinUebungCode") as HTMLInputElement | null;
-                const teilnehmerInput = document.getElementById("quickJoinTeilnehmerCode") as HTMLInputElement | null;
-                onJoinByCodes(
-                    sanitize(uebungInput?.value || ""),
-                    sanitize(teilnehmerInput?.value || "")
-                );
-            }, { signal: this.bindingController.signal });
-        }
-    }
-
-    public showQuickJoinFeedback(message: string, isError: boolean) {
-        const el = document.getElementById("quickJoinFeedback");
-        if (!el) {
-            return;
-        }
-        el.textContent = message;
-        el.classList.toggle("text-danger", isError);
-        el.classList.toggle("text-success", !isError);
     }
 
     public renderTeilnehmerListe(
@@ -865,34 +840,6 @@ export class GeneratorView {
 
         container.innerHTML = `
             <div class="app-view-shell">
-            <div class="card mb-3">
-                <div class="card-body py-2">
-                    <div class="row align-items-center g-2">
-                        <div class="col-lg-4">
-                            <strong>Teilnehmer-Zugang</strong>
-                            <div class="small text-muted">Direkt mit Übungs- und Teilnehmercode öffnen.</div>
-                        </div>
-                        <div class="col-lg-8">
-                            <form id="quickJoinForm" class="row g-2 justify-content-end">
-                                <div class="col-sm-5 col-md-4">
-                                    <input type="text" class="form-control text-uppercase form-control-sm" id="quickJoinUebungCode" maxlength="6" placeholder="Übungscode (6)">
-                                </div>
-                                <div class="col-sm-4 col-md-3">
-                                    <input type="text" class="form-control text-uppercase form-control-sm" id="quickJoinTeilnehmerCode" maxlength="4" placeholder="TN-Code (4)">
-                                </div>
-                                <div class="col-sm-3 col-md-3">
-                                    <button type="submit" class="btn btn-outline-primary btn-sm w-100" id="quickJoinBtn" data-analytics-id="generator-quick-join-submit">
-                                        Teilnehmer öffnen
-                                    </button>
-                                </div>
-                                <div class="col-12 text-end">
-                                    <span id="quickJoinFeedback" class="small" aria-live="polite"></span>
-                                </div>
-                            </form>
-                        </div>
-                    </div>
-                </div>
-            </div>
             <!-- Hauptbereich mit Kopfdaten, Einstellungen und Teilnehmerverwaltung nebeneinander -->
             <div class="row g-3 generator-setup-layout">
 
