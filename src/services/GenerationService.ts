@@ -249,12 +249,11 @@ export class GenerationService {
     private shuffleSmart(nachrichtenListe: any[]): any[] {
         const maxVersuche = 100;
         const durchmischteListe = [...nachrichtenListe];
-        let istGueltig = false;
 
         for (let versuch = 0; versuch < maxVersuche; versuch++) {
             durchmischteListe.sort(() => Math.random() - 0.5);
 
-            istGueltig = true;
+            let istGueltig = true;
             for (let i = 1; i < durchmischteListe.length; i++) {
                 const aktuelleEmpfaenger = durchmischteListe[i].nachricht.empfaenger;
                 const vorherigeEmpfaenger = durchmischteListe[i - 1].nachricht.empfaenger;

@@ -131,11 +131,8 @@ export class Nachrichtenvordruck extends BasePDFTeilnehmer {
         const lineSpacing = 0.5; // kontrollierter, fixer Zeilenabstand
 
         let fontSize = maxFontSize;
-        let lines: string[] = [];
-        let lineHeight = fontSize * 0.5;
-        let totalHeight = 0;
-
-        lines = pdf.splitTextToSize(text, width);
+        let lines: string[] = pdf.splitTextToSize(text, width);
+        let lineHeight = fontSize * lineSpacing;
 
 
         while (fontSize >= minFontSize) {
@@ -143,7 +140,7 @@ export class Nachrichtenvordruck extends BasePDFTeilnehmer {
 
             lines = pdf.splitTextToSize(text, width);
             lineHeight = fontSize * lineSpacing;
-            totalHeight = lines.length * lineHeight;
+            const totalHeight = lines.length * lineHeight;
 
             if (totalHeight <= height) {
                 break; // passt

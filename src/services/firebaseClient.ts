@@ -23,7 +23,7 @@ function shouldUseEmulator(): boolean {
     try {
         byStorage = window.localStorage.getItem("useFirestoreEmulator") === "1";
     } catch {
-        byStorage = false;
+        // Ignore storage access errors (private mode / blocked storage).
     }
     return byQuery || byStorage;
 }
@@ -41,4 +41,3 @@ export function initFirebaseClient(config: FirebaseOptions): Firestore {
     }
     return state.db;
 }
-
