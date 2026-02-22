@@ -45,6 +45,7 @@ vi.mock("../../src/generator/GeneratorView", () => ({
         bindTeilnehmerEvents() {}
         bindAnmeldungToggle() {}
         bindPrimaryActions() {}
+        bindQuickJoin() {}
         setVersionInfo() {}
         populateTemplateSelect() {}
         setFormData() {}
@@ -112,6 +113,7 @@ describe("GeneratorController", () => {
             bindTeilnehmerEvents: vi.fn(),
             bindAnmeldungToggle: vi.fn(),
             bindPrimaryActions: vi.fn(),
+            bindQuickJoin: vi.fn(),
             setVersionInfo: vi.fn(),
             populateTemplateSelect: vi.fn(),
             setFormData: vi.fn(),
@@ -650,6 +652,7 @@ describe("GeneratorController", () => {
             bindTeilnehmerEvents: vi.fn(),
             bindAnmeldungToggle: vi.fn(),
             bindPrimaryActions: vi.fn(),
+            bindQuickJoin: vi.fn(),
             updateLoesungswortOptionUI: vi.fn(),
             getSelectedLoesungswortOption: vi.fn().mockReturnValue("none")
         };
@@ -691,6 +694,7 @@ describe("GeneratorController", () => {
             bindTeilnehmerEvents,
             bindAnmeldungToggle,
             bindPrimaryActions,
+            bindQuickJoin: vi.fn(),
             updateDistributionInputs,
             updateLoesungswortOptionUI: vi.fn(),
             getSelectedLoesungswortOption: vi.fn().mockReturnValue("central"),
