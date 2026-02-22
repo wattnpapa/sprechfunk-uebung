@@ -4,15 +4,16 @@ import { router } from "./router";
 import { store } from "../state/store";
 import { GeneratorController } from "../generator";
 import { admin } from "../admin/index";
-import { initializeApp } from "firebase/app";
 import { firebaseConfig } from "../firebase-config.js";
-import { connectFirestoreEmulator, getFirestore, Firestore } from "firebase/firestore";
+import type { Firestore } from "firebase/firestore";
 import { NatoClock } from "./NatoClock";
 import { ThemeManager } from "./ThemeManager";
 import { AppView } from "./AppView";
 import pdfGenerator from "../services/pdfGenerator";
 import { analytics } from "../services/analytics";
 import { AppMode } from "./appModes";
+import { initFirebaseClient } from "../services/firebaseClient";
+import { buildRouteChangePayload } from "../services/analyticsPayloads";
 
 export class App {
     private appView: AppView;
@@ -28,23 +29,8 @@ export class App {
 
     public init(): void {
         // 1. Initialize Firebase
-        const firebaseApp = initializeApp(firebaseConfig);
         analytics.init(firebaseConfig.measurementId);
-        this.db = getFirestore(firebaseApp);
-        const shouldUseEmulator = (() => {
-            const search = window.location?.search ?? "";
-            const byQuery = new URLSearchParams(search).get("emulator") === "1";
-            let byStorage = false;
-            try {
-                byStorage = window.localStorage.getItem("useFirestoreEmulator") === "1";
-            } catch {
-                byStorage = false;
-            }
-            return byQuery || byStorage;
-        })();
-        if (shouldUseEmulator) {
-            connectFirestoreEmulator(this.db, "127.0.0.1", 8080);
-        }
+        this.db = initFirebaseClient(firebaseConfig);
         store.setState({ db: this.db });
 
         // 2. Initialize Core UI Components
@@ -69,10 +55,7 @@ export class App {
         this.setDocumentTitle(pageTitle);
         this.updateSeoIndexing(mode, params);
         analytics.trackPage(window.location?.hash || "#/", pageTitle);
-        analytics.track("route_change", {
-            mode,
-            has_params: params.length > 0
-        });
+        analytics.track("route_change", buildRouteChangePayload(mode, params));
         store.setState({ mode });
 
         if (!this.db) {

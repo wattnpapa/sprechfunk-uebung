@@ -11,6 +11,10 @@ const setupGlobals = () => {
     };
 };
 
+const mockFirebaseClient = (db: unknown = {}) => {
+    vi.doMock("../../src/services/firebaseClient", () => ({ initFirebaseClient: vi.fn(() => db) }));
+};
+
 describe("App", () => {
     beforeEach(() => {
         vi.resetModules();
@@ -38,10 +42,7 @@ describe("App", () => {
         const subscribe = vi.fn((cb: () => void) => { cb(); return () => {}; });
         const parseHash = vi.fn().mockReturnValue({ mode: "generator", params: [] });
         vi.doMock("../../src/core/router", () => ({ router: { subscribe, parseHash } }));
-
-        const getFirestore = vi.fn().mockReturnValue({});
-        vi.doMock("firebase/app", () => ({ initializeApp: vi.fn().mockReturnValue({}) }));
-        vi.doMock("firebase/firestore", () => ({ getFirestore }));
+        mockFirebaseClient({});
 
         const { App } = await import("../../src/core/App");
         const app = new App();
@@ -74,8 +75,7 @@ describe("App", () => {
                 parseHash: () => ({ mode: "admin", params: [] })
             }
         }));
-        vi.doMock("firebase/app", () => ({ initializeApp: vi.fn().mockReturnValue({}) }));
-        vi.doMock("firebase/firestore", () => ({ getFirestore: vi.fn().mockReturnValue({ db: true }) }));
+        mockFirebaseClient({ db: true });
 
         const { App } = await import("../../src/core/App");
         const app = new App();
@@ -104,8 +104,7 @@ describe("App", () => {
                 parseHash: () => ({ mode: "uebungsleitung", params: ["u1"] })
             }
         }));
-        vi.doMock("firebase/app", () => ({ initializeApp: vi.fn().mockReturnValue({}) }));
-        vi.doMock("firebase/firestore", () => ({ getFirestore: vi.fn().mockReturnValue({}) }));
+        mockFirebaseClient({});
 
         const { App } = await import("../../src/core/App");
         const app = new App();
@@ -131,8 +130,7 @@ describe("App", () => {
                 parseHash: () => ({ mode: "teilnehmer", params: [] })
             }
         }));
-        vi.doMock("firebase/app", () => ({ initializeApp: vi.fn().mockReturnValue({}) }));
-        vi.doMock("firebase/firestore", () => ({ getFirestore: vi.fn().mockReturnValue({}) }));
+        mockFirebaseClient({});
 
         const { App: App2 } = await import("../../src/core/App");
         const app2 = new App2();
@@ -159,8 +157,7 @@ describe("App", () => {
                 parseHash: vi.fn().mockReturnValue({ mode: "generator", params: [] })
             }
         }));
-        vi.doMock("firebase/app", () => ({ initializeApp: vi.fn().mockReturnValue({}) }));
-        vi.doMock("firebase/firestore", () => ({ getFirestore: vi.fn().mockReturnValue({}) }));
+        mockFirebaseClient({});
 
         const warn = vi.spyOn(console, "warn").mockImplementation(() => {});
         const { App } = await import("../../src/core/App");
@@ -192,8 +189,7 @@ describe("App", () => {
                 parseHash: () => ({ mode: "uebungsleitung", params: [] })
             }
         }));
-        vi.doMock("firebase/app", () => ({ initializeApp: vi.fn().mockReturnValue({}) }));
-        vi.doMock("firebase/firestore", () => ({ getFirestore: vi.fn().mockReturnValue({}) }));
+        mockFirebaseClient({});
 
         const { App } = await import("../../src/core/App");
         const app = new App();

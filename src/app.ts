@@ -8,20 +8,21 @@ import { router } from "./core/router";
 import { store } from "./state/store";
 import { GeneratorController } from "./generator";
 import { admin } from "./admin/index";
-import { initializeApp } from "firebase/app";
 import { firebaseConfig } from "./firebase-config.js";
 import "bootstrap/dist/css/bootstrap.min.css";
 import "@fortawesome/fontawesome-free/css/all.min.css";
 import "bootstrap/dist/js/bootstrap.bundle.min.js";
-import { connectFirestoreEmulator, getFirestore } from "firebase/firestore";
 import pdfGenerator from "./services/pdfGenerator";
 import "./core/select2-setup";
 import { NatoClock } from "./core/NatoClock";
 import { ThemeManager } from "./core/ThemeManager";
 import { AppView } from "./core/AppView";
+import { FooterView } from "./core/FooterView";
 import { analytics } from "./services/analytics";
 import { featureFlags } from "./services/featureFlags";
 import { errorMonitoring } from "./services/errorMonitoring";
+import { initFirebaseClient } from "./services/firebaseClient";
+import { buildRouteChangePayload } from "./services/analyticsPayloads";
 
 import { Chart, registerables } from "chart.js";
 Chart.register(...registerables);
@@ -42,6 +43,7 @@ declare global {
 const appView = new AppView();
 const natoClock = new NatoClock();
 const themeManager = new ThemeManager();
+const footerView = new FooterView();
 let appBuildVersion = "dev";
 
 function getPageTitle(mode: string): string {
@@ -73,25 +75,6 @@ function updateSeoIndexing(mode: string, params: string[]): void {
     );
 }
 
-function initAnalyticsConsentToggle(): void {
-    const btn = document.getElementById("analyticsConsentToggle") as HTMLButtonElement | null;
-    if (!btn) {
-        return;
-    }
-
-    const render = () => {
-        const enabled = analytics.isConsentGranted();
-        btn.textContent = enabled ? "Analytics: an" : "Analytics: aus";
-        btn.setAttribute("aria-pressed", enabled ? "true" : "false");
-    };
-
-    btn.addEventListener("click", () => {
-        analytics.setConsent(!analytics.isConsentGranted());
-        render();
-    });
-    render();
-}
-
 async function loadBuildVersion(): Promise<void> {
     const isLocal = ["localhost", "127.0.0.1", "0.0.0.0"].includes(window.location.hostname);
     if (isLocal) {
@@ -106,35 +89,17 @@ async function loadBuildVersion(): Promise<void> {
         }
     }
 
-    const versionEl = document.getElementById("version");
-    if (versionEl) {
-        versionEl.textContent = appBuildVersion;
-    }
+    footerView.setVersion(appBuildVersion);
 }
 
 // Initialize Firebase
-const app = initializeApp(firebaseConfig);
-const db = getFirestore(app);
+const db = initFirebaseClient(firebaseConfig);
 featureFlags.init();
 analytics.init(firebaseConfig.measurementId);
 errorMonitoring.init({
     getMode: () => store.getState().mode,
     getVersion: () => appBuildVersion
 });
-const shouldUseEmulator = (() => {
-    const search = window.location?.search ?? "";
-    const byQuery = new URLSearchParams(search).get("emulator") === "1";
-    let byStorage = false;
-    try {
-        byStorage = window.localStorage.getItem("useFirestoreEmulator") === "1";
-    } catch {
-        byStorage = false;
-    }
-    return byQuery || byStorage;
-})();
-if (shouldUseEmulator) {
-    connectFirestoreEmulator(db, "127.0.0.1", 8080);
-}
 store.setState({ db });
 
 // Main Routing Logic
@@ -144,10 +109,7 @@ function handleRoute(): void {
     document.title = pageTitle;
     updateSeoIndexing(mode, params);
     analytics.trackPage(window.location?.hash || "#/", pageTitle);
-    analytics.track("route_change", {
-        mode,
-        has_params: params.length > 0
-    });
+    analytics.track("route_change", buildRouteChangePayload(mode, params));
 
     store.setState({ mode });
 
@@ -162,10 +124,7 @@ function handleRoute(): void {
     // Dispatch to specific controllers
     if (mode === "uebungsleitung") {
         const uebungId = params[0];
-        const idEl = document.getElementById("uebungsId");
-        if (idEl) {
-            idEl.textContent = uebungId || "-";
-        }
+        footerView.setUebungId(uebungId || "-");
         if (uebungId) {
             store.setState({ aktuelleUebungId: uebungId });
             initUebungsleitung(db);
@@ -174,19 +133,13 @@ function handleRoute(): void {
     }
 
     if (mode === "teilnehmer") {
-        const idEl = document.getElementById("uebungsId");
-        if (idEl) {
-            idEl.textContent = params[0] || "-";
-        }
+        footerView.setUebungId(params[0] || "-");
         initTeilnehmer(db);
         return;
     }
 
     if (mode === "admin") {
-        const idEl = document.getElementById("uebungsId");
-        if (idEl) {
-            idEl.textContent = "-";
-        }
+        footerView.setUebungId("-");
         admin.setDb(db);
         admin.ladeAlleUebungen();
         admin.renderUebungsStatistik();
@@ -204,7 +157,10 @@ window.addEventListener("DOMContentLoaded", () => {
     themeManager.init();
     appView.initModals();
     appView.initGlobalListeners();
-    initAnalyticsConsentToggle();
+    footerView.bindAnalyticsConsent(
+        () => analytics.isConsentGranted(),
+        enabled => analytics.setConsent(enabled)
+    );
     loadBuildVersion().finally(() => {
         // Start Routing
         handleRoute();
