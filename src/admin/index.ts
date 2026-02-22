@@ -12,7 +12,7 @@ export class AdminController {
         totalCount: number;
         pageSize: number;
         currentPage: number;
-        lastVisible: QueryDocumentSnapshot | { __mockIndex: number } | null;
+        lastVisible: QueryDocumentSnapshot | { __mockIndex: number } | { __fallbackIndex: number } | null;
     };
     private firebaseService: FirebaseService | null = null;
     private view: AdminView;
