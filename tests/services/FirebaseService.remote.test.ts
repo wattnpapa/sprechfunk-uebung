@@ -147,6 +147,18 @@ describe("FirebaseService firestore path", () => {
         expect(mocks.startAfter).not.toHaveBeenCalled();
     });
 
+    it("uses where filter in firestore queries for only-test flag", async () => {
+        const { FirebaseService } = await import("../../src/services/FirebaseService");
+        const s = new FirebaseService({} as never);
+        mocks.getDocs.mockResolvedValue({ docs: [], size: 0, forEach: vi.fn() });
+
+        await s.getUebungenPaged(5, null, "initial", true);
+        expect(mocks.where).toHaveBeenCalledWith("istStandardKonfiguration", "==", true);
+
+        await s.getUebungenSnapshot(true);
+        expect(mocks.where).toHaveBeenCalledWith("istStandardKonfiguration", "==", true);
+    });
+
     it("computes admin stats from firestore snapshot", async () => {
         const { FirebaseService } = await import("../../src/services/FirebaseService");
         const s = new FirebaseService({} as never);

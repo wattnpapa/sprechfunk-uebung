@@ -63,11 +63,12 @@ describe("AdminView", () => {
         const onView = vi.fn();
         const onMonitor = vi.fn();
         const onDelete = vi.fn();
+        const onOnlyTestChange = vi.fn();
         view.renderUebungsListe([
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             { id: "u1", name: "Alpha", rufgruppe: "R", leitung: "L", teilnehmerListe: ["A"], datum: new Date(), createDate: new Date(), istStandardKonfiguration: true } as any
         ]);
-        view.bindListEvents(onView, onMonitor, onDelete);
+        view.bindListEvents(onView, onMonitor, onDelete, onOnlyTestChange);
         const tbody = document.getElementById("adminUebungslisteBody") as HTMLElement;
         expect(tbody.innerHTML).toContain("admin-standard-uebung-row");
 
@@ -88,7 +89,7 @@ describe("AdminView", () => {
         const onlyTest = document.getElementById("adminOnlyTestFilter") as HTMLInputElement;
         onlyTest.checked = true;
         onlyTest.dispatchEvent(new window.Event("change"));
-        expect((tbody.querySelector("tr") as HTMLTableRowElement).style.display).toBe("");
+        expect(onOnlyTestChange).toHaveBeenCalledWith(true);
     });
 
     it("renders chart and destroys previous one", () => {
@@ -134,6 +135,7 @@ describe("AdminView", () => {
         const onView = vi.fn();
         const onMonitor = vi.fn();
         const onDelete = vi.fn();
+        const onOnlyTestChange = vi.fn();
         view.renderUebungsListe([
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             { id: "u1", name: "Alpha", rufgruppe: "R", leitung: "L", teilnehmerListe: ["A"], datum: null, createDate: null } as any
@@ -144,7 +146,7 @@ describe("AdminView", () => {
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             { id: "u2", name: "Beta", rufgruppe: "R", leitung: "L", teilnehmerListe: ["A"], datum: null, createDate: null, istStandardKonfiguration: false } as any
         ]);
-        view.bindListEvents(onView, onMonitor, onDelete);
+        view.bindListEvents(onView, onMonitor, onDelete, onOnlyTestChange);
         const tbody = document.getElementById("adminUebungslisteBody") as HTMLElement;
         tbody.dispatchEvent(new window.Event("click", { bubbles: true }));
         expect(onView).not.toHaveBeenCalled();
@@ -154,11 +156,9 @@ describe("AdminView", () => {
         search.dispatchEvent(new window.Event("input"));
         expect((tbody.querySelector("tr") as HTMLTableRowElement).style.display).toBe("");
 
-        const rows = tbody.querySelectorAll("tr");
         const onlyTest = document.getElementById("adminOnlyTestFilter") as HTMLInputElement;
         onlyTest.checked = true;
         onlyTest.dispatchEvent(new window.Event("change"));
-        expect((rows[0] as HTMLTableRowElement).style.display).toBe("");
-        expect((rows[1] as HTMLTableRowElement).style.display).toBe("none");
+        expect(onOnlyTestChange).toHaveBeenCalledWith(true);
     });
 });

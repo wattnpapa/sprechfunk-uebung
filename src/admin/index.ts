@@ -16,8 +16,9 @@ export class AdminController {
     };
     private firebaseService: FirebaseService | null = null;
     private view: AdminView;
+    private onlyTestExercises = false;
     private statsCache: { ts: number; data: Awaited<ReturnType<FirebaseService["getAdminStats"]>> } | null = null;
-    private snapshotCache: { ts: number; data: QuerySnapshot<DocumentData> } | null = null;
+    private snapshotCache: Partial<Record<"all" | "test", { ts: number; data: QuerySnapshot<DocumentData> }>> = {};
     private readonly cacheTtlMs = 120000;
 
     constructor() {
@@ -34,7 +35,8 @@ export class AdminController {
         this.view.bindListEvents(
             id => this.uebungAnschauen(id),
             id => this.offeneUebungsleitung(id),
-            id => this.loescheUebung(id)
+            id => this.loescheUebung(id),
+            checked => this.setOnlyTestFilter(checked)
         );
     }
 
@@ -99,7 +101,8 @@ export class AdminController {
         const result = await service.getUebungenPaged(
             this.pagination.pageSize, 
             this.pagination.lastVisible, 
-            direction
+            direction,
+            this.onlyTestExercises
         );
 
         if (direction === "initial") {
@@ -136,6 +139,7 @@ export class AdminController {
             await service.deleteUebung(uebungId);
             analytics.track("admin_delete_uebung");
             // console.log("✅ Übung gelöscht:", uebungId); // Removed console.log
+            this.invalidateCaches();
             this.ladeAlleUebungen(); // Ansicht aktualisieren
         } catch (error) {
             console.error("❌ Fehler beim Löschen der Übung:", error);
@@ -206,11 +210,13 @@ export class AdminController {
         if (!service) {
             throw new Error("AdminController DB is not initialized");
         }
-        if (this.snapshotCache && (Date.now() - this.snapshotCache.ts) <= this.cacheTtlMs) {
-            return this.snapshotCache.data;
+        const key: "all" | "test" = this.onlyTestExercises ? "test" : "all";
+        const cached = this.snapshotCache[key];
+        if (cached && (Date.now() - cached.ts) <= this.cacheTtlMs) {
+            return cached.data;
         }
-        const snap = await service.getUebungenSnapshot();
-        this.snapshotCache = { ts: Date.now(), data: snap };
+        const snap = await service.getUebungenSnapshot(this.onlyTestExercises);
+        this.snapshotCache[key] = { ts: Date.now(), data: snap };
         return snap;
     }
 
@@ -227,6 +233,20 @@ export class AdminController {
         }
         console.warn("AdminController: DB ist noch nicht initialisiert. setDb() fehlt.");
         return false;
+    }
+
+    private setOnlyTestFilter(checked: boolean): void {
+        if (this.onlyTestExercises === checked) {
+            return;
+        }
+        this.onlyTestExercises = checked;
+        this.pagination.lastVisible = null;
+        this.pagination.currentPage = 0;
+        void this.ladeAlleUebungen("initial");
+    }
+
+    private invalidateCaches(): void {
+        this.snapshotCache = {};
     }
 
     private updateFooterInfo(version?: string) {

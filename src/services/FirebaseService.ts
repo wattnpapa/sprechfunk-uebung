@@ -22,6 +22,25 @@ import { FunkUebung } from "../models/FunkUebung";
 export class FirebaseService {
     constructor(private db: Firestore) {}
 
+    private isMissingIndexError(error: unknown): boolean {
+        if (!error || typeof error !== "object") {
+            return false;
+        }
+        const maybe = error as { code?: string; message?: string; customData?: { serverResponse?: string } };
+        const code = typeof maybe.code === "string" ? maybe.code : "";
+        if (code === "failed-precondition" || code.endsWith("/failed-precondition")) {
+            return true;
+        }
+        const message = typeof maybe.message === "string" ? maybe.message.toLowerCase() : "";
+        if (message.includes("requires an index") || message.includes("create_composite")) {
+            return true;
+        }
+        const serverResponse = typeof maybe.customData?.serverResponse === "string"
+            ? maybe.customData.serverResponse.toLowerCase()
+            : "";
+        return serverResponse.includes("requires an index") || serverResponse.includes("create_composite");
+    }
+
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     private cleanupRecordKeys(obj: any): Record<string, unknown> {
         if (!obj || typeof obj !== "object" || Array.isArray(obj)) {
@@ -374,11 +393,19 @@ export class FirebaseService {
     /**
      * Lädt Übungen für die Admin-Ansicht mit Paginierung.
      */
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    async getUebungenPaged(pageSize: number, lastVisible: any = null, direction: "next" | "prev" | "initial" = "initial") {
+    async getUebungenPaged(
+        pageSize: number,
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        lastVisible: any = null,
+        direction: "next" | "prev" | "initial" = "initial",
+        onlyTestExercises = false
+    ) {
         if (this.isLocalMockMode()) {
             const store = this.readMockStore();
-            const allEntries = Object.entries(store).map(([id, data]) => this.mapToDomain(id, data));
+            let allEntries = Object.entries(store).map(([id, data]) => this.mapToDomain(id, data));
+            if (onlyTestExercises) {
+                allEntries = allEntries.filter(entry => entry.istStandardKonfiguration === true);
+            }
             allEntries.sort((a, b) => {
                 const da = new Date(a.createDate).getTime();
                 const db = new Date(b.createDate).getTime();
@@ -399,29 +426,68 @@ export class FirebaseService {
             };
         }
         const uebungCol = collection(this.db, "uebungen");
-        let q;
-
-        if (direction === "next" && lastVisible) {
-            q = query(uebungCol, orderBy("createDate", "desc"), startAfter(lastVisible), limit(pageSize));
-        } else {
-            // Initial oder Prev (Prev ist hier vereinfacht als Reset implementiert, echte Prev-Logik bräuchte endBefore)
-            q = query(uebungCol, orderBy("createDate", "desc"), limit(pageSize));
+        const constraints = [];
+        if (onlyTestExercises) {
+            constraints.push(where("istStandardKonfiguration", "==", true));
         }
+        constraints.push(orderBy("createDate", "desc"));
+        if (direction === "next" && lastVisible) {
+            constraints.push(startAfter(lastVisible));
+        }
+        constraints.push(limit(pageSize));
 
-        const snapshot = await getDocs(q);
-        const uebungen = snapshot.docs.map(doc => this.mapToDomain(doc.id, doc.data()));
-        
-        return {
-            uebungen,
-            lastVisible: snapshot.docs[snapshot.docs.length - 1] || null,
-            size: snapshot.size
-        };
+        // Initial oder Prev (Prev ist hier vereinfacht als Reset implementiert, echte Prev-Logik bräuchte endBefore)
+        const q = query(uebungCol, ...constraints);
+
+        try {
+            const snapshot = await getDocs(q);
+            const uebungen = snapshot.docs.map(doc => this.mapToDomain(doc.id, doc.data()));
+            
+            return {
+                uebungen,
+                lastVisible: snapshot.docs[snapshot.docs.length - 1] || null,
+                size: snapshot.size
+            };
+        } catch (error) {
+            if (!(onlyTestExercises && this.isMissingIndexError(error))) {
+                throw error;
+            }
+
+            // Fallback ohne Composite-Index: lokal filtern/sortieren/paginieren.
+            const allSnap = await getDocs(collection(this.db, "uebungen"));
+            const all = allSnap.docs
+                .map(doc => this.mapToDomain(doc.id, doc.data()))
+                .filter(entry => entry.istStandardKonfiguration === true)
+                .sort((a, b) => {
+                    const da = new Date(a.createDate).getTime();
+                    const db = new Date(b.createDate).getTime();
+                    return db - da;
+                });
+
+            let start = 0;
+            if (direction === "next" && lastVisible && typeof lastVisible.__fallbackIndex === "number") {
+                start = lastVisible.__fallbackIndex + 1;
+            }
+            const page = all.slice(start, start + pageSize);
+            const lastIndex = start + page.length - 1;
+
+            return {
+                uebungen: page,
+                lastVisible: page.length > 0 ? { __fallbackIndex: lastIndex } : null,
+                size: page.length
+            };
+        }
     }
 
-    async getUebungenSnapshot(): Promise<QuerySnapshot<DocumentData>> {
+    async getUebungenSnapshot(onlyTestExercises = false): Promise<QuerySnapshot<DocumentData>> {
         if (this.isLocalMockMode()) {
             const store = this.readMockStore();
-            const entries = Object.entries(store);
+            const entries = Object.entries(store).filter(([, data]) => {
+                if (!onlyTestExercises) {
+                    return true;
+                }
+                return Boolean((data as Record<string, unknown>)["istStandardKonfiguration"]);
+            });
             const docs = entries.map(([id, data]) => ({
                 id,
                 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -436,7 +502,10 @@ export class FirebaseService {
             };
             return snapshot as unknown as QuerySnapshot<DocumentData>;
         }
-        return getDocs(collection(this.db, "uebungen"));
+        if (!onlyTestExercises) {
+            return getDocs(collection(this.db, "uebungen"));
+        }
+        return getDocs(query(collection(this.db, "uebungen"), where("istStandardKonfiguration", "==", true)));
     }
 
     /**

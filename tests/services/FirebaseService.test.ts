@@ -134,6 +134,25 @@ describe("FirebaseService local mock mode", () => {
         expect(await s.getUebung("p1")).toBeNull();
     });
 
+    it("filters paged/snapshot exercises in mock mode by test flag", async () => {
+        const s = new FirebaseService({} as never);
+        const mk = async (id: string, isTest: boolean) => {
+            const u = new FunkUebung("dev");
+            u.id = id;
+            u.createDate = new Date();
+            u.istStandardKonfiguration = isTest;
+            await s.saveUebung(u);
+        };
+        await mk("t1", true);
+        await mk("p1", false);
+
+        const filtered = await s.getUebungenPaged(10, null, "initial", true);
+        expect(filtered.uebungen.every(u => u.istStandardKonfiguration)).toBe(true);
+
+        const filteredSnap = await s.getUebungenSnapshot(true);
+        expect(filteredSnap.size).toBeGreaterThanOrEqual(1);
+    });
+
     it("maps rich message payload incl staerken/letters and defaults", () => {
         const s = new FirebaseService({} as never);
         // eslint-disable-next-line @typescript-eslint/no-explicit-any

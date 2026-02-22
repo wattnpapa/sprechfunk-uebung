@@ -83,6 +83,7 @@ describe("AdminController", () => {
         await c.ladeAlleUebungen("initial");
         expect(mocks.renderUebungsListe).toHaveBeenCalled();
         expect(mocks.renderPaginationInfo).toHaveBeenCalled();
+        expect(mocks.getUebungenPaged).toHaveBeenCalledWith(10, null, "initial", false);
     });
 
     it("delete flow tracks analytics and refreshes list", async () => {
@@ -107,6 +108,7 @@ describe("AdminController", () => {
         await c.ladeAlleUebungen("next");
         expect(mocks.renderUebungsListe).toHaveBeenCalled();
         expect(mocks.renderPaginationInfo).toHaveBeenCalled();
+        expect(mocks.getUebungenPaged).toHaveBeenCalledWith(10, null, "next", false);
 
         mocks.getAdminStats.mockResolvedValueOnce({
             total: 1, totalTeilnehmer: 1, totalBytes: 1000, totalSprueche: 10,
@@ -148,5 +150,24 @@ describe("AdminController", () => {
         });
         await c.ladeAdminStatistik();
         expect(mocks.renderStatistik).toHaveBeenCalled();
+    });
+
+    it("uses firebase query filtering when only-test checkbox is enabled", async () => {
+        const { AdminController } = await import("../../src/admin/index");
+        const c = new AdminController();
+        c.setDb({ db: true } as never);
+        mocks.getUebungenPaged.mockResolvedValue({ uebungen: [], lastVisible: null });
+        mocks.getUebungenSnapshot.mockResolvedValue({ size: 0 });
+
+        const bindCall = mocks.bindListEvents.mock.calls[0];
+        const onOnlyTestFilterChange = bindCall?.[3] as ((checked: boolean) => void) | undefined;
+        expect(typeof onOnlyTestFilterChange).toBe("function");
+
+        onOnlyTestFilterChange?.(true);
+        await Promise.resolve();
+        await Promise.resolve();
+
+        expect(mocks.getUebungenPaged).toHaveBeenCalledWith(10, null, "initial", true);
+        expect(mocks.getUebungenSnapshot).toHaveBeenCalledWith(true);
     });
 });
