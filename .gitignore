@@ -6,4 +6,3 @@ coverage
 playwright-report/
 test-results/
 .aider-desk/tasks/
-release/

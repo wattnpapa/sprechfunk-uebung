@@ -48,12 +48,6 @@ Schritte:
 Entwicklung mit Watch:
 - `npm run dev`
 
-## Electron App
-- Desktop-App lokal starten: `npm run electron:dev`
-- Paket (ohne Installer, nur entpackte App): `npm run electron:pack`
-- Installer/Artefakte bauen: `npm run electron:dist`
-- Output liegt danach in `release/`
-
 ## Tests und Qualität
 - Lint: `npm run lint`
 - Unit/Integration: `npm run test`

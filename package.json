@@ -16,16 +16,13 @@
     "email": "johannes.rudolph@thw-oldenburg.de"
   },
   "type": "module",
-  "main": "electron/main.cjs",
+  "main": "app.js",
   "scripts": {
     "build": "rollup -c && node scripts/postbuild-copy.mjs",
     "watch": "chokidar \"src/**/*\" \"assets/**/*\" \"rollup.config.js\" -c \"npm run build\"",
     "serve": "serve dist -l tcp://127.0.0.1:3000",
     "start": "npm run build && npm run serve",
     "dev": "concurrently \"npm run watch\" \"npm run serve\"",
-    "electron:dev": "npm run build && electron .",
-    "electron:pack": "npm run build && electron-builder --dir --publish never",
-    "electron:dist": "npm run build && electron-builder --publish never",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
     "test": "vitest",
@@ -63,8 +60,6 @@
     "chokidar-cli": "^3.0.0",
     "concurrently": "^9.1.0",
     "crypto-js": "^4.2.0",
-    "electron": "^35.7.4",
-    "electron-builder": "^26.0.12",
     "eslint": "^10.0.0",
     "jsdom": "^28.1.0",
     "postcss": "^8.5.6",
@@ -95,38 +90,5 @@
   "overrides": {
     "braces": "3.0.3",
     "tar": "7.5.7"
-  },
-  "build": {
-    "appId": "de.sprechfunk.uebung",
-    "productName": "Sprechfunk Uebung",
-    "directories": {
-      "output": "release"
-    },
-    "files": [
-      "dist/**/*",
-      "electron/**/*",
-      "package.json"
-    ],
-    "asar": true,
-    "mac": {
-      "target": [
-        "dmg",
-        "zip"
-      ],
-      "category": "public.app-category.education"
-    },
-    "win": {
-      "target": [
-        "nsis"
-      ]
-    },
-    "linux": {
-      "maintainer": "Johannes Rudolph <johannes.rudolph@thw-oldenburg.de>",
-      "target": [
-        "AppImage",
-        "deb"
-      ],
-      "category": "Education"
-    }
   }
 }
