@@ -3,16 +3,26 @@ import { jsPDF } from "jspdf";
 import { applyPlugin } from "jspdf-autotable";
 import type { Nachricht } from "../types/Nachricht";
 
-import JSZip from "jszip";
 import { DeckblattTeilnehmer } from "../pdf/DeckblattTeilnehmer.js";
 import { FunkUebung } from "../models/FunkUebung.js";
 import { Meldevordruck } from "../pdf/Meldevordruck.js";
 import { Nachrichtenvordruck } from "../pdf/Nachrichtenvordruck.js";
 import { Teilnehmer } from "../pdf/Teilnehmer.js";
 import { Uebungsleitung } from "../pdf/Uebungsleitung.js";
-import { formatNatoDate } from "../utils/date";
 import { uiFeedback } from "../core/UiFeedback";
 import { UebungsleitungStorage } from "../types/Storage";
+import { generateTeilnehmerDebriefPdfBlob } from "./pdfDebriefService";
+import {
+    generateAllMeldevordruckPrintA4Blob,
+    generateAllNachrichtenvordruckPrintA4Blob,
+    generateMeldevordruckA4PDFsBlob,
+    generateNachrichtenvordruckA4PDFsBlob
+} from "./pdfA4Service";
+import {
+    createZipDownloadName,
+    generateAllPDFsAsZipBlob,
+    generateTeilnehmerPDFsAsZipBlob
+} from "./pdfZipService";
 
 class PDFGenerator {
     constructor() {
@@ -62,196 +72,21 @@ class PDFGenerator {
         storage: UebungsleitungStorage,
         teilnehmer: string
     ): Promise<Blob> {
-        const pdf = new jsPDF({ orientation: "landscape", unit: "mm", format: "a4" });
-        const pageWidth = pdf.internal.pageSize.getWidth();
-        const marginX = 10;
-        let y = 16;
-
-        pdf.setFont("helvetica", "bold");
-        pdf.setFontSize(16);
-        pdf.text(`Debriefing: ${teilnehmer}`, pageWidth / 2, y, { align: "center" });
-        y += 7;
-
-        pdf.setFont("helvetica", "normal");
-        pdf.setFontSize(11);
-        pdf.text(`${funkUebung.name} | ${formatNatoDate(funkUebung.datum, false)} | ID: ${funkUebung.id}`, pageWidth / 2, y, { align: "center" });
-        y += 6;
-
-        const participantStatus = storage.teilnehmer[teilnehmer] ?? {};
-        const sollWort = funkUebung.loesungswoerter?.[teilnehmer] ?? "–";
-        const istWort = participantStatus.loesungswortGesendet || "–";
-        const sollStaerke = funkUebung.loesungsStaerken?.[teilnehmer] ?? "–";
-        const istStaerke = (participantStatus.teilstaerken ?? []).join("/") || "–";
-        const anmeldung = participantStatus.angemeldetUm ? formatNatoDate(participantStatus.angemeldetUm) : "–";
-
-        (pdf as any).autoTable({
-            startY: y,
-            head: [["Anmeldung", "Lösungswort (Soll/Ist)", "Stärke (Soll/Ist)", "Notiz"]],
-            body: [[
-                anmeldung,
-                `${sollWort} / ${istWort}`,
-                `${sollStaerke} / ${istStaerke}`,
-                participantStatus.notizen || ""
-            ]],
-            margin: { left: marginX, right: marginX },
-            tableWidth: "auto",
-            theme: "grid",
-            styles: { fontSize: 10, cellPadding: 2, lineWidth: 0.1, lineColor: [0, 0, 0] },
-            headStyles: { fillColor: [200, 200, 200] }
-        });
-
-        const sent = (funkUebung.nachrichten[teilnehmer] ?? []).map(msg => {
-            const key = `${teilnehmer}__${msg.id}`;
-            const status = storage.nachrichten[key];
-            return [
-                String(msg.id),
-                msg.empfaenger.join(", "),
-                msg.nachricht,
-                status?.abgesetztUm ? formatNatoDate(status.abgesetztUm) : "offen",
-                status?.notiz ?? ""
-            ];
-        });
-
-        (pdf as any).autoTable({
-            startY: (pdf as any).lastAutoTable.finalY + 6,
-            head: [["Nr", "Empfänger", "Nachricht", "Abgesetzt", "Notiz Übungsleitung"]],
-            body: sent.length ? sent : [["–", "–", "Keine gesendeten Nachrichten", "–", "–"]],
-            margin: { left: marginX, right: marginX },
-            tableWidth: "auto",
-            theme: "grid",
-            styles: { fontSize: 9, cellPadding: 2, lineWidth: 0.1, lineColor: [0, 0, 0], overflow: "linebreak" },
-            headStyles: { fillColor: [200, 200, 200] }
-        });
-
-        const received: [string, string, string][] = [];
-        Object.entries(funkUebung.nachrichten).forEach(([sender, list]) => {
-            list.forEach(msg => {
-                if (sender === teilnehmer) {
-                    return;
-                }
-                if (msg.empfaenger.includes("Alle") || msg.empfaenger.includes(teilnehmer)) {
-                    received.push([String(msg.id), sender, msg.nachricht]);
-                }
-            });
-        });
-
-        (pdf as any).autoTable({
-            startY: (pdf as any).lastAutoTable.finalY + 6,
-            head: [["Nr", "Von", "Empfangene Nachricht"]],
-            body: received.length ? received : [["–", "–", "Keine empfangenen Nachrichten"]],
-            margin: { left: marginX, right: marginX, bottom: 16 },
-            tableWidth: "auto",
-            theme: "grid",
-            styles: { fontSize: 9, cellPadding: 2, lineWidth: 0.1, lineColor: [0, 0, 0], overflow: "linebreak" },
-            headStyles: { fillColor: [200, 200, 200] }
-        });
-
-        return pdf.output("blob");
-    }
-
-    private drawA4SplitLine(pdf: jsPDF): void {
-        pdf.setDrawColor(150);
-        pdf.setLineWidth(0.2);
-        (pdf as any).setLineDash([1, 1], 0);
-        pdf.line(148, 0, 148, 210);
-        (pdf as any).setLineDash([], 0);
+        return generateTeilnehmerDebriefPdfBlob(funkUebung, storage, teilnehmer);
     }
 
     /**
      * Erstellt eine A4-Quer-PDF mit 2 Nachrichtenvordrucken pro Seite (paarweise Layout mit Deckblatt).
      */
     async generateAllNachrichtenvordruckPrintA4Blob(funkUebung: FunkUebung): Promise<Blob> {
-        return this.generateAllA4PairPrintBlob(funkUebung, (teilnehmer, pdf, msg, offsetX) => {
-            new Nachrichtenvordruck(teilnehmer, funkUebung, pdf, msg).draw(offsetX);
-        });
+        return generateAllNachrichtenvordruckPrintA4Blob(funkUebung);
     }
 
     /**
      * Erstellt eine A4-Quer-PDF mit 2 Meldevordrucken pro Seite (paarweise Layout mit Deckblatt).
      */
     async generateAllMeldevordruckPrintA4Blob(funkUebung: FunkUebung): Promise<Blob> {
-        return this.generateAllA4PairPrintBlob(funkUebung, (teilnehmer, pdf, msg, offsetX) => {
-            new Meldevordruck(teilnehmer, funkUebung, pdf, msg).draw(offsetX);
-        });
-    }
-
-    private async generateAllA4PairPrintBlob(
-        funkUebung: FunkUebung,
-        drawMessage: (teilnehmer: string, pdf: jsPDF, msg: Nachricht, offsetX: number) => void
-    ): Promise<Blob> {
-        const pdf = new jsPDF("l", "mm", "a4");
-        const parts = funkUebung.teilnehmerListe;
-        for (let i = 0; i < parts.length; i += 2) {
-            this.drawA4PairPages(pdf, funkUebung, parts, i, drawMessage);
-        }
-        return pdf.output("blob");
-    }
-
-    private drawA4PairPages(
-        pdf: jsPDF,
-        funkUebung: FunkUebung,
-        parts: string[],
-        index: number,
-        drawMessage: (teilnehmer: string, pdf: jsPDF, msg: Nachricht, offsetX: number) => void
-    ): void {
-        const pair = this.resolvePair(parts, index);
-        if (!pair.left) {
-            return;
-        }
-        if (index > 0) {
-            pdf.addPage();
-        }
-        this.drawA4SplitLine(pdf);
-        this.drawPairDeckblatt(pdf, funkUebung, pair.left, pair.right);
-        this.drawPairMessages(pdf, funkUebung, pair.left, pair.right, drawMessage);
-    }
-
-    private resolvePair(parts: string[], index: number): { left: string | undefined; right: string | undefined } {
-        return { left: parts[index], right: parts[index + 1] };
-    }
-
-    private drawPairDeckblatt(pdf: jsPDF, funkUebung: FunkUebung, left: string, right?: string): void {
-        new DeckblattTeilnehmer(left, funkUebung, pdf).draw(0);
-        if (right) {
-            new DeckblattTeilnehmer(right, funkUebung, pdf).draw(148);
-        }
-    }
-
-    private drawPairMessages(
-        pdf: jsPDF,
-        funkUebung: FunkUebung,
-        left: string,
-        right: string | undefined,
-        drawMessage: (teilnehmer: string, pdf: jsPDF, msg: Nachricht, offsetX: number) => void
-    ): void {
-        const leftMsgs = funkUebung.nachrichten[left] || [];
-        const rightMsgs = right ? funkUebung.nachrichten[right] || [] : [];
-        const max = Math.max(leftMsgs.length, rightMsgs.length);
-        for (let j = 0; j < max; j++) {
-            pdf.addPage();
-            this.drawMessageAtIndex(left, leftMsgs, j, pdf, 0, drawMessage);
-            if (right) {
-                this.drawMessageAtIndex(right, rightMsgs, j, pdf, 148, drawMessage);
-            }
-            this.drawA4SplitLine(pdf);
-        }
-    }
-
-    private drawMessageAtIndex(
-        teilnehmer: string,
-        nachrichten: Nachricht[],
-        index: number,
-        pdf: jsPDF,
-        offsetX: number,
-        drawMessage: (teilnehmer: string, pdf: jsPDF, msg: Nachricht, offsetX: number) => void
-    ): void {
-        if (index >= nachrichten.length) {
-            return;
-        }
-        const msg = nachrichten[index];
-        if (msg) {
-            drawMessage(teilnehmer, pdf, msg, offsetX);
-        }
+        return generateAllMeldevordruckPrintA4Blob(funkUebung);
     }
 
 
@@ -548,218 +383,38 @@ class PDFGenerator {
 
 
     async generateNachrichtenvordruckA4PDFsBlob(funkUebung: FunkUebung) {
-        const blobs = new Map<string, Blob>();
-        const { jsPDF } = await import("jspdf");
-
-        for (const teilnehmer of funkUebung.teilnehmerListe) {
-            const nachrichten = funkUebung.nachrichten[teilnehmer] || [];
-            const totalA5Pages = 1 + nachrichten.length; // 0 = Deckblatt, danach jede Nachricht eine Seite
-            const half = Math.ceil(totalA5Pages / 2);
-
-            const pdf = new jsPDF({ orientation: "landscape", unit: "mm", format: "a4" });
-            const offsetRight = 148; // A5-Breite in mm
-
-            // Hilfsrenderer für eine Seite auf linker/rechter Hälfte
-            const renderIndex = (pageIndex: number, offsetX: number) => {
-                if (pageIndex < 0 || pageIndex >= totalA5Pages) {
-                    return;
-                }
-                if (pageIndex === 0) {
-                    // Deckblatt
-                    const deck = new DeckblattTeilnehmer(teilnehmer, funkUebung, pdf);
-                    deck.draw(offsetX || 0);
-                } else {
-                    // Nachrichtenseite (pageIndex - 1, da 0 das Deckblatt ist)
-                    const msg = nachrichten[pageIndex - 1];
-                    if (msg) {
-                        new Nachrichtenvordruck(teilnehmer, funkUebung, pdf, msg).draw(offsetX || 0);
-                    }
-                }
-            };
-
-            // Bogenweise ausgeben: links s, rechts s + half
-            for (let s = 0; s < half; s++) {
-                if (s > 0) {
-                    pdf.addPage();
-                }
-                const leftIndex = s;                // 0 .. half-1
-                const rightIndex = s + half;        // half .. totalA5Pages-1
-
-                // Links (Deckblatt oder Nachricht)
-                renderIndex(leftIndex, 0);
-
-                // Rechts (nur wenn vorhanden)
-                if (rightIndex < totalA5Pages) {
-                    renderIndex(rightIndex, offsetRight);
-                }
-
-                // Trennlinie (Schneidekante)
-                pdf.setDrawColor(150);
-                pdf.setLineWidth(0.2);
-                (pdf as any).setLineDash([1, 1], 0); // gestrichelt
-                pdf.line(148, 0, 148, 210);
-                (pdf as any).setLineDash([], 0); // zurücksetzen
-            }
-
-            const blob = pdf.output("blob");
-            blobs.set(teilnehmer, blob);
-        }
-
-        return blobs;
+        return generateNachrichtenvordruckA4PDFsBlob(funkUebung);
     }
 
     /**
      * Erstellt die Meldevordruck-PDFs im A4-Querformat mit 2 Meldevordrucken pro Seite (paarweise Layout mit Deckblatt).
      */
     async generateMeldevordruckA4PDFsBlob(funkUebung: FunkUebung) {
-        const blobs = new Map<string, Blob>();
-        const { jsPDF } = await import("jspdf");
-
-        for (const teilnehmer of funkUebung.teilnehmerListe) {
-            const nachrichten = funkUebung.nachrichten[teilnehmer] || [];
-            const totalA5Pages = 1 + nachrichten.length; // 0 = Deckblatt, danach jede Nachricht eine Seite
-            const half = Math.ceil(totalA5Pages / 2);
-
-            const pdf = new jsPDF({ orientation: "landscape", unit: "mm", format: "a4" });
-            const offsetRight = 148; // A5-Breite in mm
-
-            // Hilfsrenderer für eine Seite auf linker/rechter Hälfte
-            const renderIndex = (pageIndex: number, offsetX: number) => {
-                if (pageIndex < 0 || pageIndex >= totalA5Pages) {
-                    return;
-                }
-                if (pageIndex === 0) {
-                    // Deckblatt
-                    const deck = new DeckblattTeilnehmer(teilnehmer, funkUebung, pdf);
-                    deck.draw(offsetX || 0);
-                } else {
-                    // Meldevordruck-Seite
-                    const msg = nachrichten[pageIndex - 1];
-                    if (msg) {
-                        new Meldevordruck(teilnehmer, funkUebung, pdf, msg).draw(offsetX || 0);
-                    }
-                }
-            };
-
-            // Bogenweise ausgeben: links s, rechts s + half
-            for (let s = 0; s < half; s++) {
-                if (s > 0) {
-                    pdf.addPage();
-                }
-                const leftIndex = s;
-                const rightIndex = s + half;
-
-                renderIndex(leftIndex, 0);
-                if (rightIndex < totalA5Pages) {
-                    renderIndex(rightIndex, offsetRight);
-                }
-
-                // Trennlinie (Schneidekante)
-                pdf.setDrawColor(150);
-                pdf.setLineWidth(0.2);
-                (pdf as any).setLineDash([1, 1], 0); // gestrichelt
-                pdf.line(148, 0, 148, 210);
-                (pdf as any).setLineDash([], 0); // zurücksetzen
-            }
-
-            const blob = pdf.output("blob");
-            blobs.set(teilnehmer, blob);
-        }
-
-        return blobs;
+        return generateMeldevordruckA4PDFsBlob(funkUebung);
     }
 
     async generateAllPDFsAsZip(funkUebung: FunkUebung) {
-        const zip = new JSZip();
-
-        // Teilnehmer-PDFs
-        const teilnehmerBlobs = await this.generateTeilnehmerPDFsBlob(funkUebung);
-        teilnehmerBlobs.forEach((blob, teilnehmer) => {
-            zip.file(`Teilnehmer/${this.sanitizeFileName(teilnehmer)}/Übersicht_${this.sanitizeFileName(teilnehmer)}.pdf`, blob);
+        const zipBlob = await generateAllPDFsAsZipBlob(funkUebung, {
+            sanitizeFileName: this.sanitizeFileName,
+            generateTeilnehmerPDFsBlob: this.generateTeilnehmerPDFsBlob.bind(this),
+            generateInstructorPDFBlob: this.generateInstructorPDFBlob.bind(this),
+            generateNachrichtenvordruckPDFsBlob: this.generateNachrichtenvordruckPDFsBlob.bind(this),
+            generateNachrichtenvordruckA4PDFsBlob: this.generateNachrichtenvordruckA4PDFsBlob.bind(this),
+            generateMeldevordruckPDFsBlob: this.generateMeldevordruckPDFsBlob.bind(this),
+            generateMeldevordruckA4PDFsBlob: this.generateMeldevordruckA4PDFsBlob.bind(this),
+            generateAllNachrichtenvordruckPrintBlob: this.generateAllNachrichtenvordruckPrintBlob.bind(this),
+            generateAllMeldevordruckPrintBlob: this.generateAllMeldevordruckPrintBlob.bind(this),
+            generateAllNachrichtenvordruckPrintA4Blob: this.generateAllNachrichtenvordruckPrintA4Blob.bind(this),
+            generateAllMeldevordruckPrintA4Blob: this.generateAllMeldevordruckPrintA4Blob.bind(this),
+            generatePlainNachrichtenvordruckPrintBlob: this.generatePlainNachrichtenvordruckPrintBlob.bind(this),
+            generatePlainMeldevordruckPrintBlob: this.generatePlainMeldevordruckPrintBlob.bind(this),
+            generateNachrichtenvordruckPDFForTeilnehmer: this.generateNachrichtenvordruckPDFForTeilnehmer.bind(this),
+            generateMeldevordruckPDFForTeilnehmer: this.generateMeldevordruckPDFForTeilnehmer.bind(this)
         });
-
-        // Instructor PDF
-        const instructorBlob = this.generateInstructorPDFBlob(funkUebung);
-        zip.file("Uebungsleitung.pdf", instructorBlob);
-
-        // Nachrichtenvordrucke
-        const nachrichtenvordruckBlobs = await this.generateNachrichtenvordruckPDFsBlob(funkUebung);
-        nachrichtenvordruckBlobs.forEach((blob, teilnehmer) => {
-            zip.file(`Teilnehmer/${this.sanitizeFileName(teilnehmer)}/Nachrichtenvordruck_${this.sanitizeFileName(teilnehmer)}_A5.pdf`, blob);
-        });
-
-        const nachrichtenvordruckBlobsNadel = await this.generateNachrichtenvordruckPDFsBlob(funkUebung, true, true);
-        nachrichtenvordruckBlobsNadel.forEach((blob, teilnehmer) => {
-            zip.file(`Teilnehmer/${this.sanitizeFileName(teilnehmer)}/Nachrichtenvordruck_${this.sanitizeFileName(teilnehmer)}_Nadeldrucker_A5.pdf`, blob);
-        });
-
-        const nachrichtenvordruckA4Blobs = await this.generateNachrichtenvordruckA4PDFsBlob(funkUebung);
-        nachrichtenvordruckA4Blobs.forEach((blob, teilnehmer) => {
-            zip.file(`Teilnehmer/${this.sanitizeFileName(teilnehmer)}/Nachrichtenvordruck_${this.sanitizeFileName(teilnehmer)}_A4.pdf`, blob);
-        });
-
-        // Meldevordrucke
-        const meldevordruckBlobs = await this.generateMeldevordruckPDFsBlob(funkUebung);
-        meldevordruckBlobs.forEach((blob, teilnehmer) => {
-            zip.file(`Teilnehmer/${this.sanitizeFileName(teilnehmer)}/Meldevordruck_${this.sanitizeFileName(teilnehmer)}_A5.pdf`, blob);
-        });
-
-        const meldevordruckBlobsNadel = await this.generateMeldevordruckPDFsBlob(funkUebung, true, true);
-        meldevordruckBlobsNadel.forEach((blob, teilnehmer) => {
-            zip.file(`Teilnehmer/${this.sanitizeFileName(teilnehmer)}/Meldevordruck_${this.sanitizeFileName(teilnehmer)}_Nadeldrucker_A5.pdf`, blob);
-        });
-
-        const meldevordruckA4Blobs = await this.generateMeldevordruckA4PDFsBlob(funkUebung);
-        meldevordruckA4Blobs.forEach((blob, teilnehmer) => {
-            zip.file(`Teilnehmer/${this.sanitizeFileName(teilnehmer)}/Meldevordruck_${this.sanitizeFileName(teilnehmer)}_A4.pdf`, blob);
-        });
-
-        // Druck-PDF mit allen Nachrichtenvordrucken
-        const allMsgPrint = await this.generateAllNachrichtenvordruckPrintBlob(funkUebung);
-        zip.file(
-            "Gesamt/Druck_Nachrichtenvordruck_A5.pdf",
-            allMsgPrint
-        );
-
-        // Druck-PDF mit allen Meldevordrucken
-        const allMeldPrint = await this.generateAllMeldevordruckPrintBlob(funkUebung);
-        zip.file(
-            "Gesamt/Druck_Meldevordruck_A5.pdf",
-            allMeldPrint
-        );
-
-        // A4-Druckvorlagen hinzufügen
-        const allMsgPrintA4 = await this.generateAllNachrichtenvordruckPrintA4Blob(funkUebung);
-        zip.file(
-            "Gesamt/Druck_Nachrichtenvordruck_A4.pdf",
-            allMsgPrintA4
-        );
-
-        const allMeldPrintA4 = await this.generateAllMeldevordruckPrintA4Blob(funkUebung);
-        zip.file(
-            "Gesamt/Druck_Meldevordruck_A4.pdf",
-            allMeldPrintA4
-        );
-
-        // Nadeldrucker: je ein A5-PDF mit allen Nachrichtenvordrucken
-        const plainNachrichtBlob = await this.generatePlainNachrichtenvordruckPrintBlob(funkUebung);
-        zip.file(
-            "Gesamt/Nadeldrucker_Nachrichtenvordruck_A5.pdf",
-            plainNachrichtBlob
-        );
-        // Nadeldrucker: je ein A5-PDF mit allen Meldevordrucken
-        const plainMeldeBlob = await this.generatePlainMeldevordruckPrintBlob(funkUebung);
-        zip.file(
-            "Gesamt/Nadeldrucker_Meldevordruck_A5.pdf",
-            plainMeldeBlob
-        );
-
-        const zipBlob = await zip.generateAsync({ type: "blob" });
 
         const link = document.createElement("a");
         link.href = URL.createObjectURL(zipBlob);
-        const zipName = `${this.sanitizeFileName(funkUebung.name)}_${formatNatoDate(new Date())}.zip`;
-        link.download = zipName;
+        link.download = createZipDownloadName(funkUebung, this.sanitizeFileName);
         document.body.appendChild(link);
         link.click();
         document.body.removeChild(link);
@@ -767,41 +422,23 @@ class PDFGenerator {
     }
 
     async generateTeilnehmerPDFsAsZip(funkUebung: FunkUebung, teilnehmer: string): Promise<Blob> {
-        const zip = new JSZip();
-        const safeTeilnehmer = this.sanitizeFileName(teilnehmer);
-        const basePath = `Teilnehmer/${safeTeilnehmer}`;
-
-        const teilnehmerBlobs = await this.generateTeilnehmerPDFsBlob(funkUebung);
-        const uebersichtBlob = teilnehmerBlobs.get(teilnehmer);
-        if (uebersichtBlob) {
-            zip.file(`${basePath}/Übersicht_${safeTeilnehmer}.pdf`, uebersichtBlob);
-        }
-
-        const nachrichtA5 = await this.generateNachrichtenvordruckPDFForTeilnehmer(funkUebung, teilnehmer);
-        zip.file(`${basePath}/Nachrichtenvordruck_${safeTeilnehmer}_A5.pdf`, nachrichtA5.blob);
-
-        const nachrichtNadelA5 = await this.generateNachrichtenvordruckPDFForTeilnehmer(funkUebung, teilnehmer, true, true);
-        zip.file(`${basePath}/Nachrichtenvordruck_${safeTeilnehmer}_Nadeldrucker_A5.pdf`, nachrichtNadelA5.blob);
-
-        const nachrichtA4Blobs = await this.generateNachrichtenvordruckA4PDFsBlob(funkUebung);
-        const nachrichtA4 = nachrichtA4Blobs.get(teilnehmer);
-        if (nachrichtA4) {
-            zip.file(`${basePath}/Nachrichtenvordruck_${safeTeilnehmer}_A4.pdf`, nachrichtA4);
-        }
-
-        const meldeA5 = await this.generateMeldevordruckPDFForTeilnehmer(funkUebung, teilnehmer);
-        zip.file(`${basePath}/Meldevordruck_${safeTeilnehmer}_A5.pdf`, meldeA5.blob);
-
-        const meldeNadelA5 = await this.generateMeldevordruckPDFForTeilnehmer(funkUebung, teilnehmer, true, true);
-        zip.file(`${basePath}/Meldevordruck_${safeTeilnehmer}_Nadeldrucker_A5.pdf`, meldeNadelA5.blob);
-
-        const meldeA4Blobs = await this.generateMeldevordruckA4PDFsBlob(funkUebung);
-        const meldeA4 = meldeA4Blobs.get(teilnehmer);
-        if (meldeA4) {
-            zip.file(`${basePath}/Meldevordruck_${safeTeilnehmer}_A4.pdf`, meldeA4);
-        }
-
-        return zip.generateAsync({ type: "blob" });
+        return generateTeilnehmerPDFsAsZipBlob(funkUebung, teilnehmer, {
+            sanitizeFileName: this.sanitizeFileName,
+            generateTeilnehmerPDFsBlob: this.generateTeilnehmerPDFsBlob.bind(this),
+            generateInstructorPDFBlob: this.generateInstructorPDFBlob.bind(this),
+            generateNachrichtenvordruckPDFsBlob: this.generateNachrichtenvordruckPDFsBlob.bind(this),
+            generateNachrichtenvordruckA4PDFsBlob: this.generateNachrichtenvordruckA4PDFsBlob.bind(this),
+            generateMeldevordruckPDFsBlob: this.generateMeldevordruckPDFsBlob.bind(this),
+            generateMeldevordruckA4PDFsBlob: this.generateMeldevordruckA4PDFsBlob.bind(this),
+            generateAllNachrichtenvordruckPrintBlob: this.generateAllNachrichtenvordruckPrintBlob.bind(this),
+            generateAllMeldevordruckPrintBlob: this.generateAllMeldevordruckPrintBlob.bind(this),
+            generateAllNachrichtenvordruckPrintA4Blob: this.generateAllNachrichtenvordruckPrintA4Blob.bind(this),
+            generateAllMeldevordruckPrintA4Blob: this.generateAllMeldevordruckPrintA4Blob.bind(this),
+            generatePlainNachrichtenvordruckPrintBlob: this.generatePlainNachrichtenvordruckPrintBlob.bind(this),
+            generatePlainMeldevordruckPrintBlob: this.generatePlainMeldevordruckPrintBlob.bind(this),
+            generateNachrichtenvordruckPDFForTeilnehmer: this.generateNachrichtenvordruckPDFForTeilnehmer.bind(this),
+            generateMeldevordruckPDFForTeilnehmer: this.generateMeldevordruckPDFForTeilnehmer.bind(this)
+        });
     }
 
     /**
