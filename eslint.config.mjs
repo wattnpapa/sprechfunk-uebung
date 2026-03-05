@@ -1,78 +1,76 @@
-// Polyfill for structuredClone in older Node versions
-if (typeof global.structuredClone === 'undefined') {
-  global.structuredClone = (obj) => JSON.parse(JSON.stringify(obj));
-}
-
-import eslint from '@eslint/js';
-import tseslint from 'typescript-eslint';
-import stylistic from '@stylistic/eslint-plugin';
+import js from "@eslint/js";
+import globals from "globals";
+import tseslint from "typescript-eslint";
+import eslintConfigPrettier from "eslint-config-prettier";
+import sonarjs from "eslint-plugin-sonarjs";
 
 export default tseslint.config(
-  // Globale Ignorierungen
-  {
-    ignores: ['dist/**', 'node_modules/**', 'coverage/**', '*.config.js', '*.config.mjs', '.eslintrc.js', '.eslintignore'],
-  },
-  
-  // Basis-Konfigurationen
-  eslint.configs.recommended,
-  ...tseslint.configs.strict,
-  ...tseslint.configs.stylistic,
-
-  // Spezifische Regeln
-  {
-    plugins: {
-      '@stylistic': stylistic,
+    {
+        ignores: [
+            "dist/**",
+            "node_modules/**",
+            "coverage/**",
+            "playwright-report/**",
+            "test-results/**",
+            "*.config.js",
+            "*.config.mjs",
+            ".eslintrc.js",
+            ".eslintignore"
+        ]
     },
-    languageOptions: {
-      parserOptions: {
-        project: './tsconfig.eslint.json',
-        tsconfigRootDir: import.meta.dirname,
-      },
+    js.configs.recommended,
+    ...tseslint.configs.recommended,
+    {
+        files: ["**/*.ts"],
+        languageOptions: {
+            parserOptions: {
+                project: "./tsconfig.eslint.json",
+                tsconfigRootDir: import.meta.dirname
+            }
+        },
+        plugins: {
+            sonarjs
+        },
+        rules: {
+            "@typescript-eslint/no-unused-vars": ["error", { argsIgnorePattern: "^_", varsIgnorePattern: "^_" }],
+            "max-lines": ["warn", { max: 400, skipBlankLines: true, skipComments: true }],
+            "max-lines-per-function": ["warn", { max: 80, skipBlankLines: true, skipComments: true }],
+            "complexity": ["warn", 10],
+            "max-params": ["warn", 4],
+            "sonarjs/cognitive-complexity": ["warn", 15],
+            "sonarjs/max-switch-cases": ["warn", 10],
+            "sonarjs/no-identical-functions": "warn"
+        }
     },
-    rules: {
-      // TypeScript Strenge
-      '@typescript-eslint/no-explicit-any': 'warn', // Warnung statt Error, da wir noch einige 'any' haben
-      '@typescript-eslint/explicit-function-return-type': 'off', // Inferenz ist oft gut genug
-      '@typescript-eslint/no-unused-vars': ['error', { argsIgnorePattern: '^_' }],
-      '@typescript-eslint/no-non-null-assertion': 'warn', // ! Operator sparsam nutzen
-      '@typescript-eslint/consistent-type-definitions': ['error', 'interface'], // Interfaces bevorzugen
-
-      // Stylistic (Formatierung)
-      '@stylistic/semi': ['error', 'always'],
-      '@stylistic/quotes': ['error', 'double'],
-      '@stylistic/indent': ['error', 4, { "SwitchCase": 1 }],
-      '@stylistic/comma-dangle': ['error', 'never'],
-      '@stylistic/arrow-parens': ['error', 'as-needed'],
-      '@stylistic/brace-style': ['error', '1tbs'],
-      
-      // Best Practices
-      'no-console': ['warn', { allow: ['warn', 'error'] }], // console.log vermeiden
-      'eqeqeq': ['error', 'always'], // === statt ==
-      'curly': ['error', 'all'], // {} immer nutzen
+    {
+        files: ["src/**/*.ts"],
+        languageOptions: {
+            globals: globals.browser
+        }
     },
-  }
-  ,
-  {
-    files: ["scripts/**/*.mjs"],
-    languageOptions: {
-      globals: {
-        console: "readonly",
-        process: "readonly"
-      }
-    }
-  },
-  {
-    files: ["tests/**/*.ts", "e2e/**/*.ts"],
-    linterOptions: {
-      reportUnusedDisableDirectives: "off"
+    {
+        files: [
+            "tests/**/*.ts",
+            "e2e/**/*.ts",
+            "scripts/**/*.mjs",
+            "rollup.config.js",
+            "playwright.config.ts",
+            "vitest.config.ts"
+        ],
+        languageOptions: {
+            globals: globals.node
+        },
+        linterOptions: {
+            reportUnusedDisableDirectives: "off"
+        },
+        rules: {
+            "max-lines": ["warn", { max: 1200, skipBlankLines: true, skipComments: true }],
+            "max-lines-per-function": ["warn", { max: 500, skipBlankLines: true, skipComments: true }],
+            "complexity": ["warn", 20],
+            "@typescript-eslint/no-explicit-any": "off",
+            "@typescript-eslint/no-empty-function": "off",
+            "@typescript-eslint/no-useless-constructor": "off"
+        }
     },
-    rules: {
-      "@typescript-eslint/no-explicit-any": "off",
-      "@typescript-eslint/no-empty-function": "off",
-      "@typescript-eslint/no-useless-constructor": "off",
-      "@typescript-eslint/array-type": "off",
-      "@stylistic/brace-style": "off",
-      "curly": "off"
-    }
-  }
+    eslintConfigPrettier
 );
