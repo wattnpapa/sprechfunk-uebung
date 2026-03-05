@@ -234,13 +234,15 @@ describe("GeneratorView", () => {
 
         document.body.innerHTML += "<div id=\"link-action-feedback\"></div>";
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        (view as any).showLinkActionFeedback("ok", false);
+        const linksRenderer = (view as any).linksRenderer;
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        await (view as any).copyTextToClipboard("abc");
+        (linksRenderer as any).showLinkActionFeedback("ok", false);
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        await (linksRenderer as any).copyTextToClipboard("abc");
 
         vi.stubGlobal("navigator", {});
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        await (view as any).copyTextToClipboard("fallback");
+        await (linksRenderer as any).copyTextToClipboard("fallback");
         expect(document.execCommand).toHaveBeenCalledWith("copy");
     });
 
@@ -363,7 +365,9 @@ describe("GeneratorView", () => {
         u.teilnehmerIds = { tid: "A" };
         view.renderLinks(u);
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        (view as any).showLinkActionFeedback("Kopieren fehlgeschlagen.", true);
+        const linksRenderer = (view as any).linksRenderer;
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        (linksRenderer as any).showLinkActionFeedback("Kopieren fehlgeschlagen.", true);
         expect((document.getElementById("link-action-feedback") as HTMLElement).textContent).toContain("fehlgeschlagen");
 
         // zip failure branch
@@ -380,23 +384,25 @@ describe("GeneratorView", () => {
         const view = new GeneratorView();
         view.render();
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        expect((view as any).getTypeBadgeClass("Übung")).toBe("is-uebung");
+        const linksRenderer = (view as any).linksRenderer;
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        expect((view as any).getTypeBadgeClass("Übungsleitung")).toBe("is-leitung");
+        expect((linksRenderer as any).getTypeBadgeClass("Übung")).toBe("is-uebung");
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        expect((view as any).getTypeBadgeClass("Teilnehmer")).toBe("is-teilnehmer");
+        expect((linksRenderer as any).getTypeBadgeClass("Übungsleitung")).toBe("is-leitung");
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        expect((view as any).getTypeBadgeClass("x")).toBe("");
+        expect((linksRenderer as any).getTypeBadgeClass("Teilnehmer")).toBe("is-teilnehmer");
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        expect((linksRenderer as any).getTypeBadgeClass("x")).toBe("");
 
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        expect((view as any).shortenUrl("abc", 10)).toBe("abc");
+        expect((linksRenderer as any).shortenUrl("abc", 10)).toBe("abc");
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        expect((view as any).shortenUrl("abcdefghijklmnopqrstuvwxyz", 10)).toContain("…");
+        expect((linksRenderer as any).shortenUrl("abcdefghijklmnopqrstuvwxyz", 10)).toContain("…");
 
         // no feedback node branch
         document.getElementById("link-action-feedback")?.remove();
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        (view as any).showLinkActionFeedback("x", false);
+        (linksRenderer as any).showLinkActionFeedback("x", false);
 
         // timeout condition false and true branches
         document.body.innerHTML += "<div id=\"link-action-feedback\"></div>";
@@ -407,13 +413,13 @@ describe("GeneratorView", () => {
             return 1;
         }));
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        (view as any).showLinkActionFeedback("msg", true);
+        (linksRenderer as any).showLinkActionFeedback("msg", true);
         expect((document.getElementById("link-action-feedback") as HTMLElement).textContent).toBe("other");
 
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         (window as any).setTimeout = vi.fn((cb: () => void) => { cb(); return 1; });
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        (view as any).showLinkActionFeedback("msg2", false);
+        (linksRenderer as any).showLinkActionFeedback("msg2", false);
         expect((document.getElementById("link-action-feedback") as HTMLElement).textContent).toBe("");
     });
 
@@ -429,7 +435,9 @@ describe("GeneratorView", () => {
         view.renderLinks(u); // missing containers -> guard
 
         document.body.innerHTML += "<div id='uebung-links'></div><div id='links-teilnehmer-container'></div><div id='link-action-feedback'></div>";
-        const feedbackSpy = vi.spyOn(view as never, "showLinkActionFeedback" as never).mockImplementation(() => {});
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const linksRenderer = (view as any).linksRenderer;
+        const feedbackSpy = vi.spyOn(linksRenderer as never, "showLinkActionFeedback" as never).mockImplementation(() => {});
         vi.stubGlobal("navigator", { clipboard: { writeText: vi.fn().mockRejectedValue(new Error("x")) } });
         view.renderLinks(u);
         const copyButtons = Array.from(document.querySelectorAll(".generator-link-actions .btn-outline-secondary")) as HTMLButtonElement[];
@@ -437,7 +445,7 @@ describe("GeneratorView", () => {
         await Promise.resolve();
         await Promise.resolve();
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        (view as any).showLinkActionFeedback("x", true);
+        (linksRenderer as any).showLinkActionFeedback("x", true);
         expect(feedbackSpy).toHaveBeenCalled();
 
         const mailBtn = Array.from(document.querySelectorAll(".generator-link-actions button"))
@@ -501,7 +509,9 @@ describe("GeneratorView", () => {
         // private appendLinkRow branches: no mailto, unknown type
         const container = document.createElement("div");
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        (view as any).appendLinkRow(container, "X", "n", "http://x");
+        const linksRenderer = (view as any).linksRenderer;
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        (linksRenderer as any).appendLinkRow(container, { typ: "X", name: "n", url: "http://x" });
         expect(container.innerHTML).toContain("Öffnen");
     });
 
