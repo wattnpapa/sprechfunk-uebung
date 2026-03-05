@@ -149,124 +149,109 @@ class PDFGenerator {
         return pdf.output("blob");
     }
 
+    private drawA4SplitLine(pdf: jsPDF): void {
+        pdf.setDrawColor(150);
+        pdf.setLineWidth(0.2);
+        (pdf as any).setLineDash([1, 1], 0);
+        pdf.line(148, 0, 148, 210);
+        (pdf as any).setLineDash([], 0);
+    }
+
     /**
      * Erstellt eine A4-Quer-PDF mit 2 Nachrichtenvordrucken pro Seite (paarweise Layout mit Deckblatt).
      */
     async generateAllNachrichtenvordruckPrintA4Blob(funkUebung: FunkUebung): Promise<Blob> {
-        const pdf = new jsPDF("l", "mm", "a4");
-        const parts = funkUebung.teilnehmerListe;
-        for (let i = 0; i < parts.length; i += 2) {
-            if (i > 0) {
-                pdf.addPage();
-            }
-
-            // Trennlinie (Schneidekante)
-            pdf.setDrawColor(150);
-            pdf.setLineWidth(0.2);
-            (pdf as any).setLineDash([1, 1], 0); // gestrichelt
-            pdf.line(148, 0, 148, 210);
-            (pdf as any).setLineDash([], 0); // zurücksetzen
-
-            const left = parts[i];
-            const right = parts[i + 1];
-            if (!left) {
-                continue;
-            }
-
-            const deckblattLeft = new DeckblattTeilnehmer(left, funkUebung, pdf);
-            deckblattLeft.draw(0); // left -> offset 0  
-
-            if (right) {
-                const deckblattRight = new DeckblattTeilnehmer(right, funkUebung, pdf);
-                deckblattRight.draw(148); // right -> offset 148
-            }
-
-            // Nachrichtenvordrucke
-            const leftMsgs = funkUebung.nachrichten[left] || [];
-            const rightMsgs = right ? funkUebung.nachrichten[right] || [] : [];
-            const max = Math.max(leftMsgs.length, rightMsgs.length);
-            for (let j = 0; j < max; j++) {
-                pdf.addPage();
-                if (j < leftMsgs.length) {
-                    const leftMsg = leftMsgs[j];
-                    if (leftMsg) {
-                        new Nachrichtenvordruck(left, funkUebung, pdf, leftMsg).draw();
-                    }
-                }
-                if (right && j < rightMsgs.length) {
-                    const rightMsg = rightMsgs[j];
-                    if (rightMsg) {
-                        new Nachrichtenvordruck(right, funkUebung, pdf, rightMsg).draw(148);
-                    }
-                }
-                // Trennlinie (Schneidekante)
-                pdf.setDrawColor(150);
-                pdf.setLineWidth(0.2);
-                (pdf as any).setLineDash([1, 1], 0); // gestrichelt
-                pdf.line(148, 0, 148, 210);
-                (pdf as any).setLineDash([], 0); // zurücksetzen
-            }
-        }
-        return pdf.output("blob");
+        return this.generateAllA4PairPrintBlob(funkUebung, (teilnehmer, pdf, msg, offsetX) => {
+            new Nachrichtenvordruck(teilnehmer, funkUebung, pdf, msg).draw(offsetX);
+        });
     }
 
     /**
      * Erstellt eine A4-Quer-PDF mit 2 Meldevordrucken pro Seite (paarweise Layout mit Deckblatt).
      */
     async generateAllMeldevordruckPrintA4Blob(funkUebung: FunkUebung): Promise<Blob> {
+        return this.generateAllA4PairPrintBlob(funkUebung, (teilnehmer, pdf, msg, offsetX) => {
+            new Meldevordruck(teilnehmer, funkUebung, pdf, msg).draw(offsetX);
+        });
+    }
+
+    private async generateAllA4PairPrintBlob(
+        funkUebung: FunkUebung,
+        drawMessage: (teilnehmer: string, pdf: jsPDF, msg: Nachricht, offsetX: number) => void
+    ): Promise<Blob> {
         const pdf = new jsPDF("l", "mm", "a4");
         const parts = funkUebung.teilnehmerListe;
         for (let i = 0; i < parts.length; i += 2) {
-            if (i > 0) {
-                pdf.addPage();
-            }
-
-            // Trennlinie (Schneidekante)
-            pdf.setDrawColor(150);
-            pdf.setLineWidth(0.2);
-            (pdf as any).setLineDash([1, 1], 0); // gestrichelt
-            pdf.line(148, 0, 148, 210);
-            (pdf as any).setLineDash([], 0); // zurücksetzen
-
-            const left = parts[i];
-            const right = parts[i + 1];
-            if (!left) {
-                continue;
-            }
-
-            const deckblattLeft = new DeckblattTeilnehmer(left, funkUebung, pdf);
-            deckblattLeft.draw(0); // left -> offset 0
-
-            if (right) {
-                const deckblattRight = new DeckblattTeilnehmer(right, funkUebung, pdf);
-                deckblattRight.draw(148); // right -> offset 148
-            }
-            const leftMsgs = funkUebung.nachrichten[left] || [];
-            const rightMsgs = right ? funkUebung.nachrichten[right] || [] : [];
-            const max = Math.max(leftMsgs.length, rightMsgs.length);
-            for (let j = 0; j < max; j++) {
-                pdf.addPage();
-                if (j < leftMsgs.length) {
-                    const leftMsg = leftMsgs[j];
-                    if (leftMsg) {
-                        new Meldevordruck(left, funkUebung, pdf, leftMsg).draw();
-                    }
-                }
-                if (right && j < rightMsgs.length) {
-                    const rightMsg = rightMsgs[j];
-                    if (rightMsg) {
-                        new Meldevordruck(right, funkUebung, pdf, rightMsg).draw(148);
-                    }
-                }
-                // Trennlinie (Schneidekante)
-                pdf.setDrawColor(150);
-                pdf.setLineWidth(0.2);
-                (pdf as any).setLineDash([1, 1], 0); // gestrichelt
-                pdf.line(148, 0, 148, 210);
-                (pdf as any).setLineDash([], 0); // zurücksetzen
-            }
+            this.drawA4PairPages(pdf, funkUebung, parts, i, drawMessage);
         }
         return pdf.output("blob");
+    }
+
+    private drawA4PairPages(
+        pdf: jsPDF,
+        funkUebung: FunkUebung,
+        parts: string[],
+        index: number,
+        drawMessage: (teilnehmer: string, pdf: jsPDF, msg: Nachricht, offsetX: number) => void
+    ): void {
+        const pair = this.resolvePair(parts, index);
+        if (!pair.left) {
+            return;
+        }
+        if (index > 0) {
+            pdf.addPage();
+        }
+        this.drawA4SplitLine(pdf);
+        this.drawPairDeckblatt(pdf, funkUebung, pair.left, pair.right);
+        this.drawPairMessages(pdf, funkUebung, pair.left, pair.right, drawMessage);
+    }
+
+    private resolvePair(parts: string[], index: number): { left: string | undefined; right: string | undefined } {
+        return { left: parts[index], right: parts[index + 1] };
+    }
+
+    private drawPairDeckblatt(pdf: jsPDF, funkUebung: FunkUebung, left: string, right?: string): void {
+        new DeckblattTeilnehmer(left, funkUebung, pdf).draw(0);
+        if (right) {
+            new DeckblattTeilnehmer(right, funkUebung, pdf).draw(148);
+        }
+    }
+
+    private drawPairMessages(
+        pdf: jsPDF,
+        funkUebung: FunkUebung,
+        left: string,
+        right: string | undefined,
+        drawMessage: (teilnehmer: string, pdf: jsPDF, msg: Nachricht, offsetX: number) => void
+    ): void {
+        const leftMsgs = funkUebung.nachrichten[left] || [];
+        const rightMsgs = right ? funkUebung.nachrichten[right] || [] : [];
+        const max = Math.max(leftMsgs.length, rightMsgs.length);
+        for (let j = 0; j < max; j++) {
+            pdf.addPage();
+            this.drawMessageAtIndex(left, leftMsgs, j, pdf, 0, drawMessage);
+            if (right) {
+                this.drawMessageAtIndex(right, rightMsgs, j, pdf, 148, drawMessage);
+            }
+            this.drawA4SplitLine(pdf);
+        }
+    }
+
+    private drawMessageAtIndex(
+        teilnehmer: string,
+        nachrichten: Nachricht[],
+        index: number,
+        pdf: jsPDF,
+        offsetX: number,
+        drawMessage: (teilnehmer: string, pdf: jsPDF, msg: Nachricht, offsetX: number) => void
+    ): void {
+        if (index >= nachrichten.length) {
+            return;
+        }
+        const msg = nachrichten[index];
+        if (msg) {
+            drawMessage(teilnehmer, pdf, msg, offsetX);
+        }
     }
 
 
