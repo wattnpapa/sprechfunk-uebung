@@ -97,45 +97,22 @@ export class AppView {
     }
 
     public applyAppMode(mode: AppMode): void {
-        const generator = document.getElementById("mainAppArea");
-        const adminEl = document.getElementById("adminArea");
-        const uebungsleitung = document.getElementById("uebungsleitungArea");
-        const teilnehmer = document.getElementById("teilnehmerArea");
-    
-        if(generator) {
-            generator.style.display = "none";
-        }
-        if(adminEl) {
-            adminEl.style.display = "none";
-        }
-        if(uebungsleitung) {
-            uebungsleitung.style.display = "none";
-        }
-        if(teilnehmer) {
-            teilnehmer.style.display = "none";
-        }
-    
-        switch (mode) {
-            case "generator":
-                if(generator) {
-                    generator.style.display = "block";
-                }
-                break;
-            case "admin":
-                if(adminEl) {
-                    adminEl.style.display = "block";
-                }
-                break;
-            case "uebungsleitung":
-                if(uebungsleitung) {
-                    uebungsleitung.style.display = "block";
-                }
-                break;
-            case "teilnehmer":
-                if(teilnehmer) {
-                    teilnehmer.style.display = "block";
-                }
-                break;
+        const areas: Record<AppMode, HTMLElement | null> = {
+            generator: document.getElementById("mainAppArea"),
+            admin: document.getElementById("adminArea"),
+            uebungsleitung: document.getElementById("uebungsleitungArea"),
+            teilnehmer: document.getElementById("teilnehmerArea")
+        };
+
+        Object.values(areas).forEach(el => {
+            if (el) {
+                el.style.display = "none";
+            }
+        });
+
+        const active = areas[mode];
+        if (active) {
+            active.style.display = "block";
         }
     }
 }

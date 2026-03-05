@@ -3,7 +3,7 @@
 // =========================
 
 import { initUebungsleitung } from "./uebungsleitung";
-import { initTeilnehmer } from "./teilnehmer";
+import { initTeilnehmer } from "./teilnehmer/init";
 import { router } from "./core/router";
 import { store } from "./state/store";
 import { GeneratorController } from "./generator";

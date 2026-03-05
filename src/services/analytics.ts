@@ -14,45 +14,19 @@ class AnalyticsService {
     private readonly consentStorageKey = "ga_consent";
 
     public init(measurementId: string | undefined): void {
-        if (!measurementId || this.initialized) {
+        if (!this.canInit(measurementId)) {
             return;
         }
-        if (typeof window === "undefined" || typeof document === "undefined") {
-            return;
-        }
+        const resolvedMeasurementId = measurementId as string;
 
-        const hostname = window.location?.hostname ?? "";
-        const search = window.location?.search ?? "";
-        const isLocal = ["localhost", "127.0.0.1", "0.0.0.0"].includes(hostname);
-        const force = new URLSearchParams(search).get("ga") === "1";
-        if (isLocal && !force) {
+        if (this.shouldSkipInitInLocal()) {
             const storedConsent = this.readStoredConsent();
             this.consentGranted = storedConsent ?? true;
             return;
         }
 
-        this.measurementId = measurementId;
-
-        const script = document.createElement("script");
-        script.async = true;
-        script.src = `https://www.googletagmanager.com/gtag/js?id=${encodeURIComponent(measurementId)}`;
-        document.head.appendChild(script);
-
-        window.dataLayer = window.dataLayer || [];
-        window.gtag = function gtag(...args: unknown[]) {
-            window.dataLayer?.push(args);
-        };
-        window.gtag("js", new Date());
-        window.gtag("consent", "default", {
-            analytics_storage: "granted",
-            ad_storage: "denied",
-            ad_user_data: "denied",
-            ad_personalization: "denied"
-        });
-        window.gtag("config", measurementId, {
-            anonymize_ip: true,
-            send_page_view: false
-        });
+        this.measurementId = resolvedMeasurementId;
+        this.initGtag(resolvedMeasurementId);
         const storedConsent = this.readStoredConsent();
         this.setConsent(storedConsent ?? true);
         this.initialized = true;
@@ -142,6 +116,44 @@ class AnalyticsService {
             return null;
         }
         return null;
+    }
+
+    private canInit(measurementId: string | undefined): boolean {
+        if (!measurementId || this.initialized) {
+            return false;
+        }
+        return typeof window !== "undefined" && typeof document !== "undefined";
+    }
+
+    private shouldSkipInitInLocal(): boolean {
+        const hostname = window.location?.hostname ?? "";
+        const search = window.location?.search ?? "";
+        const isLocal = ["localhost", "127.0.0.1", "0.0.0.0"].includes(hostname);
+        const force = new URLSearchParams(search).get("ga") === "1";
+        return isLocal && !force;
+    }
+
+    private initGtag(measurementId: string): void {
+        const script = document.createElement("script");
+        script.async = true;
+        script.src = `https://www.googletagmanager.com/gtag/js?id=${encodeURIComponent(measurementId)}`;
+        document.head.appendChild(script);
+
+        window.dataLayer = window.dataLayer || [];
+        window.gtag = function gtag(...args: unknown[]) {
+            window.dataLayer?.push(args);
+        };
+        window.gtag("js", new Date());
+        window.gtag("consent", "default", {
+            analytics_storage: "granted",
+            ad_storage: "denied",
+            ad_user_data: "denied",
+            ad_personalization: "denied"
+        });
+        window.gtag("config", measurementId, {
+            anonymize_ip: true,
+            send_page_view: false
+        });
     }
 }
 

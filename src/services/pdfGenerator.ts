@@ -347,13 +347,20 @@ class PDFGenerator {
         return { blob: pdf.output("blob"), totalPages };
     }
 
-    async generateNachrichtenvordruckPageBlob(
-        funkUebung: FunkUebung,
-        teilnehmer: string,
-        page: number,
-        hideBackground = false,
-        hideFooter = false
-    ): Promise<Blob> {
+    async generateNachrichtenvordruckPageBlob(options: {
+        funkUebung: FunkUebung;
+        teilnehmer: string;
+        page: number;
+        hideBackground?: boolean;
+        hideFooter?: boolean;
+    }): Promise<Blob> {
+        const {
+            funkUebung,
+            teilnehmer,
+            page,
+            hideBackground = false,
+            hideFooter = false
+        } = options;
         const nachrichten = funkUebung.nachrichten[teilnehmer] || [];
         const totalPages = nachrichten.length;
         if (page < 1 || page > totalPages) {
@@ -447,13 +454,20 @@ class PDFGenerator {
         return { blob: pdf.output("blob"), totalPages };
     }
 
-    async generateMeldevordruckPageBlob(
-        funkUebung: FunkUebung,
-        teilnehmer: string,
-        page: number,
-        hideBackground = false,
-        hideFooter = false
-    ): Promise<Blob> {
+    async generateMeldevordruckPageBlob(options: {
+        funkUebung: FunkUebung;
+        teilnehmer: string;
+        page: number;
+        hideBackground?: boolean;
+        hideFooter?: boolean;
+    }): Promise<Blob> {
+        const {
+            funkUebung,
+            teilnehmer,
+            page,
+            hideBackground = false,
+            hideFooter = false
+        } = options;
         const nachrichten = funkUebung.nachrichten[teilnehmer] || [];
         const totalPages = nachrichten.length;
         if (page < 1 || page > totalPages) {

@@ -156,7 +156,7 @@ export class TeilnehmerController {
                 uebertragenUm: new Date().toISOString()
             };
         } else {
-            // eslint-disable-next-line @typescript-eslint/no-dynamic-delete
+             
             delete this.storage.nachrichten[id];
         }
 
@@ -290,23 +290,13 @@ export class TeilnehmerController {
     }
 
     private toggleCurrentDocMessage() {
-        if (!this.storage || !this.teilnehmerName) {
-            return;
-        }
-        if (this.docMode === "table") {
-            return;
-        }
-        if (this.docPage <= 1) {
-            return;
-        }
-        const visible = this.getVisibleNachrichten();
-        const msg = visible[this.docPage - 1];
-        if (!msg) {
+        const msg = this.getCurrentDocMessage();
+        if (!msg || !this.storage) {
             return;
         }
         const current = !!this.storage.nachrichten[msg.id]?.uebertragen;
         if (current) {
-            // eslint-disable-next-line @typescript-eslint/no-dynamic-delete
+             
             delete this.storage.nachrichten[msg.id];
         } else {
             this.storage.nachrichten[msg.id] = {
@@ -324,6 +314,17 @@ export class TeilnehmerController {
             }
         }
         void this.renderDocPage();
+    }
+
+    private getCurrentDocMessage(): Nachricht | null {
+        if (!this.storage || !this.teilnehmerName) {
+            return null;
+        }
+        if (this.docMode === "table" || this.docPage <= 1) {
+            return null;
+        }
+        const visible = this.getVisibleNachrichten();
+        return visible[this.docPage - 1] ?? null;
     }
 
     private async downloadTeilnehmerZip() {
@@ -427,20 +428,17 @@ export class TeilnehmerController {
             return cached;
         }
         const blob = mode === "meldevordruck"
-            ? await pdfGenerator.generateMeldevordruckPageBlob(previewUebung, this.teilnehmerName as string, page)
-            : await pdfGenerator.generateNachrichtenvordruckPageBlob(previewUebung, this.teilnehmerName as string, page);
+            ? await pdfGenerator.generateMeldevordruckPageBlob({
+                funkUebung: previewUebung,
+                teilnehmer: this.teilnehmerName as string,
+                page
+            })
+            : await pdfGenerator.generateNachrichtenvordruckPageBlob({
+                funkUebung: previewUebung,
+                teilnehmer: this.teilnehmerName as string,
+                page
+            });
         modeCache.set(page, blob);
         return blob;
-    }
-}
-
-export async function initTeilnehmer(db: Firestore): Promise<void> {
-    const controller = new TeilnehmerController(db);
-    await controller.init();
-
-    // Make area visible
-    const area = document.getElementById("teilnehmerArea");
-    if (area) {
-        area.style.display = "block";
     }
 }

@@ -41,6 +41,97 @@ export class FirebaseService {
         return serverResponse.includes("requires an index") || serverResponse.includes("create_composite");
     }
 
+    private hasNonEmptyRecord(val: unknown): boolean {
+        if (!val || typeof val !== "object") {
+            return false;
+        }
+        return Object.keys(val as Record<string, unknown>).length > 0;
+    }
+
+    private sortByCreateDateDesc(entries: FunkUebung[]): FunkUebung[] {
+        return entries.sort((a, b) => {
+            const da = new Date(a.createDate).getTime();
+            const db = new Date(b.createDate).getTime();
+            return db - da;
+        });
+    }
+
+    private paginateEntries(
+        entries: FunkUebung[],
+        pageSize: number,
+        direction: "next" | "prev" | "initial",
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        lastVisible: any,
+        cursorKey: "__mockIndex" | "__fallbackIndex"
+    ) {
+        let start = 0;
+        if (direction === "next" && lastVisible && typeof lastVisible[cursorKey] === "number") {
+            start = lastVisible[cursorKey] + 1;
+        }
+        const page = entries.slice(start, start + pageSize);
+        const lastIndex = start + page.length - 1;
+        const visibleCursor = (() => {
+            if (page.length === 0) {
+                return null;
+            }
+            if (cursorKey === "__mockIndex") {
+                return { __mockIndex: lastIndex };
+            }
+            return { __fallbackIndex: lastIndex };
+        })();
+        return {
+            uebungen: page,
+            lastVisible: visibleCursor,
+            size: page.length
+        };
+    }
+
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    private getUebungenPagedLocal(pageSize: number, lastVisible: any, direction: "next" | "prev" | "initial", onlyTestExercises: boolean) {
+        const store = this.readMockStore();
+        let allEntries = Object.entries(store).map(([id, data]) => this.mapToDomain(id, data));
+        if (onlyTestExercises) {
+            allEntries = allEntries.filter(entry => entry.istStandardKonfiguration === true);
+        }
+        this.sortByCreateDateDesc(allEntries);
+        return this.paginateEntries(allEntries, pageSize, direction, lastVisible, "__mockIndex");
+    }
+
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    private async getUebungenPagedRemote(pageSize: number, lastVisible: any, direction: "next" | "prev" | "initial", onlyTestExercises: boolean) {
+        const uebungCol = collection(this.db, "uebungen");
+        const constraints = [];
+        if (onlyTestExercises) {
+            constraints.push(where("istStandardKonfiguration", "==", true));
+        }
+        constraints.push(orderBy("createDate", "desc"));
+        if (direction === "next" && lastVisible) {
+            constraints.push(startAfter(lastVisible));
+        }
+        constraints.push(limit(pageSize));
+        const q = query(uebungCol, ...constraints);
+
+        try {
+            const snapshot = await getDocs(q);
+            return {
+                uebungen: snapshot.docs.map(doc => this.mapToDomain(doc.id, doc.data())),
+                lastVisible: snapshot.docs[snapshot.docs.length - 1] || null,
+                size: snapshot.size
+            };
+        } catch (error) {
+            if (!(onlyTestExercises && this.isMissingIndexError(error))) {
+                throw error;
+            }
+            const allSnap = await getDocs(collection(this.db, "uebungen"));
+            const all = this.sortByCreateDateDesc(
+                allSnap.docs
+                    .map(doc => this.mapToDomain(doc.id, doc.data()))
+                    .filter(entry => entry.istStandardKonfiguration === true)
+            );
+            return this.paginateEntries(all, pageSize, direction, lastVisible, "__fallbackIndex");
+        }
+    }
+
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     private cleanupRecordKeys(obj: any): Record<string, unknown> {
         if (!obj || typeof obj !== "object" || Array.isArray(obj)) {
@@ -77,7 +168,7 @@ export class FirebaseService {
 
         Object.keys(cleaned).forEach(key => {
             if (cleaned[key] === undefined) {
-                // eslint-disable-next-line @typescript-eslint/no-dynamic-delete
+                 
                 delete cleaned[key];
             }
         });
@@ -382,7 +473,7 @@ export class FirebaseService {
         if (this.isLocalMockMode()) {
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             const store = this.readMockStore() as Record<string, any>;
-            // eslint-disable-next-line @typescript-eslint/no-dynamic-delete
+             
             delete store[id];
             this.writeMockStore(store);
             return;
@@ -401,82 +492,9 @@ export class FirebaseService {
         onlyTestExercises = false
     ) {
         if (this.isLocalMockMode()) {
-            const store = this.readMockStore();
-            let allEntries = Object.entries(store).map(([id, data]) => this.mapToDomain(id, data));
-            if (onlyTestExercises) {
-                allEntries = allEntries.filter(entry => entry.istStandardKonfiguration === true);
-            }
-            allEntries.sort((a, b) => {
-                const da = new Date(a.createDate).getTime();
-                const db = new Date(b.createDate).getTime();
-                return db - da;
-            });
-
-            let start = 0;
-            if (direction === "next" && lastVisible && typeof lastVisible.__mockIndex === "number") {
-                start = lastVisible.__mockIndex + 1;
-            }
-            const page = allEntries.slice(start, start + pageSize);
-            const lastIndex = start + page.length - 1;
-
-            return {
-                uebungen: page,
-                lastVisible: page.length > 0 ? { __mockIndex: lastIndex } : null,
-                size: page.length
-            };
+            return this.getUebungenPagedLocal(pageSize, lastVisible, direction, onlyTestExercises);
         }
-        const uebungCol = collection(this.db, "uebungen");
-        const constraints = [];
-        if (onlyTestExercises) {
-            constraints.push(where("istStandardKonfiguration", "==", true));
-        }
-        constraints.push(orderBy("createDate", "desc"));
-        if (direction === "next" && lastVisible) {
-            constraints.push(startAfter(lastVisible));
-        }
-        constraints.push(limit(pageSize));
-
-        // Initial oder Prev (Prev ist hier vereinfacht als Reset implementiert, echte Prev-Logik bräuchte endBefore)
-        const q = query(uebungCol, ...constraints);
-
-        try {
-            const snapshot = await getDocs(q);
-            const uebungen = snapshot.docs.map(doc => this.mapToDomain(doc.id, doc.data()));
-            
-            return {
-                uebungen,
-                lastVisible: snapshot.docs[snapshot.docs.length - 1] || null,
-                size: snapshot.size
-            };
-        } catch (error) {
-            if (!(onlyTestExercises && this.isMissingIndexError(error))) {
-                throw error;
-            }
-
-            // Fallback ohne Composite-Index: lokal filtern/sortieren/paginieren.
-            const allSnap = await getDocs(collection(this.db, "uebungen"));
-            const all = allSnap.docs
-                .map(doc => this.mapToDomain(doc.id, doc.data()))
-                .filter(entry => entry.istStandardKonfiguration === true)
-                .sort((a, b) => {
-                    const da = new Date(a.createDate).getTime();
-                    const db = new Date(b.createDate).getTime();
-                    return db - da;
-                });
-
-            let start = 0;
-            if (direction === "next" && lastVisible && typeof lastVisible.__fallbackIndex === "number") {
-                start = lastVisible.__fallbackIndex + 1;
-            }
-            const page = all.slice(start, start + pageSize);
-            const lastIndex = start + page.length - 1;
-
-            return {
-                uebungen: page,
-                lastVisible: page.length > 0 ? { __fallbackIndex: lastIndex } : null,
-                size: page.length
-            };
-        }
+        return this.getUebungenPagedRemote(pageSize, lastVisible, direction, onlyTestExercises);
     }
 
     async getUebungenSnapshot(onlyTestExercises = false): Promise<QuerySnapshot<DocumentData>> {
@@ -516,13 +534,6 @@ export class FirebaseService {
             const store = this.readMockStore();
             const docs = Object.values(store) as Record<string, unknown>[];
 
-            const hasNonEmptyRecord = (val: unknown): boolean => {
-                if (!val || typeof val !== "object") {
-                    return false;
-                }
-                return Object.keys(val as Record<string, unknown>).length > 0;
-            };
-
             let totalTeilnehmer = 0;
             let totalBytes = 0;
             let totalSprueche = 0;
@@ -532,10 +543,10 @@ export class FirebaseService {
 
             docs.forEach(data => {
                 totalTeilnehmer += ((data["teilnehmerListe"] as unknown[])?.length || 0);
-                if (hasNonEmptyRecord(data["loesungswoerter"])) {
+                if (this.hasNonEmptyRecord(data["loesungswoerter"])) {
                     loesungsCount++;
                 }
-                if (hasNonEmptyRecord(data["loesungsStaerken"])) {
+                if (this.hasNonEmptyRecord(data["loesungsStaerken"])) {
                     staerkeCount++;
                 }
                 if ((data["buchstabierenAn"] as number || 0) > 0) {
@@ -562,13 +573,6 @@ export class FirebaseService {
         }
         const uebungenCol = collection(this.db, "uebungen");
         const allDocsSnap = await getDocs(uebungenCol);
-        
-        const hasNonEmptyRecord = (val: unknown): boolean => {
-            if (!val || typeof val !== "object") {
-                return false;
-            }
-            return Object.keys(val as Record<string, unknown>).length > 0;
-        };
 
         let totalTeilnehmer = 0;
         let totalBytes = 0;
@@ -580,10 +584,10 @@ export class FirebaseService {
         allDocsSnap.forEach(doc => {
             const data = doc.data();
             totalTeilnehmer += (data["teilnehmerListe"]?.length || 0);
-            if (hasNonEmptyRecord(data["loesungswoerter"])) {
+            if (this.hasNonEmptyRecord(data["loesungswoerter"])) {
                 loesungsCount++;
             }
-            if (hasNonEmptyRecord(data["loesungsStaerken"])) {
+            if (this.hasNonEmptyRecord(data["loesungsStaerken"])) {
                 staerkeCount++;
             }
             if ((data["buchstabierenAn"] || 0) > 0) {

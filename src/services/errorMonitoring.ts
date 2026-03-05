@@ -61,9 +61,7 @@ class ErrorMonitoringService {
         base: { kind: "window_error" | "unhandled_rejection"; message: string; source: string; line: number; col: number },
         originalError: unknown
     ): void {
-        const routeHash = typeof window !== "undefined" ? window.location?.hash || "#/" : "#/";
-        const mode = this.options?.getMode() || "unknown";
-        const appVersion = this.options?.getVersion() || "dev";
+        const context = this.buildContext();
         const key = `${base.kind}:${base.source}:${base.line}:${base.col}:${base.message}`;
         if (this.recentKeys.has(key)) {
             return;
@@ -72,17 +70,12 @@ class ErrorMonitoringService {
 
         analytics.track("app_error", {
             ...base,
-            route_hash: routeHash,
-            app_version: appVersion,
-            mode
+            route_hash: context.routeHash,
+            app_version: context.appVersion,
+            mode: context.mode
         });
 
-        if (typeof window !== "undefined" && typeof window.Sentry?.captureException === "function") {
-            window.Sentry.captureException(originalError ?? new Error(base.message), {
-                tags: { mode, appVersion, kind: base.kind },
-                extra: { source: base.source, line: base.line, col: base.col, routeHash }
-            });
-        }
+        this.captureSentry(base, originalError, context);
     }
 
     private remember(key: string): void {
@@ -108,7 +101,33 @@ class ErrorMonitoringService {
             return "UnknownRejection";
         }
     }
+
+    private buildContext(): { routeHash: string; mode: string; appVersion: string } {
+        return {
+            routeHash: typeof window !== "undefined" ? window.location?.hash || "#/" : "#/",
+            mode: this.options?.getMode() || "unknown",
+            appVersion: this.options?.getVersion() || "dev"
+        };
+    }
+
+    private captureSentry(
+        base: { kind: "window_error" | "unhandled_rejection"; message: string; source: string; line: number; col: number },
+        originalError: unknown,
+        context: { routeHash: string; mode: string; appVersion: string }
+    ): void {
+        if (typeof window === "undefined" || typeof window.Sentry?.captureException !== "function") {
+            return;
+        }
+        window.Sentry.captureException(originalError ?? new Error(base.message), {
+            tags: { mode: context.mode, appVersion: context.appVersion, kind: base.kind },
+            extra: {
+                source: base.source,
+                line: base.line,
+                col: base.col,
+                routeHash: context.routeHash
+            }
+        });
+    }
 }
 
 export const errorMonitoring = new ErrorMonitoringService();
-

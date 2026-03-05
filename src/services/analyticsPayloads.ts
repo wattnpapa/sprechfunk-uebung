@@ -9,17 +9,15 @@ export function buildRouteChangePayload(mode: string, params: string[]): Analyti
 
 export function buildUiClickPayload(element: HTMLElement): AnalyticsEventMap["ui_click"] {
     const safeElement = element as Partial<HTMLElement>;
-    const getAttr = (name: string) => typeof safeElement.getAttribute === "function"
-        ? safeElement.getAttribute(name)
-        : null;
-    const rawText = (safeElement.textContent || "").trim().replace(/\s+/g, " ");
+    const getAttr = (name: string) => readAttributeSafe(safeElement, name);
+    const label = getElementLabel(safeElement, getAttr);
     return {
-        tag: safeElement.tagName?.toLowerCase() || "(unknown)",
-        id: safeElement.id?.trim() || "(none)",
-        class_name: (typeof safeElement.className === "string" ? safeElement.className : "").trim() || "(none)",
+        tag: getTagName(safeElement),
+        id: getElementId(safeElement),
+        class_name: getClassName(safeElement),
         action: getAttr("data-action") || "(none)",
         name: getAttr("name") || "(none)",
-        label: (getAttr("aria-label") || rawText || "(empty)").slice(0, 80),
+        label,
         click_key: getElementTrackingKey(element),
         route_hash: window.location?.hash || "#/"
     };
@@ -37,25 +35,59 @@ export function buildUiChangePayload(element: HTMLInputElement | HTMLSelectEleme
 }
 
 function getElementTrackingKey(element: HTMLElement): string {
-    const id = element.id?.trim();
-    if (id) {
-        return `id:${id}`;
-    }
-    const analyticsId = typeof element.getAttribute === "function"
-        ? element.getAttribute("data-analytics-id")?.trim()
-        : undefined;
-    if (analyticsId) {
-        return `analytics:${analyticsId}`;
-    }
-    const action = typeof element.getAttribute === "function"
-        ? element.getAttribute("data-action")?.trim()
-        : undefined;
-    if (action) {
-        return `action:${action}`;
+    const key = getPrimaryTrackingKey(element);
+    if (key) {
+        return key;
     }
     const path = getElementDomPath(element);
     const text = (element.textContent || "").trim().replace(/\s+/g, " ").slice(0, 40) || "(empty)";
     return `path:${path}|label:${text}`;
+}
+
+function getPrimaryTrackingKey(element: HTMLElement): string | null {
+    const id = element.id?.trim();
+    if (id) {
+        return `id:${id}`;
+    }
+    const analyticsId = readAttributeSafe(element, "data-analytics-id")?.trim();
+    if (analyticsId) {
+        return `analytics:${analyticsId}`;
+    }
+    const action = readAttributeSafe(element, "data-action")?.trim();
+    if (action) {
+        return `action:${action}`;
+    }
+    return null;
+}
+
+function readAttributeSafe(
+    element: Partial<HTMLElement>,
+    attribute: string
+): string | null {
+    if (typeof element.getAttribute !== "function") {
+        return null;
+    }
+    return element.getAttribute(attribute);
+}
+
+function getTagName(element: Partial<HTMLElement>): string {
+    return element.tagName?.toLowerCase() || "(unknown)";
+}
+
+function getElementId(element: Partial<HTMLElement>): string {
+    return element.id?.trim() || "(none)";
+}
+
+function getClassName(element: Partial<HTMLElement>): string {
+    return (typeof element.className === "string" ? element.className : "").trim() || "(none)";
+}
+
+function getElementLabel(
+    element: Partial<HTMLElement>,
+    getAttr: (name: string) => string | null
+): string {
+    const rawText = (element.textContent || "").trim().replace(/\s+/g, " ");
+    return (getAttr("aria-label") || rawText || "(empty)").slice(0, 80);
 }
 
 function getElementDomPath(element: HTMLElement): string {

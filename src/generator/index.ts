@@ -289,48 +289,9 @@ export class GeneratorController {
             return;
         }
 
-        // 2. Funksprüche laden
-        const source = this.view.getSelectedSource();
-        if (source === "vorlagen") {
-            const selected = this.view.getSelectedTemplates();
-            if (selected.length === 0) {
-                uiFeedback.error("Bitte Vorlage wählen");
-                return;
-            }
-            this.funkUebung.verwendeteVorlagen = selected;
-            
-            const missing = selected.filter(k => !this.templatesFunksprueche[k]);
-            if (missing.length > 0) {
-                uiFeedback.error("Mindestens eine Vorlage ist nicht verfügbar. Bitte Auswahl prüfen.");
-                return;
-            }
-            const promises = selected.map(k => {
-                const template = this.templatesFunksprueche[k];
-                if (!template) {
-                    throw new Error(`Template nicht gefunden: ${k}`);
-                }
-                return fetch(template.filename).then(r => r.text());
-            });
-            try {
-                const texts = await Promise.all(promises);
-                this.funkUebung.funksprueche = texts
-                    .flatMap(t => t.split("\n").filter(s => s.trim() !== ""))
-                    .sort(() => Math.random() - 0.5);
-            } catch (e) {
-                console.error(e);
-                return;
-            }
-        } else {
-            const file = this.view.getUploadedFile();
-            if (!file) {
-                uiFeedback.error("Datei wählen");
-                return;
-            }
-            const text = await file.text();
-            this.funkUebung.funksprueche = text
-                .normalize("NFKC")
-                .split("\n")
-                .filter(s => s.trim() !== "");
+        const funkspruecheLoaded = await this.loadFunkspruecheFromSelectedSource();
+        if (!funkspruecheLoaded) {
+            return;
         }
 
         // 3. Generieren
@@ -351,6 +312,61 @@ export class GeneratorController {
         
         // 5. Anzeigen
         this.renderUebungResult();
+    }
+
+    private async loadFunkspruecheFromSelectedSource(): Promise<boolean> {
+        const source = this.view.getSelectedSource();
+        if (source === "vorlagen") {
+            return this.loadFunkspruecheFromVorlagen();
+        }
+        return this.loadFunkspruecheFromUpload();
+    }
+
+    private async loadFunkspruecheFromVorlagen(): Promise<boolean> {
+        const selected = this.view.getSelectedTemplates();
+        if (selected.length === 0) {
+            uiFeedback.error("Bitte Vorlage wählen");
+            return false;
+        }
+        this.funkUebung.verwendeteVorlagen = selected;
+
+        const missing = selected.filter(k => !this.templatesFunksprueche[k]);
+        if (missing.length > 0) {
+            uiFeedback.error("Mindestens eine Vorlage ist nicht verfügbar. Bitte Auswahl prüfen.");
+            return false;
+        }
+
+        const promises = selected.map(k => {
+            const template = this.templatesFunksprueche[k];
+            if (!template) {
+                throw new Error(`Template nicht gefunden: ${k}`);
+            }
+            return fetch(template.filename).then(r => r.text());
+        });
+        try {
+            const texts = await Promise.all(promises);
+            this.funkUebung.funksprueche = texts
+                .flatMap(t => t.split("\n").filter(s => s.trim() !== ""))
+                .sort(() => Math.random() - 0.5);
+            return true;
+        } catch (error) {
+            console.error(error);
+            return false;
+        }
+    }
+
+    private async loadFunkspruecheFromUpload(): Promise<boolean> {
+        const file = this.view.getUploadedFile();
+        if (!file) {
+            uiFeedback.error("Datei wählen");
+            return false;
+        }
+        const text = await file.text();
+        this.funkUebung.funksprueche = text
+            .normalize("NFKC")
+            .split("\n")
+            .filter(s => s.trim() !== "");
+        return true;
     }
 
     renderUebungResult() {

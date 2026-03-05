@@ -20,7 +20,7 @@ if (typeof select2Factory === "function") {
     (select2Factory as any);
 }
 
-// eslint-disable-next-line no-console
+ 
 console.log("✅ Select2 setup geladen");
 
 // jQuery exportieren

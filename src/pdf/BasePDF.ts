@@ -51,15 +51,24 @@ export abstract class BasePDF {
      * - Nutzt jsPDF-eigenes Wrapping (maxWidth)
      * - Verhindert buchstabenweises Auseinanderziehen
      */
-    protected drawMultilineText(
-        text: string,
-        x: number,
-        y: number,
-        maxWidth: number,
-        lineHeight: number,
-        fontSize: number,
-        lineSpacing = 0
-    ): void {
+    protected drawMultilineText(options: {
+        text: string;
+        x: number;
+        y: number;
+        maxWidth: number;
+        lineHeight: number;
+        fontSize: number;
+        lineSpacing?: number;
+    }): void {
+        const {
+            text,
+            x,
+            y,
+            maxWidth,
+            lineHeight,
+            fontSize,
+            lineSpacing = 0
+        } = options;
         if (!text) {
             return;
         }
