@@ -426,20 +426,36 @@ describe("UebungsleitungController", () => {
         expect(teilnehmerArgs).toBeTruthy();
         expect(nachrichtenArgs).toBeTruthy();
         if (teilnehmerArgs) {
-            teilnehmerArgs[0]("A");
-            teilnehmerArgs[1]("A", "wort");
-            teilnehmerArgs[2]("A", 0, "1");
-            teilnehmerArgs[3]("A", "note");
-            teilnehmerArgs[4]();
+            const callbacks = teilnehmerArgs[0] as {
+                onAnmelden: (name: string) => void;
+                onLoesungswort: (name: string, val: string) => void;
+                onStaerke: (name: string, idx: number, val: string) => void;
+                onNotiz: (name: string, val: string) => void;
+                onToggleDetails: () => void;
+            };
+            callbacks.onAnmelden("A");
+            callbacks.onLoesungswort("A", "wort");
+            callbacks.onStaerke("A", 0, "1");
+            callbacks.onNotiz("A", "note");
+            callbacks.onToggleDetails();
         }
         if (nachrichtenArgs) {
-            nachrichtenArgs[0]("A", 1);
-            nachrichtenArgs[1]("A", 1);
-            nachrichtenArgs[2]("A", 1, "x");
-            nachrichtenArgs[3]("A");
-            nachrichtenArgs[4]("B");
-            nachrichtenArgs[5](true);
-            nachrichtenArgs[6]("alp");
+            const callbacks = nachrichtenArgs[0] as {
+                onAbgesetzt: (sender: string, nr: number) => void;
+                onReset: (sender: string, nr: number) => void;
+                onNotiz: (sender: string, nr: number, val: string) => void;
+                onFilterSender: (val: string) => void;
+                onFilterEmpfaenger: (val: string) => void;
+                onToggleHide: (val: boolean) => void;
+                onFilterText: (val: string) => void;
+            };
+            callbacks.onAbgesetzt("A", 1);
+            callbacks.onReset("A", 1);
+            callbacks.onNotiz("A", 1, "x");
+            callbacks.onFilterSender("A");
+            callbacks.onFilterEmpfaenger("B");
+            callbacks.onToggleHide(true);
+            callbacks.onFilterText("alp");
         }
         await vi.runAllTimersAsync();
         expect(mocks.saveStorage).toHaveBeenCalled();

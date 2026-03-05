@@ -85,32 +85,32 @@ export class UebungsleitungController {
             () => this.resetData()
         );
 
-        this.view.bindTeilnehmerEvents(
-            name => this.markAngemeldet(name),
-            (name, val) => this.updateLoesungswort(name, val),
-            (name, idx, val) => this.updateStaerke(name, idx, val),
-            (name, val) => this.updateNotiz(name, val),
-            () => this.toggleStaerkeDetails(),
-            name => this.downloadTeilnehmerDebrief(name)
-        );
+        this.view.bindTeilnehmerEvents({
+            onAnmelden: name => this.markAngemeldet(name),
+            onLoesungswort: (name, val) => this.updateLoesungswort(name, val),
+            onStaerke: (name, idx, val) => this.updateStaerke(name, idx, val),
+            onNotiz: (name, val) => this.updateNotiz(name, val),
+            onToggleDetails: () => this.toggleStaerkeDetails(),
+            onDownloadDebrief: name => this.downloadTeilnehmerDebrief(name)
+        });
 
-        this.view.bindNachrichtenEvents(
-            (sender, nr) => this.markNachrichtAbgesetzt(sender, nr),
-            (sender, nr) => this.resetNachricht(sender, nr),
-            (sender, nr, val) => this.updateNachrichtNotiz(sender, nr, val),
-            val => {
+        this.view.bindNachrichtenEvents({
+            onAbgesetzt: (sender, nr) => this.markNachrichtAbgesetzt(sender, nr),
+            onReset: (sender, nr) => this.resetNachricht(sender, nr),
+            onNotiz: (sender, nr, val) => this.updateNachrichtNotiz(sender, nr, val),
+            onFilterSender: val => {
                 this.senderFilter = val; this.renderNachrichten(); 
             },
-            val => {
+            onFilterEmpfaenger: val => {
                 this.empfaengerFilter = val; this.renderNachrichten(); 
             },
-            val => {
+            onToggleHide: val => {
                 this.hideAbgesetzt = val; this.renderNachrichten(); 
             },
-            val => {
+            onFilterText: val => {
                 this.textFilter = val; this.debouncedRenderNachrichten();
             }
-        );
+        });
     }
 
     private renderTeilnehmer() {
@@ -169,14 +169,14 @@ export class UebungsleitungController {
             this.calculateHeatmapLabel(heatmapBins)
         );
 
-        this.view.renderNachrichtenListe(
+        this.view.renderNachrichtenListe({
             nachrichten,
-            storage.nachrichten,
-            this.hideAbgesetzt,
-            this.senderFilter,
-            this.empfaengerFilter,
-            this.textFilter
-        );
+            nachrichtenStatus: storage.nachrichten,
+            hideAbgesetzt: this.hideAbgesetzt,
+            senderFilter: this.senderFilter,
+            empfaengerFilter: this.empfaengerFilter,
+            textFilter: this.textFilter
+        });
         this.view.updateHeatmap(heatmapBins);
         this.view.updateTeilnehmerTimeline(this.buildTeilnehmerTimeline(nachrichten));
 

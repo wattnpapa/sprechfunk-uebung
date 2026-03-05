@@ -93,7 +93,14 @@ describe("UebungsleitungView", () => {
         };
 
         view.renderTeilnehmerListe(uebung, {}, true);
-        view.bindTeilnehmerEvents(onAnmelden, onLoesungswort, onStaerke, onNotiz, onToggleDetails, onDownloadDebrief);
+        view.bindTeilnehmerEvents({
+            onAnmelden,
+            onLoesungswort,
+            onStaerke,
+            onNotiz,
+            onToggleDetails,
+            onDownloadDebrief
+        });
         expect(document.getElementById("uebungsleitungTeilnehmer")?.textContent).toContain("Teilnehmer Code: K7M4Q2 / A1B2");
         const copyBtn = document.querySelector("button[data-action='copy-link']") as HTMLButtonElement | null;
         expect(copyBtn).toBeTruthy();
@@ -135,21 +142,29 @@ describe("UebungsleitungView", () => {
         const onToggleHide = vi.fn();
         const onFilterText = vi.fn();
 
-        view.renderNachrichtenListe(
-            [
+        view.renderNachrichtenListe({
+            nachrichten: [
                 { nr: 1, sender: "A", empfaenger: ["B"], text: "hallo" },
                 { nr: 2, sender: "C", empfaenger: ["D"], text: "welt" }
             ],
-            {
+            nachrichtenStatus: {
                 "A__1": { abgesetztUm: "2026-02-15T10:00:00Z", notiz: "n1" },
                 "C__2": {}
             },
-            false,
-            "",
-            "",
-            ""
-        );
-        view.bindNachrichtenEvents(onAbgesetzt, onReset, onNotiz, onFilterSender, onFilterEmpfaenger, onToggleHide, onFilterText);
+            hideAbgesetzt: false,
+            senderFilter: "",
+            empfaengerFilter: "",
+            textFilter: ""
+        });
+        view.bindNachrichtenEvents({
+            onAbgesetzt,
+            onReset,
+            onNotiz,
+            onFilterSender,
+            onFilterEmpfaenger,
+            onToggleHide,
+            onFilterText
+        });
 
         const container = document.getElementById("uebungsleitungNachrichten") as HTMLElement;
         (container.querySelector("button[data-action='reset']") as HTMLButtonElement).click();
@@ -188,7 +203,14 @@ describe("UebungsleitungView", () => {
         const view = new UebungsleitungView();
         view.updateProgress(10, 4, "ETA: 120000feb26");
         view.updateOperationalStats("Tempo: 1", "Funklast: S A (2)", "Heatmap 5m: 10:00=1");
-        view.renderNachrichtenListe([{ nr: 1, sender: "A", empfaenger: ["B"], text: "x" }], {}, false, "", "", "");
+        view.renderNachrichtenListe({
+            nachrichten: [{ nr: 1, sender: "A", empfaenger: ["B"], text: "x" }],
+            nachrichtenStatus: {},
+            hideAbgesetzt: false,
+            senderFilter: "",
+            empfaengerFilter: "",
+            textFilter: ""
+        });
         view.updateHeatmap([
             { bucket: new Date("2026-02-15T10:00:00Z").getTime(), count: 1 },
             { bucket: new Date("2026-02-15T10:05:00Z").getTime(), count: 2 }
@@ -217,23 +239,37 @@ describe("UebungsleitungView", () => {
         );
         expect(document.getElementById("uebungsleitungTeilnehmer")?.textContent).toContain("Keine Teilnehmer vorhanden");
 
-        view.renderNachrichtenListe([], {}, false, "", "", "");
+        view.renderNachrichtenListe({
+            nachrichten: [],
+            nachrichtenStatus: {},
+            hideAbgesetzt: false,
+            senderFilter: "",
+            empfaengerFilter: "",
+            textFilter: ""
+        });
         expect(document.getElementById("uebungsleitungNachrichten")?.textContent).toContain("Keine Nachrichten vorhanden");
 
-        view.renderNachrichtenListe(
-            [{ nr: 1, sender: "A", empfaenger: ["B"], text: "x" }],
-            {},
-            false,
-            "",
-            "",
-            ""
-        );
+        view.renderNachrichtenListe({
+            nachrichten: [{ nr: 1, sender: "A", empfaenger: ["B"], text: "x" }],
+            nachrichtenStatus: {},
+            hideAbgesetzt: false,
+            senderFilter: "",
+            empfaengerFilter: "",
+            textFilter: ""
+        });
         view.updateHeatmap([]);
         expect(document.getElementById("nachrichtenHeatmapChart")?.textContent).toContain("Noch keine Daten");
         view.updateTeilnehmerTimeline([]);
         expect(document.getElementById("nachrichtenTeilnehmerTimeline")?.textContent).toContain("Noch keine Daten");
 
-        view.bindTeilnehmerEvents(vi.fn(), vi.fn(), vi.fn(), vi.fn(), vi.fn(), vi.fn());
+        view.bindTeilnehmerEvents({
+            onAnmelden: vi.fn(),
+            onLoesungswort: vi.fn(),
+            onStaerke: vi.fn(),
+            onNotiz: vi.fn(),
+            onToggleDetails: vi.fn(),
+            onDownloadDebrief: vi.fn()
+        });
         const container = document.getElementById("uebungsleitungTeilnehmer") as HTMLElement;
         container.dispatchEvent(new window.Event("click", { bubbles: true }));
         container.dispatchEvent(new window.Event("change", { bubbles: true }));
@@ -242,17 +278,17 @@ describe("UebungsleitungView", () => {
 
     it("filters message rows and handles timeline with no points", () => {
         const view = new UebungsleitungView();
-        view.renderNachrichtenListe(
-            [
+        view.renderNachrichtenListe({
+            nachrichten: [
                 { nr: 1, sender: "A", empfaenger: ["B"], text: "Alpha" },
                 { nr: 2, sender: "C", empfaenger: ["D"], text: "Bravo" }
             ],
-            { "A__1": { abgesetztUm: "2026-01-01T00:00:00Z" } },
-            true,
-            "A",
-            "B",
-            "zzz"
-        );
+            nachrichtenStatus: { "A__1": { abgesetztUm: "2026-01-01T00:00:00Z" } },
+            hideAbgesetzt: true,
+            senderFilter: "A",
+            empfaengerFilter: "B",
+            textFilter: "zzz"
+        });
         const html = document.getElementById("uebungsleitungNachrichten")?.innerHTML ?? "";
         expect(html).toContain("tbody");
 
@@ -289,10 +325,32 @@ describe("UebungsleitungView", () => {
         view.renderMeta({} as any, "u");
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         view.renderTeilnehmerListe({ teilnehmerListe: ["A"], nachrichten: {} } as any, {}, false);
-        view.renderNachrichtenListe([{ nr: 1, sender: "A", empfaenger: ["B"], text: "x" }], {}, false, "", "", "");
+        view.renderNachrichtenListe({
+            nachrichten: [{ nr: 1, sender: "A", empfaenger: ["B"], text: "x" }],
+            nachrichtenStatus: {},
+            hideAbgesetzt: false,
+            senderFilter: "",
+            empfaengerFilter: "",
+            textFilter: ""
+        });
         view.bindMetaEvents(vi.fn(), vi.fn());
-        view.bindTeilnehmerEvents(vi.fn(), vi.fn(), vi.fn(), vi.fn(), vi.fn(), vi.fn());
-        view.bindNachrichtenEvents(vi.fn(), vi.fn(), vi.fn(), vi.fn(), vi.fn(), vi.fn(), vi.fn());
+        view.bindTeilnehmerEvents({
+            onAnmelden: vi.fn(),
+            onLoesungswort: vi.fn(),
+            onStaerke: vi.fn(),
+            onNotiz: vi.fn(),
+            onToggleDetails: vi.fn(),
+            onDownloadDebrief: vi.fn()
+        });
+        view.bindNachrichtenEvents({
+            onAbgesetzt: vi.fn(),
+            onReset: vi.fn(),
+            onNotiz: vi.fn(),
+            onFilterSender: vi.fn(),
+            onFilterEmpfaenger: vi.fn(),
+            onToggleHide: vi.fn(),
+            onFilterText: vi.fn()
+        });
         expect(true).toBe(true);
     });
 
@@ -338,23 +396,23 @@ describe("UebungsleitungView", () => {
             onToggleHide: vi.fn(),
             onFilterText: vi.fn()
         };
-        view.renderNachrichtenListe(
-            [{ nr: 1, sender: "A", empfaenger: ["B"], text: "txt" }],
-            {},
-            false,
-            "",
-            "",
-            ""
-        );
-        view.bindNachrichtenEvents(
-            cb.onAbgesetzt,
-            cb.onReset,
-            cb.onNotiz,
-            cb.onFilterSender,
-            cb.onFilterEmpfaenger,
-            cb.onToggleHide,
-            cb.onFilterText
-        );
+        view.renderNachrichtenListe({
+            nachrichten: [{ nr: 1, sender: "A", empfaenger: ["B"], text: "txt" }],
+            nachrichtenStatus: {},
+            hideAbgesetzt: false,
+            senderFilter: "",
+            empfaengerFilter: "",
+            textFilter: ""
+        });
+        view.bindNachrichtenEvents({
+            onAbgesetzt: cb.onAbgesetzt,
+            onReset: cb.onReset,
+            onNotiz: cb.onNotiz,
+            onFilterSender: cb.onFilterSender,
+            onFilterEmpfaenger: cb.onFilterEmpfaenger,
+            onToggleHide: cb.onToggleHide,
+            onFilterText: cb.onFilterText
+        });
 
         const container = document.getElementById("uebungsleitungNachrichten") as HTMLElement;
         container.dispatchEvent(new window.Event("click", { bubbles: true }));
@@ -424,8 +482,23 @@ describe("UebungsleitungView", () => {
         document.getElementById("uebungsleitungNachrichten")?.remove();
         document.getElementById("uebungsleitungTeilnehmer")?.remove();
         document.getElementById("uebungsleitungMeta")?.remove();
-        view.bindNachrichtenEvents(vi.fn(), vi.fn(), vi.fn(), vi.fn(), vi.fn(), vi.fn(), vi.fn());
-        view.bindTeilnehmerEvents(vi.fn(), vi.fn(), vi.fn(), vi.fn(), vi.fn(), vi.fn());
+        view.bindNachrichtenEvents({
+            onAbgesetzt: vi.fn(),
+            onReset: vi.fn(),
+            onNotiz: vi.fn(),
+            onFilterSender: vi.fn(),
+            onFilterEmpfaenger: vi.fn(),
+            onToggleHide: vi.fn(),
+            onFilterText: vi.fn()
+        });
+        view.bindTeilnehmerEvents({
+            onAnmelden: vi.fn(),
+            onLoesungswort: vi.fn(),
+            onStaerke: vi.fn(),
+            onNotiz: vi.fn(),
+            onToggleDetails: vi.fn(),
+            onDownloadDebrief: vi.fn()
+        });
         view.bindMetaEvents(vi.fn(), vi.fn());
         expect(true).toBe(true);
     });
