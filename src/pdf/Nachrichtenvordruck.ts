@@ -11,7 +11,14 @@ export class Nachrichtenvordruck extends BasePDFTeilnehmer {
 
     protected nachricht: Nachricht;
 
-    constructor(teilnehmer: string, uebung: FunkUebung, pdfInstance: jsPDF, nachricht: Nachricht, hideBackground = false, hideFooter = false) {
+    constructor(
+        teilnehmer: string,
+        uebung: FunkUebung,
+        pdfInstance: jsPDF,
+        nachricht: Nachricht,
+        hideBackground = false,
+        hideFooter = false
+    ) {
         super(teilnehmer, uebung, pdfInstance); // unit default 'mm'
         this.nachricht = nachricht;
         this.hideBackground = hideBackground;
@@ -64,33 +71,33 @@ export class Nachrichtenvordruck extends BasePDFTeilnehmer {
         //this.drawDebugBox(offsetX + 39.5, 48, 76, 18);
 
 
-        this.drawTextInBox(
-            funkrufnamenEmpfaenger,
-            offsetX + 58,
-            30,
-            83,
-            17.5
-        );
+        this.drawTextInBox({
+            text: funkrufnamenEmpfaenger,
+            x: offsetX + 58,
+            y: 30,
+            width: 83,
+            height: 17.5
+        });
 
         // Anschrift (unten)
-        this.drawTextInBox(
-            stellenEmpfaenger,
-            offsetX + 42,
-            48,
-            75,
-            17.5
-        );
+        this.drawTextInBox({
+            text: stellenEmpfaenger,
+            x: offsetX + 42,
+            y: 48,
+            width: 75,
+            height: 17.5
+        });
 
         // Nachricht umbrochen (mit expliziten \n Zeilenumbrüchen)
-        this.drawMultilineText(
-            this.nachricht.nachricht,
-            offsetX + 17,
-            77,
-            120,
-            6.3,
-            12,
-            0
-        );
+        this.drawMultilineText({
+            text: this.nachricht.nachricht,
+            x: offsetX + 17,
+            y: 77,
+            maxWidth: 120,
+            lineHeight: 6.3,
+            fontSize: 12,
+            lineSpacing: 0
+        });
 
         // Footer (compact)
         if (!this.hideFooter) {
@@ -113,13 +120,14 @@ export class Nachrichtenvordruck extends BasePDFTeilnehmer {
         }
     }
 
-    private drawTextInBox(
-        text: string,
-        x: number,
-        y: number,
-        width: number,
-        height: number
-    ): void {
+    private drawTextInBox(options: {
+        text: string;
+        x: number;
+        y: number;
+        width: number;
+        height: number;
+    }): void {
+        const { text, x, y, width, height } = options;
         if (!text || !text.trim()) {
             return;
         }

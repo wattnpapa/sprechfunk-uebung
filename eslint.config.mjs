@@ -49,6 +49,12 @@ export default tseslint.config(
         }
     },
     {
+        files: ["src/pdf/**/*.ts"],
+        rules: {
+            "max-params": ["warn", 6]
+        }
+    },
+    {
         files: [
             "tests/**/*.ts",
             "e2e/**/*.ts",

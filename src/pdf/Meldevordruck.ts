@@ -11,7 +11,14 @@ export class Meldevordruck extends BasePDFTeilnehmer {
 
     protected nachricht: Nachricht;
 
-    constructor(teilnehmer: string, uebung: FunkUebung, pdfInstance: jsPDF, nachricht: Nachricht, hideBackground = false, hideFooter = false) {
+    constructor(
+        teilnehmer: string,
+        uebung: FunkUebung,
+        pdfInstance: jsPDF,
+        nachricht: Nachricht,
+        hideBackground = false,
+        hideFooter = false
+    ) {
         super(teilnehmer, uebung, pdfInstance); // unit default 'mm'
         this.nachricht = nachricht;
         this.hideBackground = hideBackground;
@@ -45,15 +52,15 @@ export class Meldevordruck extends BasePDFTeilnehmer {
         this.adjustTextForWidth(this.teilnehmer, 40, offsetX + 37, 192);
 
         // Nachricht umbrochen (mit expliziten \n Zeilenumbrüchen)
-        this.drawMultilineText(
-            this.nachricht.nachricht,
-            offsetX + 20,
-            55,
-            120,
-            5,
-            11.5,
-            0
-        );
+        this.drawMultilineText({
+            text: this.nachricht.nachricht,
+            x: offsetX + 20,
+            y: 55,
+            maxWidth: 120,
+            lineHeight: 5,
+            fontSize: 11.5,
+            lineSpacing: 0
+        });
 
         // Footer
         if (!this.hideFooter) {
