@@ -4,22 +4,21 @@ import { formatNatoDate } from "../utils/date";
 import { Nachricht } from "../types/Nachricht";
 
 export class Teilnehmer extends BasePDFTeilnehmer {
+    private readonly pageMarginTop = 25;
+    private readonly pageMarginBottom = 25;
+    private readonly pageMarginLeft = 10;
+    private readonly pageMarginRight = 10;
+    private readonly secondPageTableTopMargin = this.pageMarginTop + 5;
+
+    private get contentWidth(): number {
+        return this.pdfWidth - this.pageMarginLeft - this.pageMarginRight;
+    }
 
     draw(): void {
-        const generierungszeit = formatNatoDate(this.funkUebung.createDate, true); // NATO-Datum für Fußzeile
-
+        const generierungszeit = formatNatoDate(this.funkUebung.createDate, true);
         const nachrichten = this.funkUebung.nachrichten[this.teilnehmer] || [];
+        let y = this.pageMarginTop;
 
-        const pageMarginTop = 25;
-        const pageMarginBottom = 25;
-        const pageMarginLeft = 10;
-        const pageMarginRight = 10;
-        const secondPageTableTopMargin = pageMarginTop + 5; // **Garantierter Abstand für die Tabelle auf Seite 2+**
-        const contentWidth = (this.pdfWidth - pageMarginLeft - pageMarginRight);
-
-        let y = pageMarginTop;
-
-        // **1. Kopfzeile für erste Seite**
         this.pdf.setFont("helvetica", "bold");
         this.pdf.setFontSize(16);
         this.pdf.text(`${this.funkUebung.name}`, this.pdfWidth / 2, y, { align: "center" });
@@ -29,9 +28,7 @@ export class Teilnehmer extends BasePDFTeilnehmer {
         this.pdf.text(`${this.teilnehmer}`, this.pdfWidth / 2, y, { align: "center" });
         y = y + 5;
 
-        // **2. Kopfdaten-Tabelle (links)**
-        const kopfdatenWidth = contentWidth * 0.35;
-        //this.drawKopfdatenTable(pdf, funkUebung, firstTableStartY, pageMargin, kopfdatenWidth);
+        const kopfdatenWidth = this.contentWidth * 0.35;
         (this.pdf as any).autoTable({
             head: [["Beschreibung", "Wert"]],
             body: [
@@ -40,62 +37,72 @@ export class Teilnehmer extends BasePDFTeilnehmer {
                 ["Betriebsleitung", this.funkUebung.leitung]
             ],
             startY: y,
-            margin: { left: pageMarginLeft },
+            margin: { left: this.pageMarginLeft },
             tableWidth: kopfdatenWidth,
             theme: "grid",
             styles: { fontSize: 10, cellPadding: 3, lineWidth: 0.1, lineColor: [0, 0, 0] },
             headStyles: { fillColor: [200, 200, 200] }
         });
 
-        // **3. Teilnehmerliste (rechts)**
-        const teilnehmerWidth = contentWidth * 0.60;
-        //this.drawTeilnehmerTable(this.pdf, this.funkUebung, firstTableStartY, this.pdfWidth - pageMargin - teilnehmerWidth, teilnehmerWidth);
-        const teilnehmerColumns = 2;
-        const teilnehmerRows = Math.ceil(this.funkUebung.teilnehmerListe.length / teilnehmerColumns);
-        const teilnehmerTable = [];
+        this.drawTeilnehmerTable(y);
+        y = Math.max((this.pdf as any).lastAutoTable.finalY + 10, 75);
+        this.drawNachrichtenTable(nachrichten, y);
+        this.drawPageHeadersAndFooters(generierungszeit);
+    }
 
-        for (let r = 0; r < teilnehmerRows; r++) {
-            const row = [];
-            for (let c = 0; c < teilnehmerColumns; c++) {
-                const index = r + c * teilnehmerRows;
-                if (index < this.funkUebung.teilnehmerListe.length) {
-                    const rufname = this.funkUebung.teilnehmerListe[index];
-                    if (!rufname) {
-                        row.push("");
-                        continue;
-                    }
-                    const stellen = this.funkUebung.teilnehmerStellen;
-
-                    if (stellen && stellen[rufname]) {
-                        row.push(`${stellen[rufname]}\n${rufname}`);
-                    } else {
-                        row.push(rufname);
-                    }
-                } else {
-                    row.push("");
-                }
-            }
-            teilnehmerTable.push(row);
-        }
+    private drawTeilnehmerTable(startY: number): void {
+        const teilnehmerWidth = this.contentWidth * 0.60;
 
         (this.pdf as any).autoTable({
             head: [["Teilnehmer", ""]],
-            body: teilnehmerTable,
-            startY: y,
-            margin: { left: this.pdfWidth - pageMarginLeft - teilnehmerWidth },
+            body: this.buildTeilnehmerTableBody(),
+            startY,
+            margin: { left: this.pdfWidth - this.pageMarginLeft - teilnehmerWidth },
             tableWidth: teilnehmerWidth,
             theme: "grid",
             styles: { fontSize: 10, cellPadding: 3, lineWidth: 0.1, lineColor: [0, 0, 0] },
             headStyles: { fillColor: [200, 200, 200] }
         });
+    }
 
-        // **4. Nachrichten-Tabelle**
-        y = Math.max((this.pdf as any).lastAutoTable.finalY + 10, 75);
+    private buildTeilnehmerTableBody(): string[][] {
+        const teilnehmerColumns = 2;
+        const teilnehmerRows = Math.ceil(this.funkUebung.teilnehmerListe.length / teilnehmerColumns);
+        const table: string[][] = [];
+        for (let rowIndex = 0; rowIndex < teilnehmerRows; rowIndex++) {
+            table.push(this.buildTeilnehmerTableRow(rowIndex, teilnehmerRows, teilnehmerColumns));
+        }
+        return table;
+    }
 
+    private buildTeilnehmerTableRow(rowIndex: number, teilnehmerRows: number, teilnehmerColumns: number): string[] {
+        const row: string[] = [];
+        for (let column = 0; column < teilnehmerColumns; column++) {
+            const index = rowIndex + column * teilnehmerRows;
+            row.push(this.resolveTeilnehmerDisplay(index));
+        }
+        return row;
+    }
 
-        const empfaengerWidth = contentWidth * 0.20;
+    private resolveTeilnehmerDisplay(index: number): string {
+        if (index >= this.funkUebung.teilnehmerListe.length) {
+            return "";
+        }
+        const rufname = this.funkUebung.teilnehmerListe[index];
+        if (!rufname) {
+            return "";
+        }
+        const stellen = this.funkUebung.teilnehmerStellen;
+        if (stellen && stellen[rufname]) {
+            return `${stellen[rufname]}\n${rufname}`;
+        }
+        return rufname;
+    }
+
+    private drawNachrichtenTable(nachrichten: Nachricht[], startY: number): void {
+        const empfaengerWidth = this.contentWidth * 0.20;
         const lfdnrWidth = 12;
-        const columnWidths = [lfdnrWidth, empfaengerWidth, contentWidth - lfdnrWidth - empfaengerWidth];
+        const columnWidths = [lfdnrWidth, empfaengerWidth, this.contentWidth - lfdnrWidth - empfaengerWidth];
 
         (this.pdf as any).autoTable({
             head: [["Nr.", "Empfänger", "Nachrichtentext"]],
@@ -104,10 +111,14 @@ export class Teilnehmer extends BasePDFTeilnehmer {
                 n.empfaenger.join("\n"),
                 String(n.nachricht ?? "").replace(/\\n/g, "\n")
             ]),
-            startY: y,
+            startY,
             theme: "grid",
-            margin: { left: pageMarginLeft, top: secondPageTableTopMargin, bottom: pageMarginBottom },
-            tableWidth: contentWidth,
+            margin: {
+                left: this.pageMarginLeft,
+                top: this.secondPageTableTopMargin,
+                bottom: this.pageMarginBottom
+            },
+            tableWidth: this.contentWidth,
             columnStyles: {
                 0: { cellWidth: columnWidths[0] },
                 1: { cellWidth: columnWidths[1] },
@@ -116,51 +127,38 @@ export class Teilnehmer extends BasePDFTeilnehmer {
             styles: { fontSize: 10, cellPadding: 1.5, lineWidth: 0.1, lineColor: [0, 0, 0], overflow: "linebreak" },
             headStyles: { fillColor: [200, 200, 200] }
         });
+    }
 
-        // **5. Setze Kopfzeilen & Seitenzahlen auf allen Seiten**
+    private drawPageHeadersAndFooters(generierungszeit: string): void {
         const totalPages = (this.pdf as any).getNumberOfPages();
         for (let pageNumber = 1; pageNumber <= totalPages; pageNumber++) {
             this.pdf.setPage(pageNumber);
 
-            //Header
             if (pageNumber > 1) {
                 this.pdf.setFont("helvetica", "normal");
                 this.pdf.setFontSize(10);
-
-                // **Links: Funkrufname**
-                this.pdf.text(`Eigener Funkrufname: ${this.teilnehmer}`, pageMarginLeft, 20);
-
-                // **Rechts: Name der Übung**
+                this.pdf.text(`Eigener Funkrufname: ${this.teilnehmer}`, this.pageMarginLeft, 20);
                 const rightText = this.funkUebung.name + " - " + formatNatoDate(this.funkUebung.datum, false);
                 const nameWidth = this.pdf.getTextWidth(rightText);
-                this.pdf.text(rightText, this.pdfWidth - pageMarginLeft - nameWidth, 20);
-
-                // **Trennlinie unter der Kopfzeile**
+                this.pdf.text(rightText, this.pdfWidth - this.pageMarginLeft - nameWidth, 20);
                 this.pdf.setDrawColor(0);
-                this.pdf.line(pageMarginLeft, 22, this.pdfWidth - pageMarginRight, 22);
+                this.pdf.line(this.pageMarginLeft, 22, this.pdfWidth - this.pageMarginRight, 22);
             }
 
-            //Footer
             this.pdf.setFont("helvetica", "normal");
             this.pdf.setFontSize(8);
-
-            // Hinweis über der Linie
-            this.pdf.text("Wörter in GROSSBUCHSTABEN müssen buchstabiert werden.", pageMarginLeft, this.pdfHeight - 20);
-
-            // Trennlinie unter dem Hinweis
+            this.pdf.text("Wörter in GROSSBUCHSTABEN müssen buchstabiert werden.", this.pageMarginLeft, this.pdfHeight - 20);
             this.pdf.setDrawColor(0);
-            this.pdf.line(pageMarginLeft, this.pdfHeight - 15, this.pdfWidth - pageMarginRight, this.pdfHeight - 15);
+            this.pdf.line(this.pageMarginLeft, this.pdfHeight - 15, this.pdfWidth - this.pageMarginRight, this.pdfHeight - 15);
 
-            // Seitenzahl
             this.pdf.setFontSize(10);
             const pageNumberText = `Seite ${pageNumber} von ${totalPages}`;
             const pageNumberWidth = this.pdf.getTextWidth(pageNumberText);
-            this.pdf.text(pageNumberText, this.pdfWidth - pageMarginLeft - pageNumberWidth, this.pdfHeight - 10);
+            this.pdf.text(pageNumberText, this.pdfWidth - this.pageMarginLeft - pageNumberWidth, this.pdfHeight - 10);
 
-            // Link und Copyright-Infos linksbündig
             this.pdf.setFontSize(6);
             const leftText = `© Johannes Rudolph | Version ${this.funkUebung.buildVersion} | Übung ID: ${this.funkUebung.id} | Generiert: ${generierungszeit} | Generator: https://sprechfunk-uebung.de/`;
-            this.pdf.textWithLink(leftText, pageMarginLeft, this.pdfHeight - 10, { url: "https://sprechfunk-uebung.de//" });
+            this.pdf.textWithLink(leftText, this.pageMarginLeft, this.pdfHeight - 10, { url: "https://sprechfunk-uebung.de//" });
         }
     }
 
