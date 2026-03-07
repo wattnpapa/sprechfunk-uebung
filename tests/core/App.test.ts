@@ -23,7 +23,7 @@ describe("App", () => {
 
     it("initializes core components and exposes globals", async () => {
         vi.doMock("../../src/uebungsleitung", () => ({ initUebungsleitung: vi.fn() }));
-        vi.doMock("../../src/teilnehmer", () => ({ initTeilnehmer: vi.fn() }));
+        vi.doMock("../../src/teilnehmer/init", () => ({ initTeilnehmer: vi.fn() }));
         vi.doMock("../../src/admin/index", () => ({ admin: { ladeAlleUebungen: vi.fn(), renderUebungsStatistik: vi.fn(), setDb: vi.fn() } }));
         vi.doMock("../../src/generator", () => ({ GeneratorController: { getInstance: () => ({ handleRoute: vi.fn() }) } }));
         vi.doMock("../../src/services/pdfGenerator", () => ({ default: {} }));
@@ -61,7 +61,7 @@ describe("App", () => {
         const admin = { ladeAlleUebungen: vi.fn(), renderUebungsStatistik: vi.fn(), setDb: vi.fn(), db: null as unknown };
         vi.doMock("../../src/admin/index", () => ({ admin }));
         vi.doMock("../../src/uebungsleitung", () => ({ initUebungsleitung: vi.fn() }));
-        vi.doMock("../../src/teilnehmer", () => ({ initTeilnehmer: vi.fn() }));
+        vi.doMock("../../src/teilnehmer/init", () => ({ initTeilnehmer: vi.fn() }));
         vi.doMock("../../src/generator", () => ({ GeneratorController: { getInstance: () => ({ handleRoute: vi.fn() }) } }));
         vi.doMock("../../src/services/pdfGenerator", () => ({ default: {} }));
         vi.doMock("../../src/firebase-config.js", () => ({ firebaseConfig: {} }));
@@ -89,7 +89,7 @@ describe("App", () => {
         const initUebungsleitung = vi.fn();
         const initTeilnehmer = vi.fn();
         vi.doMock("../../src/uebungsleitung", () => ({ initUebungsleitung }));
-        vi.doMock("../../src/teilnehmer", () => ({ initTeilnehmer }));
+        vi.doMock("../../src/teilnehmer/init", () => ({ initTeilnehmer }));
         vi.doMock("../../src/admin/index", () => ({ admin: { ladeAlleUebungen: vi.fn(), renderUebungsStatistik: vi.fn(), setDb: vi.fn() } }));
         vi.doMock("../../src/generator", () => ({ GeneratorController: { getInstance: () => ({ handleRoute: vi.fn() }) } }));
         vi.doMock("../../src/services/pdfGenerator", () => ({ default: {} }));
@@ -115,7 +115,7 @@ describe("App", () => {
         vi.resetModules();
         setupGlobals();
         vi.doMock("../../src/uebungsleitung", () => ({ initUebungsleitung: vi.fn() }));
-        vi.doMock("../../src/teilnehmer", () => ({ initTeilnehmer }));
+        vi.doMock("../../src/teilnehmer/init", () => ({ initTeilnehmer }));
         vi.doMock("../../src/admin/index", () => ({ admin: { ladeAlleUebungen: vi.fn(), renderUebungsStatistik: vi.fn(), setDb: vi.fn() } }));
         vi.doMock("../../src/generator", () => ({ GeneratorController: { getInstance: () => ({ handleRoute: vi.fn() }) } }));
         vi.doMock("../../src/services/pdfGenerator", () => ({ default: {} }));
@@ -141,7 +141,7 @@ describe("App", () => {
 
     it("warns and aborts routing when db is missing", async () => {
         vi.doMock("../../src/uebungsleitung", () => ({ initUebungsleitung: vi.fn() }));
-        vi.doMock("../../src/teilnehmer", () => ({ initTeilnehmer: vi.fn() }));
+        vi.doMock("../../src/teilnehmer/init", () => ({ initTeilnehmer: vi.fn() }));
         vi.doMock("../../src/admin/index", () => ({ admin: { ladeAlleUebungen: vi.fn(), renderUebungsStatistik: vi.fn(), setDb: vi.fn() } }));
         vi.doMock("../../src/generator", () => ({ GeneratorController: { getInstance: () => ({ handleRoute: vi.fn() }) } }));
         vi.doMock("../../src/services/pdfGenerator", () => ({ default: {} }));
@@ -174,7 +174,7 @@ describe("App", () => {
     it("does not initialize uebungsleitung without id", async () => {
         const initUebungsleitung = vi.fn();
         vi.doMock("../../src/uebungsleitung", () => ({ initUebungsleitung }));
-        vi.doMock("../../src/teilnehmer", () => ({ initTeilnehmer: vi.fn() }));
+        vi.doMock("../../src/teilnehmer/init", () => ({ initTeilnehmer: vi.fn() }));
         vi.doMock("../../src/admin/index", () => ({ admin: { ladeAlleUebungen: vi.fn(), renderUebungsStatistik: vi.fn(), setDb: vi.fn() } }));
         vi.doMock("../../src/generator", () => ({ GeneratorController: { getInstance: () => ({ handleRoute: vi.fn() }) } }));
         vi.doMock("../../src/services/pdfGenerator", () => ({ default: {} }));

@@ -468,7 +468,7 @@ describe("TeilnehmerController", () => {
     });
 
     it("initTeilnehmer shows teilnehmer area", async () => {
-        const { initTeilnehmer } = await import("../../src/teilnehmer");
+        const { initTeilnehmer } = await import("../../src/teilnehmer/init");
         const area = { style: { display: "none" } };
         const content = { innerHTML: "" };
         vi.stubGlobal("document", {
