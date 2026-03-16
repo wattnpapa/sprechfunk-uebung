@@ -64,7 +64,7 @@
     "eslint-config-prettier": "^10.1.8",
     "eslint-plugin-sonarjs": "^4.0.1",
     "globals": "^17.4.0",
-    "jsdom": "^28.1.0",
+    "jsdom": "^29.0.0",
     "postcss": "^8.5.8",
     "rollup": "^4.59.0",
     "rollup-plugin-copy": "^3.5.0",
