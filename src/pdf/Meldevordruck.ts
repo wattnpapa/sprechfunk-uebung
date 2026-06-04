@@ -39,10 +39,10 @@ export class Meldevordruck extends BasePDFTeilnehmer {
         this.pdf.text("x", offsetX + 109.5, 10);
         // Nummer
         this.pdf.setFontSize(12);
-        this.pdf.text(`${this.nachricht.id}`, offsetX + 80, 12);
-        if (this.nachricht.xZeitSlot !== undefined) {
-            this.pdf.text(`X+${this.nachricht.xZeitSlot}`, offsetX + 55, 12);
-        }
+        const nummerText = this.nachricht.xZeitSlot !== undefined
+            ? `X+${this.nachricht.xZeitSlot}`
+            : `${this.nachricht.id}`;
+        this.pdf.text(nummerText, offsetX + 80, 12);
 
         // Absender
         this.pdf.setFontSize(16);

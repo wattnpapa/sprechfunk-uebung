@@ -37,10 +37,10 @@ export class Nachrichtenvordruck extends BasePDFTeilnehmer {
         this.pdf.setFontSize(16);
         this.pdf.text("x", offsetX + 15.4, 9);
         this.pdf.setFontSize(10);
-        this.pdf.text(`${this.nachricht.id}`, offsetX + 125.5, 17);
-        if (this.nachricht.xZeitSlot !== undefined) {
-            this.pdf.text(`X+${this.nachricht.xZeitSlot}`, offsetX + 105, 17);
-        }
+        const nummerText = this.nachricht.xZeitSlot !== undefined
+            ? `X+${this.nachricht.xZeitSlot}`
+            : `${this.nachricht.id}`;
+        this.pdf.text(nummerText, offsetX + 125.5, 17);
         this.pdf.setFontSize(16);
         this.pdf.text("x", offsetX + 122.2, 27.5);
         // Ausgang
