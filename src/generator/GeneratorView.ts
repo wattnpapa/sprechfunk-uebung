@@ -36,7 +36,9 @@ export class GeneratorView {
 
     public getFormData(): Partial<FunkUebung> {
         const datumVal = (document.getElementById("datum") as HTMLInputElement).value;
-        
+        const spielModusRadio = document.querySelector<HTMLInputElement>("input[name=\"spielModus\"]:checked");
+        const spielModus = spielModusRadio?.value === "xZeit" ? "xZeit" : undefined;
+
         return {
             name: (document.getElementById("nameDerUebung") as HTMLInputElement).value,
             rufgruppe: (document.getElementById("rufgruppe") as HTMLInputElement).value,
@@ -47,7 +49,10 @@ export class GeneratorView {
             buchstabierenAn: Number((document.getElementById("spruecheAnBuchstabieren") as HTMLInputElement).value),
             datum: datumVal ? new Date(datumVal) : new Date(),
             anmeldungAktiv: (document.getElementById("anmeldungAktiv") as HTMLInputElement).checked,
-            autoStaerkeErgaenzen: (document.getElementById("autoStaerkeErgaenzen") as HTMLInputElement).checked
+            autoStaerkeErgaenzen: (document.getElementById("autoStaerkeErgaenzen") as HTMLInputElement).checked,
+            ...(spielModus !== undefined ? { spielModus } : {}),
+            xZeitIntervallMinuten: Number((document.getElementById("xZeitIntervallMinuten") as HTMLInputElement)?.value) || 3,
+            xZeitStartOffsetMinuten: Number((document.getElementById("xZeitStartOffsetMinuten") as HTMLInputElement)?.value) || 0
         };
     }
 
@@ -66,11 +71,41 @@ export class GeneratorView {
         (document.getElementById("anmeldungAktiv") as HTMLInputElement).checked = uebung.anmeldungAktiv;
         (document.getElementById("autoStaerkeErgaenzen") as HTMLInputElement).checked = uebung.autoStaerkeErgaenzen;
 
+        // Spiel-Modus setzen
+        const modusVal = uebung.spielModus === "xZeit" ? "xZeit" : "klassisch";
+        const modusRadio = document.querySelector<HTMLInputElement>(`input[name="spielModus"][value="${modusVal}"]`);
+        if (modusRadio) {
+            modusRadio.checked = true;
+        }
+        const intervallInput = document.getElementById("xZeitIntervallMinuten") as HTMLInputElement | null;
+        if (intervallInput) {
+            intervallInput.value = String(uebung.xZeitIntervallMinuten ?? 3);
+        }
+        const startOffsetInput = document.getElementById("xZeitStartOffsetMinuten") as HTMLInputElement | null;
+        if (startOffsetInput) {
+            startOffsetInput.value = String(uebung.xZeitStartOffsetMinuten ?? 0);
+        }
+        this.updateXZeitOptionsVisibility();
+
         // Prozentwerte und absolute Werte setzen
         this.updateDistributionInputs(uebung);
-        
+
         // Lösungswort-Optionen setzen
         this.setLoesungswortUI(uebung.loesungswoerter);
+    }
+
+    public updateXZeitOptionsVisibility(): void {
+        const radio = document.querySelector<HTMLInputElement>("input[name=\"spielModus\"]:checked");
+        const container = document.getElementById("xZeitOptionsContainer");
+        if (container) {
+            container.style.display = radio?.value === "xZeit" ? "block" : "none";
+        }
+    }
+
+    public bindSpielModusToggle(): void {
+        document.querySelectorAll<HTMLInputElement>("input[name=\"spielModus\"]").forEach(radio => {
+            radio.addEventListener("change", () => this.updateXZeitOptionsVisibility(), { signal: this.bindingController.signal });
+        });
     }
 
     public updateDistributionInputs(uebung: FunkUebung) {

@@ -14,11 +14,45 @@ export class GenerationService {
     public generate(uebung: FunkUebung): void {
         uebung.createDate = new Date();
         uebung.nachrichten = this.verteileNachrichtenFair(uebung);
+        this.assignXZeitSlots(uebung);
         this.verteileLoesungswoerterMitIndex(uebung);
         this.ensureJoinCodes(uebung);
 
         this.updateChecksum(uebung);
         this.berechneLoesungsStaerken(uebung);
+    }
+
+    private assignXZeitSlots(uebung: FunkUebung): void {
+        if (uebung.spielModus !== "xZeit") {
+            return;
+        }
+
+        const intervall = uebung.xZeitIntervallMinuten ?? 3;
+        const startOffset = uebung.xZeitStartOffsetMinuten ?? 0;
+
+        if (uebung.anmeldungAktiv) {
+            for (const msgs of Object.values(uebung.nachrichten)) {
+                const anmeldung = msgs.find(m => m.id === 1);
+                if (anmeldung) {
+                    anmeldung.xZeitSlot = 0;
+                }
+            }
+        }
+
+        const pool: Nachricht[] = [];
+        for (const msgs of Object.values(uebung.nachrichten)) {
+            for (const m of msgs) {
+                if (uebung.anmeldungAktiv && m.id === 1) {
+                    continue;
+                }
+                pool.push(m);
+            }
+        }
+        pool.sort((a, b) => a.id - b.id);
+
+        pool.forEach((m, globalIndex) => {
+            m.xZeitSlot = startOffset + (globalIndex + 1) * intervall;
+        });
     }
 
     private ensureJoinCodes(uebung: FunkUebung): void {

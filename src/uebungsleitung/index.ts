@@ -17,6 +17,7 @@ interface FlattenedNachricht {
     sender: string;
     empfaenger: string[];
     text: string;
+    xZeitSlot?: number;
 }
 
 interface SentNachricht {
@@ -141,7 +142,8 @@ export class UebungsleitungController {
                     nr: msg.id,
                     sender,
                     empfaenger: msg.empfaenger,
-                    text: msg.nachricht
+                    text: msg.nachricht,
+                    ...(msg.xZeitSlot !== undefined ? { xZeitSlot: msg.xZeitSlot } : {})
                 });
             });
         });

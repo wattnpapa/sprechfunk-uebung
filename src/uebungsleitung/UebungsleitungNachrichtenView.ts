@@ -8,6 +8,7 @@ export interface FlattenedNachricht {
     sender: string;
     empfaenger: string[];
     text: string;
+    xZeitSlot?: number;
 }
 
 export interface HeatmapBin {
@@ -107,6 +108,7 @@ export class UebungsleitungNachrichtenView {
                             <label class="form-check-label small ms-1" for="toggleHideAbgesetzt">ausblenden</label>
                           </div>
                         </th>
+                        <th style="width:80px;">X-Zeit</th>
                         <th style="width:90px;">Zeit</th>
                       </tr>
                     </thead>
@@ -310,6 +312,7 @@ export class UebungsleitungNachrichtenView {
                       </div>
                     `}
                   </td>
+                  <td>${nachricht.xZeitSlot !== undefined ? `<span class="badge bg-secondary">X+${nachricht.xZeitSlot}</span>` : ""}</td>
                   <td>${status?.abgesetztUm ? formatNatoDate(status.abgesetztUm) : ""}</td>
                 </tr>
               `;

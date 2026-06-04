@@ -4,4 +4,5 @@ export interface Nachricht {
     nachricht: string;
     loesungsbuchstaben?: string[];
     staerken?: { fuehrer: number; unterfuehrer: number; helfer: number }[];
+    xZeitSlot?: number;
 }

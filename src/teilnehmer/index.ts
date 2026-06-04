@@ -132,7 +132,7 @@ export class TeilnehmerController {
             return;
         }
         const nachrichten = this.uebung.nachrichten[this.teilnehmerName] || [];
-        this.view.renderNachrichten(nachrichten, this.storage);
+        this.view.renderNachrichten(nachrichten, this.storage, this.uebung.spielModus === "xZeit");
     }
 
     private updateFooterInfo() {

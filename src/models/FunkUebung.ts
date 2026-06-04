@@ -29,6 +29,9 @@ export class FunkUebung implements Uebung {
     anmeldungAktiv = true;
     verwendeteVorlagen?: string[];
     istStandardKonfiguration?: boolean;
+    spielModus?: "klassisch" | "xZeit";
+    xZeitIntervallMinuten?: number;
+    xZeitStartOffsetMinuten?: number;
 
     constructor(buildVersion: string) {
         this.id = this.generateId();
@@ -122,7 +125,10 @@ export class FunkUebung implements Uebung {
             buchstabierenAn: this.buchstabierenAn,
             anmeldungAktiv: this.anmeldungAktiv,
             verwendeteVorlagen: this.verwendeteVorlagen,
-            istStandardKonfiguration: this.istStandardKonfiguration
+            istStandardKonfiguration: this.istStandardKonfiguration,
+            spielModus: this.spielModus,
+            xZeitIntervallMinuten: this.xZeitIntervallMinuten,
+            xZeitStartOffsetMinuten: this.xZeitStartOffsetMinuten
         }, null, 2); // Pretty Print
     }
 }

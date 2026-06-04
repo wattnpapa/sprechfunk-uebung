@@ -31,4 +31,7 @@ export interface Uebung {
     funksprueche: string[];
     anmeldungAktiv: boolean;
     istStandardKonfiguration?: boolean;
+    spielModus?: "klassisch" | "xZeit";
+    xZeitIntervallMinuten?: number;
+    xZeitStartOffsetMinuten?: number;
 }

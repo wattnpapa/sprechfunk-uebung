@@ -154,11 +154,12 @@ export class TeilnehmerView {
 
             <div id="teilnehmerTableView" class="table-responsive">
                 <table class="table table-striped table-hover align-middle">
-                    <thead class="table-light">
+                    <thead class="table-light" id="teilnehmerTableHead">
                         <tr>
                             <th>Nr.</th>
                             <th>Empfänger</th>
                             <th>Nachricht</th>
+                            ${uebung.spielModus === "xZeit" ? "<th style=\"width: 80px;\">X-Zeit</th>" : ""}
                             <th style="width: 150px;">Status</th>
                         </tr>
                     </thead>
@@ -210,8 +211,9 @@ export class TeilnehmerView {
     }
 
     public renderNachrichten(
-        nachrichten: Nachricht[], 
-        storage: TeilnehmerStorage
+        nachrichten: Nachricht[],
+        storage: TeilnehmerStorage,
+        showXZeit = false
     ) {
         const tbody = document.getElementById("teilnehmerNachrichtenBody");
         if (!tbody) {
@@ -247,11 +249,18 @@ export class TeilnehmerView {
                 const isUebertragen = !!status?.uebertragen;
                 const toggleId = `toggle-uebertragen-${n.id}`;
 
+                const xZeitCell = showXZeit
+                    ? (n.xZeitSlot !== undefined
+                        ? `<td><span class="badge bg-secondary">X+${n.xZeitSlot}</span></td>`
+                        : "<td></td>")
+                    : "";
+
                 return `
             <tr class="${isUebertragen ? "status-ok-row" : "status-pending-row"}">
                 <td>${n.id}</td>
                 <td>${n.empfaenger.join(", ")}</td>
                 <td>${escapeHtml(n.nachricht).replace(/\\n/g, "<br>").replace(/\n/g, "<br>")}</td>
+                ${xZeitCell}
                 <td>
                     <div class="form-check form-switch d-flex align-items-center gap-2">
                         <button type="button"
@@ -270,7 +279,8 @@ export class TeilnehmerView {
         `;
             }).join("");
 
-        tbody.innerHTML = rows || "<tr><td colspan=\"4\" class=\"text-center text-muted\">Keine Nachrichten vorhanden.</td></tr>";
+        const colspan = showXZeit ? "5" : "4";
+        tbody.innerHTML = rows || `<tr><td colspan="${colspan}" class="text-center text-muted">Keine Nachrichten vorhanden.</td></tr>`;
 
     }
 

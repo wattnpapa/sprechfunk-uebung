@@ -129,6 +129,7 @@ export class GeneratorController {
         this.view.bindAnmeldungToggle(checked => {
             this.funkUebung.anmeldungAktiv = checked;
         });
+        this.view.bindSpielModusToggle();
         this.view.bindPrimaryActions({
             onAddTeilnehmer: () => this.addTeilnehmer(),
             onStartUebung: () => this.startUebung(),

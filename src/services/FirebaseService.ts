@@ -306,6 +306,12 @@ export class FirebaseService {
             if (staerken && staerken.length > 0) {
                 base.staerken = staerken;
             }
+            const xZeitSlot = typeof obj["xZeitSlot"] === "number" && Number.isFinite(obj["xZeitSlot"])
+                ? obj["xZeitSlot"]
+                : undefined;
+            if (xZeitSlot !== undefined) {
+                base.xZeitSlot = xZeitSlot;
+            }
             return base;
         };
 
@@ -350,7 +356,10 @@ export class FirebaseService {
             funksprueche: toStringArray(data.funksprueche),
             anmeldungAktiv: typeof data.anmeldungAktiv === "boolean" ? data.anmeldungAktiv : true,
             verwendeteVorlagen: toStringArray(data.verwendeteVorlagen),
-            istStandardKonfiguration: typeof data.istStandardKonfiguration === "boolean" ? data.istStandardKonfiguration : false
+            istStandardKonfiguration: typeof data.istStandardKonfiguration === "boolean" ? data.istStandardKonfiguration : false,
+            spielModus: data.spielModus === "xZeit" ? "xZeit" : undefined,
+            xZeitIntervallMinuten: typeof data.xZeitIntervallMinuten === "number" ? data.xZeitIntervallMinuten : undefined,
+            xZeitStartOffsetMinuten: typeof data.xZeitStartOffsetMinuten === "number" ? data.xZeitStartOffsetMinuten : undefined
         });
 
         // Legacy-Daten kompatibel machen: "Alle" immer in explizite Empfängerliste auflösen.
