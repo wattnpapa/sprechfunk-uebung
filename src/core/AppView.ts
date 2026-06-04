@@ -1,5 +1,5 @@
 import { AppMode } from "./appModes";
-import { Converter } from "showdown";
+import { marked } from "marked";
 import $ from "./select2-setup";
 import { analytics } from "../services/analytics";
 import { featureFlags } from "../services/featureFlags";
@@ -83,8 +83,7 @@ export class AppView {
                 fetch("howto.md")
                     .then(response => response.text())
                     .then(data => {
-                        const converter = new Converter();
-                        modalContent.innerHTML = converter.makeHtml(data);
+                        modalContent.innerHTML = marked(data) as string;
                     })
                     .catch(error => {
                         console.error("Fehler beim Laden der Anleitung:", error);
