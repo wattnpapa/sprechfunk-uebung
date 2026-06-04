@@ -152,6 +152,18 @@ export class TeilnehmerView {
                 <input type="search" class="form-control form-control-sm" id="teilnehmerSearchInput" placeholder="Nachrichten filtern (Nr, Empfänger, Text)">
             </div>
 
+            ${uebung.spielModus === "xZeit" ? `
+            <div class="card mb-2" id="xZeitBanner">
+                <div class="card-body py-2">
+                    <div class="d-flex flex-wrap align-items-center gap-3">
+                        <strong class="text-nowrap">X-Zeit:</strong>
+                        <input type="time" class="form-control form-control-sm" id="xZeitBasisInput" style="width:130px;">
+                        <button class="btn btn-sm btn-outline-primary" id="btn-xzeit-jetzt" type="button">Jetzt starten</button>
+                        <span id="xZeitCountdown" class="text-muted small ms-2"></span>
+                    </div>
+                </div>
+            </div>` : ""}
+
             <div id="teilnehmerTableView" class="table-responsive">
                 <table class="table table-striped table-hover align-middle">
                     <thead class="table-light" id="teilnehmerTableHead">
@@ -159,7 +171,7 @@ export class TeilnehmerView {
                             <th>Nr.</th>
                             <th>Empfänger</th>
                             <th>Nachricht</th>
-                            ${uebung.spielModus === "xZeit" ? "<th style=\"width: 80px;\">X-Zeit</th>" : ""}
+                            ${uebung.spielModus === "xZeit" ? "<th style=\"width: 90px;\">X-Zeit</th>" : ""}
                             <th style="width: 150px;">Status</th>
                         </tr>
                     </thead>
@@ -213,7 +225,8 @@ export class TeilnehmerView {
     public renderNachrichten(
         nachrichten: Nachricht[],
         storage: TeilnehmerStorage,
-        showXZeit = false
+        showXZeit = false,
+        xZeitBasis?: string
     ) {
         const tbody = document.getElementById("teilnehmerNachrichtenBody");
         if (!tbody) {
@@ -251,7 +264,7 @@ export class TeilnehmerView {
 
                 const xZeitCell = showXZeit
                     ? (n.xZeitSlot !== undefined
-                        ? `<td><span class="badge bg-secondary">X+${n.xZeitSlot}</span></td>`
+                        ? `<td><span class="${this.getXZeitBadgeClass(n.xZeitSlot, xZeitBasis, isUebertragen)}" data-xzeit-slot="${n.xZeitSlot}" data-n-id="${n.id}">${this.getXZeitBadgeLabel(n.xZeitSlot, xZeitBasis, isUebertragen)}</span></td>`
                         : "<td></td>")
                     : "";
 
@@ -471,6 +484,120 @@ export class TeilnehmerView {
     public setDocTransmitted(isTransmitted: boolean) {
         const modal = document.getElementById("teilnehmerDocModal");
         modal?.classList.toggle("teilnehmer-doc-modal--done", isTransmitted);
+    }
+
+    public setXZeitBasisInputValue(value: string): void {
+        const input = document.getElementById("xZeitBasisInput") as HTMLInputElement | null;
+        if (input) {
+            input.value = value;
+        }
+    }
+
+    public bindXZeitEvents(
+        onBasisChange: (value: string) => void,
+        onJetzt: () => void
+    ): void {
+        document.getElementById("xZeitBasisInput")?.addEventListener("change", e => {
+            onBasisChange((e.target as HTMLInputElement).value);
+        });
+        document.getElementById("btn-xzeit-jetzt")?.addEventListener("click", onJetzt);
+    }
+
+    public updateXZeitCountdown(nachrichten: Nachricht[], storage: TeilnehmerStorage, xZeitBasis: string): void {
+        const countdown = document.getElementById("xZeitCountdown");
+        if (countdown) {
+            const next = this.getNextDueMessage(nachrichten, storage, xZeitBasis);
+            if (next !== null) {
+                const mins = Math.floor(next / 60000);
+                const secs = Math.floor((next % 60000) / 1000);
+                countdown.textContent = `Nächste in ${mins}:${String(secs).padStart(2, "0")}`;
+            } else {
+                countdown.textContent = "Keine ausstehenden Nachrichten";
+            }
+        }
+
+        document.querySelectorAll<HTMLElement>("[data-xzeit-slot]").forEach(el => {
+            const slot = Number(el.dataset["xzeitSlot"]);
+            const nId = Number(el.dataset["nId"]);
+            const transmitted = !!storage.nachrichten[nId]?.uebertragen;
+            el.className = this.getXZeitBadgeClass(slot, xZeitBasis, transmitted);
+            el.textContent = this.getXZeitBadgeLabel(slot, xZeitBasis, transmitted);
+        });
+    }
+
+    private getNextDueMessage(nachrichten: Nachricht[], storage: TeilnehmerStorage, xZeitBasis: string): number | null {
+        const basisMs = this.parseHHMMtoMs(xZeitBasis);
+        if (basisMs === null) {
+            return null;
+        }
+        const now = Date.now();
+        let nearest: number | null = null;
+        for (const n of nachrichten) {
+            if (n.xZeitSlot === undefined) {
+                continue;
+            }
+            if (storage.nachrichten[n.id]?.uebertragen) {
+                continue;
+            }
+            const targetMs = basisMs + n.xZeitSlot * 60000;
+            const diffMs = targetMs - now;
+            if (diffMs > 0 && (nearest === null || diffMs < nearest)) {
+                nearest = diffMs;
+            }
+        }
+        return nearest;
+    }
+
+    private getXZeitBadgeClass(slot: number, xZeitBasis: string | undefined, transmitted: boolean): string {
+        if (transmitted || !xZeitBasis) {
+            return "badge bg-secondary";
+        }
+        const basisMs = this.parseHHMMtoMs(xZeitBasis);
+        if (basisMs === null) {
+            return "badge bg-secondary";
+        }
+        const diffMs = basisMs + slot * 60000 - Date.now();
+        if (diffMs > 120000) {
+            return "badge bg-success";
+        }
+        if (diffMs > 0) {
+            return "badge bg-warning text-dark";
+        }
+        return "badge bg-danger";
+    }
+
+    private getXZeitBadgeLabel(slot: number, xZeitBasis: string | undefined, transmitted: boolean): string {
+        if (transmitted || !xZeitBasis) {
+            return `X+${slot}`;
+        }
+        const basisMs = this.parseHHMMtoMs(xZeitBasis);
+        if (basisMs === null) {
+            return `X+${slot}`;
+        }
+        const diffMs = basisMs + slot * 60000 - Date.now();
+        if (diffMs <= 0) {
+            return `X+${slot} !`;
+        }
+        if (diffMs <= 120000) {
+            const mins = Math.floor(diffMs / 60000);
+            const secs = Math.floor((diffMs % 60000) / 1000);
+            return `X+${slot} ${mins}:${String(secs).padStart(2, "0")}`;
+        }
+        return `X+${slot}`;
+    }
+
+    private parseHHMMtoMs(value: string): number | null {
+        const m = value.match(/^(\d{1,2}):(\d{2})$/);
+        if (!m || !m[1] || !m[2]) {
+            return null;
+        }
+        const h = parseInt(m[1], 10);
+        const min = parseInt(m[2], 10);
+        if (h < 0 || h > 23 || min < 0 || min > 59) {
+            return null;
+        }
+        const now = new Date();
+        return new Date(now.getFullYear(), now.getMonth(), now.getDate(), h, min, 0, 0).getTime();
     }
 
     private togglePdfModal(show: boolean) {

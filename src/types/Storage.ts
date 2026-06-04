@@ -5,6 +5,7 @@ export interface TeilnehmerStorage {
     lastUpdated: string;
     nachrichten: Record<string, NachrichtenStatusTeilnehmer>;
     hideTransmitted: boolean;
+    xZeitBasis?: string; // HH:MM – vom Teilnehmer selbst gesetzt
 }
 
 export interface NachrichtenStatusTeilnehmer {

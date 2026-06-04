@@ -36,6 +36,7 @@ export class TeilnehmerController {
     private docBlobCache = new Map<DocMode, Map<number, Blob>>();
     private preloadToken = 0;
     private debouncedRenderNachrichten = debounce(() => this.renderNachrichten(), 140);
+    private xZeitInterval: ReturnType<typeof setInterval> | null = null;
 
     constructor(db: Firestore) {
         this.view = new TeilnehmerView();
@@ -83,6 +84,37 @@ export class TeilnehmerController {
         this.view.renderHeader(this.uebung, this.teilnehmerName);
         this.renderNachrichten();
         this.view.setDocMode(this.docMode);
+
+        // X-Zeit Ticker + Events
+        if (this.uebung.spielModus === "xZeit") {
+            if (this.storage.xZeitBasis) {
+                this.view.setXZeitBasisInputValue(this.storage.xZeitBasis);
+            }
+            this.view.bindXZeitEvents(
+                (value) => {
+                    if (!this.storage) return;
+                    this.storage.xZeitBasis = value || undefined;
+                    saveTeilnehmerStorage(this.storage);
+                    this.renderNachrichten();
+                    this.startXZeitTicker();
+                },
+                () => {
+                    const now = new Date();
+                    const hh = String(now.getHours()).padStart(2, "0");
+                    const mm = String(now.getMinutes()).padStart(2, "0");
+                    const value = `${hh}:${mm}`;
+                    this.view.setXZeitBasisInputValue(value);
+                    if (!this.storage) return;
+                    this.storage.xZeitBasis = value;
+                    saveTeilnehmerStorage(this.storage);
+                    this.renderNachrichten();
+                    this.startXZeitTicker();
+                }
+            );
+            if (this.storage.xZeitBasis) {
+                this.startXZeitTicker();
+            }
+        }
 
         // Bind Events
         this.view.bindEvents(
@@ -132,7 +164,25 @@ export class TeilnehmerController {
             return;
         }
         const nachrichten = this.uebung.nachrichten[this.teilnehmerName] || [];
-        this.view.renderNachrichten(nachrichten, this.storage, this.uebung.spielModus === "xZeit");
+        this.view.renderNachrichten(nachrichten, this.storage, this.uebung.spielModus === "xZeit", this.storage.xZeitBasis);
+    }
+
+    private startXZeitTicker(): void {
+        this.stopXZeitTicker();
+        this.xZeitInterval = setInterval(() => {
+            if (!this.uebung || !this.storage || !this.teilnehmerName || !this.storage.xZeitBasis) {
+                return;
+            }
+            const nachrichten = this.uebung.nachrichten[this.teilnehmerName] || [];
+            this.view.updateXZeitCountdown(nachrichten, this.storage, this.storage.xZeitBasis);
+        }, 1000);
+    }
+
+    private stopXZeitTicker(): void {
+        if (this.xZeitInterval !== null) {
+            clearInterval(this.xZeitInterval);
+            this.xZeitInterval = null;
+        }
     }
 
     private updateFooterInfo() {
