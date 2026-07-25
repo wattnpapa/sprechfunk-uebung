@@ -4,7 +4,8 @@ import zlib from "node:zlib";
 const budgets = [
     { file: "dist/bundle.js", maxBytes: 4_200_000, maxGzipBytes: 980_000 },
     { file: "dist/bundle.css", maxBytes: 420_000, maxGzipBytes: 70_000 },
-    { file: "dist/style.css", maxBytes: 60_000, maxGzipBytes: 12_000 }
+    // Baseline nach dem Token-System-Umbau ("Amtlich", LCARS): 71.9 kB roh / 13.4 kB gzip.
+    { file: "dist/style.css", maxBytes: 90_000, maxGzipBytes: 16_000 }
 ];
 
 const failures = [];
