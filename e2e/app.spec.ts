@@ -217,7 +217,10 @@ test("@generator all generator inputs are editable and keep values", async ({ pa
 
     await page.locator("#optionVorlagen").check();
     await expect(page.locator("#fileUploadContainer")).toBeHidden();
-    await expect(page.locator("#funkspruchVorlage option")).toHaveCount(5);
+    // Bewusst ohne feste Anzahl: Die Vorlagenliste waechst, der Test darf davon nicht brechen.
+    await expect(page.locator("#funkspruchVorlage option")).not.toHaveCount(0);
+    await expect(page.locator("#funkspruchVorlage option[value='thwleer']")).toHaveCount(1);
+    await expect(page.locator("#funkspruchVorlage option[value='thwmelle']")).toHaveCount(1);
     await page.selectOption("#funkspruchVorlage", ["thwleer", "thwmelle"]);
     const selectedTemplates = await page.locator("#funkspruchVorlage").evaluate(el =>
         Array.from((el as HTMLSelectElement).selectedOptions).map(o => o.value)
