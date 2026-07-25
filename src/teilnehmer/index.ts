@@ -93,7 +93,11 @@ export class TeilnehmerController {
             this.view.bindXZeitEvents(
                 (value) => {
                     if (!this.storage) return;
-                    this.storage.xZeitBasis = value || undefined;
+                    if (value) {
+                        this.storage.xZeitBasis = value;
+                    } else {
+                        delete this.storage.xZeitBasis;
+                    }
                     saveTeilnehmerStorage(this.storage);
                     this.renderNachrichten();
                     this.startXZeitTicker();
