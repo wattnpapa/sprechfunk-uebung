@@ -9,7 +9,6 @@ import { GeneratorPreviewService } from "./GeneratorPreviewService";
 import pdfGenerator from "../services/pdfGenerator";
 import { Chart, registerables } from "chart.js";
 import { uiFeedback } from "../core/UiFeedback";
-import { analytics } from "../services/analytics";
 
 Chart.register(...registerables);
 
@@ -138,9 +137,6 @@ export class GeneratorController {
             onCopyJson: () => this.copyJSONToClipboard(),
             onZipAllPdfs: async () => {
                 await pdfGenerator.generateAllPDFsAsZip(this.funkUebung);
-                analytics.track("download_all_pdfs_zip", {
-                    teilnehmer_count: this.funkUebung.teilnehmerListe.length
-                });
             }
         });
         this.view.bindQuickJoin((uebungCode, teilnehmerCode) => {
@@ -217,17 +213,11 @@ export class GeneratorController {
     addTeilnehmer() {
         this.stateService.addTeilnehmer(this.funkUebung);
         this.renderTeilnehmer();
-        analytics.track("generator_add_teilnehmer", {
-            teilnehmer_count: this.funkUebung.teilnehmerListe.length
-        });
     }
 
     removeTeilnehmer(index: number) {
         this.stateService.removeTeilnehmer(this.funkUebung, index);
         this.renderTeilnehmer();
-        analytics.track("generator_remove_teilnehmer", {
-            teilnehmer_count: this.funkUebung.teilnehmerListe.length
-        });
     }
 
     shuffleLoesungswoerter() {
@@ -308,10 +298,6 @@ export class GeneratorController {
             uiFeedback.error("Übung konnte nicht gespeichert werden. Bitte Teilnehmerdaten prüfen.");
             return;
         }
-        analytics.track("generator_start_uebung", {
-            teilnehmer_count: this.funkUebung.teilnehmerListe.length,
-            sprueche_pro_teilnehmer: this.funkUebung.spruecheProTeilnehmer
-        });
         
         // 5. Anzeigen
         this.renderUebungResult();
@@ -425,7 +411,6 @@ export class GeneratorController {
     copyJSONToClipboard() {
         const json = this.funkUebung.toJson();
         this.view.copyJsonToClipboard(json);
-        analytics.track("generator_copy_json");
     }
 
     private validateSpruchVerteilung(): boolean {

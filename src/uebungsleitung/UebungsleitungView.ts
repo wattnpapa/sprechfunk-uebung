@@ -128,14 +128,14 @@ export class UebungsleitungView {
             <button
               class="btn btn-outline-secondary me-2"
               id="exportUebungsleitungPdf"
-              data-analytics-id="uebungsleitung-export-pdf">
+             >
               📄 Übungsleitung als PDF
             </button>
 
               <button
                 class="btn btn-outline-danger"
                 id="resetUebungsleitungLocalData"
-                data-analytics-id="uebungsleitung-reset-local-data">
+               >
                 ⟲ Lokale Übungsdaten zurücksetzen
               </button>
             </div>

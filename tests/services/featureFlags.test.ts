@@ -16,7 +16,6 @@ describe("featureFlags", () => {
     it("uses defaults when no overrides exist", () => {
         featureFlags.init();
         expect(featureFlags.isEnabled("enableStartrekTheme")).toBe(true);
-        expect(featureFlags.isEnabled("enableUiInteractionTracking")).toBe(true);
         expect(featureFlags.isEnabled("enableGlobalErrorMonitoring")).toBe(true);
     });
 

@@ -1,12 +1,10 @@
 export interface FeatureFlags {
     enableStartrekTheme: boolean;
-    enableUiInteractionTracking: boolean;
     enableGlobalErrorMonitoring: boolean;
 }
 
 const DEFAULT_FLAGS: FeatureFlags = {
     enableStartrekTheme: true,
-    enableUiInteractionTracking: true,
     enableGlobalErrorMonitoring: true
 };
 

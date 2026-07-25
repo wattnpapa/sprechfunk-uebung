@@ -65,7 +65,7 @@ Each mode is a self-contained module with an `index.ts` entry:
 - `GenerationService` — creates message distribution, join codes (Übungs-/Teilnehmercodes), checksums
 - `FirebaseService` — all Firestore reads/writes; handles missing-index errors with fallback
 - `pdfGenerator` / `pdfA4Service` / `pdfDebriefService` / `pdfZipService` — PDF and ZIP export
-- `analytics` — GA4 tracking (consent-mode, off by default)
+- `errorMonitoring` — global runtime error capture, forwarded to Sentry when available
 - `featureFlags` — runtime feature toggles via localStorage/URL params
 
 ### Build

@@ -62,7 +62,7 @@ export class UebungsleitungTeilnehmerView {
                   <button
                     class="btn btn-sm btn-outline-secondary ms-2"
                     data-action="toggle-staerke-details"
-                    data-analytics-id="uebungsleitung-toggle-staerke-details">
+                   >
                     Details
                   </button>
                 </th>` : ""}
@@ -164,7 +164,6 @@ export class UebungsleitungTeilnehmerView {
               <button
                 class="btn btn-sm btn-outline-secondary"
                 data-action="download-debrief"
-                data-analytics-id="uebungsleitung-download-debrief-${this.escapeAttr(name)}"
                 data-teilnehmer="${this.escapeAttr(name)}">
                 Debrief PDF
               </button>
@@ -214,7 +213,6 @@ export class UebungsleitungTeilnehmerView {
         }
         return `<button class="btn btn-sm btn-outline-primary"
                     data-action="anmelden"
-                    data-analytics-id="uebungsleitung-anmelden-${this.escapeAttr(name)}"
                     data-teilnehmer="${name}">
                     Anmelden
                   </button>`;

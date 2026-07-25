@@ -12,24 +12,5 @@ export class FooterView {
             idEl.textContent = uebungId;
         }
     }
-
-    public bindAnalyticsConsent(getState: () => boolean, setState: (enabled: boolean) => void): void {
-        const btn = document.getElementById("analyticsConsentToggle") as HTMLButtonElement | null;
-        if (!btn) {
-            return;
-        }
-
-        const render = () => {
-            const enabled = getState();
-            btn.textContent = enabled ? "Analytics: an" : "Analytics: aus";
-            btn.setAttribute("aria-pressed", enabled ? "true" : "false");
-        };
-
-        btn.addEventListener("click", () => {
-            setState(!getState());
-            render();
-        });
-        render();
-    }
 }
 

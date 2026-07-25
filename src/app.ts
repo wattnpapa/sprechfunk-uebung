@@ -24,11 +24,9 @@ import { NatoClock } from "./core/NatoClock";
 import { ThemeManager } from "./core/ThemeManager";
 import { AppView } from "./core/AppView";
 import { FooterView } from "./core/FooterView";
-import { analytics } from "./services/analytics";
 import { featureFlags } from "./services/featureFlags";
 import { errorMonitoring } from "./services/errorMonitoring";
 import { initFirebaseClient } from "./services/firebaseClient";
-import { buildRouteChangePayload } from "./services/analyticsPayloads";
 
 import { Chart, registerables } from "chart.js";
 Chart.register(...registerables);
@@ -101,7 +99,6 @@ async function loadBuildVersion(): Promise<void> {
 // Initialize Firebase
 const db = initFirebaseClient(firebaseConfig);
 featureFlags.init();
-analytics.init(firebaseConfig.measurementId);
 errorMonitoring.init({
     getMode: () => store.getState().mode,
     getVersion: () => appBuildVersion
@@ -114,8 +111,6 @@ function handleRoute(): void {
     const pageTitle = getPageTitle(mode);
     document.title = pageTitle;
     updateSeoIndexing(mode, params);
-    analytics.trackPage(window.location?.hash || "#/", pageTitle);
-    analytics.track("route_change", buildRouteChangePayload(mode, params));
 
     store.setState({ mode });
 
@@ -163,10 +158,6 @@ window.addEventListener("DOMContentLoaded", () => {
     themeManager.init();
     appView.initModals();
     appView.initGlobalListeners();
-    footerView.bindAnalyticsConsent(
-        () => analytics.isConsentGranted(),
-        enabled => analytics.setConsent(enabled)
-    );
     loadBuildVersion().finally(() => {
         // Start Routing
         handleRoute();

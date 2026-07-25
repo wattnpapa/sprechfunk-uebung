@@ -1,7 +1,7 @@
 # ADR 0003: Observability Event Schema
 
 ## Status
-Accepted
+Superseded by [ADR 0004](0004-goatcounter-analytics.md)
 
 ## Context
 

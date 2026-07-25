@@ -1,7 +1,7 @@
 # ADR 0002: GA Consent Mode
 
 ## Status
-Accepted
+Superseded by [ADR 0004](0004-goatcounter-analytics.md)
 
 ## Context
 

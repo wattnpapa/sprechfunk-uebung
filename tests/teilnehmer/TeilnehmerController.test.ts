@@ -13,7 +13,6 @@ const mocks = vi.hoisted(() => ({
     uiSuccess: vi.fn(),
     uiError: vi.fn(),
     uiConfirm: vi.fn(() => true),
-    analyticsTrack: vi.fn(),
     renderHeader: vi.fn(),
     renderJoinForm: vi.fn(),
     bindJoinForm: vi.fn(),
@@ -79,12 +78,6 @@ vi.mock("../../src/core/UiFeedback", () => ({
         success: mocks.uiSuccess,
         error: mocks.uiError,
         confirm: mocks.uiConfirm
-    }
-}));
-
-vi.mock("../../src/services/analytics", () => ({
-    analytics: {
-        track: mocks.analyticsTrack
     }
 }));
 
@@ -160,7 +153,6 @@ describe("TeilnehmerController", () => {
         expect((controller as any).storage.nachrichten[3]?.uebertragen).toBe(true);
         expect(mocks.saveTeilnehmerStorage).toHaveBeenCalled();
         expect(renderSpy).toHaveBeenCalled();
-        expect(mocks.analyticsTrack).toHaveBeenCalledWith("teilnehmer_toggle_uebertragen", { checked: true });
 
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         (controller as any).toggleUebertragen(3, false);
@@ -282,7 +274,7 @@ describe("TeilnehmerController", () => {
         expect(footer.textContent).toBe("u1");
     });
 
-    it("toggleHide updates storage and tracking", async () => {
+    it("toggleHide updates storage", async () => {
         const controller = await makeController();
         const renderSpy = vi.spyOn(controller as never, "renderNachrichten" as never);
 
@@ -293,10 +285,9 @@ describe("TeilnehmerController", () => {
         expect((controller as any).storage.hideTransmitted).toBe(true);
         expect(mocks.saveTeilnehmerStorage).toHaveBeenCalled();
         expect(renderSpy).toHaveBeenCalled();
-        expect(mocks.analyticsTrack).toHaveBeenCalledWith("teilnehmer_toggle_hide_transmitted", { checked: true });
     });
 
-    it("setDocMode tracks mode switches", async () => {
+    it("setDocMode renders and preloads the selected mode", async () => {
         const controller = await makeController();
         const renderDocSpy = vi.spyOn(controller as never, "renderDocPage" as never).mockResolvedValue(undefined);
         const preloadSpy = vi.spyOn(controller as never, "preloadPages" as never).mockImplementation(() => {});
@@ -308,7 +299,6 @@ describe("TeilnehmerController", () => {
 
         expect(renderDocSpy).toHaveBeenCalled();
         expect(preloadSpy).toHaveBeenCalled();
-        expect(mocks.analyticsTrack).toHaveBeenCalledWith("teilnehmer_set_doc_mode", { mode: "meldevordruck" });
     });
 
     it("downloadTeilnehmerZip creates a blob download and success toast", async () => {
@@ -320,7 +310,6 @@ describe("TeilnehmerController", () => {
 
         expect(mocks.generateTeilnehmerPDFsAsZip).toHaveBeenCalled();
         expect(mocks.uiSuccess).toHaveBeenCalled();
-        expect(mocks.analyticsTrack).toHaveBeenCalledWith("teilnehmer_download_zip");
     });
 
     it("downloadTeilnehmerZip reports errors", async () => {
@@ -392,7 +381,7 @@ describe("TeilnehmerController", () => {
         expect(renderDocSpy).toHaveBeenCalled();
     });
 
-    it("setDocMode table tracks without rendering docs", async () => {
+    it("setDocMode table skips rendering docs", async () => {
         const controller = await makeController();
         const renderDocSpy = vi.spyOn(controller as never, "renderDocPage" as never);
 
@@ -400,10 +389,9 @@ describe("TeilnehmerController", () => {
         await (controller as any).setDocMode("table");
 
         expect(renderDocSpy).not.toHaveBeenCalled();
-        expect(mocks.analyticsTrack).toHaveBeenCalledWith("teilnehmer_set_doc_mode", { mode: "table" });
     });
 
-    it("changeDocPage respects boundaries and tracks valid changes", async () => {
+    it("changeDocPage respects boundaries and renders valid changes", async () => {
         const controller = await makeController();
         const renderDocSpy = vi.spyOn(controller as never, "renderDocPage" as never).mockResolvedValue(undefined);
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -428,7 +416,8 @@ describe("TeilnehmerController", () => {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         (controller as any).changeDocPage(1);
         expect(renderDocSpy).toHaveBeenCalled();
-        expect(mocks.analyticsTrack).toHaveBeenCalledWith("teilnehmer_change_doc_page", { mode: "meldevordruck", page: 2 });
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        expect((controller as any).docPage).toBe(2);
     });
 
     it("getDocBlob caches rendered blobs per mode/page", async () => {

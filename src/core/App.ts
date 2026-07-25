@@ -10,10 +10,8 @@ import { NatoClock } from "./NatoClock";
 import { ThemeManager } from "./ThemeManager";
 import { AppView } from "./AppView";
 import pdfGenerator from "../services/pdfGenerator";
-import { analytics } from "../services/analytics";
 import { AppMode } from "./appModes";
 import { initFirebaseClient } from "../services/firebaseClient";
-import { buildRouteChangePayload } from "../services/analyticsPayloads";
 
 export class App {
     private appView: AppView;
@@ -29,7 +27,6 @@ export class App {
 
     public init(): void {
         // 1. Initialize Firebase
-        analytics.init(firebaseConfig.measurementId);
         this.db = initFirebaseClient(firebaseConfig);
         store.setState({ db: this.db });
 
@@ -54,8 +51,6 @@ export class App {
         const pageTitle = this.getPageTitle(mode);
         this.setDocumentTitle(pageTitle);
         this.updateSeoIndexing(mode, params);
-        analytics.trackPage(window.location?.hash || "#/", pageTitle);
-        analytics.track("route_change", buildRouteChangePayload(mode, params));
         store.setState({ mode });
 
         if (!this.db) {

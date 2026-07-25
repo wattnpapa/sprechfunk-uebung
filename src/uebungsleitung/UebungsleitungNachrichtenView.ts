@@ -303,12 +303,12 @@ export class UebungsleitungNachrichtenView {
                     ${abgesetzt ? `
                       <div class="d-flex gap-2 justify-content-center">
                         <span class="status-chip status-chip--ok">abgesetzt</span>
-                        <button class="btn btn-sm btn-outline-danger" data-action="reset" data-analytics-id="uebungsleitung-reset-nachricht-${nachricht.nr}" data-nr="${nachricht.nr}" data-sender="${this.escapeAttr(nachricht.sender)}" title="Status zurücksetzen">↺</button>
+                        <button class="btn btn-sm btn-outline-danger" data-action="reset" data-nr="${nachricht.nr}" data-sender="${this.escapeAttr(nachricht.sender)}" title="Status zurücksetzen">↺</button>
                       </div>
                     ` : `
                       <div class="d-flex gap-2 justify-content-center">
                         <span class="status-chip status-chip--pending">offen</span>
-                        <button class="btn btn-sm btn-outline-success" data-action="abgesetzt" data-analytics-id="uebungsleitung-abgesetzt-${nachricht.nr}" data-nr="${nachricht.nr}" data-sender="${this.escapeAttr(nachricht.sender)}">✓ abgesetzt</button>
+                        <button class="btn btn-sm btn-outline-success" data-action="abgesetzt" data-nr="${nachricht.nr}" data-sender="${this.escapeAttr(nachricht.sender)}">✓ abgesetzt</button>
                       </div>
                     `}
                   </td>

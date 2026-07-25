@@ -1,4 +1,3 @@
-import { analytics } from "./analytics";
 import { featureFlags } from "./featureFlags";
 
 interface ErrorMonitoringOptions {
@@ -67,13 +66,6 @@ class ErrorMonitoringService {
             return;
         }
         this.remember(key);
-
-        analytics.track("app_error", {
-            ...base,
-            route_hash: context.routeHash,
-            app_version: context.appVersion,
-            mode: context.mode
-        });
 
         this.captureSentry(base, originalError, context);
     }

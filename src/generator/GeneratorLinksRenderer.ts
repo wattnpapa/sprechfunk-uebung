@@ -125,10 +125,10 @@ export class GeneratorLinksRenderer {
         actionsCell.className = "generator-link-actions";
 
         actionsCell.appendChild(this.createOpenLinkButton(url));
-        actionsCell.appendChild(this.createCopyLinkButton(typ, copyValue || url));
+        actionsCell.appendChild(this.createCopyLinkButton(copyValue || url));
 
         if (mailtoUrl) {
-            actionsCell.appendChild(this.createMailLinkButton(typ, mailtoUrl));
+            actionsCell.appendChild(this.createMailLinkButton(mailtoUrl));
         }
 
         if (uebung && typ === "Teilnehmer") {
@@ -149,11 +149,10 @@ export class GeneratorLinksRenderer {
         return openLink;
     }
 
-    private createCopyLinkButton(typ: string, value: string): HTMLButtonElement {
+    private createCopyLinkButton(value: string): HTMLButtonElement {
         const copyButton = document.createElement("button");
         copyButton.type = "button";
         copyButton.className = "btn btn-outline-secondary btn-sm";
-        copyButton.setAttribute("data-analytics-id", `generator-link-copy-${typ.toLowerCase()}`);
         copyButton.innerHTML = "<i class=\"fas fa-copy\"></i> Kopieren";
         copyButton.addEventListener("click", () => {
             this.copyTextToClipboard(value)
@@ -163,11 +162,10 @@ export class GeneratorLinksRenderer {
         return copyButton;
     }
 
-    private createMailLinkButton(typ: string, mailtoUrl: string): HTMLButtonElement {
+    private createMailLinkButton(mailtoUrl: string): HTMLButtonElement {
         const mailButton = document.createElement("button");
         mailButton.type = "button";
         mailButton.className = "btn btn-outline-primary btn-sm";
-        mailButton.setAttribute("data-analytics-id", `generator-link-mail-${typ.toLowerCase()}`);
         mailButton.innerHTML = "<i class=\"fas fa-envelope\"></i> Mail";
         mailButton.addEventListener("click", () => {
             window.location.href = mailtoUrl;
@@ -179,7 +177,6 @@ export class GeneratorLinksRenderer {
         const downloadButton = document.createElement("button");
         downloadButton.type = "button";
         downloadButton.className = "btn btn-outline-success btn-sm";
-        downloadButton.setAttribute("data-analytics-id", `generator-link-download-${name}`);
         downloadButton.innerHTML = "<i class=\"fas fa-file-archive\"></i> Druckdaten";
         downloadButton.addEventListener("click", async () => {
             const prevHtml = downloadButton.innerHTML;

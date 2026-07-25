@@ -79,7 +79,7 @@ export class GeneratorTeilnehmerTableRenderer {
             </td>
             ${stellenInput}
             ${loesungswortInput}
-            <td><button class="btn btn-danger btn-sm delete-teilnehmer" data-index="${index}" data-analytics-id="generator-delete-teilnehmer-${index}"><i class="fas fa-trash"></i></button></td>
+            <td><button class="btn btn-danger btn-sm delete-teilnehmer" data-index="${index}"><i class="fas fa-trash"></i></button></td>
         `;
     }
 }

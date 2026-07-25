@@ -81,13 +81,10 @@ Workflow: `.github/workflows/main.yml`
 - `validate`
 - `e2e-smoke-routing`
 
-## Analytics
-- GA4 Tracking mit generischem `ui_click` Event + Feature-Events
-- Eindeutige Klick-Zuordnung via `click_key` und `data-analytics-id`
-- Route-spezifische Page-Titel für bessere Auswertung pro Modul
-- Consent-Mode: Tracking standardmäßig aus, per Footer-Button aktivierbar
-- Event-Schema: `docs/analytics-events.md`
-- Dashboard-Vorschlag: `docs/analytics-dashboard.md`
+## Reichweitenmessung
+- GoatCounter per Script-Tag in `src/index.html`, cookielos und ohne personenbezogene Daten
+- Kein Consent-Banner und kein Opt-out-Schalter nötig
+- Es werden nur Seitenaufrufe gezählt, keine Button-Klicks oder Feature-Events
 - Error Monitoring: `docs/error-monitoring.md`
 - Architekturentscheidungen: `docs/adr/`
 

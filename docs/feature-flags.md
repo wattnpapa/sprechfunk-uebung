@@ -2,14 +2,13 @@
 
 ## Verfuegbare Flags
 - `enableStartrekTheme`
-- `enableUiInteractionTracking`
 - `enableGlobalErrorMonitoring`
 
 ## Nutzung per Query
 - Aktivieren:
   - `?ff=enableStartrekTheme,enableGlobalErrorMonitoring`
 - Deaktivieren:
-  - `?ff_disable=enableUiInteractionTracking`
+  - `?ff_disable=enableGlobalErrorMonitoring`
 
 ## Nutzung per localStorage
 Key: `featureFlags`
@@ -18,7 +17,6 @@ Beispiel:
 ```json
 {
   "enableStartrekTheme": true,
-  "enableUiInteractionTracking": true,
   "enableGlobalErrorMonitoring": true
 }
 ```

@@ -1,65 +1,10 @@
 import { AppMode } from "./appModes";
 import { marked } from "marked";
 import $ from "./select2-setup";
-import { analytics } from "../services/analytics";
-import { featureFlags } from "../services/featureFlags";
-import { buildUiChangePayload, buildUiClickPayload } from "../services/analyticsPayloads";
 
 export class AppView {
-    
+
     public initGlobalListeners(): void {
-        if (!featureFlags.isEnabled("enableUiInteractionTracking")) {
-            return;
-        }
-
-        // Global button tracking
-        document.addEventListener("click", event => {
-            const targetEl = event.target as HTMLElement | null;
-            if (!targetEl || typeof targetEl.closest !== "function") {
-                return;
-            }
-            const button = targetEl.closest("button") as HTMLElement | null;
-            if (!button) {
-                return;
-            }
-            analytics.track("ui_click", buildUiClickPayload(button));
-        }, { capture: true });
-
-        // Specific tracking for primary start action
-        document.addEventListener("click", event => {
-            const target = event.target as HTMLElement | null;
-            if (!target || typeof target.closest !== "function") {
-                return;
-            }
-            const startBtn = target.closest("#startUebungBtn") as HTMLElement | null;
-            if (!startBtn) {
-                return;
-            }
-            analytics.track("generator_start_button_click", buildUiClickPayload(startBtn));
-        }, { capture: true });
-
-        document.addEventListener("change", event => {
-            const el = event.target as HTMLElement | null;
-            if (!el) {
-                return;
-            }
-            if (!(el instanceof HTMLInputElement || el instanceof HTMLSelectElement || el instanceof HTMLTextAreaElement)) {
-                return;
-            }
-            analytics.track("ui_change", buildUiChangePayload(el));
-        }, { capture: true });
-
-        document.addEventListener("submit", event => {
-            const form = event.target as HTMLFormElement | null;
-            if (!form) {
-                return;
-            }
-            analytics.track("ui_submit", {
-                form_id: form.id || "(none)",
-                form_class: form.className || "(none)"
-            });
-        });
-
         // Select2 Init
         $(document).ready(() => {
             const select = document.getElementById("funkspruchVorlage");

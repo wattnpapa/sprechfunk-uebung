@@ -1,9 +1,4 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { JSDOM } from "jsdom";
-
-const mocks = vi.hoisted(() => ({
-    analyticsTrack: vi.fn()
-}));
 
 vi.mock("../../src/core/select2-setup", () => ({
     default: (arg: unknown) => {
@@ -11,12 +6,6 @@ vi.mock("../../src/core/select2-setup", () => ({
             return { ready: (cb: () => void) => cb() };
         }
         return { select2: vi.fn() };
-    }
-}));
-
-vi.mock("../../src/services/analytics", () => ({
-    analytics: {
-        track: mocks.analyticsTrack
     }
 }));
 
@@ -65,13 +54,11 @@ const makeDocument = () => {
 
 describe("AppView", () => {
     beforeEach(() => {
-        mocks.analyticsTrack.mockReset();
         const { document, listeners, howtoContent, modalHandlers, elements } = makeDocument();
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         (globalThis as any).document = document;
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         (globalThis as any).window = {
-            gtag: vi.fn(),
             $: vi.fn(() => ({ select2: vi.fn() })),
             jQuery: vi.fn()
         };
@@ -83,84 +70,15 @@ describe("AppView", () => {
         (globalThis as any)._test = { listeners, howtoContent, modalHandlers, elements };
     });
 
-    it("wires global click listeners and tracks events", () => {
+    it("initializes select2 for the template picker", () => {
+        const select2 = vi.fn();
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        (globalThis as any).window.$ = vi.fn(() => ({ select2 }));
+
         const view = new AppView();
         view.initGlobalListeners();
 
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const { listeners } = (globalThis as any)._test;
-
-        const button = {
-            innerText: "Start",
-            getAttribute: () => null
-        };
-        const target = {
-            closest: (sel: string) => (sel === "button" ? button : null)
-        };
-
-        listeners.click[0]?.({ target });
-        expect(mocks.analyticsTrack).toHaveBeenCalled();
-
-        const startButton = {};
-        const startTarget = {
-            closest: (sel: string) => (sel === "#startUebungBtn" ? startButton : null)
-        };
-        listeners.click[1]?.({ target: startTarget });
-        expect(mocks.analyticsTrack).toHaveBeenCalled();
-    });
-
-    it("uses fallback labels and skips tracking when gtag missing", () => {
-        const view = new AppView();
-        view.initGlobalListeners();
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const { listeners } = (globalThis as any)._test;
-
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        (globalThis as any).window.gtag = undefined;
-        listeners.click[0]?.({ target: null });
-        listeners.click[0]?.({
-            target: {
-                closest: (sel: string) => {
-                    if (sel !== "button") {
-                        return null;
-                    }
-                    return { innerText: "", getAttribute: () => "aria fallback" };
-                }
-            }
-        });
-        listeners.click[0]?.({
-            target: {
-                closest: (sel: string) => {
-                    if (sel !== "button") {
-                        return null;
-                    }
-                    return { innerText: "", getAttribute: () => "" };
-                }
-            }
-        });
-    });
-
-    it("ignores invalid delegated click targets", () => {
-        const view = new AppView();
-        view.initGlobalListeners();
-
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const { listeners } = (globalThis as any)._test;
-
-        listeners.click[1]?.({ target: null });
-        listeners.click[1]?.({ target: { closest: () => null } });
-
-        expect(mocks.analyticsTrack).not.toHaveBeenCalledWith("Übung_generieren", expect.anything());
-    });
-
-    it("does not track delegated event when gtag is unavailable", () => {
-        const view = new AppView();
-        view.initGlobalListeners();
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const { listeners } = (globalThis as any)._test;
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        (globalThis as any).window.gtag = undefined;
-        listeners.click[1]?.({ target: { closest: (sel: string) => (sel === "#startUebungBtn" ? {} : null) } });
+        expect(select2).toHaveBeenCalled();
     });
 
     it("does not initialize select2 when select is missing", () => {
@@ -251,90 +169,5 @@ describe("AppView", () => {
         view.applyAppMode("admin");
         view.applyAppMode("uebungsleitung");
         view.applyAppMode("teilnehmer");
-    });
-
-    it("tracks change/submit events via real DOM elements", () => {
-        const dom = new JSDOM(`
-            <form id="f1" class="c1">
-              <input id="i1" type="checkbox" />
-              <input id="i2" type="text" />
-              <select id="s1"><option>a</option></select>
-              <textarea id="t1"></textarea>
-            </form>
-            <select id="funkspruchVorlage"></select>
-        `);
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        (globalThis as any).document = dom.window.document;
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        (globalThis as any).window = {
-            gtag: vi.fn(),
-            $: vi.fn(() => ({ select2: vi.fn() })),
-            jQuery: vi.fn()
-        };
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        (globalThis as any).HTMLInputElement = dom.window.HTMLInputElement;
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        (globalThis as any).HTMLSelectElement = dom.window.HTMLSelectElement;
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        (globalThis as any).HTMLTextAreaElement = dom.window.HTMLTextAreaElement;
-
-        const view = new AppView();
-        view.initGlobalListeners();
-
-        const i1 = dom.window.document.getElementById("i1") as HTMLInputElement;
-        i1.checked = true;
-        i1.dispatchEvent(new dom.window.Event("change", { bubbles: true }));
-        const i2 = dom.window.document.getElementById("i2") as HTMLInputElement;
-        i2.value = "x";
-        i2.dispatchEvent(new dom.window.Event("change", { bubbles: true }));
-        const s1 = dom.window.document.getElementById("s1") as HTMLSelectElement;
-        s1.dispatchEvent(new dom.window.Event("change", { bubbles: true }));
-        const t1 = dom.window.document.getElementById("t1") as HTMLTextAreaElement;
-        t1.dispatchEvent(new dom.window.Event("change", { bubbles: true }));
-        const form = dom.window.document.getElementById("f1") as HTMLFormElement;
-        form.dispatchEvent(new dom.window.Event("submit", { bubbles: true }));
-
-        expect(mocks.analyticsTrack).toHaveBeenCalled();
-    });
-
-    it("ignores invalid change and submit targets", () => {
-        const view = new AppView();
-        view.initGlobalListeners();
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const { listeners } = (globalThis as any)._test;
-        listeners.change[0]?.({ target: null });
-        listeners.change[0]?.({ target: {} });
-        listeners.submit[0]?.({ target: null });
-        expect(mocks.analyticsTrack).not.toHaveBeenCalledWith("ui_submit", expect.anything());
-    });
-
-    it("tracks unique click keys for different buttons", () => {
-        const dom = new JSDOM(`
-            <button id="btn-a">Start</button>
-            <div><button>Start</button></div>
-            <select id="funkspruchVorlage"></select>
-        `);
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        (globalThis as any).document = dom.window.document;
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        (globalThis as any).window = {
-            $: vi.fn(() => ({ select2: vi.fn() })),
-            jQuery: vi.fn(),
-            location: { hash: "#/generator" }
-        };
-        const view = new AppView();
-        view.initGlobalListeners();
-
-        const buttons = dom.window.document.querySelectorAll("button");
-        buttons[0]?.dispatchEvent(new dom.window.Event("click", { bubbles: true }));
-        buttons[1]?.dispatchEvent(new dom.window.Event("click", { bubbles: true }));
-
-        const uiClickCalls = mocks.analyticsTrack.mock.calls.filter(call => call[0] === "ui_click");
-        expect(uiClickCalls.length).toBeGreaterThanOrEqual(2);
-        const firstKey = uiClickCalls[0]?.[1]?.click_key;
-        const secondKey = uiClickCalls[1]?.[1]?.click_key;
-        expect(firstKey).toBeDefined();
-        expect(secondKey).toBeDefined();
-        expect(firstKey).not.toBe(secondKey);
     });
 });

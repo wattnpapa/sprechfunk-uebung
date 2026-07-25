@@ -29,6 +29,10 @@
 
     <link rel="stylesheet" href="bundle.css">
     <link rel="stylesheet" href="style.css">
+
+    <!-- GoatCounter: cookielose, anonyme Reichweitenmessung -->
+    <script data-goatcounter="https://sprechfunk-uebung.goatcounter.com/count"
+            async src="//gc.zgo.at/count.js"></script>
     <script type="application/ld+json">
         {
             "@context": "https://schema.org",
@@ -58,19 +62,19 @@
             <a href="https://github.com/wattnpapa/sprechfunk-uebung" class="btn btn-dark">
                 <i class="fab fa-github"></i> GitHub
             </a>
-            <button class="btn btn-info" data-bs-toggle="modal" data-bs-target="#howtoModal" data-analytics-id="header-open-howto">
+            <button class="btn btn-info" data-bs-toggle="modal" data-bs-target="#howtoModal">
                 <i class="fas fa-question-circle"></i> Anleitung
             </button>
-            <button class="btn btn-secondary" data-bs-toggle="modal" data-bs-target="#authorModal" data-analytics-id="header-open-author">
+            <button class="btn btn-secondary" data-bs-toggle="modal" data-bs-target="#authorModal">
                 <i class="fas fa-user"></i> Über den Autor
             </button>
-            <button class="btn btn-outline-secondary" id="themeToggle" data-testid="theme-toggle-desktop" data-analytics-id="header-toggle-theme">
+            <button class="btn btn-outline-secondary" id="themeToggle" data-testid="theme-toggle-desktop">
                 🌙 Dark Mode
             </button>
         </div>
 
         <div class="app-header-burger d-md-none">
-            <button class="btn btn-primary dropdown-toggle" type="button" data-bs-toggle="dropdown" data-analytics-id="header-open-mobile-menu">
+            <button class="btn btn-primary dropdown-toggle" type="button" data-bs-toggle="dropdown">
                 <i class="fas fa-bars"></i>
             </button>
             <ul class="dropdown-menu dropdown-menu-end">
@@ -80,17 +84,17 @@
                     </a>
                 </li>
                 <li>
-                    <button class="dropdown-item" data-bs-toggle="modal" data-bs-target="#howtoModal" data-analytics-id="mobile-open-howto">
+                    <button class="dropdown-item" data-bs-toggle="modal" data-bs-target="#howtoModal">
                         <i class="fas fa-question-circle"></i> Anleitung
                     </button>
                 </li>
                 <li>
-                    <button class="dropdown-item" data-bs-toggle="modal" data-bs-target="#authorModal" data-analytics-id="mobile-open-author">
+                    <button class="dropdown-item" data-bs-toggle="modal" data-bs-target="#authorModal">
                         <i class="fas fa-user"></i> Über den Autor
                     </button>
                 </li>
                 <li>
-                    <button class="dropdown-item" id="themeToggleMobile" data-testid="theme-toggle-mobile" data-analytics-id="mobile-toggle-theme">
+                    <button class="dropdown-item" id="themeToggleMobile" data-testid="theme-toggle-mobile">
                         🌙 Dark Mode
                     </button>
                 </li>
@@ -149,7 +153,7 @@
         <div class="card-header">
             <h5 class="d-flex justify-content-between align-items-center">
                 <span><i class="fas fa-database"></i> Gespeicherte Übungen</span>
-                <button class="btn btn-sm btn-outline-secondary" data-bs-toggle="collapse" data-bs-target="#collapseAdminUebungen" data-analytics-id="admin-collapse-uebungen">
+                <button class="btn btn-sm btn-outline-secondary" data-bs-toggle="collapse" data-bs-target="#collapseAdminUebungen">
                     <i class="fas fa-chevron-down"></i>
                 </button>
             </h5>
@@ -160,7 +164,7 @@
                     <input id="adminSearchInput" type="search" class="form-control form-control-sm" placeholder="Übungen filtern (Name, Rufgruppe, Leitung, ID)">
                 </div>
                 <div class="form-check mb-2">
-                    <input class="form-check-input" type="checkbox" id="adminOnlyTestFilter" data-analytics-id="admin-filter-only-test">
+                    <input class="form-check-input" type="checkbox" id="adminOnlyTestFilter">
                     <label class="form-check-label" for="adminOnlyTestFilter">Nur Testübungen anzeigen</label>
                 </div>
                 <div class="table-responsive">
@@ -180,8 +184,8 @@
                     <div class="d-flex justify-content-between align-items-center px-3 py-2">
                         <div id="adminUebungslisteInfo" class="small text-muted"></div>
                         <div>
-                            <button class="btn btn-sm btn-outline-secondary me-2" data-analytics-id="admin-pagination-prev" onclick="admin.ladeAlleUebungen('prev')">← Vorherige</button>
-                            <button class="btn btn-sm btn-outline-secondary" data-analytics-id="admin-pagination-next" onclick="admin.ladeAlleUebungen('next')">Nächste →</button>
+                            <button class="btn btn-sm btn-outline-secondary me-2" onclick="admin.ladeAlleUebungen('prev')">← Vorherige</button>
+                            <button class="btn btn-sm btn-outline-secondary" onclick="admin.ladeAlleUebungen('next')">Nächste →</button>
                         </div>
                     </div>
                 </div>
@@ -193,7 +197,7 @@
         <div class="card-header">
             <h5 class="d-flex justify-content-between align-items-center">
                 <span><i class="fas fa-chart-line"></i> Statistik: Übungen pro Zeit</span>
-                <button class="btn btn-sm btn-outline-secondary" data-bs-toggle="collapse" data-bs-target="#collapseAdminStats" data-analytics-id="admin-collapse-stats">
+                <button class="btn btn-sm btn-outline-secondary" data-bs-toggle="collapse" data-bs-target="#collapseAdminStats">
                     <i class="fas fa-chevron-down"></i>
                 </button>
             </h5>
@@ -210,7 +214,7 @@
         <div class="card-header">
             <h5 class="d-flex justify-content-between align-items-center">
                 <span><i class="fas fa-chart-pie"></i> Übersicht: Kennzahlen</span>
-                <button class="btn btn-sm btn-outline-secondary" data-bs-toggle="collapse" data-bs-target="#collapseAdminSummary" data-analytics-id="admin-collapse-summary">
+                <button class="btn btn-sm btn-outline-secondary" data-bs-toggle="collapse" data-bs-target="#collapseAdminSummary">
                     <i class="fas fa-chevron-down"></i>
                 </button>
             </h5>
@@ -239,10 +243,10 @@
         <div class="modal-content">
             <div class="modal-header">
                 <h5 class="modal-title" id="howtoModalLabel">Anleitung</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close" data-analytics-id="howto-close"></button>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body"><div id="howtoContent">Lädt...</div></div>
-            <div class="modal-footer"><button type="button" class="btn btn-secondary" data-bs-dismiss="modal" data-analytics-id="howto-close-footer">Schließen</button></div>
+            <div class="modal-footer"><button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Schließen</button></div>
         </div>
     </div>
 </div>
@@ -252,7 +256,7 @@
         <div class="modal-content">
             <div class="modal-header">
                 <h5 class="modal-title" id="authorModalLabel">Über den Autor</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Schließen" data-analytics-id="author-close"></button>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Schließen"></button>
             </div>
             <div class="modal-body text-center">
                 <img src="https://www.gravatar.com/avatar/b4d8c8a87a392586b9caee287180163b?s=200" alt="Johannes Rudolph" class="rounded-circle mb-3" width="150" height="150">
@@ -274,7 +278,7 @@
                     <li>✔ Katastrophenschutz & Führungsstrukturen</li>
                 </ul>
             </div>
-            <div class="modal-footer"><button type="button" class="btn btn-secondary" data-bs-dismiss="modal" data-analytics-id="author-close-footer">Schließen</button></div>
+            <div class="modal-footer"><button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Schließen</button></div>
         </div>
     </div>
 </div>
@@ -285,14 +289,14 @@
         <div class="modal-content">
             <div class="modal-header">
                 <h5 class="modal-title" id="jsonModalLabel">Übungsdaten als JSON</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Schließen" data-analytics-id="json-close"></button>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Schließen"></button>
             </div>
             <div class="modal-body">
                 <pre id="jsonOutput" style="white-space: pre-wrap; word-wrap: break-word; padding: 1rem;"></pre>
             </div>
             <div class="modal-footer">
-                <button class="btn btn-secondary" data-bs-dismiss="modal" data-analytics-id="json-close-footer">Schließen</button>
-                <button id="copyJsonBtnFooter" class="btn btn-primary" data-analytics-id="generator-copy-json-footer">📋 In Zwischenablage kopieren</button>
+                <button class="btn btn-secondary" data-bs-dismiss="modal">Schließen</button>
+                <button id="copyJsonBtnFooter" class="btn btn-primary">📋 In Zwischenablage kopieren</button>
             </div>
         </div>
     </div>
@@ -303,7 +307,7 @@
         <div class="modal-content">
             <div class="modal-header">
                 <h5 class="modal-title" id="impressumModalLabel">Impressum</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Schließen" data-analytics-id="impressum-close"></button>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Schließen"></button>
             </div>
             <div class="modal-body">
                 <p><strong>Angaben gemaess § 5 DDG</strong></p>
@@ -323,7 +327,7 @@
                 </p>
             </div>
             <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" data-analytics-id="impressum-close-footer">Schließen</button>
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Schließen</button>
             </div>
         </div>
     </div>
@@ -334,7 +338,7 @@
         <div class="modal-content">
             <div class="modal-header">
                 <h5 class="modal-title" id="datenschutzModalLabel">Datenschutz</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Schließen" data-analytics-id="datenschutz-close"></button>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Schließen"></button>
             </div>
             <div class="modal-body">
                 <h6>1. Verantwortlicher</h6>
@@ -347,10 +351,12 @@
                     Beim Aufruf werden technisch notwendige Informationen verarbeitet
                     (z. B. IP-Adresse, Zeitstempel, Browserinformationen), um den Betrieb zu ermoeglichen.
                 </p>
-                <h6>3. Analyse / Tracking (Google Analytics)</h6>
+                <h6>3. Reichweitenmessung (GoatCounter)</h6>
                 <p>
-                    Diese Anwendung nutzt Google Analytics fuer Nutzungsanalysen.
-                    Tracking kann im Footer ein- oder ausgeschaltet werden.
+                    Diese Anwendung nutzt GoatCounter fuer eine anonyme Reichweitenmessung.
+                    Dabei werden keine Cookies gesetzt und keine personenbezogenen Daten
+                    gespeichert; es werden lediglich aggregierte Seitenaufrufe gezaehlt.
+                    Eine Einwilligung ist dafuer nicht erforderlich.
                 </p>
                 <h6>4. Firebase</h6>
                 <p>
@@ -363,7 +369,7 @@
                 </p>
             </div>
             <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" data-analytics-id="datenschutz-close-footer">Schließen</button>
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Schließen</button>
             </div>
         </div>
     </div>
@@ -372,10 +378,9 @@
 <footer class="main-footer">
     <span><b>Version</b> <span id="version">dev</span></span>
     <span><b>Übung ID:</b> <span id="uebungsId">-</span></span>
-    <button id="analyticsConsentToggle" class="btn btn-sm btn-outline-secondary" type="button" data-analytics-id="footer-toggle-analytics-consent" aria-pressed="false">Analytics: an</button>
     <span class="footer-links">
-        <button class="btn btn-sm btn-outline-secondary" type="button" data-bs-toggle="modal" data-bs-target="#impressumModal" data-analytics-id="footer-open-impressum">Impressum</button>
-        <button class="btn btn-sm btn-outline-secondary" type="button" data-bs-toggle="modal" data-bs-target="#datenschutzModal" data-analytics-id="footer-open-datenschutz">Datenschutz</button>
+        <button class="btn btn-sm btn-outline-secondary" type="button" data-bs-toggle="modal" data-bs-target="#impressumModal">Impressum</button>
+        <button class="btn btn-sm btn-outline-secondary" type="button" data-bs-toggle="modal" data-bs-target="#datenschutzModal">Datenschutz</button>
     </span>
     <span class="footer-links">
         <a href="mailto:johannes.rudolph@thw-oldenburg.de">Kontakt</a>

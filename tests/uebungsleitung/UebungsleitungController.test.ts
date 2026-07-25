@@ -15,7 +15,6 @@ const mocks = vi.hoisted(() => ({
     bindMetaEvents: vi.fn(),
     bindTeilnehmerEvents: vi.fn(),
     bindNachrichtenEvents: vi.fn(),
-    track: vi.fn(),
     uiConfirm: vi.fn(() => true),
     uiSuccess: vi.fn(),
     uiError: vi.fn(),
@@ -46,7 +45,6 @@ vi.mock("../../src/uebungsleitung/UebungsleitungView", () => ({
         bindNachrichtenEvents = mocks.bindNachrichtenEvents;
     }
 }));
-vi.mock("../../src/services/analytics", () => ({ analytics: { track: mocks.track } }));
 vi.mock("../../src/state/store", () => ({ store: { setState: vi.fn() } }));
 vi.mock("../../src/core/UiFeedback", () => ({
     uiFeedback: {
@@ -197,7 +195,7 @@ describe("UebungsleitungController", () => {
         expect(timeline.length).toBeGreaterThan(0);
     });
 
-    it("action methods mutate storage and track analytics", async () => {
+    it("action methods mutate storage", async () => {
         const { UebungsleitungController } = await import("../../src/uebungsleitung");
         const c = new UebungsleitungController({} as never);
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -225,7 +223,6 @@ describe("UebungsleitungController", () => {
         (c as any).persistNachrichtNotiz("A", 1, "x");
 
         expect(mocks.saveStorage).toHaveBeenCalled();
-        expect(mocks.track).toHaveBeenCalled();
     });
 
     it("download debrief handles success and error", async () => {

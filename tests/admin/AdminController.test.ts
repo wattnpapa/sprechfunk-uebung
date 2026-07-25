@@ -13,8 +13,7 @@ const mocks = vi.hoisted(() => ({
     renderChart: vi.fn(),
     bindListEvents: vi.fn(),
     uiError: vi.fn(),
-    uiConfirm: vi.fn(() => true),
-    analyticsTrack: vi.fn()
+    uiConfirm: vi.fn(() => true)
 }));
 
 vi.mock("firebase/app", () => ({ initializeApp: mocks.initializeApp }));
@@ -39,9 +38,6 @@ vi.mock("../../src/admin/AdminView", () => ({
 }));
 vi.mock("../../src/core/UiFeedback", () => ({
     uiFeedback: { error: mocks.uiError, confirm: mocks.uiConfirm }
-}));
-vi.mock("../../src/services/analytics", () => ({
-    analytics: { track: mocks.analyticsTrack }
 }));
 
 describe("AdminController", () => {
@@ -86,14 +82,13 @@ describe("AdminController", () => {
         expect(mocks.getUebungenPaged).toHaveBeenCalledWith(10, null, "initial", false);
     });
 
-    it("delete flow tracks analytics and refreshes list", async () => {
+    it("delete flow removes the exercise and refreshes list", async () => {
         const { AdminController } = await import("../../src/admin/index");
         const c = new AdminController();
         c.setDb({ db: true } as never);
         const reload = vi.spyOn(c, "ladeAlleUebungen").mockResolvedValue();
         await c.loescheUebung("u1");
         expect(mocks.deleteUebung).toHaveBeenCalledWith("u1");
-        expect(mocks.analyticsTrack).toHaveBeenCalledWith("admin_delete_uebung");
         expect(reload).toHaveBeenCalled();
     });
 
