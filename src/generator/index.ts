@@ -295,6 +295,7 @@ export class GeneratorController {
         if (!funkspruecheLoaded) {
             return;
         }
+        this.warnIfSpruchPoolTooSmall();
 
         // 3. Generieren
         this.generationService.generate(this.funkUebung);
@@ -347,8 +348,7 @@ export class GeneratorController {
         });
         try {
             const texts = await Promise.all(promises);
-            this.funkUebung.funksprueche = texts
-                .flatMap(t => t.split("\n").filter(s => s.trim() !== ""))
+            this.funkUebung.funksprueche = this.normalizeFunksprueche(texts.flatMap(t => t.split("\n")))
                 .sort(() => Math.random() - 0.5);
             return true;
         } catch (error) {
@@ -364,11 +364,46 @@ export class GeneratorController {
             return false;
         }
         const text = await file.text();
-        this.funkUebung.funksprueche = text
-            .normalize("NFKC")
-            .split("\n")
-            .filter(s => s.trim() !== "");
+        this.funkUebung.funksprueche = this.normalizeFunksprueche(text.split("\n"));
         return true;
+    }
+
+    /**
+     * Vereinheitlicht Zeilen aus Vorlagen/Upload und entfernt Dubletten.
+     * Doppelte Zeilen (auch über mehrere Vorlagen hinweg oder mit abweichender
+     * Groß-/Kleinschreibung) würden sonst zwangsläufig bei mehreren Teilnehmern landen.
+     */
+    private normalizeFunksprueche(lines: string[]): string[] {
+        const gesehen = new Set<string>();
+        const result: string[] = [];
+        for (const line of lines) {
+            const text = line.normalize("NFKC").replace(/\s+/g, " ").trim();
+            if (text === "") {
+                continue;
+            }
+            const key = text.toLowerCase();
+            if (gesehen.has(key)) {
+                continue;
+            }
+            gesehen.add(key);
+            result.push(text);
+        }
+        return result;
+    }
+
+    /** Warnt, wenn der Spruch-Pool kleiner ist als der Bedarf der Übung. */
+    private warnIfSpruchPoolTooSmall(): void {
+        const anmeldungOffset = this.funkUebung.anmeldungAktiv ? 1 : 0;
+        const proTeilnehmer = Math.max(0, this.funkUebung.spruecheProTeilnehmer - anmeldungOffset);
+        const bedarf = this.funkUebung.teilnehmerListe.length * proTeilnehmer;
+        const vorhanden = this.funkUebung.funksprueche.length;
+        if (bedarf > 0 && vorhanden < bedarf) {
+            uiFeedback.info(
+                `Nur ${vorhanden} eindeutige Funksprüche für ${bedarf} benötigte Nachrichten – ` +
+                "einzelne Sprüche wiederholen sich zwangsläufig. Wähle mehr Vorlagen aus oder " +
+                "reduziere 'Funksprüche pro Teilnehmer'."
+            );
+        }
     }
 
     renderUebungResult() {

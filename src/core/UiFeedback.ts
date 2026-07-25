@@ -21,6 +21,9 @@ export class UiFeedback {
     }
 
     private ensureToastContainer(): HTMLElement | null {
+        if (typeof document === "undefined") {
+            return null;
+        }
         const doc = document as Document & { body?: HTMLElement };
         if (!doc || !doc.body || typeof doc.body.appendChild !== "function") {
             return null;

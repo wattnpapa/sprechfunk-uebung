@@ -34,6 +34,78 @@ describe("GenerationService", () => {
         expect(u.loesungsStaerken?.A).toBeDefined();
     });
 
+    it("uses every funkspruch at most once while the pool is sufficient", () => {
+        const service = new GenerationService();
+        const u = new FunkUebung("dev");
+        u.anmeldungAktiv = false;
+        u.teilnehmerListe = ["A", "B", "C", "D"];
+        u.leitung = "L";
+        u.spruecheProTeilnehmer = 5;
+        u.spruecheAnAlle = 1;
+        u.spruecheAnMehrere = 1;
+        u.buchstabierenAn = 0;
+        u.autoStaerkeErgaenzen = false;
+        u.funksprueche = Array.from({ length: 40 }, (_, i) => `Spruch ${i + 1}`);
+
+        service.generate(u);
+
+        const alleTexte = Object.values(u.nachrichten).flat().map(n => n.nachricht);
+        expect(alleTexte).toHaveLength(20);
+        expect(new Set(alleTexte).size).toBe(alleTexte.length);
+    });
+
+    it("spreads repetitions evenly when the pool is smaller than the demand", () => {
+        const service = new GenerationService();
+        const u = new FunkUebung("dev");
+        u.anmeldungAktiv = false;
+        u.teilnehmerListe = ["A", "B", "C", "D"];
+        u.leitung = "L";
+        u.spruecheProTeilnehmer = 5;
+        u.spruecheAnAlle = 0;
+        u.spruecheAnMehrere = 0;
+        u.buchstabierenAn = 0;
+        u.autoStaerkeErgaenzen = false;
+        u.funksprueche = Array.from({ length: 10 }, (_, i) => `Spruch ${i + 1}`);
+
+        service.generate(u);
+
+        // 20 Nachrichten aus 10 Sprüchen: jeder Spruch genau zweimal, keiner öfter.
+        const haeufigkeit = new Map<string, number>();
+        Object.values(u.nachrichten).flat().forEach(n => {
+            haeufigkeit.set(n.nachricht, (haeufigkeit.get(n.nachricht) ?? 0) + 1);
+        });
+        expect(haeufigkeit.size).toBe(10);
+        expect([...haeufigkeit.values()].every(count => count === 2)).toBe(true);
+
+        // Innerhalb eines Teilnehmers darf sich trotzdem nichts wiederholen.
+        Object.values(u.nachrichten).forEach(liste => {
+            const texte = liste.map(n => n.nachricht);
+            expect(new Set(texte).size).toBe(texte.length);
+        });
+    });
+
+    it("does not hand the same spelling message to several participants", () => {
+        const service = new GenerationService();
+        const u = new FunkUebung("dev");
+        u.anmeldungAktiv = false;
+        u.teilnehmerListe = ["A", "B", "C"];
+        u.leitung = "L";
+        u.spruecheProTeilnehmer = 3;
+        u.spruecheAnAlle = 0;
+        u.spruecheAnMehrere = 0;
+        u.buchstabierenAn = 2;
+        u.autoStaerkeErgaenzen = false;
+        u.funksprueche = [
+            ...Array.from({ length: 9 }, (_, i) => `Normaler Spruch ${i + 1}`),
+            ...Array.from({ length: 8 }, (_, i) => `Buchstabiere WORTNUMMER${i + 1}`)
+        ];
+
+        service.generate(u);
+
+        const alleTexte = Object.values(u.nachrichten).flat().map(n => n.nachricht);
+        expect(new Set(alleTexte).size).toBe(alleTexte.length);
+    });
+
     it("updateChecksum reacts to data changes", () => {
         const service = new GenerationService();
         const u = new FunkUebung("dev");

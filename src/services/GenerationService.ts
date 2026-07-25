@@ -127,10 +127,9 @@ export class GenerationService {
 
     private verteileNachrichtenFair(uebung: FunkUebung): Record<string, Nachricht[]> {
         const nachrichtenVerteilung: Record<string, Nachricht[]> = {};
-        let nachrichtenIndex = 0;
-        
+
         interface PoolEntry {
-            sender: string; nachricht: { text: string; empfaenger: string[] } 
+            sender: string; nachricht: { text: string; empfaenger: string[] }
         }
         const alleNachrichten: PoolEntry[] = [];
 
@@ -138,13 +137,18 @@ export class GenerationService {
         const anMehrere = Math.max(0, uebung.spruecheAnMehrere);
         const anmeldungsOffset = uebung.anmeldungAktiv ? 1 : 0;
         const anEinzeln = Math.max(0, uebung.spruecheProTeilnehmer - anmeldungsOffset - anAlle - anMehrere);
-        const hasSprueche = uebung.funksprueche.length > 0;
         if (uebung.funksprueche.length === 0) {
+            return nachrichtenVerteilung;
+        }
+
+        const dealer = this.createSpruchDealer(uebung.funksprueche);
+        if (dealer.poolSize === 0) {
             return nachrichtenVerteilung;
         }
 
         uebung.teilnehmerListe.forEach(teilnehmer => {
             nachrichtenVerteilung[teilnehmer] = [];
+            const bereitsVerwendet = new Set<string>();
 
             // Anmeldungsnachricht
             if (uebung.anmeldungAktiv) {
@@ -157,13 +161,11 @@ export class GenerationService {
 
             // Nachrichten an 'Alle'
             for (let i = 0; i < anAlle; i++) {
-                if (!hasSprueche) {
-                    break;
-                }
-                const spruch = uebung.funksprueche[nachrichtenIndex++ % uebung.funksprueche.length];
+                const spruch = dealer.draw(bereitsVerwendet);
                 if (!spruch) {
                     continue;
                 }
+                bereitsVerwendet.add(spruch);
                 alleNachrichten.push({
                     sender: teilnehmer,
                     nachricht: {
@@ -175,13 +177,11 @@ export class GenerationService {
 
             // Nachrichten an 'Mehrere'
             for (let i = 0; i < anMehrere; i++) {
-                if (!hasSprueche) {
-                    break;
-                }
-                const spruch = uebung.funksprueche[nachrichtenIndex++ % uebung.funksprueche.length];
+                const spruch = dealer.draw(bereitsVerwendet);
                 if (!spruch) {
                     continue;
                 }
+                bereitsVerwendet.add(spruch);
                 const empfaengerGruppe = this.getRandomSubsetOfOthers(uebung.teilnehmerListe, teilnehmer);
                 alleNachrichten.push({
                     sender: teilnehmer,
@@ -194,13 +194,11 @@ export class GenerationService {
 
             // Einzel-Nachrichten
             for (let i = 0; i < anEinzeln; i++) {
-                if (!hasSprueche) {
-                    break;
-                }
-                const spruch = uebung.funksprueche[nachrichtenIndex++ % uebung.funksprueche.length];
+                const spruch = dealer.draw(bereitsVerwendet);
                 if (!spruch) {
                     continue;
                 }
+                bereitsVerwendet.add(spruch);
                 const empfaenger = this.getRandomOther(uebung.teilnehmerListe, teilnehmer);
                 alleNachrichten.push({
                     sender: teilnehmer,
@@ -245,17 +243,29 @@ export class GenerationService {
             });
         });
 
-        // Jetzt Buchstabier-Prüfung
+        // Jetzt Buchstabier-Prüfung.
+        // 'globalVergeben' verhindert, dass ein nachträglich eingesetzter Buchstabier-Spruch
+        // bei mehreren Teilnehmern landet.
+        const globalVergeben = new Set<string>();
+        Object.values(nachrichtenVerteilung).forEach(liste =>
+            liste.forEach(n => globalVergeben.add(n.nachricht))
+        );
+
         uebung.teilnehmerListe.forEach(teilnehmer => {
             const start = uebung.anmeldungAktiv ? 1 : 0;
             const nachrichten = (nachrichtenVerteilung[teilnehmer] || []).slice(start);
             const aktuelleAnzahl = nachrichten.filter(n => enthaeltBuchstabierwort(n.nachricht)).length;
 
             if (aktuelleAnzahl < uebung.buchstabierenAn) {
-                const restlicheNachrichten = uebung.funksprueche.filter(spruch =>
-                    enthaeltBuchstabierwort(spruch) &&
-                    !nachrichten.some(n => n.nachricht === spruch)
-                );
+                const buchstabierSprueche = uebung.funksprueche.filter(enthaeltBuchstabierwort);
+                // Bevorzugt noch gar nicht vergebene Sprüche; erst wenn diese ausgehen,
+                // werden Sprüche zugelassen, die zumindest dieser Teilnehmer noch nicht hat.
+                const restlicheNachrichten = [
+                    ...buchstabierSprueche.filter(spruch => !globalVergeben.has(spruch)),
+                    ...buchstabierSprueche.filter(spruch =>
+                        globalVergeben.has(spruch) && !nachrichten.some(n => n.nachricht === spruch)
+                    )
+                ].reverse();
 
                 const benoetigt = uebung.buchstabierenAn - aktuelleAnzahl;
                 let ersetzt = 0;
@@ -269,6 +279,7 @@ export class GenerationService {
                         const neuerSpruch = restlicheNachrichten.pop();
                         if (neuerSpruch) {
                             nachricht.nachricht = neuerSpruch;
+                            globalVergeben.add(neuerSpruch);
                             ersetzt++;
                         }
                     }
@@ -277,6 +288,40 @@ export class GenerationService {
         });
 
         return nachrichtenVerteilung;
+    }
+
+    /**
+     * Verteilt die Funksprüche wie ein Kartenspiel: Jeder Spruch wird einmal ausgeteilt,
+     * bevor überhaupt ein Spruch ein zweites Mal vorkommt. Zusätzlich bekommt kein
+     * Teilnehmer denselben Spruch doppelt, solange der Pool das hergibt.
+     */
+    private createSpruchDealer(funksprueche: string[]): { poolSize: number; draw(bereitsVerwendet: Set<string>): string | undefined } {
+        const eindeutig = [...new Set(
+            funksprueche.map(spruch => spruch.trim()).filter(spruch => spruch.length > 0)
+        )];
+        const mischen = (): string[] => [...eindeutig].sort(() => Math.random() - 0.5);
+        const deck: string[] = mischen();
+
+        return {
+            poolSize: eindeutig.length,
+            draw(bereitsVerwendet: Set<string>): string | undefined {
+                if (eindeutig.length === 0) {
+                    return undefined;
+                }
+                let index = deck.findIndex(spruch => !bereitsVerwendet.has(spruch));
+                if (index < 0) {
+                    // Deck aufgebraucht (oder Rest liegt bereits bei diesem Teilnehmer):
+                    // frisch gemischten Nachschub anhängen, damit Restsprüche nicht verfallen.
+                    deck.push(...mischen());
+                    index = deck.findIndex(spruch => !bereitsVerwendet.has(spruch));
+                }
+                if (index < 0) {
+                    // Teilnehmer hat bereits jeden verfügbaren Spruch – Wiederholung unvermeidbar.
+                    index = 0;
+                }
+                return deck.splice(index, 1)[0];
+            }
+        };
     }
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
