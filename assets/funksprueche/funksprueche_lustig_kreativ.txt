@@ -23,7 +23,6 @@ MARIO hat ein Power-Up gefressen und steckt jetzt in der Tür. Weitere Informati
 MONEYPENNY bittet um eine neue Schreibmaschine – wieder explodiert. Bitte um Rückmeldung.
 Die LADERAMPEN auf dem MUTTERSCHIFF sind blockiert. Vorfall wurde dokumentiert.
 SG-1 hat den PLANETEN P3X-888 erfolgreich erkundet. Situation unter Kontrolle.
-Die LADERAMPEN auf dem MUTTERSCHIFF sind blockiert. Vorfall wurde dokumentiert.
 GOOFY steckt mit dem Kopf in einer Tuba fest. Führung ist informiert.
 BLACK WIDOW wünscht sich neuen Kaffee. Letzter Versuch war „explosiv“. Führung ist informiert.
 EVE sucht nach Pflanzenspuren im SEKTOR 4G. Einsatzkräfte sind unterwegs.
@@ -39,14 +38,11 @@ Die BORG haben sich im BETA-QUADRANTEN zurückgezogen. Nachschub wird vorbereite
 EINHORN blockiert die Zufahrt zur REGENBOGENSTRAßE. Logistik übernimmt Koordination.
 LUIGI sucht verzweifelt den Ausgang aus dem Geisterhaus. Sicherungsteam ist alarmiert.
 Die USS ENTERPRISE benötigt dringend Verstärkung an der Neutralen Zone. Wir benötigen Bestätigung.
-Die LADERAMPEN auf dem MUTTERSCHIFF sind blockiert. Vorfall wurde dokumentiert.
 POKÉMON-TRAINER Ash hat versehentlich ein DIGIMON gefangen. Logistik übernimmt Koordination.
 Das SCHLEIFENGESCHÄFT von MINNIE MAUS wurde durch ein Erdbeben zerstört. Situation unter Kontrolle.
 Der CHEVRON 7 wurde erfolgreich eingerastet. Führung ist informiert.
-Die USS ENTERPRISE benötigt dringend Verstärkung an der Neutralen Zone. Wir benötigen Bestätigung.
 VOLDEMORT plant offenbar eine Party in der verbotenen Abteilung. Sicherungsteam ist alarmiert.
 DONALD DUCK wurde beim Baden im Springbrunnen erwischt. Logistik übernimmt Koordination.
-HERMINE benötigt Unterstützung bei der Bibliotheksordnung. Führung ist informiert.
 THOR hat versehentlich den Aufzug mit MJÖLNIR blockiert. Einsatzkräfte sind unterwegs.
 EVE sucht nach Pflanzenspuren im SEKTOR 4G. Situation unter Kontrolle.
 DONALD DUCK wurde beim Baden im Springbrunnen erwischt. Situation unter Kontrolle.
@@ -60,7 +56,6 @@ SHREK hat das letzte SCHLAMMBAD belegt. Wartezeit unklar. Weitere Informationen 
 SPIDER-MAN hängt im Serverraum fest – wortwörtlich. Nachschub wird vorbereitet.
 BLACK WIDOW wünscht sich neuen Kaffee. Letzter Versuch war „explosiv“. Wir benötigen Bestätigung.
 EVE sucht nach Pflanzenspuren im SEKTOR 4G. Logistik übernimmt Koordination.
-DONALD DUCK wurde beim Baden im Springbrunnen erwischt. Situation unter Kontrolle.
 Der WARPKERN der USS Voyager wurde stabilisiert. Sicherheit ist wiederhergestellt. Logistik übernimmt Koordination.
 MONEYPENNY bittet um eine neue Schreibmaschine – wieder explodiert. Logistik übernimmt Koordination.
 GANDALF sagt: „Du kommst hier NICHT durch.“ Bitte Umleitung. Nachschub wird vorbereitet.
@@ -68,17 +63,14 @@ WALL-E hat eine neue GABEL entdeckt – er ist begeistert. Bitte um Rückmeldung
 Der GO'AULD-Angriff konnte durch Einsatz von Naquadah-Minen abgewehrt werden. Logistik übernimmt Koordination.
 SHREK hat das letzte SCHLAMMBAD belegt. Wartezeit unklar. Nachschub wird vorbereitet.
 JARVIS meldet unautorisierten Zugriff auf das HULKBUSTER-System. Führung ist informiert.
-Der CHEVRON 7 wurde erfolgreich eingerastet. Sicherungsteam ist alarmiert.
 THOR hat versehentlich den Aufzug mit MJÖLNIR blockiert. Nachschub wird vorbereitet.
 BOWSER wurde mit einem Bananenschalen-Hinterhalt gestoppt. Bitte um Rückmeldung.
-Der DELOREAN wurde bei 88 Meilen pro Stunde gesichtet. Nachschub wird vorbereitet.
 JARVIS meldet unautorisierten Zugriff auf das HULKBUSTER-System. Einsatzkräfte sind unterwegs.
 Der TRANSPORTER-Raum meldet Ausfall der Hauptsysteme. Vorfall wurde dokumentiert.
 SG-1 hat den PLANETEN P3X-888 erfolgreich erkundet. Einsatzkräfte sind unterwegs.
 MONEYPENNY bittet um eine neue Schreibmaschine – wieder explodiert. Nachschub wird vorbereitet.
 Der GO'AULD-Angriff konnte durch Einsatz von Naquadah-Minen abgewehrt werden. Einsatzkräfte sind unterwegs.
 MICKEY MAUS hat heute blaue Schuhe an. Sicherungsteam ist alarmiert.
-Das SCHLEIFENGESCHÄFT von MINNIE MAUS wurde durch ein Erdbeben zerstört. Nachschub wird vorbereitet.
 Das SCHLEIFENGESCHÄFT von MINNIE MAUS wurde durch ein Erdbeben zerstört. Logistik übernimmt Koordination.
 Das SCHLEIFENGESCHÄFT von MINNIE MAUS wurde durch ein Erdbeben zerstört. Bitte um Rückmeldung.
 Das STARGATE-CENTER meldet Energieprobleme in der Kommandozentrale. Wir benötigen Bestätigung.
@@ -87,7 +79,6 @@ Q hat versehentlich das Büro gesprengt. Ursache: FEHLZÜNDUNG. Nachschub wird v
 MICKEY MAUS hat heute blaue Schuhe an. Führung ist informiert.
 Der PHÖNIX ist entflogen. Sichtung zuletzt bei der peitschenden Weide. Bitte um Rückmeldung.
 BOND wurde zuletzt in MONTE CARLO mit einem Jetpack gesichtet. Bitte um Rückmeldung.
-VOLDEMORT plant offenbar eine Party in der verbotenen Abteilung. Sicherungsteam ist alarmiert.
 THOR hat versehentlich den Aufzug mit MJÖLNIR blockiert. Führung ist informiert.
 DOBBY hat soeben HOGWARTS erreicht. Codewort: DAMPFLOKOMOTIVE. Logistik übernimmt Koordination.
 Der FLUXKOMPENSATOR ist überhitzt – DOC braucht sofortige Kühlung. Wir benötigen Bestätigung.
@@ -98,11 +89,8 @@ Die LADERAMPEN auf dem MUTTERSCHIFF sind blockiert. Logistik übernimmt Koordina
 Die SCHOKOFRÖSCHE sind ausverkauft. Hogsmeade bittet um Nachschub. Führung ist informiert.
 Der AUTOPILOT hat einen Kurs Richtung METEOR-FELD eingeschlagen. Weitere Informationen folgen.
 Der REPLIKATOR gibt nur noch blauen Pudding aus – Ursache unbekannt. Wir benötigen Bestätigung.
-Optimus Prime ruft zur Versammlung auf dem PLANET CYBERTRON. Wir benötigen Bestätigung.
-Optimus Prime ruft zur Versammlung auf dem PLANET CYBERTRON. Logistik übernimmt Koordination.
 007 meldet sich aus einem U-Boot unter der THEMSE. Einsatzkräfte sind unterwegs.
 007 meldet sich aus einem U-Boot unter der THEMSE. Logistik übernimmt Koordination.
-Der REPLIKATOR gibt nur noch blauen Pudding aus – Ursache unbekannt. Führung ist informiert.
 WALL-E hat eine neue GABEL entdeckt – er ist begeistert. Logistik übernimmt Koordination.
 Der REPLIKATOR gibt nur noch blauen Pudding aus – Ursache unbekannt. Logistik übernimmt Koordination.
 Der TOK'RA-Botschafter trifft in 30 Minuten ein. Bitte um Rückmeldung.
@@ -111,85 +99,61 @@ Der HOGWARTS-EXPRESS hat Verspätung wegen fliegender Teppiche. Einsatzkräfte s
 Der DELOREAN wurde bei 88 Meilen pro Stunde gesichtet. Einsatzkräfte sind unterwegs.
 Q hat versehentlich das Büro gesprengt. Ursache: FEHLZÜNDUNG. Vorfall wurde dokumentiert.
 Der PHÖNIX ist entflogen. Sichtung zuletzt bei der peitschenden Weide. Weitere Informationen folgen.
-007 meldet sich aus einem U-Boot unter der THEMSE. Einsatzkräfte sind unterwegs.
 DONALD DUCK wurde beim Baden im Springbrunnen erwischt. Wir benötigen Bestätigung.
-MONEYPENNY bittet um eine neue Schreibmaschine – wieder explodiert. Logistik übernimmt Koordination.
-WALL-E hat eine neue GABEL entdeckt – er ist begeistert. Bitte um Rückmeldung.
 Der FLUXKOMPENSATOR ist überhitzt – DOC braucht sofortige Kühlung. Einsatzkräfte sind unterwegs.
 Der TOK'RA-Botschafter trifft in 30 Minuten ein. Weitere Informationen folgen.
-SG-1 hat den PLANETEN P3X-888 erfolgreich erkundet. Situation unter Kontrolle.
 Der DELOREAN wurde bei 88 Meilen pro Stunde gesichtet. Weitere Informationen folgen.
-BLACK WIDOW wünscht sich neuen Kaffee. Letzter Versuch war „explosiv“. Weitere Informationen folgen.
 Der TRANSPORTER-Raum meldet Ausfall der Hauptsysteme. Logistik übernimmt Koordination.
 YOSHI hat das gesamte Notfallessen verputzt. Vorfall wurde dokumentiert.
 DOBBY hat soeben HOGWARTS erreicht. Codewort: DAMPFLOKOMOTIVE. Situation unter Kontrolle.
 Q hat versehentlich das Büro gesprengt. Ursache: FEHLZÜNDUNG. Sicherungsteam ist alarmiert.
-BATMAN benötigt Unterstützung von ROBIN an der Bat-Höhle. Bitte um Rückmeldung.
-MONEYPENNY bittet um eine neue Schreibmaschine – wieder explodiert. Logistik übernimmt Koordination.
 Die BORG haben sich im BETA-QUADRANTEN zurückgezogen. Wir benötigen Bestätigung.
 Der SITH-LORD hat seinen Lichtschwertakku verloren. Bitte um Rückmeldung.
 Der FLUXKOMPENSATOR ist überhitzt – DOC braucht sofortige Kühlung. Sicherungsteam ist alarmiert.
-Q hat versehentlich das Büro gesprengt. Ursache: FEHLZÜNDUNG. Wir benötigen Bestätigung.
 TARDIS ist verschwunden – Der DOKTOR hat wohl wieder Zeitprobleme. Sicherungsteam ist alarmiert.
 BATMAN benötigt Unterstützung von ROBIN an der Bat-Höhle. Wir benötigen Bestätigung.
 Der TRANSPORTER-Raum meldet Ausfall der Hauptsysteme. Weitere Informationen folgen.
 YOSHI hat das gesamte Notfallessen verputzt. Bitte um Rückmeldung.
-VOLDEMORT plant offenbar eine Party in der verbotenen Abteilung. Nachschub wird vorbereitet.
 Die LADERAMPEN auf dem MUTTERSCHIFF sind blockiert. Weitere Informationen folgen.
 MICKEY MAUS hat heute blaue Schuhe an. Wir benötigen Bestätigung.
 PLUTO hat seinen Napf umgestoßen. Die Küche ist überschwemmt. Weitere Informationen folgen.
 YOSHI hat das gesamte Notfallessen verputzt. Situation unter Kontrolle.
 JARVIS meldet unautorisierten Zugriff auf das HULKBUSTER-System. Logistik übernimmt Koordination.
 Der HOGWARTS-EXPRESS hat Verspätung wegen fliegender Teppiche. Sicherungsteam ist alarmiert.
-POKÉMON-TRAINER Ash hat versehentlich ein DIGIMON gefangen. Logistik übernimmt Koordination.
 PEACH sendet eine Nachricht: „Nicht schon wieder entführt!“ Führung ist informiert.
-Der CHEVRON 7 wurde erfolgreich eingerastet. Vorfall wurde dokumentiert.
 Der CHEVRON 7 wurde erfolgreich eingerastet. Vorfall wurde dokumentiert.
 Der TRANSPORTER-Raum meldet Ausfall der Hauptsysteme. Einsatzkräfte sind unterwegs.
 Wall-E meldet: SCHROTTBERG auf Sektor E-12 gefunden. Weitere Informationen folgen.
-Der FLUXKOMPENSATOR ist überhitzt – DOC braucht sofortige Kühlung. Sicherungsteam ist alarmiert.
 Der PHÖNIX ist entflogen. Sichtung zuletzt bei der peitschenden Weide. Führung ist informiert.
 Der AUTOPILOT hat einen Kurs Richtung METEOR-FELD eingeschlagen. Führung ist informiert.
 007 meldet sich aus einem U-Boot unter der THEMSE. Führung ist informiert.
 Der SITH-LORD hat seinen Lichtschwertakku verloren. Situation unter Kontrolle.
 SPIDER-MAN hängt im Serverraum fest – wortwörtlich. Führung ist informiert.
-Der HOGWARTS-EXPRESS hat Verspätung wegen fliegender Teppiche. Bitte um Rückmeldung.
 LUIGI sucht verzweifelt den Ausgang aus dem Geisterhaus. Logistik übernimmt Koordination.
 Der CHEVRON 7 wurde erfolgreich eingerastet. Nachschub wird vorbereitet.
 GANDALF sagt: „Du kommst hier NICHT durch.“ Bitte Umleitung. Einsatzkräfte sind unterwegs.
 Der FLUXKOMPENSATOR ist überhitzt – DOC braucht sofortige Kühlung. Logistik übernimmt Koordination.
-Q hat versehentlich das Büro gesprengt. Ursache: FEHLZÜNDUNG. Sicherungsteam ist alarmiert.
 SHREK hat das letzte SCHLAMMBAD belegt. Wartezeit unklar. Sicherungsteam ist alarmiert.
 YOSHI hat das gesamte Notfallessen verputzt. Sicherungsteam ist alarmiert.
 Der AUTOPILOT hat einen Kurs Richtung METEOR-FELD eingeschlagen. Wir benötigen Bestätigung.
 Minion KEVIN bittet um mehr BANANEN im Lager. Situation unter Kontrolle.
-Das SCHLEIFENGESCHÄFT von MINNIE MAUS wurde durch ein Erdbeben zerstört. Logistik übernimmt Koordination.
-TARDIS ist verschwunden – Der DOKTOR hat wohl wieder Zeitprobleme. Situation unter Kontrolle.
 Die LADERAMPEN auf dem MUTTERSCHIFF sind blockiert. Sicherungsteam ist alarmiert.
 SG-1 hat den PLANETEN P3X-888 erfolgreich erkundet. Logistik übernimmt Koordination.
 PEACH sendet eine Nachricht: „Nicht schon wieder entführt!“ Nachschub wird vorbereitet.
 Der FLUXKOMPENSATOR ist überhitzt – DOC braucht sofortige Kühlung. Nachschub wird vorbereitet.
-Der HOGWARTS-EXPRESS hat Verspätung wegen fliegender Teppiche. Einsatzkräfte sind unterwegs.
 BOND wurde zuletzt in MONTE CARLO mit einem Jetpack gesichtet. Nachschub wird vorbereitet.
 Der DELOREAN wurde bei 88 Meilen pro Stunde gesichtet. Wir benötigen Bestätigung.
-Der FLUXKOMPENSATOR ist überhitzt – DOC braucht sofortige Kühlung. Wir benötigen Bestätigung.
 TONY STARK benötigt eine neue ENERGIEZELLE für seinen ARC-Reaktor. Führung ist informiert.
 Minion KEVIN bittet um mehr BANANEN im Lager. Logistik übernimmt Koordination.
 BATMAN benötigt Unterstützung von ROBIN an der Bat-Höhle. Weitere Informationen folgen.
-Q hat versehentlich das Büro gesprengt. Ursache: FEHLZÜNDUNG. Nachschub wird vorbereitet.
 Der PHÖNIX ist entflogen. Sichtung zuletzt bei der peitschenden Weide. Sicherungsteam ist alarmiert.
 Der PHÖNIX ist entflogen. Sichtung zuletzt bei der peitschenden Weide. Wir benötigen Bestätigung.
 MARIO hat ein Power-Up gefressen und steckt jetzt in der Tür. Führung ist informiert.
 DOBBY hat soeben HOGWARTS erreicht. Codewort: DAMPFLOKOMOTIVE. Führung ist informiert.
-Q hat versehentlich das Büro gesprengt. Ursache: FEHLZÜNDUNG. Sicherungsteam ist alarmiert.
-YOSHI hat das gesamte Notfallessen verputzt. Bitte um Rückmeldung.
 DOBBY hat soeben HOGWARTS erreicht. Codewort: DAMPFLOKOMOTIVE. Einsatzkräfte sind unterwegs.
 Der DELOREAN wurde bei 88 Meilen pro Stunde gesichtet. Bitte um Rückmeldung.
-Q hat versehentlich das Büro gesprengt. Ursache: FEHLZÜNDUNG. Vorfall wurde dokumentiert.
-JARVIS meldet unautorisierten Zugriff auf das HULKBUSTER-System. Einsatzkräfte sind unterwegs.
 KING KONG wurde zuletzt auf dem EMPIRE STATE BUILDING gesichtet. Sicherungsteam ist alarmiert.
 BATMAN benötigt Unterstützung von ROBIN an der Bat-Höhle. Situation unter Kontrolle.
-Der REPLIKATOR gibt nur noch blauen Pudding aus – Ursache unbekannt. Logistik übernimmt Koordination.
 POKÉMON-TRAINER Ash hat versehentlich ein DIGIMON gefangen. Einsatzkräfte sind unterwegs.
 Die USS ENTERPRISE benötigt dringend Verstärkung an der Neutralen Zone. Weitere Informationen folgen.
 Wall-E meldet: SCHROTTBERG auf Sektor E-12 gefunden. Sicherungsteam ist alarmiert.
@@ -200,110 +164,65 @@ Die BORG haben sich im BETA-QUADRANTEN zurückgezogen. Weitere Informationen fol
 Der CHEVRON 7 wurde erfolgreich eingerastet. Einsatzkräfte sind unterwegs.
 Der DELOREAN wurde bei 88 Meilen pro Stunde gesichtet. Vorfall wurde dokumentiert.
 LUIGI sucht verzweifelt den Ausgang aus dem Geisterhaus. Wir benötigen Bestätigung.
-Minion KEVIN bittet um mehr BANANEN im Lager. Logistik übernimmt Koordination.
 Die USS ENTERPRISE benötigt dringend Verstärkung an der Neutralen Zone. Sicherungsteam ist alarmiert.
 LUIGI sucht verzweifelt den Ausgang aus dem Geisterhaus. Vorfall wurde dokumentiert.
 Das ASTON MARTIN-Labor benötigt neue Reifen – Goldfinger war wieder da. Bitte um Rückmeldung.
 Der AUTOPILOT hat einen Kurs Richtung METEOR-FELD eingeschlagen. Logistik übernimmt Koordination.
 Der PHÖNIX ist entflogen. Sichtung zuletzt bei der peitschenden Weide. Nachschub wird vorbereitet.
 DONALD DUCK wurde beim Baden im Springbrunnen erwischt. Nachschub wird vorbereitet.
-PEACH sendet eine Nachricht: „Nicht schon wieder entführt!“ Nachschub wird vorbereitet.
-THOR hat versehentlich den Aufzug mit MJÖLNIR blockiert. Nachschub wird vorbereitet.
 TONY STARK benötigt eine neue ENERGIEZELLE für seinen ARC-Reaktor. Einsatzkräfte sind unterwegs.
-Der AUTOPILOT hat einen Kurs Richtung METEOR-FELD eingeschlagen. Führung ist informiert.
 Q hat versehentlich das Büro gesprengt. Ursache: FEHLZÜNDUNG. Führung ist informiert.
-Der AUTOPILOT hat einen Kurs Richtung METEOR-FELD eingeschlagen. Logistik übernimmt Koordination.
 Minion KEVIN bittet um mehr BANANEN im Lager. Sicherungsteam ist alarmiert.
 Der WARPKERN der USS Voyager wurde stabilisiert. Sicherheit ist wiederhergestellt. Wir benötigen Bestätigung.
 Die BORG haben sich im BETA-QUADRANTEN zurückgezogen. Logistik übernimmt Koordination.
-YOSHI hat das gesamte Notfallessen verputzt. Sicherungsteam ist alarmiert.
-THOR hat versehentlich den Aufzug mit MJÖLNIR blockiert. Führung ist informiert.
 Der TOK'RA-Botschafter trifft in 30 Minuten ein. Situation unter Kontrolle.
 MICKEY MAUS hat heute blaue Schuhe an. Weitere Informationen folgen.
 EINHORN blockiert die Zufahrt zur REGENBOGENSTRAßE. Sicherungsteam ist alarmiert.
 PEACH sendet eine Nachricht: „Nicht schon wieder entführt!“ Situation unter Kontrolle.
-THOR hat versehentlich den Aufzug mit MJÖLNIR blockiert. Bitte um Rückmeldung.
-007 meldet sich aus einem U-Boot unter der THEMSE. Einsatzkräfte sind unterwegs.
-VOLDEMORT plant offenbar eine Party in der verbotenen Abteilung. Sicherungsteam ist alarmiert.
 007 meldet sich aus einem U-Boot unter der THEMSE. Bitte um Rückmeldung.
-Q hat versehentlich das Büro gesprengt. Ursache: FEHLZÜNDUNG. Sicherungsteam ist alarmiert.
 EVE sucht nach Pflanzenspuren im SEKTOR 4G. Sicherungsteam ist alarmiert.
 Der REPLIKATOR gibt nur noch blauen Pudding aus – Ursache unbekannt. Situation unter Kontrolle.
-Der HOGWARTS-EXPRESS hat Verspätung wegen fliegender Teppiche. Einsatzkräfte sind unterwegs.
 Der GO'AULD-Angriff konnte durch Einsatz von Naquadah-Minen abgewehrt werden. Führung ist informiert.
-Wall-E meldet: SCHROTTBERG auf Sektor E-12 gefunden. Weitere Informationen folgen.
-SHREK hat das letzte SCHLAMMBAD belegt. Wartezeit unklar. Situation unter Kontrolle.
 BOWSER wurde mit einem Bananenschalen-Hinterhalt gestoppt. Einsatzkräfte sind unterwegs.
-Der PHÖNIX ist entflogen. Sichtung zuletzt bei der peitschenden Weide. Sicherungsteam ist alarmiert.
 Der TRANSPORTER-Raum meldet Ausfall der Hauptsysteme. Führung ist informiert.
 Der DELOREAN wurde bei 88 Meilen pro Stunde gesichtet. Sicherungsteam ist alarmiert.
 WALL-E hat eine neue GABEL entdeckt – er ist begeistert. Führung ist informiert.
 BLACK WIDOW wünscht sich neuen Kaffee. Letzter Versuch war „explosiv“. Vorfall wurde dokumentiert.
-Der TRANSPORTER-Raum meldet Ausfall der Hauptsysteme. Nachschub wird vorbereitet.
-VOLDEMORT plant offenbar eine Party in der verbotenen Abteilung. Sicherungsteam ist alarmiert.
-JARVIS meldet unautorisierten Zugriff auf das HULKBUSTER-System. Führung ist informiert.
 GOOFY steckt mit dem Kopf in einer Tuba fest. Logistik übernimmt Koordination.
 EVE sucht nach Pflanzenspuren im SEKTOR 4G. Bitte um Rückmeldung.
 Q hat versehentlich das Büro gesprengt. Ursache: FEHLZÜNDUNG. Situation unter Kontrolle.
-JARVIS meldet unautorisierten Zugriff auf das HULKBUSTER-System. Einsatzkräfte sind unterwegs.
 JARVIS meldet unautorisierten Zugriff auf das HULKBUSTER-System. Situation unter Kontrolle.
 MONEYPENNY bittet um eine neue Schreibmaschine – wieder explodiert. Sicherungsteam ist alarmiert.
-BOWSER wurde mit einem Bananenschalen-Hinterhalt gestoppt. Bitte um Rückmeldung.
-LUIGI sucht verzweifelt den Ausgang aus dem Geisterhaus. Wir benötigen Bestätigung.
 EVE sucht nach Pflanzenspuren im SEKTOR 4G. Führung ist informiert.
 TARDIS ist verschwunden – Der DOKTOR hat wohl wieder Zeitprobleme. Einsatzkräfte sind unterwegs.
-Der DELOREAN wurde bei 88 Meilen pro Stunde gesichtet. Sicherungsteam ist alarmiert.
-YOSHI hat das gesamte Notfallessen verputzt. Sicherungsteam ist alarmiert.
-Der REPLIKATOR gibt nur noch blauen Pudding aus – Ursache unbekannt. Führung ist informiert.
 Der CHEVRON 7 wurde erfolgreich eingerastet. Wir benötigen Bestätigung.
 DOBBY hat soeben HOGWARTS erreicht. Codewort: DAMPFLOKOMOTIVE. Nachschub wird vorbereitet.
 VOLDEMORT plant offenbar eine Party in der verbotenen Abteilung. Bitte um Rückmeldung.
 Die LADERAMPEN auf dem MUTTERSCHIFF sind blockiert. Führung ist informiert.
-Die USS ENTERPRISE benötigt dringend Verstärkung an der Neutralen Zone. Weitere Informationen folgen.
-Der FLUXKOMPENSATOR ist überhitzt – DOC braucht sofortige Kühlung. Vorfall wurde dokumentiert.
 Der GO'AULD-Angriff konnte durch Einsatz von Naquadah-Minen abgewehrt werden. Bitte um Rückmeldung.
 GOOFY steckt mit dem Kopf in einer Tuba fest. Vorfall wurde dokumentiert.
-Die BORG haben sich im BETA-QUADRANTEN zurückgezogen. Weitere Informationen folgen.
 VOLDEMORT plant offenbar eine Party in der verbotenen Abteilung. Wir benötigen Bestätigung.
-WALL-E hat eine neue GABEL entdeckt – er ist begeistert. Bitte um Rückmeldung.
 Die USS ENTERPRISE benötigt dringend Verstärkung an der Neutralen Zone. Führung ist informiert.
-Der TRANSPORTER-Raum meldet Ausfall der Hauptsysteme. Logistik übernimmt Koordination.
 HERMINE benötigt Unterstützung bei der Bibliotheksordnung. Wir benötigen Bestätigung.
-DONALD DUCK wurde beim Baden im Springbrunnen erwischt. Logistik übernimmt Koordination.
 JARVIS meldet unautorisierten Zugriff auf das HULKBUSTER-System. Sicherungsteam ist alarmiert.
-Der AUTOPILOT hat einen Kurs Richtung METEOR-FELD eingeschlagen. Führung ist informiert.
 Der TRANSPORTER-Raum meldet Ausfall der Hauptsysteme. Situation unter Kontrolle.
 DONALD DUCK wurde beim Baden im Springbrunnen erwischt. Vorfall wurde dokumentiert.
 Wall-E meldet: SCHROTTBERG auf Sektor E-12 gefunden. Situation unter Kontrolle.
 KING KONG wurde zuletzt auf dem EMPIRE STATE BUILDING gesichtet. Weitere Informationen folgen.
-Die BORG haben sich im BETA-QUADRANTEN zurückgezogen. Logistik übernimmt Koordination.
 PLUTO hat seinen Napf umgestoßen. Die Küche ist überschwemmt. Einsatzkräfte sind unterwegs.
 PLUTO hat seinen Napf umgestoßen. Die Küche ist überschwemmt. Führung ist informiert.
-DONALD DUCK wurde beim Baden im Springbrunnen erwischt. Nachschub wird vorbereitet.
-Das SCHLEIFENGESCHÄFT von MINNIE MAUS wurde durch ein Erdbeben zerstört. Logistik übernimmt Koordination.
 BOWSER wurde mit einem Bananenschalen-Hinterhalt gestoppt. Wir benötigen Bestätigung.
-JARVIS meldet unautorisierten Zugriff auf das HULKBUSTER-System. Einsatzkräfte sind unterwegs.
-Q hat versehentlich das Büro gesprengt. Ursache: FEHLZÜNDUNG. Weitere Informationen folgen.
 POKÉMON-TRAINER Ash hat versehentlich ein DIGIMON gefangen. Nachschub wird vorbereitet.
 MARIO hat ein Power-Up gefressen und steckt jetzt in der Tür. Logistik übernimmt Koordination.
-BATMAN benötigt Unterstützung von ROBIN an der Bat-Höhle. Situation unter Kontrolle.
 Der AUTOPILOT hat einen Kurs Richtung METEOR-FELD eingeschlagen. Nachschub wird vorbereitet.
 Optimus Prime ruft zur Versammlung auf dem PLANET CYBERTRON. Einsatzkräfte sind unterwegs.
 SHREK hat das letzte SCHLAMMBAD belegt. Wartezeit unklar. Führung ist informiert.
 Die USS ENTERPRISE benötigt dringend Verstärkung an der Neutralen Zone. Einsatzkräfte sind unterwegs.
-Die BORG haben sich im BETA-QUADRANTEN zurückgezogen. Logistik übernimmt Koordination.
-LUIGI sucht verzweifelt den Ausgang aus dem Geisterhaus. Logistik übernimmt Koordination.
-THOR hat versehentlich den Aufzug mit MJÖLNIR blockiert. Situation unter Kontrolle.
 Die SCHOKOFRÖSCHE sind ausverkauft. Hogsmeade bittet um Nachschub. Bitte um Rückmeldung.
-BOWSER wurde mit einem Bananenschalen-Hinterhalt gestoppt. Einsatzkräfte sind unterwegs.
 Wall-E meldet: SCHROTTBERG auf Sektor E-12 gefunden. Vorfall wurde dokumentiert.
 TARDIS ist verschwunden – Der DOKTOR hat wohl wieder Zeitprobleme. Weitere Informationen folgen.
-Die USS ENTERPRISE benötigt dringend Verstärkung an der Neutralen Zone. Führung ist informiert.
 Das STARGATE-CENTER meldet Energieprobleme in der Kommandozentrale. Situation unter Kontrolle.
 HERMINE benötigt Unterstützung bei der Bibliotheksordnung. Bitte um Rückmeldung.
-MONEYPENNY bittet um eine neue Schreibmaschine – wieder explodiert. Nachschub wird vorbereitet.
-Die BORG haben sich im BETA-QUADRANTEN zurückgezogen. Weitere Informationen folgen.
-PEACH sendet eine Nachricht: „Nicht schon wieder entführt!“ Situation unter Kontrolle.
 Wall-E meldet: SCHROTTBERG auf Sektor E-12 gefunden. Logistik übernimmt Koordination.
 Minion KEVIN bittet um mehr BANANEN im Lager. Einsatzkräfte sind unterwegs.
 SG-1 hat den PLANETEN P3X-888 erfolgreich erkundet. Wir benötigen Bestätigung.
@@ -313,188 +232,101 @@ GANDALF sagt: „Du kommst hier NICHT durch.“ Bitte Umleitung. Führung ist in
 SG-1 hat den PLANETEN P3X-888 erfolgreich erkundet. Führung ist informiert.
 Das STARGATE-CENTER meldet Energieprobleme in der Kommandozentrale. Bitte um Rückmeldung.
 Q hat versehentlich das Büro gesprengt. Ursache: FEHLZÜNDUNG. Einsatzkräfte sind unterwegs.
-WALL-E hat eine neue GABEL entdeckt – er ist begeistert. Nachschub wird vorbereitet.
 DONALD DUCK wurde beim Baden im Springbrunnen erwischt. Einsatzkräfte sind unterwegs.
 EINHORN blockiert die Zufahrt zur REGENBOGENSTRAßE. Situation unter Kontrolle.
 Das STARGATE-CENTER meldet Energieprobleme in der Kommandozentrale. Vorfall wurde dokumentiert.
 PLUTO hat seinen Napf umgestoßen. Die Küche ist überschwemmt. Sicherungsteam ist alarmiert.
 LUIGI sucht verzweifelt den Ausgang aus dem Geisterhaus. Einsatzkräfte sind unterwegs.
-Der HOGWARTS-EXPRESS hat Verspätung wegen fliegender Teppiche. Einsatzkräfte sind unterwegs.
 Die SCHOKOFRÖSCHE sind ausverkauft. Hogsmeade bittet um Nachschub. Wir benötigen Bestätigung.
 Optimus Prime ruft zur Versammlung auf dem PLANET CYBERTRON. Nachschub wird vorbereitet.
 Der AUTOPILOT hat einen Kurs Richtung METEOR-FELD eingeschlagen. Einsatzkräfte sind unterwegs.
-TARDIS ist verschwunden – Der DOKTOR hat wohl wieder Zeitprobleme. Einsatzkräfte sind unterwegs.
-MARIO hat ein Power-Up gefressen und steckt jetzt in der Tür. Führung ist informiert.
-Die SCHOKOFRÖSCHE sind ausverkauft. Hogsmeade bittet um Nachschub. Führung ist informiert.
-Das ASTON MARTIN-Labor benötigt neue Reifen – Goldfinger war wieder da. Nachschub wird vorbereitet.
 Der AUTOPILOT hat einen Kurs Richtung METEOR-FELD eingeschlagen. Vorfall wurde dokumentiert.
-Die SCHOKOFRÖSCHE sind ausverkauft. Hogsmeade bittet um Nachschub. Bitte um Rückmeldung.
 Der HOGWARTS-EXPRESS hat Verspätung wegen fliegender Teppiche. Weitere Informationen folgen.
 EINHORN blockiert die Zufahrt zur REGENBOGENSTRAßE. Bitte um Rückmeldung.
 EINHORN blockiert die Zufahrt zur REGENBOGENSTRAßE. Weitere Informationen folgen.
 Die LADERAMPEN auf dem MUTTERSCHIFF sind blockiert. Situation unter Kontrolle.
-EINHORN blockiert die Zufahrt zur REGENBOGENSTRAßE. Sicherungsteam ist alarmiert.
 Der REPLIKATOR gibt nur noch blauen Pudding aus – Ursache unbekannt. Einsatzkräfte sind unterwegs.
-SPIDER-MAN hängt im Serverraum fest – wortwörtlich. Weitere Informationen folgen.
 TONY STARK benötigt eine neue ENERGIEZELLE für seinen ARC-Reaktor. Vorfall wurde dokumentiert.
 Der WARPKERN der USS Voyager wurde stabilisiert. Sicherheit ist wiederhergestellt. Sicherungsteam ist alarmiert.
-PEACH sendet eine Nachricht: „Nicht schon wieder entführt!“ Nachschub wird vorbereitet.
 Der WARPKERN der USS Voyager wurde stabilisiert. Sicherheit ist wiederhergestellt. Situation unter Kontrolle.
 Das ASTON MARTIN-Labor benötigt neue Reifen – Goldfinger war wieder da. Führung ist informiert.
 Der WARPKERN der USS Voyager wurde stabilisiert. Sicherheit ist wiederhergestellt. Einsatzkräfte sind unterwegs.
-DOBBY hat soeben HOGWARTS erreicht. Codewort: DAMPFLOKOMOTIVE. Einsatzkräfte sind unterwegs.
 Minion KEVIN bittet um mehr BANANEN im Lager. Vorfall wurde dokumentiert.
 Der FLUXKOMPENSATOR ist überhitzt – DOC braucht sofortige Kühlung. Führung ist informiert.
 BOWSER wurde mit einem Bananenschalen-Hinterhalt gestoppt. Logistik übernimmt Koordination.
-Der CHEVRON 7 wurde erfolgreich eingerastet. Führung ist informiert.
 Der SITH-LORD hat seinen Lichtschwertakku verloren. Vorfall wurde dokumentiert.
-Wall-E meldet: SCHROTTBERG auf Sektor E-12 gefunden. Weitere Informationen folgen.
-EINHORN blockiert die Zufahrt zur REGENBOGENSTRAßE. Weitere Informationen folgen.
-Q hat versehentlich das Büro gesprengt. Ursache: FEHLZÜNDUNG. Weitere Informationen folgen.
 WALL-E hat eine neue GABEL entdeckt – er ist begeistert. Situation unter Kontrolle.
 MICKEY MAUS hat heute blaue Schuhe an. Situation unter Kontrolle.
 EINHORN blockiert die Zufahrt zur REGENBOGENSTRAßE. Nachschub wird vorbereitet.
 LUIGI sucht verzweifelt den Ausgang aus dem Geisterhaus. Situation unter Kontrolle.
-Optimus Prime ruft zur Versammlung auf dem PLANET CYBERTRON. Einsatzkräfte sind unterwegs.
 Das ASTON MARTIN-Labor benötigt neue Reifen – Goldfinger war wieder da. Sicherungsteam ist alarmiert.
-Der PHÖNIX ist entflogen. Sichtung zuletzt bei der peitschenden Weide. Sicherungsteam ist alarmiert.
-TARDIS ist verschwunden – Der DOKTOR hat wohl wieder Zeitprobleme. Einsatzkräfte sind unterwegs.
 Der SITH-LORD hat seinen Lichtschwertakku verloren. Sicherungsteam ist alarmiert.
 KING KONG wurde zuletzt auf dem EMPIRE STATE BUILDING gesichtet. Vorfall wurde dokumentiert.
-SG-1 hat den PLANETEN P3X-888 erfolgreich erkundet. Logistik übernimmt Koordination.
 LUIGI sucht verzweifelt den Ausgang aus dem Geisterhaus. Weitere Informationen folgen.
 DONALD DUCK wurde beim Baden im Springbrunnen erwischt. Führung ist informiert.
 MARIO hat ein Power-Up gefressen und steckt jetzt in der Tür. Situation unter Kontrolle.
 Q hat versehentlich das Büro gesprengt. Ursache: FEHLZÜNDUNG. Bitte um Rückmeldung.
-THOR hat versehentlich den Aufzug mit MJÖLNIR blockiert. Führung ist informiert.
 THOR hat versehentlich den Aufzug mit MJÖLNIR blockiert. Wir benötigen Bestätigung.
 SPIDER-MAN hängt im Serverraum fest – wortwörtlich. Logistik übernimmt Koordination.
-Der CHEVRON 7 wurde erfolgreich eingerastet. Sicherungsteam ist alarmiert.
 TONY STARK benötigt eine neue ENERGIEZELLE für seinen ARC-Reaktor. Nachschub wird vorbereitet.
-Optimus Prime ruft zur Versammlung auf dem PLANET CYBERTRON. Logistik übernimmt Koordination.
-TARDIS ist verschwunden – Der DOKTOR hat wohl wieder Zeitprobleme. Weitere Informationen folgen.
 Das ASTON MARTIN-Labor benötigt neue Reifen – Goldfinger war wieder da. Weitere Informationen folgen.
-BLACK WIDOW wünscht sich neuen Kaffee. Letzter Versuch war „explosiv“. Weitere Informationen folgen.
 KING KONG wurde zuletzt auf dem EMPIRE STATE BUILDING gesichtet. Einsatzkräfte sind unterwegs.
 Der HOGWARTS-EXPRESS hat Verspätung wegen fliegender Teppiche. Vorfall wurde dokumentiert.
-WALL-E hat eine neue GABEL entdeckt – er ist begeistert. Führung ist informiert.
-SPIDER-MAN hängt im Serverraum fest – wortwörtlich. Nachschub wird vorbereitet.
-Der CHEVRON 7 wurde erfolgreich eingerastet. Sicherungsteam ist alarmiert.
-Der AUTOPILOT hat einen Kurs Richtung METEOR-FELD eingeschlagen. Weitere Informationen folgen.
 Wall-E meldet: SCHROTTBERG auf Sektor E-12 gefunden. Wir benötigen Bestätigung.
 Der WARPKERN der USS Voyager wurde stabilisiert. Sicherheit ist wiederhergestellt. Bitte um Rückmeldung.
 Der HOGWARTS-EXPRESS hat Verspätung wegen fliegender Teppiche. Logistik übernimmt Koordination.
-Der CHEVRON 7 wurde erfolgreich eingerastet. Logistik übernimmt Koordination.
-HERMINE benötigt Unterstützung bei der Bibliotheksordnung. Bitte um Rückmeldung.
 GANDALF sagt: „Du kommst hier NICHT durch.“ Bitte Umleitung. Situation unter Kontrolle.
 EINHORN blockiert die Zufahrt zur REGENBOGENSTRAßE. Vorfall wurde dokumentiert.
-TARDIS ist verschwunden – Der DOKTOR hat wohl wieder Zeitprobleme. Sicherungsteam ist alarmiert.
-EVE sucht nach Pflanzenspuren im SEKTOR 4G. Einsatzkräfte sind unterwegs.
 007 meldet sich aus einem U-Boot unter der THEMSE. Situation unter Kontrolle.
-KING KONG wurde zuletzt auf dem EMPIRE STATE BUILDING gesichtet. Wir benötigen Bestätigung.
 Die BORG haben sich im BETA-QUADRANTEN zurückgezogen. Situation unter Kontrolle.
-Q hat versehentlich das Büro gesprengt. Ursache: FEHLZÜNDUNG. Bitte um Rückmeldung.
-VOLDEMORT plant offenbar eine Party in der verbotenen Abteilung. Einsatzkräfte sind unterwegs.
 HERMINE benötigt Unterstützung bei der Bibliotheksordnung. Logistik übernimmt Koordination.
 Die LADERAMPEN auf dem MUTTERSCHIFF sind blockiert. Wir benötigen Bestätigung.
-MONEYPENNY bittet um eine neue Schreibmaschine – wieder explodiert. Sicherungsteam ist alarmiert.
 Minion KEVIN bittet um mehr BANANEN im Lager. Wir benötigen Bestätigung.
-Das SCHLEIFENGESCHÄFT von MINNIE MAUS wurde durch ein Erdbeben zerstört. Einsatzkräfte sind unterwegs.
 TONY STARK benötigt eine neue ENERGIEZELLE für seinen ARC-Reaktor. Weitere Informationen folgen.
 KING KONG wurde zuletzt auf dem EMPIRE STATE BUILDING gesichtet. Führung ist informiert.
-Die BORG haben sich im BETA-QUADRANTEN zurückgezogen. Weitere Informationen folgen.
-TONY STARK benötigt eine neue ENERGIEZELLE für seinen ARC-Reaktor. Nachschub wird vorbereitet.
-Der DELOREAN wurde bei 88 Meilen pro Stunde gesichtet. Wir benötigen Bestätigung.
-LUIGI sucht verzweifelt den Ausgang aus dem Geisterhaus. Logistik übernimmt Koordination.
-SHREK hat das letzte SCHLAMMBAD belegt. Wartezeit unklar. Führung ist informiert.
 Der TOK'RA-Botschafter trifft in 30 Minuten ein. Nachschub wird vorbereitet.
-JARVIS meldet unautorisierten Zugriff auf das HULKBUSTER-System. Sicherungsteam ist alarmiert.
 JARVIS meldet unautorisierten Zugriff auf das HULKBUSTER-System. Wir benötigen Bestätigung.
-Der CHEVRON 7 wurde erfolgreich eingerastet. Wir benötigen Bestätigung.
 Der TOK'RA-Botschafter trifft in 30 Minuten ein. Einsatzkräfte sind unterwegs.
-HERMINE benötigt Unterstützung bei der Bibliotheksordnung. Bitte um Rückmeldung.
 Wall-E meldet: SCHROTTBERG auf Sektor E-12 gefunden. Einsatzkräfte sind unterwegs.
-GOOFY steckt mit dem Kopf in einer Tuba fest. Situation unter Kontrolle.
 PLUTO hat seinen Napf umgestoßen. Die Küche ist überschwemmt. Logistik übernimmt Koordination.
-BLACK WIDOW wünscht sich neuen Kaffee. Letzter Versuch war „explosiv“. Führung ist informiert.
-Das SCHLEIFENGESCHÄFT von MINNIE MAUS wurde durch ein Erdbeben zerstört. Sicherungsteam ist alarmiert.
-Der FLUXKOMPENSATOR ist überhitzt – DOC braucht sofortige Kühlung. Vorfall wurde dokumentiert.
 Der DELOREAN wurde bei 88 Meilen pro Stunde gesichtet. Situation unter Kontrolle.
 KING KONG wurde zuletzt auf dem EMPIRE STATE BUILDING gesichtet. Bitte um Rückmeldung.
-Der PHÖNIX ist entflogen. Sichtung zuletzt bei der peitschenden Weide. Wir benötigen Bestätigung.
-Der FLUXKOMPENSATOR ist überhitzt – DOC braucht sofortige Kühlung. Sicherungsteam ist alarmiert.
 SPIDER-MAN hängt im Serverraum fest – wortwörtlich. Bitte um Rückmeldung.
-MARIO hat ein Power-Up gefressen und steckt jetzt in der Tür. Situation unter Kontrolle.
-MICKEY MAUS hat heute blaue Schuhe an. Weitere Informationen folgen.
-VOLDEMORT plant offenbar eine Party in der verbotenen Abteilung. Nachschub wird vorbereitet.
-DOBBY hat soeben HOGWARTS erreicht. Codewort: DAMPFLOKOMOTIVE. Nachschub wird vorbereitet.
 Das ASTON MARTIN-Labor benötigt neue Reifen – Goldfinger war wieder da. Logistik übernimmt Koordination.
 EVE sucht nach Pflanzenspuren im SEKTOR 4G. Weitere Informationen folgen.
 GOOFY steckt mit dem Kopf in einer Tuba fest. Bitte um Rückmeldung.
 HERMINE benötigt Unterstützung bei der Bibliotheksordnung. Sicherungsteam ist alarmiert.
 JARVIS meldet unautorisierten Zugriff auf das HULKBUSTER-System. Weitere Informationen folgen.
-DONALD DUCK wurde beim Baden im Springbrunnen erwischt. Führung ist informiert.
-BOND wurde zuletzt in MONTE CARLO mit einem Jetpack gesichtet. Nachschub wird vorbereitet.
 SG-1 hat den PLANETEN P3X-888 erfolgreich erkundet. Weitere Informationen folgen.
-Der AUTOPILOT hat einen Kurs Richtung METEOR-FELD eingeschlagen. Weitere Informationen folgen.
 Der WARPKERN der USS Voyager wurde stabilisiert. Sicherheit ist wiederhergestellt. Vorfall wurde dokumentiert.
 BLACK WIDOW wünscht sich neuen Kaffee. Letzter Versuch war „explosiv“. Logistik übernimmt Koordination.
 Der FLUXKOMPENSATOR ist überhitzt – DOC braucht sofortige Kühlung. Bitte um Rückmeldung.
-MICKEY MAUS hat heute blaue Schuhe an. Wir benötigen Bestätigung.
 BOND wurde zuletzt in MONTE CARLO mit einem Jetpack gesichtet. Einsatzkräfte sind unterwegs.
 Der GO'AULD-Angriff konnte durch Einsatz von Naquadah-Minen abgewehrt werden. Nachschub wird vorbereitet.
-THOR hat versehentlich den Aufzug mit MJÖLNIR blockiert. Situation unter Kontrolle.
-DOBBY hat soeben HOGWARTS erreicht. Codewort: DAMPFLOKOMOTIVE. Nachschub wird vorbereitet.
-Der TRANSPORTER-Raum meldet Ausfall der Hauptsysteme. Einsatzkräfte sind unterwegs.
 Der TOK'RA-Botschafter trifft in 30 Minuten ein. Wir benötigen Bestätigung.
 Wall-E meldet: SCHROTTBERG auf Sektor E-12 gefunden. Führung ist informiert.
-GANDALF sagt: „Du kommst hier NICHT durch.“ Bitte Umleitung. Situation unter Kontrolle.
 LUIGI sucht verzweifelt den Ausgang aus dem Geisterhaus. Bitte um Rückmeldung.
-SPIDER-MAN hängt im Serverraum fest – wortwörtlich. Weitere Informationen folgen.
 BLACK WIDOW wünscht sich neuen Kaffee. Letzter Versuch war „explosiv“. Situation unter Kontrolle.
 MICKEY MAUS hat heute blaue Schuhe an. Bitte um Rückmeldung.
-JARVIS meldet unautorisierten Zugriff auf das HULKBUSTER-System. Sicherungsteam ist alarmiert.
 DONALD DUCK wurde beim Baden im Springbrunnen erwischt. Sicherungsteam ist alarmiert.
 Das SCHLEIFENGESCHÄFT von MINNIE MAUS wurde durch ein Erdbeben zerstört. Weitere Informationen folgen.
-Das STARGATE-CENTER meldet Energieprobleme in der Kommandozentrale. Wir benötigen Bestätigung.
 Die SCHOKOFRÖSCHE sind ausverkauft. Hogsmeade bittet um Nachschub. Logistik übernimmt Koordination.
-THOR hat versehentlich den Aufzug mit MJÖLNIR blockiert. Wir benötigen Bestätigung.
-WALL-E hat eine neue GABEL entdeckt – er ist begeistert. Führung ist informiert.
 Optimus Prime ruft zur Versammlung auf dem PLANET CYBERTRON. Sicherungsteam ist alarmiert.
-Der WARPKERN der USS Voyager wurde stabilisiert. Sicherheit ist wiederhergestellt. Sicherungsteam ist alarmiert.
 Der GO'AULD-Angriff konnte durch Einsatz von Naquadah-Minen abgewehrt werden. Situation unter Kontrolle.
 PEACH sendet eine Nachricht: „Nicht schon wieder entführt!“ Bitte um Rückmeldung.
-EINHORN blockiert die Zufahrt zur REGENBOGENSTRAßE. Logistik übernimmt Koordination.
-Der CHEVRON 7 wurde erfolgreich eingerastet. Einsatzkräfte sind unterwegs.
 BOWSER wurde mit einem Bananenschalen-Hinterhalt gestoppt. Nachschub wird vorbereitet.
-Q hat versehentlich das Büro gesprengt. Ursache: FEHLZÜNDUNG. Vorfall wurde dokumentiert.
 Der CHEVRON 7 wurde erfolgreich eingerastet. Weitere Informationen folgen.
-Optimus Prime ruft zur Versammlung auf dem PLANET CYBERTRON. Wir benötigen Bestätigung.
-EVE sucht nach Pflanzenspuren im SEKTOR 4G. Sicherungsteam ist alarmiert.
 SHREK hat das letzte SCHLAMMBAD belegt. Wartezeit unklar. Wir benötigen Bestätigung.
 Die BORG haben sich im BETA-QUADRANTEN zurückgezogen. Sicherungsteam ist alarmiert.
 Der HOGWARTS-EXPRESS hat Verspätung wegen fliegender Teppiche. Nachschub wird vorbereitet.
-BOND wurde zuletzt in MONTE CARLO mit einem Jetpack gesichtet. Einsatzkräfte sind unterwegs.
 007 meldet sich aus einem U-Boot unter der THEMSE. Sicherungsteam ist alarmiert.
-Der HOGWARTS-EXPRESS hat Verspätung wegen fliegender Teppiche. Sicherungsteam ist alarmiert.
 Der SITH-LORD hat seinen Lichtschwertakku verloren. Wir benötigen Bestätigung.
 Der FLUXKOMPENSATOR ist überhitzt – DOC braucht sofortige Kühlung. Situation unter Kontrolle.
-DOBBY hat soeben HOGWARTS erreicht. Codewort: DAMPFLOKOMOTIVE. Führung ist informiert.
 Die LADERAMPEN auf dem MUTTERSCHIFF sind blockiert. Einsatzkräfte sind unterwegs.
 Der AUTOPILOT hat einen Kurs Richtung METEOR-FELD eingeschlagen. Sicherungsteam ist alarmiert.
-VOLDEMORT plant offenbar eine Party in der verbotenen Abteilung. Wir benötigen Bestätigung.
-Der WARPKERN der USS Voyager wurde stabilisiert. Sicherheit ist wiederhergestellt. Situation unter Kontrolle.
 Der SITH-LORD hat seinen Lichtschwertakku verloren. Logistik übernimmt Koordination.
 BATMAN benötigt Unterstützung von ROBIN an der Bat-Höhle. Nachschub wird vorbereitet.
-BOND wurde zuletzt in MONTE CARLO mit einem Jetpack gesichtet. Weitere Informationen folgen.
-Der TRANSPORTER-Raum meldet Ausfall der Hauptsysteme. Situation unter Kontrolle.
-WALL-E hat eine neue GABEL entdeckt – er ist begeistert. Logistik übernimmt Koordination.
-HERMINE benötigt Unterstützung bei der Bibliotheksordnung. Bitte um Rückmeldung.
-SG-1 hat den PLANETEN P3X-888 erfolgreich erkundet. Weitere Informationen folgen.
 Optimus Prime ruft zur Versammlung auf dem PLANET CYBERTRON. Situation unter Kontrolle.
 Der HOGWARTS-EXPRESS hat Verspätung wegen fliegender Teppiche. Wir benötigen Bestätigung.
-MICKEY MAUS hat heute blaue Schuhe an. Sicherungsteam ist alarmiert.
-KING KONG wurde zuletzt auf dem EMPIRE STATE BUILDING gesichtet. Weitere Informationen folgen.
-TONY STARK benötigt eine neue ENERGIEZELLE für seinen ARC-Reaktor. Vorfall wurde dokumentiert.
 Wall-E meldet: SCHROTTBERG auf Sektor E-12 gefunden. Bitte um Rückmeldung.
 PLUTO hat seinen Napf umgestoßen. Die Küche ist überschwemmt. Bitte um Rückmeldung.

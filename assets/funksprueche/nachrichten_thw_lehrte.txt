@@ -1,5 +1,4 @@
 8 Masten der Elektrifizierungsanlage am Bahnhof BURGDORF\numgestürzt.\nLeitungen sind noch unter Spannung.\nEinsatz IZ erforderlich.
-8 Masten der Elektrifizierungsanlage am Bahnhof BURGDORF\numgestürzt.\nLeitungen sind noch unter Spannung.\nEinsatz IZ erforderlich.
 HELLENDORFER Bahnhofstr. beiderseits Einmündung Westaue\nauf 255 m überflutet.\nDietrichstr. - Waldostr. von Überflutung bedroht.\n
 1 Löschzug LR der 1. FB sofort einsetzen\nHildesheimer Alee.\nDem dortigen Einsatzleiter unterstellen.\nErreichen des Einsatzortes melden.
 Angefordertes Verbandmaterial bei Adlerapotheke vorhanden.\n2 weitere Apotheken fernmündlich zur sofortigen Dienst-\nbereitschaft aufgefordert.\n
@@ -673,8 +672,8 @@ Im verunfallten Tiertransporter auf der A 7 sind ca. 40\nSchweine tot, ca. 20 sc
 Auftrag für den Stab:  Stab stellt Arbeitsbereitschaft her\nund leitet alle notwendigen Maßnahmen ein  (noch kein\nKatastrophenalarm). Insbesondere ist die Gesamtlage in der\nRegion, den Nachbarbehörden und anderen Behörden und\nOrganisationen zu erfassen. Der Stab hat sich auf die\nFeststellung des Katastrophenfalles und die TEL auf die\nÜbernahme der operativ-taktischen Gesamtleitung\neinzurichten. Die Kommunen sind soweit möglich zu\nunterstützen.\n
 "Benötigt werden sofort 50.000 Sandsäcken
 Anlieferung\nMessegelände Hannover Messe AG, 30521 Hannover, 30521\nHannover,
-Kontakt über 0511/123456 
-Bestätigung an S 4\nKat-Stab Region Hannover 
+Kontakt über 0511/123456
+Bestätigung an S 4\nKat-Stab Region Hannover
 "
 Anforderung: Bitte übersenden Sie eine aktuelle Lagemeldung\nmit einem zusammenfassenden Lagebild für den gesamten\nEinsatzbereich der PD Hannover. Gibt es ein überregionales\nLagebild
 Übermittleln Sie die  angefragten Fernmeldeverbindungen.\n
@@ -684,7 +683,6 @@ Deutschland\nzuständig:
 Fa. TENET, Fa. Amprion, Fa. Transnet BW und Fa.\n50 Hertz Transmission.
 Die Fa. Tennet versorgt die Firmen\nAvacon sowie Westfalen-Weser und damit die\nRegion
 Hannover. Die Ortsteile Steinhude und Großenheidorn\nder Stadt Wunstorf werden durch die Fa. Westfalen–Weser\nversorgt.
-\n"
 Der Stab erhöht die Alarmstufe auf 2, Begründung, Mehr als\neine Kommune bis max. 50% der Regionsbevölkerung. Die\nmeldung ist weiterzuleiten an die HVB der Städte und\ngemeinde. Es ist jederzeit mit einem Flächendenkenden\nStromausfall zu rechnen.\n
 Aufgrund der derzeitigen Einsatzsituation ist es\nerforderlich das Elektrizitätswerk in Haste zu\nverständigen. Ein Mitarbeiter wird an der Einsatzstelle\nbenötigt.
 83-83-31 haben Gefahrgut mit Stoffnummer 1438 aufgefunden\n
@@ -697,29 +695,22 @@ Nach dem die Einsatzstelle der POL übergeben wurde, wird\nnun ein Abschleppunte
 Ölbindemittel und Fässer zum Umfüllen für Diesel\nnachfordern, um Diesel aus Tank in Fässer umfüllen
 Aufgrund der noch zu erwartenden Einsatzzeit wird\nBeleuchtungsmaterial benötigt
 wir benötigen 3000 l Schaummittel. Die Abholung ist nicht\nmöglich das Schaummittel muss angeliefert werden.
-"Erster Lagebericht Motorbrand, keine Personen in Gefahr,\nkein Gefahrgut geladen, die 
-Wasserversorgung vom\nLöschweiher aufgebaut. 
-
-\n"
+"Erster Lagebericht Motorbrand, keine Personen in Gefahr,\nkein Gefahrgut geladen, die
+Wasserversorgung vom\nLöschweiher aufgebaut.
 "Das Tankmotorschiff Wesertank 7 unterwegs auf dem Wesel\n-
 Datteln - Kanal, Fahrtrichtung Datteln, km 21 um 14:55\nUhr bei
  STEGERFELD. Matrose mit Schnittverletzungen am\nArm. Blutung
 wurde gestoppt. Ärztliche Hilfe wird\nerbeten
-\n"
 "Das Sportboot Bumblebee befährt den Rhein - Herne - Kanal\nzu Tal
 und befindet sich auf km 14,3 bei Ortslage BOTTROP.\n300m
- backbord voraus wird ein kleines, offenes Sportboot\nmit gelbem 
+ backbord voraus wird ein kleines, offenes Sportboot\nmit gelbem
 Rumpf beobachtet, welches durch Wellengang\nkentert ist. Personen sind im Wasser
-\n"
-"Die Segelyacht Ecco befährt die Ruhr zu Berg und befindet\nsich 
+"Die Segelyacht Ecco befährt die Ruhr zu Berg und befindet\nsich
 2,5km hinter der Ruhrschleuse, Höhe KAISERBERG. Auf\ndieser
  Position entdeckt es eine große Anhäufung von\ntreibender
 Hölzer, Äste und Baumschnitt
-"
-"Das Motorboot Protection hat sich nahe einer Buhne auf dem\nRhein Höhe km 782 am rechten Ufer festgefahren. Es ist\n09:46 Uhr. 
-\n"
+"Das Motorboot Protection hat sich nahe einer Buhne auf dem\nRhein Höhe km 782 am rechten Ufer festgefahren. Es ist\n09:46 Uhr.
 "Das Gütermotorschiff Optimized hat gerade eben den\nWesel-Datteln-Kanal verlassen und befährt jetzt den\nDortmund-Ems-Kanal zu Berg. Es meldet plötzlich\nauftretenden Nebel
-"
 zur Lage, Ölspur wird abgestreut, zusätzlich Höhe\nBärenhöhle, selbe Straße, eine weitere Ölspur, dort wird\nebenfalls abgestreut, das Bindemittel wird dort liegen\ngelassen und Warnschilder werden aufgestellt
 zur Lage: Feuer aus, Ortsfeuerwehr Wennigsen, 18-41-3,\n18-11-1 verbleiben noch an der EST, DL führt Restarbeiten\ndurch\n
 Zur Lage, 2 Pkw verunfallt, einer davon in Seitenlage,\ndieses Fahrzeug wurde wieder aufgerichtet, streuen\nauslaufende Betriebsstoffe ab\n
@@ -734,7 +725,6 @@ zum jetzigen Zeitpunkt ist ein Einsatz der Druckkammer\nscheinbar nicht notwendi
 Zwischen Neustadt Basse und Oberloh liegt ein Baum auf der\nStr. Bundeswehr sichert diesen Bereich. Kommen Sie mit Lage
 "es schmoren mehrere Paletten > es handelt sich nicht um\nPellets sondern um Kohlestaub
 fahren Richtung Herrenhausen\nund entladen dort
-\n"
 Zur Kenntnis Stadtbrandmeister Lgh. erreicht. hat Kenntnis\nund gibt grünes Licht für die eigenständige Abarbeitung des\nEinsatzes.\n
 Nachforderung Zweites Boot zur Einsatzstelle - Wir haben\neine Motorschaden und können nicht übernehmen
 Zugang zur Wohnung über Badezimmerfenster, Person tot in\nWohnung aufgefunden, Einsatzstelle an Pol und RD übergeben
