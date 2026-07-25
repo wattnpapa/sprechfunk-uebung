@@ -100,6 +100,35 @@ describe("AdminView", () => {
         expect(chartCtor).toHaveBeenCalled();
     });
 
+    it("takes chart colours from the active theme tokens", () => {
+        document.body.style.setProperty("--akzent", "#ff9c00");
+        document.body.style.setProperty("--akzent-hell", "#ffcc66");
+
+        const view = new AdminView();
+        view.renderChart([1], ["Jan"]);
+
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const config = chartCtor.mock.calls[0]?.[1] as any;
+        expect(config.data.datasets[0].backgroundColor).toBe("#ff9c00");
+        expect(config.data.datasets[0].borderColor).toBe("#ffcc66");
+    });
+
+    it("redraws the chart when the theme changes", async () => {
+        document.body.style.setProperty("--akzent", "#12275e");
+        const view = new AdminView();
+        view.renderChart([1], ["Jan"]);
+        expect(chartCtor).toHaveBeenCalledTimes(1);
+
+        document.body.style.setProperty("--akzent", "#ff9c00");
+        document.body.setAttribute("data-theme", "startrek");
+        await new Promise(resolve => setTimeout(resolve, 0));
+
+        expect(chartCtor).toHaveBeenCalledTimes(2);
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const config = chartCtor.mock.calls[1]?.[1] as any;
+        expect(config.data.datasets[0].backgroundColor).toBe("#ff9c00");
+    });
+
     it("covers guard branches for missing dom nodes and list actions", () => {
         const view = new AdminView();
         document.getElementById("adminUebungslisteBody")?.remove();

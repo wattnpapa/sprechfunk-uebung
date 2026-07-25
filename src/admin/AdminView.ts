@@ -3,6 +3,8 @@ import { Chart } from "chart.js/auto";
 
 export class AdminView {
 
+    private themeObserver: MutationObserver | null = null;
+
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     public renderStatistik(stats: any) {
         this.setText("infoGroesse", stats.totalKB);
@@ -74,6 +76,8 @@ export class AdminView {
             existingChart.destroy();
         }
 
+        const farben = this.leseThemeFarben();
+
         new Chart(canvas, {
             type: "bar",
             data: {
@@ -81,18 +85,60 @@ export class AdminView {
                 datasets: [{
                     label: "Übungen pro Monat",
                     data: data,
-                    backgroundColor: "rgba(54, 162, 235, 0.7)",
-                    borderColor: "rgba(54, 162, 235, 1)",
+                    backgroundColor: farben.akzent,
+                    borderColor: farben.akzentHell,
                     borderWidth: 1
                 }]
             },
             options: {
+                plugins: {
+                    legend: { labels: { color: farben.text } }
+                },
                 scales: {
-                    x: { title: { display: true, text: "Monat" } },
-                    y: { title: { display: true, text: "Anzahl Übungen" }, beginAtZero: true }
+                    x: {
+                        title: { display: true, text: "Monat", color: farben.text2 },
+                        ticks: { color: farben.text2 },
+                        grid: { color: farben.linie }
+                    },
+                    y: {
+                        title: { display: true, text: "Anzahl Übungen", color: farben.text2 },
+                        beginAtZero: true,
+                        ticks: { color: farben.text2 },
+                        grid: { color: farben.linie }
+                    }
                 }
             }
         });
+
+        this.beobachteThemeWechsel(() => this.renderChart(data, labels));
+    }
+
+    /**
+     * Chart.js zeichnet auf Canvas und kann deshalb keine CSS-Variablen lesen.
+     * Die Rollen-Token werden hier einmal aufgelöst, damit das Diagramm
+     * dieselben Farben trägt wie der Rest der Oberfläche.
+     */
+    private leseThemeFarben() {
+        const stil = window.getComputedStyle(document.body);
+        const token = (name: string, fallback: string) => stil.getPropertyValue(name).trim() || fallback;
+
+        return {
+            akzent: token("--akzent", "#12275e"),
+            akzentHell: token("--akzent-hell", "#1d3d8f"),
+            text: token("--text", "#11141b"),
+            text2: token("--text-2", "#5c6478"),
+            linie: token("--linie-fein", "#d7dce7")
+        };
+    }
+
+    /**
+     * Das Theme hängt als data-Attribut an <body>. Ohne Beobachter behielte das
+     * Diagramm nach einem Theme-Wechsel die Farben des alten Themes bis zum Reload.
+     */
+    private beobachteThemeWechsel(neuZeichnen: () => void) {
+        this.themeObserver?.disconnect();
+        this.themeObserver = new window.MutationObserver(() => neuZeichnen());
+        this.themeObserver.observe(document.body, { attributeFilter: ["data-theme"] });
     }
 
     public bindListEvents(
