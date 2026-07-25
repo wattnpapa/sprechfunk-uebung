@@ -1,6 +1,7 @@
 import { describe, expect, it, vi } from "vitest";
 import { GenerationService } from "../../src/services/GenerationService";
 import { FunkUebung } from "../../src/models/FunkUebung";
+import { zaehleBuchstabierAufgaben } from "../../src/utils/buchstabieren";
 
 describe("GenerationService", () => {
     it("generates messages, ids, checksum and strengths", () => {
@@ -269,5 +270,76 @@ describe("GenerationService", () => {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         (service as any).berechneLoesungsStaerken(u2);
         expect(u2.loesungsStaerken?.A).toBeDefined();
+    });
+
+    describe("Buchstabier-Aufgaben", () => {
+        const baueUebung = (funksprueche: string[], buchstabierenAn: number) => {
+            const u = new FunkUebung("dev");
+            u.teilnehmerListe = ["A", "B", "C"];
+            u.leitung = "L";
+            u.spruecheProTeilnehmer = 10;
+            u.spruecheAnAlle = 0;
+            u.spruecheAnMehrere = 0;
+            u.buchstabierenAn = buchstabierenAn;
+            u.anmeldungAktiv = false;
+            u.autoStaerkeErgaenzen = false;
+            u.loesungswoerter = {};
+            u.funksprueche = funksprueche;
+            return u;
+        };
+
+        const zaehleProTeilnehmer = (u: FunkUebung) =>
+            u.teilnehmerListe.map(t =>
+                zaehleBuchstabierAufgaben((u.nachrichten[t] || []).map(n => n.nachricht))
+            );
+
+        it("reduziert Buchstabier-Aufgaben, wenn die Vorlage fast nur Großschreibung enthält", () => {
+            // 30 Sprüche, davon 29 mit Großwort - so wie in den echten Vorlagen.
+            const sprueche = Array.from({ length: 30 }, (_, i) =>
+                i === 0 ? `Meldung ${i} ohne Grossschreibung` : `Meldung ${i} an NIENBURG${i}`
+            );
+            const u = baueUebung(sprueche, 2);
+
+            new GenerationService().generate(u);
+
+            expect(zaehleProTeilnehmer(u)).toEqual([2, 2, 2]);
+        });
+
+        it("erzeugt keine Buchstabier-Aufgabe bei Einstellung 0", () => {
+            const sprueche = Array.from({ length: 30 }, (_, i) => `Meldung ${i} an NIENBURG${i}`);
+            const u = baueUebung(sprueche, 0);
+
+            new GenerationService().generate(u);
+
+            expect(zaehleProTeilnehmer(u)).toEqual([0, 0, 0]);
+        });
+
+        it("füllt auf, wenn die Vorlage kaum Großschreibung enthält", () => {
+            const sprueche = Array.from({ length: 30 }, (_, i) => `Meldung ${i} an die Leitstelle`);
+            const u = baueUebung(sprueche, 3);
+
+            new GenerationService().generate(u);
+
+            expect(zaehleProTeilnehmer(u)).toEqual([3, 3, 3]);
+        });
+
+        it("begrenzt den Zielwert auf die Anzahl der Nachrichten", () => {
+            const sprueche = Array.from({ length: 30 }, (_, i) => `Meldung ${i} an die Leitstelle`);
+            const u = baueUebung(sprueche, 99);
+
+            new GenerationService().generate(u);
+
+            expect(zaehleProTeilnehmer(u)).toEqual([10, 10, 10]);
+        });
+
+        it("lässt die Anmeldungsnachricht unangetastet", () => {
+            const sprueche = Array.from({ length: 30 }, (_, i) => `Meldung ${i} an NIENBURG${i}`);
+            const u = baueUebung(sprueche, 0);
+            u.anmeldungAktiv = true;
+
+            new GenerationService().generate(u);
+
+            expect(u.nachrichten.A?.[0]?.nachricht).toBe("Ich melde mich in Ihrem Sprechfunkverkehrskreis an.");
+        });
     });
 });

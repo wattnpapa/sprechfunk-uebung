@@ -1,5 +1,10 @@
 import { FunkUebung } from "../models/FunkUebung";
 import { Nachricht } from "../types/Nachricht";
+import {
+    enthaeltBuchstabierAufgabe,
+    entferneBuchstabierAufgaben,
+    erzeugeBuchstabierAufgabe
+} from "../utils/buchstabieren";
 import CryptoJS from "crypto-js";
 
 export class GenerationService {
@@ -214,14 +219,7 @@ export class GenerationService {
         alleNachrichten.sort(() => Math.random() - 0.5);
         const gemischt = this.shuffleSmart(alleNachrichten);
 
-        // Buchstabier-Logik
-        function enthaeltBuchstabierwort(text: string): boolean {
-            return text
-                .split(/\s+/)
-                .some(wort => wort.length > 4 && wort === wort.toUpperCase());
-        }
-        
-        // Besser: Wir weisen erst zu und prüfen dann.
+        // Zuerst zuweisen, danach die Buchstabier-Aufgaben auf den Zielwert bringen.
         const tempCounters: Record<string, number> = {};
         uebung.teilnehmerListe.forEach(teilnehmer => {
             tempCounters[teilnehmer] = uebung.anmeldungAktiv ? 2 : 1;
@@ -243,8 +241,31 @@ export class GenerationService {
             });
         });
 
-        // Jetzt Buchstabier-Prüfung.
-        // 'globalVergeben' verhindert, dass ein nachträglich eingesetzter Buchstabier-Spruch
+        this.balanciereBuchstabierAufgaben(uebung, nachrichtenVerteilung);
+
+        return nachrichtenVerteilung;
+    }
+
+    /**
+     * Bringt die Anzahl der Buchstabier-Aufgaben pro Teilnehmer auf den eingestellten
+     * Zielwert `uebung.buchstabierenAn`.
+     *
+     * Die Vorlagen enthalten von Haus aus sehr unterschiedlich viele großgeschriebene
+     * Wörter, deshalb reicht reines Auswählen nicht aus:
+     * - Zu viele Aufgaben: überzählige Sprüche werden in Normalschreibweise überführt.
+     * - Zu wenige Aufgaben: bevorzugt wird ein noch gar nicht vergebener Spruch mit
+     *   Großschreibung eingesetzt; ist keiner mehr übrig, wird im vorhandenen Spruch ein
+     *   Wort großgeschrieben. Beides hält die Sprüche über alle Teilnehmer hinweg eindeutig.
+     *
+     * Die Anmeldungsnachricht bleibt außen vor.
+     */
+    private balanciereBuchstabierAufgaben(
+        uebung: FunkUebung,
+        nachrichtenVerteilung: Record<string, Nachricht[]>
+    ): void {
+        const start = uebung.anmeldungAktiv ? 1 : 0;
+
+        // Verhindert, dass ein nachträglich eingesetzter Buchstabier-Spruch
         // bei mehreren Teilnehmern landet.
         const globalVergeben = new Set<string>();
         Object.values(nachrichtenVerteilung).forEach(liste =>
@@ -252,42 +273,58 @@ export class GenerationService {
         );
 
         uebung.teilnehmerListe.forEach(teilnehmer => {
-            const start = uebung.anmeldungAktiv ? 1 : 0;
             const nachrichten = (nachrichtenVerteilung[teilnehmer] || []).slice(start);
-            const aktuelleAnzahl = nachrichten.filter(n => enthaeltBuchstabierwort(n.nachricht)).length;
+            const ziel = Math.max(0, Math.min(uebung.buchstabierenAn, nachrichten.length));
 
-            if (aktuelleAnzahl < uebung.buchstabierenAn) {
-                const buchstabierSprueche = uebung.funksprueche.filter(enthaeltBuchstabierwort);
-                // Bevorzugt noch gar nicht vergebene Sprüche; erst wenn diese ausgehen,
-                // werden Sprüche zugelassen, die zumindest dieser Teilnehmer noch nicht hat.
-                const restlicheNachrichten = [
-                    ...buchstabierSprueche.filter(spruch => !globalVergeben.has(spruch)),
-                    ...buchstabierSprueche.filter(spruch =>
-                        globalVergeben.has(spruch) && !nachrichten.some(n => n.nachricht === spruch)
+            const mitAufgabe: Nachricht[] = [];
+            const ohneAufgabe: Nachricht[] = [];
+            nachrichten.forEach(nachricht => {
+                (enthaeltBuchstabierAufgabe(nachricht.nachricht) ? mitAufgabe : ohneAufgabe).push(nachricht);
+            });
+
+            if (mitAufgabe.length > ziel) {
+                // Zufällige Auswahl, damit die verbleibenden Aufgaben über die Übung verteilt bleiben.
+                const ueberzaehlig = this.shuffle(mitAufgabe).slice(ziel);
+                ueberzaehlig.forEach(nachricht => {
+                    nachricht.nachricht = entferneBuchstabierAufgaben(nachricht.nachricht);
+                });
+                return;
+            }
+
+            if (mitAufgabe.length < ziel) {
+                const ersatzSprueche = this.shuffle(
+                    uebung.funksprueche.filter(spruch =>
+                        enthaeltBuchstabierAufgabe(spruch) && !globalVergeben.has(spruch)
                     )
-                ].reverse();
+                );
 
-                const benoetigt = uebung.buchstabierenAn - aktuelleAnzahl;
-                let ersetzt = 0;
+                let benoetigt = ziel - mitAufgabe.length;
+                for (const nachricht of this.shuffle(ohneAufgabe)) {
+                    if (benoetigt === 0) {
+                        break;
+                    }
 
-                for (let i = 0; i < nachrichten.length && ersetzt < benoetigt; i++) {
-                    const nachricht = nachrichten[i];
-                    if (!nachricht) {
+                    const ersatz = ersatzSprueche.pop();
+                    if (ersatz) {
+                        nachricht.nachricht = ersatz;
+                        globalVergeben.add(ersatz);
+                        benoetigt--;
                         continue;
                     }
-                    if (!enthaeltBuchstabierwort(nachricht.nachricht) && restlicheNachrichten.length > 0) {
-                        const neuerSpruch = restlicheNachrichten.pop();
-                        if (neuerSpruch) {
-                            nachricht.nachricht = neuerSpruch;
-                            globalVergeben.add(neuerSpruch);
-                            ersetzt++;
-                        }
+
+                    const umgeschrieben = erzeugeBuchstabierAufgabe(nachricht.nachricht);
+                    if (umgeschrieben) {
+                        nachricht.nachricht = umgeschrieben;
+                        globalVergeben.add(umgeschrieben);
+                        benoetigt--;
                     }
                 }
             }
         });
+    }
 
-        return nachrichtenVerteilung;
+    private shuffle<T>(liste: T[]): T[] {
+        return [...liste].sort(() => Math.random() - 0.5);
     }
 
     /**
