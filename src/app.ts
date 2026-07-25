@@ -11,6 +11,12 @@ import { admin } from "./admin/index";
 import { firebaseConfig } from "./firebase-config.js";
 import "bootstrap/dist/css/bootstrap.min.css";
 import "@fortawesome/fontawesome-free/css/all.min.css";
+// Archivo: Grotesk in der DIN-Linie, Formenwelt der BOS-Fahrzeug- und
+// Schilderbeschriftung. Bewusst statt Inter.
+import "@fontsource-variable/archivo";
+// Antonio: kondensierte Grotesk für das LCARS-Theme, nahe an der
+// Okuda-Beschriftung der Sternenflotten-Konsolen.
+import "@fontsource-variable/antonio";
 import "bootstrap/dist/js/bootstrap.bundle.min.js";
 import pdfGenerator from "./services/pdfGenerator";
 import "./core/select2-setup";

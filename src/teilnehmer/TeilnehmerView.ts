@@ -38,7 +38,7 @@ export class TeilnehmerView {
         }
         container.innerHTML = `
             <div class="card mb-4">
-                <div class="card-header bg-primary text-white">
+                <div class="card-header">
                     <h3 class="card-title mb-0">Teilnehmer-Zugang</h3>
                 </div>
                 <div class="card-body">
@@ -111,7 +111,7 @@ export class TeilnehmerView {
         // Header Card
         const headerHtml = `
             <div class="card mb-4">
-                <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+                <div class="card-header d-flex justify-content-between align-items-center">
                     <h3 class="card-title mb-0">Sprechfunkübung: ${uebung.name}</h3>
                     <div class="d-flex gap-2">
                         <button class="btn btn-sm btn-outline-light" id="btn-download-teilnehmer-zip" data-analytics-id="teilnehmer-download-zip">

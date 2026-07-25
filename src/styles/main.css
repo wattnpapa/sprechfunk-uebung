@@ -1,4 +1,215 @@
-html, body {
+/* =============================================================================
+   Sprechfunk Übungsgenerator — Gestaltung "Amtlich"
+   -----------------------------------------------------------------------------
+   Leitidee: Kanten statt Karten, Gewicht statt Farbe, links statt Mitte.
+
+   * Border-Radius ist 0, Trennung entsteht durch Linie und Weißraum.
+   * Überschriften tragen Gewicht, keine Farbe. Die Akzentfarbe erscheint nur
+     im Kopfbalken, an der primären Aktion und im Fokusring.
+   * Beschriftungen sind dunkel und halbfett, nicht hellgrau.
+   * Daten laufen in tabular-nums, Spaltenköpfe als gesperrte Versalzeile in
+     dicktengleicher Schrift.
+
+   Komponenten werden ausschließlich über die Rollen-Tokens gestylt, nie über
+   die Rohwerte. Ein weiteres Theme ist damit eine Token-Belegung.
+
+   Das Star-Trek-/LCARS-Theme ([data-theme="startrek"]) ist eine eigenständige,
+   bewusste Gestaltung nach den Okuda-Vorlagen und folgt "Amtlich" ausdrücklich
+   nicht. Es steht am Dateiende (Abschnitt 9) und ist reine Token-Belegung plus
+   eigene Formregeln — die Basis bleibt davon unberührt.
+   ========================================================================== */
+
+/* =============================================================================
+   1. Token-System
+   ========================================================================== */
+
+:root {
+    color-scheme: light;
+
+    /* Neutrale: leicht ins Blaue gekippt, damit sie zur Akzentfarbe passen. */
+    --n-0: #ffffff;
+    --n-50: #f3f5f9;
+    --n-100: #e8ebf2;
+    --n-200: #d7dce7;
+    --n-300: #bcc3d3;
+    --n-400: #8b94a9;
+    --n-500: #5c6478;
+    --n-900: #11141b;
+
+    /* Rollen — NUR diese in Komponenten benutzen. */
+    --grund: var(--n-50);
+    --flaeche: var(--n-0);
+    --flaeche-2: var(--n-100);
+    --text: var(--n-900);
+    --text-2: var(--n-500);
+    --text-3: var(--n-400);
+    --linie-fein: var(--n-200);
+    --linie: var(--n-300);
+    --linie-stark: var(--n-400);
+
+    --akzent: #12275e;
+    --akzent-hell: #1d3d8f;
+    --auf-akzent: #ffffff;
+    --fokus-farbe: var(--akzent);
+
+    /* Signalfarben — bewusst getrennt von der Akzentfarbe. */
+    --gut: #146b3a;
+    --gut-fond: #e4f1e8;
+    --gut-linie: #7cae90;
+    --warn-text: #6d4700;
+    --warn-fond: #fdf4dd;
+    --warn-linie: #ddbe79;
+    --alarm: #a4231c;
+    --alarm-fond: #fbeae9;
+    --alarm-linie: #d99c98;
+
+    /* Kopfbalken — eigene Token, damit ein Theme ihn ohne
+       Spezifitäts-Wettrennen neutralisieren kann. */
+    --kopf-fond: var(--akzent);
+    --kopf-auf: #ffffff;
+    --kopf-auf-2: #b9c3dd;
+    --kopf-linie: #2c4680;
+
+    /* Form */
+    --radius: 0px;
+    --radius-pille: 0px;
+    --strich: 1px;
+    --strich-stark: 1px;
+    --fokus: 3px;
+    --schatten: none;
+
+    /* Zuschlag auf ALLE Tippziele. Ein Handschuh-/Hochkontrastmodus erhöht
+       nur diesen Wert auf z. B. 0.75rem, alles andere wächst mit. */
+    --ziel: 0rem;
+
+    /* Schrift */
+    --schrift: "Archivo Variable", Archivo, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    --schrift-daten: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace;
+
+    --t-xs: 0.75rem;
+    --t-s: 0.8125rem;
+    --t-m: 0.9375rem;
+    --t-l: 1.0625rem;
+    --t-xl: 1.3125rem;
+    --t-2xl: 1.625rem;
+
+    --r-1: 0.25rem;
+    --r-2: 0.5rem;
+    --r-3: 0.75rem;
+    --r-4: 1rem;
+    --r-5: 1.5rem;
+    --r-6: 2rem;
+
+    /* Aliasse auf die Bestandsnamen. Damit bleiben vorhandene Regeln und
+       Inline-Fundstellen funktionsfähig, ohne dass sie angefasst werden. */
+    --bg: var(--grund);
+    --surface: var(--flaeche);
+    --surface-alt: var(--flaeche-2);
+    --text-muted: var(--text-2);
+    --primary: var(--akzent);
+    --border: var(--linie-fein);
+    --shadow: var(--schatten);
+
+    --table-bg: var(--flaeche);
+    --table-bg-alt: var(--flaeche-2);
+    --table-head-bg: var(--flaeche-2);
+
+    --input-bg: var(--flaeche);
+    --input-text: var(--text);
+    --input-border: var(--linie-stark);
+
+    --status-success-bg: var(--gut-fond);
+    --status-success-text: var(--gut);
+    --status-ok-border: var(--gut-linie);
+    --status-pending-bg: var(--warn-fond);
+    --status-pending-text: var(--warn-text);
+    --status-pending-border: var(--warn-linie);
+    --status-critical-bg: var(--alarm-fond);
+    --status-critical-text: var(--alarm);
+    --status-critical-border: var(--alarm-linie);
+}
+
+/* Dark Mode ist keine Invertierung, sondern eine eigene Belegung derselben
+   Rollen. Die Akzentfarbe ist aufgehellt, damit sie auf dunklem Grund trägt. */
+[data-theme="dark"] {
+    color-scheme: dark;
+
+    --grund: #0b0e14;
+    --flaeche: #141922;
+    --flaeche-2: #1c222d;
+    --text: #e7eaf0;
+    --text-2: #aab3c4;
+    --text-3: #7b8497;
+    --linie-fein: #262d3a;
+    --linie: #333c4c;
+    --linie-stark: #4c5768;
+
+    --akzent: #4a6fd0;
+    --akzent-hell: #8fa9e8;
+    --auf-akzent: #ffffff;
+    --fokus-farbe: var(--akzent-hell);
+
+    --gut: #6fd39b;
+    --gut-fond: #11291e;
+    --gut-linie: #3d7a58;
+    --warn-text: #f2c66c;
+    --warn-fond: #2b2312;
+    --warn-linie: #7a6129;
+    --alarm: #f3928b;
+    --alarm-fond: #2c1413;
+    --alarm-linie: #8a3a33;
+
+    --kopf-fond: #0e1526;
+    --kopf-auf: #eef1f7;
+    --kopf-auf-2: #9aa5bb;
+    --kopf-linie: #2f4270;
+}
+
+/* Das Theme hängt an <body>, native Bedienelemente (Datumsfeld, Radios ohne
+   Bootstrap-Klasse, Rollbalken) lesen color-scheme aber vom Wurzelelement. */
+html:has(> body[data-theme="dark"]) {
+    color-scheme: dark;
+}
+
+/* =============================================================================
+   2. Brücke zu Bootstrap
+   Bootstrap 5.3 rechnet über --bs-*. Wir belegen die Basisgrößen einmal aus
+   dem Token-Satz, statt hundert Einzelregeln zu überschreiben.
+   ========================================================================== */
+
+:root,
+[data-theme] {
+    --bs-body-bg: var(--grund);
+    --bs-body-color: var(--text);
+    --bs-body-font-family: var(--schrift);
+    --bs-body-font-size: var(--t-m);
+    --bs-emphasis-color: var(--text);
+    --bs-secondary-color: var(--text-2);
+    --bs-tertiary-color: var(--text-3);
+    --bs-heading-color: var(--text);
+    --bs-border-color: var(--linie);
+    --bs-border-color-translucent: var(--linie);
+    --bs-border-radius: var(--radius);
+    --bs-border-radius-sm: var(--radius);
+    --bs-border-radius-lg: var(--radius);
+    --bs-border-radius-xl: var(--radius);
+    --bs-border-radius-xxl: var(--radius);
+    --bs-border-radius-2xl: var(--radius);
+    --bs-border-radius-pill: var(--radius-pille);
+    --bs-link-color: var(--akzent-hell);
+    --bs-link-hover-color: var(--akzent);
+    --bs-code-color: var(--text);
+    --bs-highlight-bg: var(--warn-fond);
+    --bs-focus-ring-color: transparent;
+    --bs-focus-ring-width: 0;
+}
+
+/* =============================================================================
+   3. Grundlagen
+   ========================================================================== */
+
+html,
+body {
     min-height: 100%;
     width: 100%;
     overflow-x: hidden;
@@ -8,56 +219,207 @@ body {
     display: flex;
     flex-direction: column;
     min-height: 100vh;
+    margin: 0;
+    font-family: var(--schrift);
+    font-size: var(--t-m);
+    background: var(--grund);
+    color: var(--text);
+    -webkit-font-smoothing: antialiased;
 }
 
 #mainAppArea,
 #adminArea,
-#uebungsleitungArea {
+#uebungsleitungArea,
+#teilnehmerArea {
     flex: 1 1 auto;
     overflow: visible;
 }
 
-/* Header grid layout */
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+    color: var(--text);
+    font-weight: 700;
+    letter-spacing: -0.005em;
+}
+
+h1 { font-size: var(--t-2xl); }
+h2 { font-size: var(--t-xl); }
+h3 { font-size: var(--t-l); }
+h4, h5 { font-size: var(--t-l); }
+h6 { font-size: var(--t-m); }
+
+a {
+    color: var(--akzent-hell);
+    text-underline-offset: 0.2em;
+}
+
+a:hover {
+    color: var(--akzent);
+}
+
+hr {
+    border: 0;
+    border-top: var(--strich) solid var(--linie-fein);
+    opacity: 1;
+}
+
+code,
+kbd,
+samp,
+pre {
+    font-family: var(--schrift-daten);
+}
+
+code {
+    color: var(--text);
+    background: var(--flaeche-2);
+    border: var(--strich) solid var(--linie-fein);
+    border-radius: var(--radius);
+    padding: 0.05em 0.35em;
+    font-size: 0.9em;
+}
+
+/* Fokus ist überall sichtbar. Nirgends outline: none. */
+:focus-visible {
+    outline: var(--fokus) solid var(--fokus-farbe);
+    outline-offset: 1px;
+}
+
+.text-muted,
+.text-body-secondary {
+    color: var(--text-2) !important;
+}
+
+.text-dark,
+.text-body {
+    color: var(--text) !important;
+}
+
+.text-primary {
+    color: var(--akzent) !important;
+}
+
+.text-danger { color: var(--alarm) !important; }
+.text-success { color: var(--gut) !important; }
+
+.container {
+    max-width: 100%;
+    padding-left: 1.25rem;
+    padding-right: 1.25rem;
+}
+
+@media (min-width: 1200px) {
+    .container {
+        padding-left: var(--r-6);
+        padding-right: var(--r-6);
+    }
+}
+
+/* Der Ansichtsrahmen ist in Light/Dark ein reiner Container ohne eigene
+   Fläche. Nur LCARS macht daraus ein gestaltetes Panel. */
+/* Achtung: .app-view-shell sitzt auf denselben Elementen wie .container —
+   hier darf kein padding gesetzt werden, sonst fällt der Satzspiegel weg. */
+.app-view-shell {
+    position: relative;
+    isolation: isolate;
+    background: none;
+    border: 0;
+    border-radius: var(--radius);
+    box-shadow: none;
+}
+
+/* =============================================================================
+   4. Kopfbereich
+   ========================================================================== */
+
+.app-header {
+    position: sticky;
+    top: 0;
+    z-index: 5000;
+    background: var(--kopf-fond);
+    color: var(--kopf-auf);
+    border-bottom: 4px solid var(--kopf-linie);
+    box-shadow: none;
+}
+
+.app-header .container,
 .app-header-grid {
     display: grid;
     grid-template-columns: auto 1fr auto;
     align-items: center;
-    gap: 1rem;
+    gap: var(--r-4);
+    padding: 0.7rem 1.25rem;
 }
 
-/* Title */
 .app-header-title h1,
 .app-header-title h2 {
     margin: 0;
+    color: var(--kopf-auf);
+    font-size: var(--t-l);
+    font-weight: 700;
+    letter-spacing: 0.01em;
+    text-transform: none;
     white-space: nowrap;
 }
 
-/* NATO time */
-.nato-time {
-    justify-self: center;
-    font-size: 0.9rem;
-    opacity: 0.85;
+.app-header-title i {
+    color: var(--kopf-auf-2);
+    margin-right: 0.35rem;
 }
 
-/* Actions */
 .app-header-actions {
     display: flex;
     align-items: center;
     gap: 0.4rem;
 }
 
-/* Mobile layout */
-@media (max-width: 768px) {
-    .app-header-grid {
-        grid-template-columns: auto auto;
+.app-header .btn {
+    margin-left: 0;
+}
+
+/* Bedienelemente auf dem Kopfbalken: ruhig, umrandet, ohne Eigenfarbe.
+   LCARS ist ausgenommen und behält dort seine Bestandsdarstellung. */
+[data-theme]:not([data-theme="startrek"]) .app-header .btn:not(.dropdown-item) {
+    --bs-btn-color: var(--kopf-auf);
+    --bs-btn-bg: transparent;
+    --bs-btn-border-color: var(--kopf-linie);
+    --bs-btn-hover-color: var(--kopf-auf);
+    --bs-btn-hover-bg: color-mix(in srgb, var(--kopf-auf) 14%, transparent);
+    --bs-btn-hover-border-color: var(--kopf-auf-2);
+    --bs-btn-active-color: var(--kopf-auf);
+    --bs-btn-active-bg: color-mix(in srgb, var(--kopf-auf) 22%, transparent);
+    --bs-btn-active-border-color: var(--kopf-auf-2);
+}
+
+/* NATO-Zeit: Daten, also dicktengleich und mit festen Ziffernbreiten. */
+.nato-time {
+    justify-self: center;
+    font-family: var(--schrift-daten);
+    font-variant-numeric: tabular-nums;
+    font-size: var(--t-m);
+    letter-spacing: 0.12em;
+    color: var(--kopf-auf);
+    white-space: nowrap;
+}
+
+@media (max-width: 992px) {
+    .app-header .container {
+        grid-template-columns: 1fr auto;
         grid-template-areas:
             "title burger"
             "time time";
         row-gap: 0.25rem;
+        text-align: left;
+        align-items: start;
     }
 
     .app-header-title {
         grid-area: title;
+        min-width: 0;
     }
 
     .app-header-burger {
@@ -67,176 +429,24 @@ body {
 
     .nato-time {
         grid-area: time;
-        justify-self: center;
-    }
-}
-/* NATO Time display in header */
-.nato-time {
-    font-family: "JetBrains Mono", monospace;
-    font-size: 1.2rem;
-    letter-spacing: 0.08em;
-    color: var(--text-muted);
-    opacity: 0.9;
-    white-space: nowrap;
-}
-
-:root {
-    /* Base colors */
-    --bg: #f5f7fb;
-    --surface: #ffffff;
-    --surface-alt: #f1f3f7;
-
-    /* Text */
-    --text: #111827;
-    --text-muted: #6b7280;
-
-    /* Brand */
-    --primary: #202a44; /* RAL 5002 */
-
-    /* Borders & shadows */
-    --border: #e5e7eb;
-    --shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
-
-    /* Tables */
-    --table-bg: #ffffff;
-    --table-bg-alt: #f5f7fb;
-    --table-head-bg: #eef1f6;
-
-    /* Forms */
-    --input-bg: #ffffff;
-    --input-text: #111827;
-    --input-border: #e5e7eb;
-
-    /* Status Success (abgesetzte Nachrichten) */
-    --status-success-bg: #e6f4ea;
-    --status-success-text: #065f46;
-    --status-ok-border: #0f766e;
-    --status-pending-bg: #fff7e0;
-    --status-pending-text: #92400e;
-    --status-pending-border: #b45309;
-    --status-critical-bg: #fee2e2;
-    --status-critical-text: #991b1b;
-    --status-critical-border: #b91c1c;
-}
-
-[data-theme="dark"] {
-    /* Base colors */
-    --bg: #020617;
-    --surface: #0b1220;
-    --surface-alt: #111827;
-
-    /* Text */
-    --text: #e5e7eb;
-    --text-muted: #94a3b8;
-
-    /* Brand */
-    --primary: #3b4a73; /* RAL 5002 – dark */
-
-    /* Borders & shadows */
-    --border: #334155;
-    --shadow: 0 10px 30px rgba(0, 0, 0, 0.45);
-
-    /* Tables */
-    --table-bg: #020617;
-    --table-bg-alt: #0b1220;
-    --table-head-bg: #020617;
-
-    /* Forms */
-    --input-bg: #020617;
-    --input-text: #e5e7eb;
-    --input-border: #334155;
-
-    /* Status Success (abgesetzte Nachrichten) */
-    --status-success-bg: #0b3a2e;
-    --status-success-text: #d1fae5;
-    --status-ok-border: #14b8a6;
-    --status-pending-bg: #3a2f10;
-    --status-pending-text: #fde68a;
-    --status-pending-border: #f59e0b;
-    --status-critical-bg: #3f0d0d;
-    --status-critical-text: #fecaca;
-    --status-critical-border: #ef4444;
-
-    /* Bootstrap body text */
-    --bs-body-color: #e5e7eb;
-}
-
-[data-theme="startrek"] {
-    --bg: #070b1a;
-    --surface: #0f172a;
-    --surface-alt: #1e293b;
-
-    --text: #e5eefc;
-    --text-muted: #9fb3d9;
-
-    --primary: #f59e0b;
-
-    --border: #334155;
-    --shadow: 0 12px 34px rgba(0, 0, 0, 0.5);
-
-    --table-bg: #0b1325;
-    --table-bg-alt: #13203a;
-    --table-head-bg: #1f2a44;
-
-    --input-bg: #0b1325;
-    --input-text: #e5eefc;
-    --input-border: #334155;
-
-    --status-success-bg: #0d3a2f;
-    --status-success-text: #b7f7de;
-    --status-ok-border: #14b8a6;
-    --status-pending-bg: #3c2a07;
-    --status-pending-text: #ffd089;
-    --status-pending-border: #f59e0b;
-    --status-critical-bg: #3a1010;
-    --status-critical-text: #fecaca;
-    --status-critical-border: #ef4444;
-    --bs-body-color: #e5eefc;
-
-    --lcars-orange: #ff9f1c;
-    --lcars-peach: #fcbf9e;
-    --lcars-magenta: #cc78d1;
-    --lcars-blue: #6aa9ff;
-    --lcars-cyan: #7dd3fc;
-    --lcars-ink: #0a1020;
-    --lcars-font: "Helvetica Ultra Compressed", "HelveticaNeue-CondensedBlack", "Arial Narrow", "Impact", "Orbitron", "Rajdhani", "Eurostile", "Avenir Next", "Segoe UI", sans-serif;
-}
-
-body {
-    font-family: Inter, system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
-    margin: 0;
-    background:
-        radial-gradient(1100px 420px at 15% -10%, rgba(14, 165, 233, 0.08), transparent 60%),
-        radial-gradient(900px 360px at 95% 0%, rgba(34, 211, 238, 0.08), transparent 55%),
-        var(--bg);
-    color: var(--text);
-}
-
-/* iPhone/small-screen overflow hardening for header + mobile menu */
-@media (max-width: 768px) {
-    .app-header .container {
-        grid-template-columns: 1fr auto;
+        justify-self: start;
         text-align: left;
-        align-items: start;
     }
+}
 
-    .app-header-title {
-        min-width: 0;
-    }
-
+@media (max-width: 768px) {
     .app-header-title h1,
     .app-header-title h2 {
         white-space: normal;
         overflow-wrap: anywhere;
-        line-height: 1.15;
-        font-size: 0.92rem;
+        line-height: 1.2;
+        font-size: var(--t-m);
     }
 
     .nato-time {
         white-space: normal;
-        text-align: center;
-        letter-spacing: 0.04em;
-        font-size: 0.82rem;
+        letter-spacing: 0.06em;
+        font-size: var(--t-s);
     }
 
     .app-header-burger .dropdown-menu {
@@ -248,102 +458,368 @@ body {
     }
 }
 
-.container {
-    max-width: 100%;
-    padding-left: 1.25rem;
-    padding-right: 1.25rem;
+#mainAppArea,
+#adminArea {
+    margin-left: 20px;
+    margin-right: 20px;
 }
 
-@media (min-width: 1200px) {
-    .container {
-        padding-left: 2rem;
-        padding-right: 2rem;
-    }
+#mainAppArea {
+    padding-top: var(--r-5);
+    padding-bottom: var(--r-5);
 }
+
+#mainAppArea > .container:first-child {
+    padding-top: var(--r-4);
+}
+
+/* =============================================================================
+   5. Komponenten
+   ========================================================================== */
+
+/* --- Karten: Fläche, 1px Linie, kein Radius, kein Schatten ---------------- */
 
 .card {
-    background: var(--surface);
-    border: none;
-    border-radius: 14px;
-    box-shadow: var(--shadow);
-    margin-bottom: 1.5rem;
+    --bs-card-bg: var(--flaeche);
+    --bs-card-color: var(--text);
+    --bs-card-border-color: var(--linie);
+    --bs-card-border-radius: var(--radius);
+    --bs-card-inner-border-radius: var(--radius);
+    --bs-card-cap-bg: var(--flaeche);
+    background: var(--flaeche);
+    color: var(--text);
+    border: var(--strich) solid var(--linie);
+    border-radius: var(--radius);
+    box-shadow: var(--schatten);
+    margin-bottom: var(--r-5);
 }
 
 .card-header {
-    background: transparent;
-    border-bottom: 1px solid var(--border);
-    font-weight: 600;
+    background: var(--flaeche);
+    border-bottom: var(--strich) solid var(--linie);
+    padding: 0.7rem 1rem;
 }
 
 .card-header h4,
-.card-header h5 {
+.card-header h5,
+.card-header h6 {
+    margin: 0;
+    color: var(--text);
+    font-weight: 700;
+    font-size: var(--t-l);
+    letter-spacing: -0.005em;
+    text-transform: none;
+}
+
+.card-header h6 {
+    font-size: var(--t-m);
+}
+
+/* Symbole in Überschriften sind Beiwerk, keine Signalstellen. */
+.card-header i {
+    color: var(--text-2);
+    margin-right: 0.4rem;
+}
+
+/* --- Buttons -------------------------------------------------------------
+   Rechteckig, sichtbarer Rand, halbfett. Die primäre Aktion ist die einzige
+   mit Akzentfläche; sekundäre und destruktive Aktionen gleichen ihr nicht. */
+
+.btn {
+    --bs-btn-border-radius: var(--radius);
+    --bs-btn-border-width: var(--strich-stark);
+    --bs-btn-font-weight: 600;
+    --bs-btn-font-size: var(--t-m);
+    --bs-btn-padding-y: 0.4rem;
+    --bs-btn-padding-x: 0.9rem;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.4rem;
+    min-height: calc(2.25rem + var(--ziel));
+    border-radius: var(--radius);
+    letter-spacing: 0.005em;
+}
+
+.btn-sm {
+    --bs-btn-font-size: var(--t-s);
+    --bs-btn-padding-y: 0.22rem;
+    --bs-btn-padding-x: 0.6rem;
+    min-height: calc(1.85rem + var(--ziel));
+}
+
+.btn-lg {
+    --bs-btn-font-size: var(--t-l);
+    --bs-btn-padding-y: 0.6rem;
+    --bs-btn-padding-x: 1.2rem;
+    min-height: calc(2.75rem + var(--ziel));
+}
+
+.btn i {
     margin: 0;
 }
 
-.form-label {
-    font-size: 0.85rem;
-    font-weight: 500;
-    color: var(--text-muted);
+.btn:focus-visible {
+    outline: var(--fokus) solid var(--fokus-farbe);
+    outline-offset: 1px;
+    box-shadow: none;
 }
 
-.generator-settings-section {
-    padding-bottom: 0.9rem;
-    margin-bottom: 0.95rem;
-    border-bottom: 1px solid color-mix(in srgb, var(--border) 82%, transparent);
+/* Sekundär: die Grundform. Fläche, Rand, kein Farbsignal. */
+.btn-secondary,
+.btn-outline-secondary,
+.btn-outline-primary,
+.btn-dark,
+.btn-light,
+.btn-outline-light,
+.btn-info {
+    --bs-btn-color: var(--text);
+    --bs-btn-bg: var(--flaeche);
+    --bs-btn-border-color: var(--linie-stark);
+    --bs-btn-hover-color: var(--text);
+    --bs-btn-hover-bg: var(--flaeche-2);
+    --bs-btn-hover-border-color: var(--linie-stark);
+    --bs-btn-active-color: var(--text);
+    --bs-btn-active-bg: var(--linie-fein);
+    --bs-btn-active-border-color: var(--linie-stark);
+    --bs-btn-disabled-color: var(--text-3);
+    --bs-btn-disabled-bg: var(--flaeche-2);
+    --bs-btn-disabled-border-color: var(--linie);
 }
 
-.generator-settings-section:last-child {
-    border-bottom: 0;
-    margin-bottom: 0;
-    padding-bottom: 0;
+/* Primär: die einzige Akzentfläche. */
+.btn-primary {
+    --bs-btn-color: var(--auf-akzent);
+    --bs-btn-bg: var(--akzent);
+    --bs-btn-border-color: var(--akzent);
+    --bs-btn-hover-color: var(--auf-akzent);
+    --bs-btn-hover-bg: var(--akzent-hell);
+    --bs-btn-hover-border-color: var(--akzent-hell);
+    --bs-btn-active-color: var(--auf-akzent);
+    --bs-btn-active-bg: var(--akzent-hell);
+    --bs-btn-active-border-color: var(--akzent);
+    --bs-btn-disabled-color: var(--auf-akzent);
+    --bs-btn-disabled-bg: var(--text-3);
+    --bs-btn-disabled-border-color: var(--text-3);
 }
 
-.generator-settings-title {
-    font-size: 0.76rem;
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
-    color: var(--text-muted);
-    margin-bottom: 0.55rem;
-    font-weight: 700;
+/* Bestätigend, aber nicht so schwer wie primär — die Akzentfläche bleibt
+   allein der primären Aktion vorbehalten. */
+.btn-success,
+.btn-outline-success {
+    --bs-btn-color: var(--gut);
+    --bs-btn-bg: var(--flaeche);
+    --bs-btn-border-color: var(--gut-linie);
+    --bs-btn-hover-color: var(--gut);
+    --bs-btn-hover-bg: var(--gut-fond);
+    --bs-btn-hover-border-color: var(--gut);
+    --bs-btn-active-color: var(--gut);
+    --bs-btn-active-bg: var(--gut-fond);
+    --bs-btn-active-border-color: var(--gut);
 }
+
+/* Destruktiv: klar erkennbar, aber ohne Fläche — es darf der primären
+   Aktion optisch nicht gleichen. */
+.btn-danger,
+.btn-outline-danger {
+    --bs-btn-color: var(--alarm);
+    --bs-btn-bg: var(--flaeche);
+    --bs-btn-border-color: var(--alarm-linie);
+    --bs-btn-hover-color: var(--alarm);
+    --bs-btn-hover-bg: var(--alarm-fond);
+    --bs-btn-hover-border-color: var(--alarm);
+    --bs-btn-active-color: var(--alarm);
+    --bs-btn-active-bg: var(--alarm-fond);
+    --bs-btn-active-border-color: var(--alarm);
+    --bs-btn-disabled-color: var(--text-3);
+    --bs-btn-disabled-bg: var(--flaeche-2);
+    --bs-btn-disabled-border-color: var(--linie);
+}
+
+.btn-warning {
+    --bs-btn-color: var(--warn-text);
+    --bs-btn-bg: var(--warn-fond);
+    --bs-btn-border-color: var(--warn-linie);
+    --bs-btn-hover-color: var(--warn-text);
+    --bs-btn-hover-bg: var(--warn-fond);
+    --bs-btn-hover-border-color: var(--warn-text);
+    --bs-btn-active-color: var(--warn-text);
+    --bs-btn-active-bg: var(--warn-fond);
+    --bs-btn-active-border-color: var(--warn-text);
+}
+
+.btn-close {
+    border-radius: var(--radius);
+}
+
+/* --- Eingabefelder -------------------------------------------------------- */
 
 .form-control,
 .form-select {
-    border-radius: 10px;
-    border: 1px solid var(--input-border);
-    padding: 0.6rem 0.75rem;
-    background: var(--input-bg);
-    color: var(--input-text);
+    background: var(--flaeche);
+    color: var(--text);
+    border: var(--strich-stark) solid var(--linie-stark);
+    border-radius: var(--radius);
+    padding: 0.45rem 0.7rem;
+    min-height: calc(2.25rem + var(--ziel));
+    font-size: var(--t-m);
+    font-family: var(--schrift);
+    box-shadow: none;
+}
+
+.form-control-sm,
+.form-select-sm {
+    min-height: calc(1.85rem + var(--ziel));
+    font-size: var(--t-s);
+    padding: 0.2rem 0.5rem;
+}
+
+textarea.form-control {
+    min-height: calc(3.5rem + var(--ziel));
+}
+
+.form-control::placeholder {
+    color: var(--text-3);
+    opacity: 1;
 }
 
 .form-control:focus,
 .form-select:focus {
-    border-color: var(--primary);
-    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.25);
+    background: var(--flaeche);
+    color: var(--text);
+    border-color: var(--akzent);
+    outline: var(--fokus) solid var(--fokus-farbe);
+    outline-offset: 0;
+    box-shadow: none;
 }
+
+.form-control:disabled,
+.form-control[readonly] {
+    background: var(--flaeche-2);
+    color: var(--text-2);
+}
+
+.input-group-text {
+    background: var(--flaeche-2);
+    color: var(--text);
+    border: var(--strich-stark) solid var(--linie-stark);
+    border-radius: var(--radius);
+    font-size: var(--t-m);
+}
+
+/* Ein Feldname muss so sicher lesbar sein wie sein Inhalt. */
+label,
+.form-label,
+.form-check-label,
+.col-form-label,
+legend {
+    color: var(--text);
+    font-weight: 600;
+    font-size: var(--t-s);
+}
+
+.form-label {
+    margin-bottom: 0.3rem;
+}
+
+.form-check-input {
+    border-color: var(--linie-stark);
+    background-color: var(--flaeche);
+    border-radius: var(--radius);
+    width: 1.05em;
+    height: 1.05em;
+    margin-top: 0.2em;
+}
+
+.form-check-input[type="radio"] {
+    border-radius: 50%;
+}
+
+/* Schalter behalten ihre eigene Geometrie. Steht ein Schalter neben einer
+   Statusmarke, würde Bootstraps negativer Einzug die Marke überdecken. */
+.form-switch .form-check-input {
+    width: 2.25em;
+    height: 1.15em;
+    border-radius: var(--radius);
+}
+
+.form-check.form-switch.d-flex {
+    padding-left: 0;
+}
+
+.form-check.form-switch.d-flex .form-check-input {
+    margin-left: 0;
+    flex: 0 0 auto;
+}
+
+.form-check-input:checked {
+    background-color: var(--akzent);
+    border-color: var(--akzent);
+}
+
+.form-check-input:focus-visible {
+    outline: var(--fokus) solid var(--fokus-farbe);
+    outline-offset: 1px;
+    box-shadow: none;
+}
+
+select option {
+    background-color: var(--flaeche);
+    color: var(--text);
+}
+
+/* --- Tabellen: Zahlen sind das Fachliche --------------------------------- */
 
 .table {
+    --bs-table-bg: var(--flaeche);
+    --bs-table-color: var(--text);
+    --bs-table-border-color: var(--linie-fein);
+    --bs-table-striped-bg: var(--flaeche-2);
+    --bs-table-striped-color: var(--text);
+    --bs-table-hover-bg: var(--flaeche-2);
+    --bs-table-hover-color: var(--text);
+    --bs-table-accent-bg: transparent;
     color: var(--text);
-    background-color: var(--table-bg);
+    background-color: var(--flaeche);
+    font-variant-numeric: tabular-nums;
+    border-color: var(--linie-fein);
 }
 
-.table thead {
-    background: var(--table-head-bg);
-    color: var(--text-muted);
+.table > thead {
+    background: var(--flaeche-2);
+}
+
+.table > thead th,
+.table > thead td,
+.table-dark > tr > th {
+    background: var(--flaeche-2);
+    color: var(--text-2);
+    font-family: var(--schrift-daten);
+    font-size: var(--t-xs);
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.07em;
+    border-bottom: 2px solid var(--linie);
+    white-space: nowrap;
+}
+
+/* Bootstraps .table-dark bringt eine eigene Fläche mit — hier nicht erwünscht. */
+.table-dark {
+    --bs-table-bg: var(--flaeche-2);
+    --bs-table-color: var(--text-2);
+    --bs-table-border-color: var(--linie);
 }
 
 .table td,
 .table th {
-    border-color: var(--border);
+    border-color: var(--linie-fein);
     vertical-align: middle;
-    padding-top: 0.68rem;
-    padding-bottom: 0.68rem;
+    padding-top: 0.55rem;
+    padding-bottom: 0.55rem;
 }
 
-.table th {
-    font-size: 0.78rem;
-    letter-spacing: 0.02em;
-    font-weight: 700;
+.table-bordered > :not(caption) > * > * {
+    border-color: var(--linie-fein);
 }
 
 #teilnehmerTableView .table th:last-child,
@@ -356,223 +832,384 @@ body {
     min-width: 190px;
 }
 
-.btn {
-    border-radius: 6px;
-    font-weight: 500;
+/* --- Navigation / Schrittanzeige: Unterstrich statt Pille ---------------- */
+
+.nav-pills,
+.nav-tabs {
+    --bs-nav-pills-border-radius: var(--radius);
+    --bs-nav-link-color: var(--text-2);
+    --bs-nav-link-hover-color: var(--text);
+    border-bottom: var(--strich) solid var(--linie-fein);
+    gap: 0.25rem;
 }
 
-.btn i {
-    margin-right: 0.35rem;
-}
-
-.btn i:last-child {
-    margin-right: 0;
-    margin-left: 0.35rem;
-}
-
-.btn-primary {
-    background: var(--primary);
-    border-color: var(--primary);
-}
-
-.btn-outline-secondary {
-    color: var(--text-muted);
-    border-color: var(--border);
-}
-
-.btn-outline-secondary:hover {
-    background: var(--border);
-}
-
-.generator-action-bar {
-    position: sticky;
-    top: 78px;
-    z-index: 50;
-}
-
-.generator-statusbar {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 0.5rem;
-}
-
-.generator-status-chip {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.35rem;
-    padding: 0.35rem 0.55rem;
-    border-radius: 999px;
-    border: 1px solid color-mix(in srgb, var(--border) 80%, transparent);
-    background: color-mix(in srgb, var(--surface-alt) 86%, transparent);
-    color: var(--text-muted);
-    font-size: 0.75rem;
-}
-
-.generator-status-chip strong {
-    color: var(--text);
-    font-weight: 700;
-}
-
-.app-view-shell {
-    position: relative;
-    isolation: isolate;
-    border-radius: 10px;
-    padding: 0.9rem;
-    background:
-        radial-gradient(1200px 400px at -10% -20%, rgba(34, 211, 238, 0.12), transparent 60%),
-        radial-gradient(900px 320px at 105% 10%, rgba(56, 189, 248, 0.14), transparent 60%),
-        linear-gradient(180deg, color-mix(in srgb, var(--surface) 88%, #082f49 12%), var(--surface));
-    border: 1px solid color-mix(in srgb, var(--border) 78%, #38bdf8 22%);
-    box-shadow: inset 0 0 0 1px rgba(34, 211, 238, 0.16);
-}
-
-.app-view-shell::before {
-    content: "";
-    position: absolute;
-    inset: 0;
-    z-index: -1;
-    pointer-events: none;
-    background-image:
-        linear-gradient(rgba(148, 163, 184, 0.08) 1px, transparent 1px),
-        linear-gradient(90deg, rgba(148, 163, 184, 0.08) 1px, transparent 1px);
-    background-size: 22px 22px;
-    mask-image: radial-gradient(circle at 40% 10%, black 50%, transparent 90%);
-}
-
-.app-view-shell .card {
-    backdrop-filter: blur(4px);
-    background: color-mix(in srgb, var(--surface) 90%, #0b3b56 10%);
-    border: 1px solid color-mix(in srgb, var(--border) 74%, #38bdf8 26%);
-    box-shadow: 0 12px 28px rgba(2, 6, 23, 0.15);
-    border-radius: 8px;
-}
-
-.generator-action-inner {
-    background: color-mix(in srgb, var(--surface) 88%, #0b3b56 12%);
-    border: 1px solid color-mix(in srgb, var(--border) 72%, #22d3ee 28%);
-    border-radius: 8px;
-    padding: 0.75rem 1rem;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    gap: 0.75rem;
-}
-
-.generator-result-tabs .nav-link {
-    border-radius: 6px;
+.nav-pills .nav-link,
+.nav-tabs .nav-link {
+    border: 0;
+    border-bottom: 3px solid transparent;
+    border-radius: 0;
+    background: none;
+    color: var(--text-2);
     font-weight: 600;
-    color: var(--text-muted);
-    text-transform: uppercase;
-    letter-spacing: 0.06em;
-    font-size: 0.78rem;
-    border: 1px solid transparent;
+    padding: 0.45rem 0.75rem;
 }
 
-.generator-result-tabs .nav-link.active {
-    background: linear-gradient(135deg, #0284c7, #0369a1);
-    color: #fff;
-    box-shadow: 0 0 0 1px rgba(56, 189, 248, 0.45), 0 8px 18px rgba(2, 132, 199, 0.35);
-}
-
-.generator-result-card {
-    border: 1px solid var(--border);
-    overflow: hidden;
-}
-
-.generator-result-card .card-header {
-    background: linear-gradient(120deg, rgba(14, 116, 144, 0.16), rgba(56, 189, 248, 0.08) 45%, transparent);
-}
-
-.generator-link-grid-header {
-    display: none;
-}
-
-.generator-link-grid {
-    display: grid;
-    gap: 0.6rem;
-}
-
-.generator-link-row {
-    display: grid;
-    grid-template-columns: 1fr;
-    gap: 0.5rem;
-    border: 1px solid color-mix(in srgb, var(--border) 70%, #22d3ee 30%);
-    border-radius: 6px;
-    padding: 0.65rem 0.75rem;
-    background: linear-gradient(
-        135deg,
-        color-mix(in srgb, var(--surface-alt) 90%, #0b3b56 10%),
-        color-mix(in srgb, var(--surface) 85%, #082f49 15%)
-    );
-}
-
-.generator-link-type {
-    font-weight: 700;
-    letter-spacing: 0.01em;
-}
-
-.generator-link-badge {
-    display: inline-block;
-    font-size: 0.74rem;
-    line-height: 1;
-    font-weight: 700;
-    border-radius: 4px;
-    padding: 0.35rem 0.55rem;
-    border: 1px solid transparent;
-}
-
-.generator-link-badge.is-uebung {
-    background: color-mix(in srgb, var(--primary) 14%, transparent);
-    border-color: color-mix(in srgb, var(--primary) 35%, transparent);
-    color: color-mix(in srgb, var(--primary) 82%, var(--text));
-}
-
-.generator-link-badge.is-leitung {
-    background: color-mix(in srgb, #0f766e 13%, transparent);
-    border-color: color-mix(in srgb, #0f766e 35%, transparent);
-    color: color-mix(in srgb, #0f766e 80%, var(--text));
-}
-
-.generator-link-badge.is-teilnehmer {
-    background: color-mix(in srgb, #8b5cf6 13%, transparent);
-    border-color: color-mix(in srgb, #8b5cf6 35%, transparent);
-    color: color-mix(in srgb, #8b5cf6 80%, var(--text));
-}
-
-.generator-link-name {
-    color: var(--text-muted);
-    font-weight: 500;
-}
-
-.generator-link-url code {
+.nav-pills .nav-link:hover,
+.nav-tabs .nav-link:hover {
     color: var(--text);
-    background: var(--surface);
-    padding: 0.2rem 0.45rem;
-    border-radius: 6px;
+    border-bottom-color: var(--linie);
 }
 
-.generator-link-actions {
+.nav-pills .nav-link.active,
+.nav-pills .show > .nav-link,
+.nav-tabs .nav-link.active {
+    background: none;
+    color: var(--text);
+    border-bottom-color: var(--akzent);
+    box-shadow: none;
+}
+
+/* --- Listen, Abzeichen, Fortschritt -------------------------------------- */
+
+.list-group {
+    --bs-list-group-border-radius: var(--radius);
+}
+
+.list-group-item {
+    background-color: var(--flaeche);
+    color: var(--text);
+    border-color: var(--linie-fein);
+    border-radius: 0;
+    font-variant-numeric: tabular-nums;
+}
+
+.list-group-item:hover {
+    background-color: var(--flaeche-2);
+}
+
+.badge {
+    border-radius: var(--radius);
+    font-weight: 700;
+    letter-spacing: 0.03em;
+}
+
+.badge.bg-secondary,
+.badge.text-bg-secondary,
+.badge.bg-light,
+.badge.text-bg-light {
+    background-color: var(--flaeche-2) !important;
+    color: var(--text) !important;
+    border: var(--strich) solid var(--linie-fein);
+}
+
+.badge.bg-success,
+.badge.text-bg-success {
+    background-color: var(--gut-fond) !important;
+    color: var(--gut) !important;
+    border: var(--strich) solid var(--gut-linie);
+}
+
+.badge.bg-warning,
+.badge.text-bg-warning {
+    background-color: var(--warn-fond) !important;
+    color: var(--warn-text) !important;
+    border: var(--strich) solid var(--warn-linie);
+}
+
+.badge.bg-danger,
+.badge.text-bg-danger {
+    background-color: var(--alarm-fond) !important;
+    color: var(--alarm) !important;
+    border: var(--strich) solid var(--alarm-linie);
+}
+
+.badge.bg-primary,
+.badge.text-bg-primary {
+    background-color: var(--akzent) !important;
+    color: var(--auf-akzent) !important;
+}
+
+/* Flächen-Hilfsklassen ebenfalls über Token, damit sie kein Bootstrap-Blau
+   und kein Bootstrap-Grün an unerwarteter Stelle einschleppen. */
+.bg-primary { background-color: var(--akzent) !important; }
+.bg-secondary,
+.bg-light { background-color: var(--flaeche-2) !important; }
+.bg-success { background-color: var(--gut-fond) !important; }
+.bg-warning { background-color: var(--warn-fond) !important; }
+.bg-danger { background-color: var(--alarm-fond) !important; }
+
+.progress {
+    background-color: var(--flaeche-2);
+    border: var(--strich) solid var(--linie-fein);
+    border-radius: var(--radius);
+}
+
+.progress-bar,
+.progress-bar.bg-success {
+    background-color: var(--akzent) !important;
+}
+
+/* --- Überlagerungen: Modal, Dropdown, Hinweis ---------------------------- */
+
+.modal-content {
+    background-color: var(--flaeche);
+    color: var(--text);
+    border: var(--strich) solid var(--linie);
+    border-radius: var(--radius);
+}
+
+.modal-header,
+.modal-footer {
+    border-color: var(--linie-fein);
+}
+
+.modal-title {
+    font-weight: 700;
+}
+
+.modal-dialog {
+    padding-top: 50px;
+    padding-bottom: 50px;
+}
+
+.dropdown-menu {
+    --bs-dropdown-border-radius: var(--radius);
+    --bs-dropdown-inner-border-radius: var(--radius);
+    background-color: var(--flaeche);
+    border: var(--strich) solid var(--linie);
+    border-radius: var(--radius);
+    box-shadow: none;
+    padding: 0;
+}
+
+.dropdown-item {
+    color: var(--text);
+    font-weight: 500;
+    padding: 0.5rem 0.9rem;
+    min-height: calc(2.25rem + var(--ziel));
     display: flex;
-    flex-wrap: nowrap;
-    justify-content: flex-end;
     align-items: center;
     gap: 0.4rem;
 }
 
-.generator-link-actions .btn {
-    min-width: 96px;
-    border-radius: 6px;
-    white-space: nowrap;
-    flex: 0 0 auto;
+.dropdown-item:hover,
+.dropdown-item:focus {
+    background-color: var(--flaeche-2);
+    color: var(--text);
 }
 
-.generator-link-url code {
-    display: block;
-    max-width: 100%;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
+.alert {
+    background-color: var(--flaeche-2);
+    color: var(--text);
+    border: var(--strich) solid var(--linie);
+    border-radius: var(--radius);
 }
+
+.alert-success {
+    background-color: var(--gut-fond);
+    color: var(--gut);
+    border-color: var(--gut-linie);
+}
+
+.alert-warning {
+    background-color: var(--warn-fond);
+    color: var(--warn-text);
+    border-color: var(--warn-linie);
+}
+
+.alert-danger {
+    background-color: var(--alarm-fond);
+    color: var(--alarm);
+    border-color: var(--alarm-linie);
+}
+
+/* --- Select2 (themeneutral über Token) ----------------------------------- */
+
+.select2-container--bootstrap-5 .select2-selection {
+    background-color: var(--flaeche);
+    color: var(--text);
+    border: var(--strich-stark) solid var(--linie-stark);
+    border-radius: var(--radius);
+    min-height: calc(2.25rem + var(--ziel));
+}
+
+.select2-container--bootstrap-5.select2-container--focus .select2-selection,
+.select2-container--bootstrap-5.select2-container--open .select2-selection {
+    border-color: var(--akzent);
+    outline: var(--fokus) solid var(--fokus-farbe);
+    box-shadow: none;
+}
+
+.select2-container--bootstrap-5 .select2-selection__rendered {
+    color: var(--text);
+}
+
+.select2-container--bootstrap-5 .select2-selection__placeholder {
+    color: var(--text-3);
+}
+
+.select2-container--bootstrap-5 .select2-dropdown {
+    background-color: var(--flaeche);
+    border: var(--strich) solid var(--linie-stark);
+    border-radius: var(--radius);
+}
+
+.select2-container--bootstrap-5 .select2-results__option {
+    background-color: var(--flaeche);
+    color: var(--text);
+}
+
+.select2-container--bootstrap-5 .select2-results__option--highlighted {
+    background-color: var(--flaeche-2);
+    color: var(--text);
+}
+
+.select2-container--bootstrap-5 .select2-results__option--selected {
+    background-color: var(--akzent);
+    color: var(--auf-akzent);
+}
+
+/* Die Spezifität folgt dem select2-bootstrap-5-Theme, das die Auswahlmarken
+   über vier Klassen adressiert. */
+.select2-container--bootstrap-5 .select2-selection--multiple .select2-selection__rendered .select2-selection__choice,
+.select2-container--bootstrap-5 .select2-selection--multiple .select2-selection__rendered .select2-selection__choice__display {
+    background-color: var(--flaeche-2);
+    color: var(--text);
+    border-radius: var(--radius);
+}
+
+.select2-container--bootstrap-5 .select2-selection--multiple .select2-selection__rendered .select2-selection__choice {
+    border: var(--strich) solid var(--linie);
+}
+
+.select2-container--bootstrap-5 .select2-selection--multiple .select2-selection__rendered .select2-selection__choice__remove {
+    color: var(--text-2);
+    background: none;
+    border-right-color: var(--linie);
+}
+
+.select2-container--bootstrap-5 .select2-selection--multiple .select2-selection__rendered .select2-selection__choice__remove:hover {
+    color: var(--alarm);
+}
+
+.select2-container--bootstrap-5 .select2-selection__arrow b {
+    border-color: var(--text) transparent transparent transparent;
+}
+
+.select2-container--bootstrap-5 .select2-search__field {
+    background-color: var(--flaeche);
+    color: var(--text);
+}
+
+/* --- Statusanzeigen ------------------------------------------------------- */
+
+.status-chip {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border: var(--strich-stark) solid transparent;
+    border-radius: var(--radius);
+    font-family: var(--schrift-daten);
+    font-size: var(--t-xs);
+    letter-spacing: 0.07em;
+    text-transform: uppercase;
+    font-weight: 700;
+    padding: 0.22rem 0.45rem;
+    min-width: 78px;
+    cursor: pointer;
+}
+
+.status-chip--ok {
+    background: var(--gut-fond);
+    color: var(--gut);
+    border-color: var(--gut-linie);
+}
+
+.status-chip--pending {
+    background: var(--warn-fond);
+    color: var(--warn-text);
+    border-color: var(--warn-linie);
+    animation: statusPendingPulse 2.8s ease-in-out infinite;
+}
+
+.status-chip--critical {
+    background: var(--alarm-fond);
+    color: var(--alarm);
+    border-color: var(--alarm-linie);
+}
+
+@keyframes statusPendingPulse {
+    0%, 100% {
+        box-shadow: 0 0 0 0 color-mix(in srgb, var(--warn-linie) 0%, transparent);
+    }
+    50% {
+        box-shadow: 0 0 0 4px color-mix(in srgb, var(--warn-linie) 45%, transparent);
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .status-chip--pending {
+        animation: none;
+    }
+}
+
+.status-ok-row > td,
+.status-ok-row > th {
+    background-color: var(--gut-fond) !important;
+    color: var(--text) !important;
+    box-shadow: inset 4px 0 0 var(--gut);
+}
+
+/* "Offen" ist der Ausgangszustand — er bekommt eine Kantenmarke statt einer
+   Vollfläche. Nur der Zustandswechsel auf "abgesetzt" trägt Farbe. */
+.status-pending-row > td,
+.status-pending-row > th {
+    background-color: var(--flaeche) !important;
+    color: var(--text) !important;
+    box-shadow: inset 4px 0 0 var(--warn-linie);
+}
+
+.table-success {
+    --bs-table-bg: var(--gut-fond);
+    --bs-table-striped-bg: var(--gut-fond);
+    --bs-table-hover-bg: var(--gut-fond);
+    --bs-table-color: var(--text);
+    --bs-table-striped-color: var(--text);
+    --bs-table-hover-color: var(--text);
+    --bs-table-border-color: var(--gut-linie);
+}
+
+.table-success > td,
+.table-success > th,
+.table-success td,
+.table-success th,
+.table-striped > tbody > tr.table-success > *,
+.table-striped > tbody > tr.table-success:hover > * {
+    background-color: var(--gut-fond) !important;
+    color: var(--text) !important;
+}
+
+.table-success .nachricht-text,
+.table-success textarea {
+    color: var(--text);
+}
+
+.table-success textarea {
+    background-color: var(--flaeche);
+    border-color: var(--linie-stark);
+}
+
+.table-success textarea::placeholder {
+    color: var(--text-3);
+}
+
+.admin-standard-uebung-row > * {
+    background-color: var(--warn-fond) !important;
+    color: var(--text) !important;
+    box-shadow: inset 4px 0 0 var(--warn-linie);
+}
+
+/* --- Kurzmeldungen (Toast) ----------------------------------------------- */
 
 .app-toast-container {
     position: fixed;
@@ -589,13 +1226,15 @@ body {
     opacity: 0;
     transform: translateY(8px);
     transition: all 0.2s ease;
-    background: color-mix(in srgb, var(--surface) 90%, #16a34a 10%);
+    background: var(--flaeche);
     color: var(--text);
-    border: 1px solid color-mix(in srgb, var(--border) 70%, #22c55e 30%);
-    border-radius: 8px;
-    padding: 0.45rem 0.65rem;
-    font-size: 0.82rem;
-    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.18);
+    border: var(--strich) solid var(--linie-stark);
+    border-left: 4px solid var(--gut);
+    border-radius: var(--radius);
+    padding: 0.5rem 0.7rem;
+    font-size: var(--t-s);
+    font-weight: 500;
+    box-shadow: none;
 }
 
 .app-toast.is-visible {
@@ -604,57 +1243,211 @@ body {
 }
 
 .app-toast.is-error {
-    background: color-mix(in srgb, var(--surface) 90%, #b91c1c 10%);
-    border-color: color-mix(in srgb, var(--border) 65%, #ef4444 35%);
+    border-left-color: var(--alarm);
 }
 
-.app-view-shell .btn-primary,
-.app-view-shell .btn-success {
-    border: none;
-    box-shadow: 0 8px 18px rgba(2, 132, 199, 0.32);
-    border-radius: 6px;
+/* =============================================================================
+   6. Bereiche
+   ========================================================================== */
+
+/* --- Generator ------------------------------------------------------------ */
+
+.generator-settings-section {
+    padding-bottom: var(--r-3);
+    margin-bottom: var(--r-3);
+    border-bottom: var(--strich) solid var(--linie-fein);
 }
 
-.app-view-shell .btn-primary:hover,
-.app-view-shell .btn-success:hover {
-    transform: translateY(-1px);
+.generator-settings-section:last-child {
+    border-bottom: 0;
+    margin-bottom: 0;
+    padding-bottom: 0;
 }
 
-[data-theme="dark"] .app-view-shell {
-    background:
-        radial-gradient(1200px 400px at -10% -20%, rgba(34, 211, 238, 0.2), transparent 60%),
-        radial-gradient(900px 320px at 105% 10%, rgba(14, 165, 233, 0.18), transparent 60%),
-        linear-gradient(180deg, #020617, #020617);
-    border-color: color-mix(in srgb, var(--border) 66%, #22d3ee 34%);
+/* Abschnittsmarke innerhalb einer Karte: gesperrte Versalzeile, kein Emoji. */
+.generator-settings-title {
+    font-family: var(--schrift-daten);
+    font-size: var(--t-xs);
+    text-transform: uppercase;
+    letter-spacing: 0.07em;
+    color: var(--text-2);
+    margin-bottom: var(--r-2);
+    font-weight: 700;
 }
 
-@keyframes statusPendingPulse {
-    0%, 100% {
-        box-shadow: 0 0 0 0 rgba(245, 158, 11, 0);
-    }
-    50% {
-        box-shadow: 0 0 0 4px rgba(245, 158, 11, 0.16);
-    }
+.generator-action-bar {
+    position: sticky;
+    top: 64px;
+    z-index: 50;
+}
+
+.generator-action-inner {
+    background: var(--flaeche);
+    border: var(--strich) solid var(--linie);
+    border-left: 4px solid var(--akzent);
+    border-radius: var(--radius);
+    padding: 0.7rem 1rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: var(--r-3);
+}
+
+.generator-statusbar {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+}
+
+.generator-status-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    padding: 0.3rem 0.55rem;
+    border-radius: var(--radius);
+    border: var(--strich) solid var(--linie);
+    background: var(--flaeche-2);
+    color: var(--text-2);
+    font-size: var(--t-xs);
+    font-variant-numeric: tabular-nums;
+}
+
+.generator-status-chip strong {
+    color: var(--text);
+    font-weight: 700;
+}
+
+.generator-result-card {
+    border: var(--strich) solid var(--linie);
+    overflow: hidden;
+}
+
+.generator-result-card .card-header {
+    background: var(--flaeche);
+}
+
+.generator-link-grid-header {
+    display: none;
+}
+
+.generator-link-grid {
+    display: grid;
+    gap: 0;
+}
+
+.generator-link-row {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 0.5rem;
+    border: var(--strich) solid var(--linie-fein);
+    border-radius: var(--radius);
+    padding: 0.65rem 0.75rem;
+    background: var(--flaeche);
+}
+
+.generator-link-row + .generator-link-row {
+    border-top: 0;
+}
+
+.generator-link-type {
+    font-weight: 700;
+}
+
+.generator-link-badge {
+    display: inline-block;
+    font-family: var(--schrift-daten);
+    font-size: var(--t-xs);
+    line-height: 1.4;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    border-radius: var(--radius);
+    padding: 0.2rem 0.45rem;
+    border: var(--strich) solid transparent;
+}
+
+.generator-link-badge.is-uebung {
+    background: var(--flaeche-2);
+    border-color: var(--akzent);
+    color: var(--akzent-hell);
+}
+
+.generator-link-badge.is-leitung {
+    background: var(--warn-fond);
+    border-color: var(--warn-linie);
+    color: var(--warn-text);
+}
+
+.generator-link-badge.is-teilnehmer {
+    background: var(--gut-fond);
+    border-color: var(--gut-linie);
+    color: var(--gut);
+}
+
+.generator-link-name {
+    color: var(--text);
+    font-weight: 600;
+}
+
+.generator-link-url code {
+    display: block;
+    max-width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    color: var(--text-2);
+    background: none;
+    border: 0;
+    padding: 0;
+}
+
+.generator-link-actions {
+    display: flex;
+    flex-wrap: nowrap;
+    justify-content: flex-end;
+    align-items: center;
+    gap: 0.4rem;
+}
+
+.generator-link-actions .btn {
+    min-width: 96px;
+    white-space: nowrap;
+    flex: 0 0 auto;
+}
+
+/* JSON-Ausgabe: Daten, also dicktengleich auf zurückgesetzter Fläche. */
+#jsonOutput {
+    background: var(--flaeche-2) !important;
+    color: var(--text);
+    border: var(--strich) solid var(--linie-fein);
+    border-radius: var(--radius) !important;
+    font-family: var(--schrift-daten);
+    font-size: var(--t-s);
 }
 
 @media (min-width: 992px) {
     .generator-link-grid-header {
         display: grid;
         grid-template-columns: 1fr 1.2fr 2fr 2.6fr;
-        gap: 0.75rem;
-        font-size: 0.8rem;
-        color: var(--text-muted);
+        gap: var(--r-3);
+        font-family: var(--schrift-daten);
+        font-size: var(--t-xs);
+        font-weight: 700;
+        color: var(--text-2);
         text-transform: uppercase;
-        letter-spacing: 0.04em;
-        margin-bottom: 0.6rem;
-        padding: 0 0.4rem;
+        letter-spacing: 0.07em;
+        margin-bottom: 0;
+        padding: 0.45rem 0.75rem;
+        background: var(--flaeche-2);
+        border: var(--strich) solid var(--linie-fein);
+        border-bottom: 0;
     }
 
     .generator-link-row {
         grid-template-columns: 1fr 1.2fr 2fr 2.6fr;
         align-items: center;
-        gap: 0.75rem;
-        padding: 0.7rem;
+        gap: var(--r-3);
+        padding: 0.6rem 0.75rem;
     }
 }
 
@@ -690,923 +1483,35 @@ body {
     }
 }
 
-.main-footer {
-    position: sticky;
-    bottom: 0;
-    z-index: 4000;
-
-    margin-top: auto;
-    flex-shrink: 0;
-
-    background:
-        linear-gradient(180deg, color-mix(in srgb, var(--surface) 90%, #0b3b56 10%), var(--surface));
-    color: var(--text-muted);
-
-    border-top: 1px solid color-mix(in srgb, var(--border) 78%, #22d3ee 22%);
-    box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.08);
-
-    font-size: 0.8rem;
-    padding: 0.75rem 1.25rem;
-    display: flex;
-    flex-wrap: wrap;
-    align-items: center;
-    gap: 0.55rem 0.9rem;
-}
-
-.main-footer .footer-links {
-    display: inline-flex;
-    flex-wrap: wrap;
-    gap: 0.35rem 0.8rem;
-}
-
-.main-footer a {
-    color: inherit;
-    text-decoration: underline;
-    text-decoration-color: color-mix(in srgb, var(--text-muted) 65%, transparent);
-}
-
-.main-footer a:hover {
-    text-decoration-color: currentColor;
-}
-
-@media (max-width: 768px) {
-    .main-footer {
-        padding: 0.65rem 0.8rem;
-        font-size: 0.75rem;
-        gap: 0.4rem 0.6rem;
-    }
-
-    .main-footer .btn {
-        font-size: 0.7rem;
-        padding: 0.2rem 0.45rem;
-    }
-}
-
-/* Sticky App Header with strong separation */
-.app-header {
-    position: sticky;
-    top: 0;
-    z-index: 5000;
-    background:
-        linear-gradient(180deg, color-mix(in srgb, var(--surface) 88%, #082f49 12%), var(--surface));
-    border-bottom: 1px solid color-mix(in srgb, var(--border) 65%, #22d3ee 35%);
-    box-shadow: 0 3px 12px rgba(0, 0, 0, 0.1);
-}
-
-.app-header .container {
-    display: grid;
-    grid-template-columns: auto 1fr auto;
-    align-items: center;
-    gap: 1rem;
-    padding: 0.75rem 1.25rem;
-}
-
-@media (max-width: 992px) {
-    .app-header .container {
-        grid-template-columns: 1fr;
-        text-align: center;
-    }
-
-    .app-header .container > * {
-        justify-self: center;
-    }
-}
-
-/* Push content slightly under the header so overlap is visible */
-#mainAppArea {
-    margin-left: 20px;
-    margin-right: 20px;
-    padding-top: 1.5rem;
-    padding-bottom: 1.5rem;
-}
-
-/* Header title spacing */
-
-.app-header .btn {
-    margin-left: 0.25rem;
-}
-
-.app-header-title h1,
-.app-header-title h2 {
-    letter-spacing: 0.04em;
-    text-transform: uppercase;
-    font-size: 1.05rem;
-    font-weight: 700;
-}
-
-.app-header-title i {
-    color: #22d3ee;
-}
-
-.nato-time {
-    font-size: 1rem;
-    letter-spacing: 0.14em;
-}
-
-.app-view-shell .card-header {
-    position: relative;
-    background:
-        linear-gradient(90deg, rgba(56, 189, 248, 0.12), rgba(56, 189, 248, 0.03) 35%, transparent);
-}
-
-.app-view-shell .card-header::before {
-    content: "";
-    position: absolute;
-    left: 10px;
-    top: 50%;
-    width: 6px;
-    height: 6px;
-    border-radius: 1px;
-    transform: translateY(-50%);
-    background: #22d3ee;
-    box-shadow: 0 0 10px rgba(34, 211, 238, 0.8);
-}
-
-.app-view-shell .card-header h4,
-.app-view-shell .card-header h5,
-.app-view-shell .card-header h6 {
-    text-transform: uppercase;
-    letter-spacing: 0.06em;
-    font-size: 0.86rem;
-    font-weight: 700;
-    padding-left: 12px;
-}
-
-.app-view-shell .table thead th {
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
-    font-size: 0.74rem;
-}
-
-[data-theme="dark"] body {
-    background:
-        radial-gradient(1100px 420px at 15% -10%, rgba(14, 165, 233, 0.16), transparent 60%),
-        radial-gradient(900px 360px at 95% 0%, rgba(34, 211, 238, 0.14), transparent 55%),
-        var(--bg);
-}
-
-[data-theme="startrek"] body {
-    background:
-        linear-gradient(180deg, #080d1a, #090f1f),
-        radial-gradient(circle at 15% 20%, rgba(255, 255, 255, 0.17) 1px, transparent 1.5px),
-        radial-gradient(circle at 72% 43%, rgba(255, 255, 255, 0.15) 1px, transparent 1.5px),
-        radial-gradient(circle at 34% 70%, rgba(255, 255, 255, 0.14) 1px, transparent 1.5px),
-        var(--bg);
-    background-size: auto, 220px 220px, 260px 260px, 300px 300px, auto;
-}
-
-[data-theme="startrek"] .app-header,
-[data-theme="startrek"] .main-footer {
-    background: #0b1223;
-    border-color: var(--lcars-orange);
-}
-
-[data-theme="startrek"] .app-header::before {
-    content: "";
-    position: absolute;
-    left: 0;
-    top: 0;
-    width: 100%;
-    height: 7px;
-    background: linear-gradient(90deg, var(--lcars-orange) 0 22%, var(--lcars-magenta) 22% 44%, var(--lcars-cyan) 44% 66%, var(--lcars-blue) 66% 100%);
-}
-
-[data-theme="startrek"] .app-header::after {
-    content: "COMMS 47-ALPHA";
-    position: absolute;
-    right: 1.25rem;
-    bottom: 0.28rem;
-    font-family: "Antonio", "Eurostile", "Orbitron", "Avenir Next", "Segoe UI", sans-serif;
-    font-size: 0.72rem;
-    letter-spacing: 0.12em;
-    color: #ffd7a0;
-    opacity: 0.9;
-    pointer-events: none;
-}
-
-[data-theme="startrek"] .app-header-title h1,
-[data-theme="startrek"] .app-header-title h2 {
-    font-family: var(--lcars-font);
-    letter-spacing: 0.1em;
-    color: var(--lcars-peach);
-}
-
-[data-theme="startrek"] .app-header-title i {
-    color: var(--lcars-orange);
-}
-
-[data-theme="startrek"] .app-view-shell {
-    border-radius: 14px;
-    background:
-        linear-gradient(180deg, #0b1326, #0b1326),
-        radial-gradient(1100px 360px at -20% 0, rgba(255, 159, 28, 0.12), transparent 58%);
-    border-color: color-mix(in srgb, var(--border) 48%, var(--lcars-orange) 52%);
-    box-shadow: inset 0 0 0 2px rgba(255, 159, 28, 0.18);
-}
-
-[data-theme="startrek"] .app-view-shell .card {
-    background: #121b31;
-    border-color: color-mix(in srgb, var(--border) 52%, var(--lcars-cyan) 48%);
-    border-width: 2px;
-    border-radius: 14px;
-    overflow: hidden;
-    position: relative;
-}
-
-[data-theme="startrek"] .app-view-shell .card::before {
-    content: "";
-    position: absolute;
-    left: 0;
-    top: 0;
-    bottom: 0;
-    width: 7px;
-    background: linear-gradient(180deg, var(--lcars-orange), var(--lcars-magenta));
-    opacity: 0.95;
-}
-
-[data-theme="startrek"] .app-view-shell .card-header {
-    position: relative;
-    min-height: 46px;
-    display: flex;
-    align-items: center;
-    background:
-        linear-gradient(
-            90deg,
-            #ff9f1c 0 74px,
-            #fcbf9e 74px 126px,
-            #cc78d1 126px 178px,
-            #7dd3fc 178px 100%
-        );
-    border-bottom: 2px solid rgba(255, 159, 28, 0.55);
-    border-top-left-radius: 12px;
-    border-top-right-radius: 12px;
-    overflow: hidden;
-    padding-left: 24px;
-}
-
-[data-theme="startrek"] .app-view-shell .card-header::before {
-    width: 28px;
-    height: 100%;
-    top: 0;
-    transform: none;
-    border-radius: 0 14px 14px 0;
-    background: var(--lcars-orange);
-    box-shadow: inset -2px 0 0 rgba(0, 0, 0, 0.22);
-    left: 0;
-}
-
-[data-theme="startrek"] .app-view-shell .card-header > * {
-    position: relative;
-    z-index: 1;
-}
-
-[data-theme="startrek"] .app-view-shell .card-header h4,
-[data-theme="startrek"] .app-view-shell .card-header h5,
-[data-theme="startrek"] .app-view-shell .card-header h6 {
-    font-family: var(--lcars-font);
-    letter-spacing: 0.12em;
-    color: #1a1026;
-    padding-left: 10px;
-    font-size: 0.9rem;
-}
-
-[data-theme="startrek"] .app-view-shell .card-header::after {
-    content: "COMMS";
-    position: absolute;
-    right: 0.85rem;
-    top: 50%;
-    transform: translateY(-50%);
-    font-family: var(--lcars-font);
-    font-size: 0.64rem;
-    letter-spacing: 0.16em;
-    color: rgba(17, 24, 39, 0.86);
-    background: rgba(255, 214, 160, 0.52);
-    border-radius: 999px;
-    padding: 0.08rem 0.45rem;
-    pointer-events: none;
-}
-
-[data-theme="startrek"] .app-view-shell .btn-primary,
-[data-theme="startrek"] .app-view-shell .btn-success {
-    background: var(--lcars-orange);
-    color: var(--lcars-ink);
-    box-shadow: none;
-    border: 2px solid rgba(0, 0, 0, 0.25);
-}
-
-[data-theme="startrek"] .app-view-shell .btn,
-[data-theme="startrek"] .app-header .btn,
-[data-theme="startrek"] .main-footer .btn {
-    border-radius: 22px 8px 8px 22px;
-    font-family: var(--lcars-font);
-    letter-spacing: 0.06em;
-    text-transform: uppercase;
-}
-
-[data-theme="startrek"] body,
-[data-theme="startrek"] input,
-[data-theme="startrek"] select,
-[data-theme="startrek"] textarea,
-[data-theme="startrek"] .table,
-[data-theme="startrek"] .form-label,
-[data-theme="startrek"] .form-check-label {
-    font-family: "Rajdhani", "Avenir Next", "Segoe UI", sans-serif;
-}
-
-[data-theme="startrek"] .app-view-shell .btn-outline-secondary,
-[data-theme="startrek"] .app-view-shell .btn-outline-primary {
-    background: var(--lcars-magenta);
-    color: #130d20;
-    border: 2px solid rgba(0, 0, 0, 0.22);
-}
-
-[data-theme="startrek"] .app-view-shell .table thead th {
-    background: #27395f;
-    color: #ffd7a0;
-    border-color: rgba(125, 211, 252, 0.42);
-    font-family: "Antonio", "Eurostile", "Orbitron", "Avenir Next", "Segoe UI", sans-serif;
-    letter-spacing: 0.08em;
-}
-
-[data-theme="startrek"] .app-view-shell .table tbody tr > * {
-    border-color: rgba(125, 211, 252, 0.26);
-}
-
-[data-theme="startrek"] .generator-link-badge.is-uebung {
-    background: rgba(245, 158, 11, 0.22);
-    border-color: rgba(245, 158, 11, 0.65);
-    color: #ffd089;
-}
-
-[data-theme="startrek"] .generator-link-badge.is-leitung {
-    background: rgba(239, 68, 68, 0.2);
-    border-color: rgba(239, 68, 68, 0.62);
-    color: #fecaca;
-}
-
-[data-theme="startrek"] .generator-link-badge.is-teilnehmer {
-    background: rgba(56, 189, 248, 0.2);
-    border-color: rgba(56, 189, 248, 0.62);
-    color: #bae6fd;
-}
-
-
-/* Optional: soften the first content row so it doesn't visually clash */
-#mainAppArea > .container:first-child {
-    padding-top: 1rem;
-}
-
-
-/* =========================
-   Dark Mode Readability Fixes
-   ========================= */
-
-/* Tables */
-[data-theme="dark"] .table {
-    color: var(--text);
-    background-color: var(--table-bg);
-}
-
-[data-theme="dark"] .table thead {
-    color: var(--text-muted);
-}
-
-[data-theme="dark"] .table-bordered,
-[data-theme="dark"] .table-bordered td,
-[data-theme="dark"] .table-bordered th {
-    border-color: var(--border);
-}
-
-/* Cards */
-[data-theme="dark"] .card {
-    background-color: var(--surface);
-}
-
-[data-theme="dark"] .card-header {
-    border-bottom: 1px solid var(--border);
-}
-
-/* Muted text */
-[data-theme="dark"] .text-muted {
-    color: var(--text-muted) !important;
-}
-
-/* Links */
-[data-theme="dark"] a {
-    color: #93c5fd;
-}
-
-[data-theme="dark"] a:hover {
-    color: #bfdbfe;
-}
-
-/* Modals */
-[data-theme="dark"] .modal-content {
-    background-color: var(--surface);
-    color: var(--text);
-}
-
-[data-theme="dark"] .modal-header,
-[data-theme="dark"] .modal-footer {
-    border-color: var(--border);
-}
-
-[data-theme="dark"] .btn-close {
-    filter: invert(1);
-}
-
-[data-theme="dark"] .dropdown-menu {
-    background-color: var(--surface);
-    border-color: var(--border);
-}
-
-[data-theme="dark"] .dropdown-item {
-    color: var(--text);
-}
-
-[data-theme="dark"] .dropdown-item:hover,
-[data-theme="dark"] .dropdown-item:focus {
-    background-color: var(--surface-alt);
-    color: var(--text);
-}
-
-[data-theme="dark"] .alert {
-    background-color: var(--surface-alt);
-    color: var(--text);
-    border-color: var(--border);
-}
-
-[data-theme="dark"] .text-dark {
-    color: var(--text) !important;
-}
-
-[data-theme="dark"] .badge.bg-light {
-    background-color: #2a2a2a;
-    color: #f0f0f0;
-}
-
-/* Charts canvas background helper */
-[data-theme="dark"] canvas {
-    background-color: transparent;
-}
-
-/* =========================
-   Dark Mode – Table & Text Contrast Fix (Admin)
-   ========================= */
-
-/* Table background + text */
-[data-theme="dark"] .table {
-    background-color: var(--table-bg);
-    color: var(--text);
-}
-
-/* Table header */
-[data-theme="dark"] .table thead th {
-    background-color: var(--table-head-bg);
-    color: var(--text);
-    border-bottom: 2px solid var(--border);
-}
-
-/* Table rows */
-[data-theme="dark"] .table tbody tr {
-    background-color: var(--table-bg);
-}
-
-[data-theme="dark"] .table tbody tr:nth-child(even) {
-    background-color: var(--table-bg-alt);
-}
-
-/* Row hover */
-[data-theme="dark"] .table tbody tr:hover {
-    background-color: var(--surface-alt);
-}
-
-/* Table borders */
-[data-theme="dark"] .table td,
-[data-theme="dark"] .table th {
-    border-color: var(--border);
-}
-
-/* Links inside tables */
-[data-theme="dark"] .table a {
-    color: #93c5fd;
-}
-
-[data-theme="dark"] .table a:hover {
-    color: #bfdbfe;
-}
-
-/* Danger / delete buttons inside tables */
-[data-theme="dark"] .table .btn-danger {
-    background-color: #7f1d1d;
-    border-color: #7f1d1d;
-}
-
-/* Admin Area spacing */
-#adminArea {
-    margin-left: 20px;
-    margin-right: 20px;
-}
-
-.app-header h2 {
-    margin: 0;
-    text-align: center;
-    white-space: nowrap;
-}
-
-.app-header .d-md-block {
-    display: flex;
-    align-items: center;
-    gap: 0.25rem;
-}
-
-/* =========================
-   Dark Mode – Unified Headings System
-   ========================= */
-
-/* App header title */
-[data-theme="dark"] .app-header h2 {
-    color: var(--primary);
-    font-weight: 600;
-}
-
-/* Card section titles */
-[data-theme="dark"] .card-header h4,
-[data-theme="dark"] .card-header h5 {
-    color: var(--text);
-    font-weight: 600;
-}
-
-/* Override Bootstrap .text-primary for headings in card headers (Dark Mode) */
-[data-theme="dark"] .card-header .text-primary {
-    color: var(--text) !important;
-}
-
-/* Generic headings inside content */
-[data-theme="dark"] h1,
-[data-theme="dark"] h2,
-[data-theme="dark"] h3,
-[data-theme="dark"] h4,
-[data-theme="dark"] h5,
-[data-theme="dark"] h6 {
-    color: var(--text);
-}
-
-/* Icons in headings */
-[data-theme="dark"] .card-header i,
-[data-theme="dark"] .app-header i {
-    color: var(--primary);
-}
-
-/* Muted helper text under headings */
-[data-theme="dark"] .card-header small,
-[data-theme="dark"] .card-header .text-muted {
-    color: var(--text-muted) !important;
-}
-
-/* =========================
-   Dark Mode – Form Options & Input Contrast
-   ========================= */
-
-/* Labels & option texts */
-[data-theme="dark"] label,
-[data-theme="dark"] .form-label,
-[data-theme="dark"] .form-check-label {
-    color: var(--text);
-}
-
-/* Radio / checkbox helper text */
-[data-theme="dark"] .form-check-input + label {
-    color: var(--text);
-}
-
-/* Inputs & selects background */
-[data-theme="dark"] .form-control,
-[data-theme="dark"] .form-select,
-[data-theme="dark"] .input-group-text {
-    background-color: var(--input-bg);
-    color: var(--input-text);
-    border-color: var(--input-border);
-}
-
-/* Placeholder text */
-[data-theme="dark"] .form-control::placeholder {
-    color: var(--text-muted);
-}
-
-/* Multi-select / choice boxes */
-[data-theme="dark"] select option {
-    background-color: var(--input-bg);
-    color: var(--input-text);
-}
-
-/* =========================
-   Dark Mode – Tables (Darker & Calmer)
-   ========================= */
-
-[data-theme="dark"] .table {
-    background-color: var(--table-bg);
-}
-
-[data-theme="dark"] .table tbody tr {
-    background-color: var(--table-bg);
-}
-
-[data-theme="dark"] .table tbody tr:nth-child(even) {
-    background-color: var(--table-bg-alt);
-}
-
-[data-theme="dark"] .table thead th {
-    background-color: var(--table-head-bg);
-    color: var(--text);
-}
-
-/* Fix Bootstrap table cell background in Dark Mode */
-[data-theme="dark"] .table > :not(caption) > * > * {
-    background-color: var(--table-bg);
-}
-
-/* =========================
-   Dark Mode – Select2 (Bootstrap 5 Theme)
-   ========================= */
-
-/* Main selection box */
-[data-theme="dark"] .select2-container--bootstrap-5 .select2-selection {
-    background-color: var(--input-bg);
-    color: var(--input-text);
-    border: 1px solid var(--input-border);
-}
-
-/* Rendered selected text */
-[data-theme="dark"] .select2-container--bootstrap-5 .select2-selection__rendered {
-    color: var(--input-text);
-}
-
-/* Placeholder text */
-[data-theme="dark"] .select2-container--bootstrap-5 .select2-selection__placeholder {
-    color: var(--text-muted);
-}
-
-/* Dropdown menu */
-[data-theme="dark"] .select2-container--bootstrap-5 .select2-dropdown {
-    background-color: var(--input-bg);
-    border-color: var(--input-border);
-}
-
-/* Dropdown options */
-[data-theme="dark"] .select2-container--bootstrap-5 .select2-results__option {
-    background-color: var(--input-bg);
-    color: var(--input-text);
-}
-
-/* Hovered option */
-[data-theme="dark"] .select2-container--bootstrap-5 .select2-results__option--highlighted {
-    background-color: var(--surface-alt);
-    color: var(--input-text);
-}
-
-/* Selected option */
-[data-theme="dark"] .select2-container--bootstrap-5 .select2-results__option--selected {
-    background-color: var(--surface);
-    color: var(--input-text);
-}
-
-/* Clear button / arrow */
-[data-theme="dark"] .select2-container--bootstrap-5 .select2-selection__arrow b {
-    border-color: var(--input-text) transparent transparent transparent;
-}
-
-/* Select2 multiple selection tags (Dark Mode) */
-[data-theme="dark"] .select2-container--bootstrap-5
-.select2-selection--multiple
-.select2-selection__choice {
-    background-color: var(--surface-alt);
-    color: var(--text);
-    border: 1px solid var(--border);
-}
-
-[data-theme="dark"] .table {
-    --bs-table-bg: var(--table-bg);
-    --bs-table-striped-bg: var(--table-bg-alt);
-    --bs-table-striped-color: var(--text);
-    --bs-table-hover-bg: var(--surface-alt);
-    --bs-table-hover-color: var(--text);
-}
-
-[data-theme="dark"] .table-striped > tbody > tr:nth-of-type(odd) > * {
-    background-color: var(--table-bg-alt);
-    color: var(--text);
-}
-
-/* =========================
-   Dark Mode – Final table-striped row fix
-   ========================= */
-
-/* Reset any inherited row background */
-[data-theme="dark"] .table tbody tr > * {
-    background-color: var(--table-bg);
-    color: var(--text);
-}
-
-/* Zebra striping – every second row */
-[data-theme="dark"] .table-striped tbody tr:nth-of-type(even) > * {
-    background-color: var(--table-bg-alt);
-}
-
-/* Hover state */
-[data-theme="dark"] .table-striped tbody tr:hover > * {
-    background-color: var(--surface-alt);
-}
-
-/* =========================
-   Dark Mode – List Group (Admin Summary)
-   ========================= */
-
-[data-theme="dark"] .list-group-item {
-    background-color: var(--surface);
-    color: var(--text);
-    border-color: var(--border);
-}
-
-[data-theme="dark"] .list-group-item strong {
-    color: var(--text);
-}
-
-[data-theme="dark"] .list-group-item .float-end {
-    color: var(--text);
-}
-
-/* Remove Bootstrap light hover */
-[data-theme="dark"] .list-group-item:hover {
-    background-color: var(--surface-alt);
-}
-
-/* =========================
-   Übungsleitung – Dark Mode Lesbarkeit
-   ========================= */
+/* --- Übungsleitung -------------------------------------------------------- */
 
 #uebungsleitungMeta {
     color: var(--text);
 }
 
 #uebungsleitungMeta strong {
-    color: var(--text-muted);
+    color: var(--text);
     font-weight: 600;
 }
 
 #uebungsleitungMeta code {
-    color: #ff7ab2;
-    background-color: rgba(255, 255, 255, 0.08);
-    padding: 0.1rem 0.35rem;
-    border-radius: 6px;
-}
-
-/* =========================
-   Einheitliche Überschriften
-   ========================= */
-
-.card-header h4,
-.card-header h5 {
-    margin: 0;
-    font-weight: 600;
     color: var(--text);
+    background-color: var(--flaeche-2);
+    border: var(--strich) solid var(--linie-fein);
+    padding: 0.1rem 0.35rem;
+    border-radius: var(--radius);
 }
 
-.card-header i {
-    color: var(--primary);
-}
-
-/* =========================
-   Nachrichtenplan – optische Trennung je Nachricht
-   ========================= */
-
-/* Grundzustand: normale Linie */
+/* Deutliche Trennung zwischen zwei Nachrichten */
 #uebungsleitungNachrichten table tbody tr td {
     border-top-width: 1px;
 }
 
-/* Deutliche Trennung zwischen zwei Nachrichten */
 #uebungsleitungNachrichten table tbody tr:not(:first-child) td {
-    border-top: 3px solid var(--border);
+    border-top: 3px solid var(--linie);
 }
 
-/* Dark Mode – stärkerer Kontrast */
-[data-theme="dark"]
-#uebungsleitungNachrichten table tbody tr:not(:first-child) td {
-    border-top: 3px solid var(--primary);
-}
-
-/* =====================================================
-   Abgesetzte Nachrichten – Bootstrap-konform & Dark Mode
-   ===================================================== */
-
-.table-success {
-    --bs-table-bg: var(--status-success-bg);
-    --bs-table-striped-bg: var(--status-success-bg);
-    --bs-table-hover-bg: var(--status-success-bg);
-    --bs-table-color: var(--status-success-text);
-    --bs-table-striped-color: var(--status-success-text);
-    --bs-table-hover-color: var(--status-success-text);
-    --bs-table-border-color: var(--border);
-}
-
-.status-ok-row > td,
-.status-ok-row > th {
-    background-color: var(--status-success-bg) !important;
-    color: var(--status-success-text) !important;
-}
-
-.status-pending-row > td,
-.status-pending-row > th {
-    background-color: var(--status-pending-bg) !important;
-    color: var(--status-pending-text) !important;
-}
-
-.status-chip {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    border: 1px solid transparent;
-    border-radius: 4px;
-    font-size: 0.68rem;
-    letter-spacing: 0.05em;
-    text-transform: uppercase;
-    font-weight: 700;
-    padding: 0.2rem 0.4rem;
-    min-width: 74px;
-    cursor: pointer;
-}
-
-.status-chip--ok {
-    background: color-mix(in srgb, var(--status-success-bg) 90%, transparent);
-    color: var(--status-success-text);
-    border-color: color-mix(in srgb, var(--status-ok-border) 70%, transparent);
-}
-
-.status-chip--pending {
-    background: color-mix(in srgb, var(--status-pending-bg) 92%, transparent);
-    color: var(--status-pending-text);
-    border-color: color-mix(in srgb, var(--status-pending-border) 70%, transparent);
-    animation: statusPendingPulse 2.8s ease-in-out infinite;
-}
-
-.status-chip--critical {
-    background: color-mix(in srgb, var(--status-critical-bg) 92%, transparent);
-    color: var(--status-critical-text);
-    border-color: color-mix(in srgb, var(--status-critical-border) 70%, transparent);
-}
-
-/* 🔒 Erzwinge Hintergrund auf ZELL-Ebene */
-.table-success > td,
-.table-success > th,
-.table-success td,
-.table-success th {
-    background-color: var(--status-success-bg) !important;
-    color: var(--status-success-text) !important;
-}
-
-/* 🔒 table-striped darf NICHT eingreifen */
-.table-striped > tbody > tr.table-success > * {
-    background-color: var(--status-success-bg) !important;
-    color: var(--status-success-text) !important;
-}
-
-/* 🔒 Hover ebenfalls neutralisieren */
-.table-striped > tbody > tr.table-success:hover > * {
-    background-color: var(--status-success-bg) !important;
-}
-
-/* Nachricht & Notizen */
-.table-success .nachricht-text,
-.table-success textarea {
-    color: var(--status-success-text);
-}
-
-.table-success textarea {
-    background-color: var(--input-bg);
-    border-color: var(--border);
-}
-
-/* Placeholder */
-.table-success textarea::placeholder {
-    color: var(--text-muted);
-}
-
-.admin-standard-uebung-row > * {
-    background-color: var(--status-pending-bg) !important;
-    color: var(--status-pending-text) !important;
-    box-shadow: inset 4px 0 0 color-mix(in srgb, var(--status-pending-border) 75%, transparent);
-}
-
-[data-theme="dark"] .admin-standard-uebung-row > * {
-    background-color: var(--status-pending-bg) !important;
-    color: var(--text) !important;
-}
-
-.modal-dialog {
-    padding-top: 50px;
-    padding-bottom: 50px;
-}
+/* --- Teilnehmer: Dokumentenansicht --------------------------------------- */
 
 .teilnehmer-doc-modal .modal-dialog {
     max-width: 95vw;
@@ -1618,15 +1523,11 @@ body {
 }
 
 .teilnehmer-doc-modal.teilnehmer-doc-modal--done .modal-content {
-    background: #f3fbf4;
-}
-
-[data-theme="dark"] .teilnehmer-doc-modal.teilnehmer-doc-modal--done .modal-content {
-    background: #0f1f14;
+    background: var(--gut-fond);
 }
 
 .teilnehmer-doc-modal .modal-body {
-    padding: 0.75rem;
+    padding: var(--r-3);
     flex: 1 1 auto;
     position: relative;
 }
@@ -1652,7 +1553,42 @@ body {
 }
 
 .teilnehmer-doc-page {
-    font-size: 0.95rem;
+    font-size: var(--t-m);
+    font-variant-numeric: tabular-nums;
+}
+
+.teilnehmer-doc-legend {
+    position: absolute;
+    left: 16px;
+    bottom: 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    background: var(--flaeche);
+    border: var(--strich) solid var(--linie);
+    border-radius: var(--radius);
+    padding: 6px 8px;
+    max-width: 220px;
+}
+
+.teilnehmer-doc-container {
+    width: 100%;
+    height: 100%;
+    max-width: 520px;
+    display: flex;
+    align-items: flex-start;
+    justify-content: center;
+    background: transparent;
+    border-radius: var(--radius);
+}
+
+.teilnehmer-doc-canvas {
+    display: block;
+    background: #fff;
+    max-width: 100%;
+    max-height: 100%;
+    border: var(--strich) solid var(--linie);
+    box-shadow: none;
 }
 
 @media (max-width: 768px) {
@@ -1680,54 +1616,1151 @@ body {
     }
 }
 
-.teilnehmer-doc-legend {
-    position: absolute;
-    left: 16px;
-    bottom: 16px;
+/* =============================================================================
+   7. Fußbereich
+   ========================================================================== */
+
+.main-footer {
+    position: sticky;
+    bottom: 0;
+    z-index: 4000;
+    margin-top: auto;
+    flex-shrink: 0;
+    background: var(--flaeche);
+    color: var(--text-2);
+    border-top: var(--strich) solid var(--linie);
+    box-shadow: none;
+    font-size: var(--t-s);
+    padding: 0.6rem 1.25rem;
     display: flex;
-    flex-direction: column;
-    gap: 4px;
-    background: rgba(255, 255, 255, 0.9);
-    border: 1px solid var(--border);
-    border-radius: 6px;
-    padding: 6px 8px;
-    max-width: 220px;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.55rem 0.9rem;
 }
 
-[data-theme="dark"] .teilnehmer-doc-legend {
-    background: rgba(20, 20, 20, 0.9);
-    border-color: #2f2f2f;
+.main-footer b {
+    color: var(--text);
 }
 
-[data-theme="dark"] .teilnehmer-doc-legend .badge {
-    background: #2a2a2a !important;
-    color: #f0f0f0 !important;
+.main-footer .footer-links {
+    display: inline-flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.35rem 0.8rem;
 }
 
-[data-theme="dark"] .teilnehmer-doc-legend .text-muted {
-    color: #c6c6c6 !important;
+.main-footer a {
+    color: inherit;
+    text-decoration: underline;
+    text-decoration-color: var(--linie-stark);
 }
 
-
-.teilnehmer-doc-container {
-    width: 100%;
-    height: 100%;
-    max-width: 520px;
-    display: flex;
-    align-items: flex-start;
-    justify-content: center;
-    background: transparent;
-    border-radius: 6px;
+.main-footer a:hover {
+    color: var(--text);
+    text-decoration-color: currentcolor;
 }
 
-.teilnehmer-doc-canvas {
-    display: block;
-    background: #fff;
-    max-width: 100%;
-    max-height: 100%;
-    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+@media (max-width: 768px) {
+    .main-footer {
+        padding: 0.55rem 0.8rem;
+        font-size: var(--t-xs);
+        gap: 0.4rem 0.6rem;
+    }
 }
 
+/* =============================================================================
+   8. Dark Mode — nur was sich nicht aus Token ergibt
+   ========================================================================== */
+
+[data-theme="dark"] .btn-close {
+    filter: invert(1) grayscale(1) brightness(2);
+}
+
+[data-theme="dark"] canvas {
+    background-color: transparent;
+}
+
+/* Die Vordruck-PDFs sind für weißes Papier gesetzt. */
 [data-theme="dark"] .teilnehmer-doc-canvas {
     filter: invert(1) hue-rotate(180deg);
+}
+
+
+/* =============================================================================
+   9. Star-Trek-/LCARS-Theme
+   -----------------------------------------------------------------------------
+   Eigenständige Gestaltung nach den Okuda-Vorlagen, nicht nach "Amtlich":
+
+   * Schwarzer Grund. Die Flächen sind die Farbblöcke selbst, getrennt durch
+     schwarze Fugen — keine Linien, keine Rahmen.
+   * Elbow-Rahmen: senkrechte Säule links, waagerechte Schiene oben und unten,
+     verbunden über große Radien.
+   * Pillen: Endkappen mit halber Bauhöhe, Beschriftung rechtsbündig in
+     kondensierten Versalien.
+   * Kanonische LCARS-Palette, Text auf Farbe immer schwarz.
+
+   Alles läuft über die Rollen-Tokens der Basis plus die --lcars-* Rohwerte.
+   ========================================================================== */
+
+[data-theme="startrek"] {
+    color-scheme: dark;
+
+    /* Kanonische LCARS-Palette */
+    --lcars-orange: #ff9c00;
+    --lcars-butterscotch: #ff9966;
+    --lcars-lachs: #cc6666;
+    --lcars-violett: #cc99cc;
+    --lcars-flieder: #d9a6d9;
+    --lcars-blau: #9999ff;
+    --lcars-himmel: #99ccff;
+    --lcars-sonne: #ffcc66;
+    --lcars-sand: #ffcc99;
+    --lcars-gold: #ffff99;
+    --lcars-tinte: #000000;
+    --lcars-font: "Antonio Variable", Antonio, "Oswald", "Arial Narrow", sans-serif;
+
+    /* Fugenbreite zwischen zwei Blöcken, Bauhöhe der Schienen, Säulenbreite */
+    --lcars-fuge: 5px;
+    --lcars-schiene: 14px;
+    --lcars-saeule-breite: 26px;
+
+    /* Endkappe eines Blocks. Ein echtes 999px würde bei mehrzeiligen Blöcken
+       zur Ellipse skalieren — deshalb ein fester Wert, der bei einzeiligen
+       Elementen ohnehin zur Pille beschnitten wird. */
+    --lcars-kappe: 20px;
+
+    /* Rollen */
+    --grund: #000000;
+    --flaeche: #000000;
+    --flaeche-2: #14100a;
+    --text: #f5e6c8;
+    --text-2: var(--lcars-violett);
+    --text-3: #8f7f6a;
+    --linie-fein: #000000;
+    --linie: #000000;
+    --linie-stark: var(--lcars-blau);
+
+    --akzent: var(--lcars-orange);
+    --akzent-hell: var(--lcars-sonne);
+    --auf-akzent: #000000;
+    --fokus-farbe: var(--lcars-himmel);
+
+    --gut: var(--lcars-sonne);
+    --gut-fond: #1d1608;
+    --gut-linie: var(--lcars-sonne);
+    --warn-text: var(--lcars-sand);
+    --warn-fond: #1d1408;
+    --warn-linie: var(--lcars-butterscotch);
+    --alarm: var(--lcars-lachs);
+    --alarm-fond: #1a0c0c;
+    --alarm-linie: var(--lcars-lachs);
+
+    --kopf-fond: #000000;
+    --kopf-auf: var(--lcars-orange);
+    --kopf-auf-2: var(--lcars-blau);
+    --kopf-linie: var(--lcars-orange);
+
+    /* Form: LCARS ist rund. */
+    --radius: 4px;
+    --radius-pille: 999px;
+    --schatten: none;
+    --schrift: var(--lcars-font);
+    --schrift-daten: var(--lcars-font);
+
+    --bs-border-radius: 4px;
+    --bs-border-radius-sm: 4px;
+    --bs-border-radius-lg: 8px;
+    --bs-border-radius-pill: 999px;
+    --bs-body-font-size: 1rem;
+
+    --t-xs: 0.78rem;
+    --t-s: 0.88rem;
+    --t-m: 1rem;
+    --t-l: 1.2rem;
+    --t-xl: 1.6rem;
+    --t-2xl: 2rem;
+}
+
+html:has(> body[data-theme="startrek"]) {
+    color-scheme: dark;
+}
+
+[data-theme="startrek"] body,
+[data-theme="startrek"] input,
+[data-theme="startrek"] select,
+[data-theme="startrek"] textarea,
+[data-theme="startrek"] button,
+[data-theme="startrek"] .table,
+[data-theme="startrek"] .form-label,
+[data-theme="startrek"] .form-check-label {
+    font-family: var(--lcars-font);
+    letter-spacing: 0.03em;
+}
+
+[data-theme="startrek"] body {
+    background: #000;
+    color: var(--text);
+}
+
+[data-theme="startrek"] h1,
+[data-theme="startrek"] h2,
+[data-theme="startrek"] h3,
+[data-theme="startrek"] h4,
+[data-theme="startrek"] h5,
+[data-theme="startrek"] h6 {
+    font-family: var(--lcars-font);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--lcars-orange);
+}
+
+[data-theme="startrek"] a {
+    color: var(--lcars-himmel);
+}
+
+[data-theme="startrek"] a:hover {
+    color: var(--lcars-orange);
+}
+
+[data-theme="startrek"] hr {
+    border-top: var(--lcars-fuge) solid var(--lcars-violett);
+    border-radius: 999px;
+    margin: 0.9rem 0;
+}
+
+[data-theme="startrek"] code {
+    background: #16120c;
+    border: 0;
+    border-radius: 999px;
+    padding: 0.1em 0.6em;
+    color: var(--lcars-sonne);
+}
+
+/* --- Kopfbereich: Elbow links, Schiene unten ----------------------------- */
+
+[data-theme="startrek"] .app-header {
+    background: #000;
+    border: 0;
+    box-shadow: none;
+    padding-bottom: calc(var(--lcars-schiene) + 10px);
+}
+
+/* Senkrechte Endkappe links, die in die Schiene läuft */
+[data-theme="startrek"] .app-header::before {
+    content: "";
+    position: absolute;
+    left: 18px;
+    top: 8px;
+    bottom: 6px;
+    width: 78px;
+    height: auto;
+    background: var(--lcars-orange);
+    border-radius: 26px 0 0 26px;
+}
+
+/* Schiene: Farbblöcke mit schwarzen Fugen, rechte Endkappe halbrund */
+[data-theme="startrek"] .app-header::after {
+    content: "";
+    position: absolute;
+    left: calc(18px + 78px + var(--lcars-fuge));
+    right: 18px;
+    bottom: 6px;
+    top: auto;
+    transform: none;
+    height: var(--lcars-schiene);
+    border-radius: 0 var(--lcars-kappe) var(--lcars-kappe) 0;
+    opacity: 1;
+    pointer-events: none;
+    background: linear-gradient(
+        90deg,
+        var(--lcars-violett) 0 18%,
+        #000 18% calc(18% + var(--lcars-fuge)),
+        var(--lcars-blau) calc(18% + var(--lcars-fuge)) 42%,
+        #000 42% calc(42% + var(--lcars-fuge)),
+        var(--lcars-sonne) calc(42% + var(--lcars-fuge)) 52%,
+        #000 52% calc(52% + var(--lcars-fuge)),
+        var(--lcars-lachs) calc(52% + var(--lcars-fuge)) 74%,
+        #000 74% calc(74% + var(--lcars-fuge)),
+        var(--lcars-butterscotch) calc(74% + var(--lcars-fuge)) 100%
+    );
+}
+
+[data-theme="startrek"] .app-header .container {
+    padding: 8px 18px 4px calc(18px + 78px + 16px);
+}
+
+[data-theme="startrek"] .app-header-title h1,
+[data-theme="startrek"] .app-header-title h2 {
+    font-family: var(--lcars-font);
+    font-size: var(--t-xl);
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--lcars-orange);
+}
+
+[data-theme="startrek"] .app-header-title i {
+    color: var(--lcars-sonne);
+}
+
+[data-theme="startrek"] .nato-time {
+    font-family: var(--lcars-font);
+    font-size: 1.15rem;
+    letter-spacing: 0.2em;
+    color: var(--lcars-sonne);
+    opacity: 1;
+}
+
+@media (max-width: 992px) {
+    [data-theme="startrek"] .app-header::before {
+        display: none;
+    }
+
+    [data-theme="startrek"] .app-header::after {
+        left: 12px;
+        right: 12px;
+        border-radius: 999px;
+    }
+
+    [data-theme="startrek"] .app-header .container {
+        padding-left: 12px;
+    }
+}
+
+/* --- Bedienelemente: Pillen mit rechtsbündiger Beschriftung -------------- */
+
+[data-theme="startrek"] .btn {
+    --bs-btn-border-width: 0;
+    --bs-btn-color: #000;
+    --bs-btn-bg: var(--lcars-blau);
+    --bs-btn-border-color: transparent;
+    --bs-btn-hover-color: #000;
+    --bs-btn-hover-bg: var(--lcars-sonne);
+    --bs-btn-hover-border-color: transparent;
+    --bs-btn-active-color: #000;
+    --bs-btn-active-bg: var(--lcars-orange);
+    --bs-btn-active-border-color: transparent;
+    --bs-btn-disabled-color: #000;
+    --bs-btn-disabled-bg: #4a4034;
+    --bs-btn-disabled-border-color: transparent;
+    border: 0;
+    border-radius: 999px;
+    font-family: var(--lcars-font);
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.09em;
+    justify-content: flex-end;
+    padding: 0.3rem 1.1rem;
+    min-height: 2.1rem;
+}
+
+[data-theme="startrek"] .btn-sm {
+    min-height: 1.7rem;
+    padding: 0.15rem 0.8rem;
+    letter-spacing: 0.06em;
+}
+
+[data-theme="startrek"] .btn-lg {
+    min-height: 2.8rem;
+    padding: 0.5rem 1.6rem;
+}
+
+[data-theme="startrek"] .btn-primary {
+    --bs-btn-bg: var(--lcars-orange);
+    --bs-btn-hover-bg: var(--lcars-sonne);
+    --bs-btn-active-bg: var(--lcars-sand);
+}
+
+[data-theme="startrek"] .btn-success,
+[data-theme="startrek"] .btn-outline-success {
+    --bs-btn-color: #000;
+    --bs-btn-bg: var(--lcars-sonne);
+    --bs-btn-border-color: transparent;
+    --bs-btn-hover-color: #000;
+    --bs-btn-hover-bg: var(--lcars-gold);
+    --bs-btn-active-bg: var(--lcars-sand);
+}
+
+[data-theme="startrek"] .btn-outline-primary {
+    --bs-btn-color: #000;
+    --bs-btn-bg: var(--lcars-violett);
+    --bs-btn-border-color: transparent;
+    --bs-btn-hover-color: #000;
+    --bs-btn-hover-bg: var(--lcars-flieder);
+}
+
+[data-theme="startrek"] .btn-danger,
+[data-theme="startrek"] .btn-outline-danger {
+    --bs-btn-color: #000;
+    --bs-btn-bg: var(--lcars-lachs);
+    --bs-btn-border-color: transparent;
+    --bs-btn-hover-color: #000;
+    --bs-btn-hover-bg: var(--lcars-butterscotch);
+    --bs-btn-active-bg: var(--lcars-butterscotch);
+    --bs-btn-disabled-bg: #4a4034;
+}
+
+[data-theme="startrek"] .btn-warning {
+    --bs-btn-color: #000;
+    --bs-btn-bg: var(--lcars-butterscotch);
+    --bs-btn-hover-bg: var(--lcars-sand);
+}
+
+[data-theme="startrek"] .app-header .btn {
+    --bs-btn-bg: var(--lcars-blau);
+    --bs-btn-color: #000;
+    letter-spacing: 0.04em;
+    white-space: nowrap;
+    padding: 0.25rem 0.9rem;
+}
+
+[data-theme="startrek"] .app-header .btn:nth-of-type(2n) {
+    --bs-btn-bg: var(--lcars-violett);
+}
+
+[data-theme="startrek"] .btn:focus-visible {
+    outline: 3px solid var(--lcars-himmel);
+    outline-offset: 2px;
+}
+
+[data-theme="startrek"] .btn-close {
+    background-color: var(--lcars-lachs);
+    border-radius: 999px;
+    opacity: 1;
+    filter: none;
+    padding: 0.55rem;
+}
+
+/* --- Eingabefelder: schwarze Fläche, farbige Kappe links ----------------- */
+
+[data-theme="startrek"] .form-control,
+[data-theme="startrek"] .form-select {
+    background: #14100a;
+    color: var(--lcars-sonne);
+    border: 0;
+    border-left: 8px solid var(--lcars-blau);
+    border-radius: 0 var(--lcars-kappe) var(--lcars-kappe) 0;
+    padding: 0.35rem 1rem 0.35rem 0.85rem;
+    font-family: var(--lcars-font);
+    letter-spacing: 0.05em;
+}
+
+[data-theme="startrek"] .form-control::placeholder {
+    color: #7a6a55;
+}
+
+[data-theme="startrek"] .form-control:focus,
+[data-theme="startrek"] .form-select:focus {
+    background: #1c1710;
+    color: var(--lcars-gold);
+    border-left-color: var(--lcars-orange);
+    outline: 3px solid var(--lcars-himmel);
+    outline-offset: 1px;
+}
+
+[data-theme="startrek"] .input-group-text {
+    background: var(--lcars-violett);
+    color: #000;
+    border: 0;
+    border-radius: 0 var(--lcars-kappe) var(--lcars-kappe) 0;
+    font-family: var(--lcars-font);
+    text-transform: uppercase;
+}
+
+/* In einer Gruppe endet nur das letzte Element als Kappe. */
+[data-theme="startrek"] .input-group > .form-control,
+[data-theme="startrek"] .input-group > .form-select {
+    border-radius: 0;
+}
+
+[data-theme="startrek"] .input-group > :last-child {
+    border-radius: 0 var(--lcars-kappe) var(--lcars-kappe) 0;
+}
+
+[data-theme="startrek"] label,
+[data-theme="startrek"] .form-label,
+[data-theme="startrek"] .form-check-label,
+[data-theme="startrek"] legend {
+    color: var(--lcars-blau);
+    font-family: var(--lcars-font);
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    font-size: var(--t-s);
+}
+
+[data-theme="startrek"] .form-check-input {
+    background-color: #14100a;
+    border: 2px solid var(--lcars-blau);
+    border-radius: 999px;
+}
+
+[data-theme="startrek"] .form-check-input:checked {
+    background-color: var(--lcars-orange);
+    border-color: var(--lcars-orange);
+}
+
+/* --- Ansichtsrahmen und Karten: Säule + Kopfbalken ----------------------- */
+
+[data-theme="startrek"] .app-view-shell {
+    background: #000;
+    border: 0;
+    border-radius: 0;
+    box-shadow: none;
+}
+
+[data-theme="startrek"] .app-view-shell::before {
+    content: none;
+}
+
+[data-theme="startrek"] .card,
+[data-theme="startrek"] .app-view-shell .card {
+    position: relative;
+    background: #000;
+    border: 0;
+    border-radius: 0;
+    box-shadow: none;
+    overflow: visible;
+    margin-bottom: 18px;
+    padding-left: calc(var(--lcars-saeule-breite) + 10px);
+
+    --lcars-saeule: var(--lcars-orange);
+    --lcars-balken: var(--lcars-violett);
+}
+
+/* Farbwechsel je Spalte, wie bei den Konsolen üblich */
+[data-theme="startrek"] .row > [class*="col-"]:nth-child(2) .card {
+    --lcars-saeule: var(--lcars-blau);
+    --lcars-balken: var(--lcars-lachs);
+}
+
+[data-theme="startrek"] .row > [class*="col-"]:nth-child(3) .card {
+    --lcars-saeule: var(--lcars-sonne);
+    --lcars-balken: var(--lcars-himmel);
+}
+
+/* Senkrechte Säule des Elbows */
+[data-theme="startrek"] .card::before,
+[data-theme="startrek"] .app-view-shell .card::before {
+    content: "";
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    width: var(--lcars-saeule-breite);
+    background: var(--lcars-saeule);
+    border-radius: 999px 0 0 999px;
+    opacity: 1;
+}
+
+/* Waagerechter Kopfbalken, rechts als Pille geschlossen */
+[data-theme="startrek"] .card-header,
+[data-theme="startrek"] .app-view-shell .card-header {
+    position: relative;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    min-height: 40px;
+    margin: 0 0 6px 0;
+    padding: 4px 8px 4px 14px;
+    background: var(--lcars-balken);
+    border: 0;
+    border-radius: 0 var(--lcars-kappe) var(--lcars-kappe) 0;
+    overflow: visible;
+}
+
+[data-theme="startrek"] .app-view-shell .card-header::before {
+    content: none;
+}
+
+[data-theme="startrek"] .card-header h4,
+[data-theme="startrek"] .card-header h5,
+[data-theme="startrek"] .card-header h6,
+[data-theme="startrek"] .app-view-shell .card-header h4,
+[data-theme="startrek"] .app-view-shell .card-header h5,
+[data-theme="startrek"] .app-view-shell .card-header h6 {
+    font-family: var(--lcars-font);
+    text-transform: uppercase;
+    letter-spacing: 0.14em;
+    color: #000;
+    font-size: 1.05rem;
+    font-weight: 600;
+    padding-left: 0;
+    margin: 0;
+}
+
+[data-theme="startrek"] .card-header i,
+[data-theme="startrek"] .app-view-shell .card-header i {
+    color: #000;
+}
+
+/* Kennungsblock am rechten Ende des Balkens */
+[data-theme="startrek"] .app-view-shell .card-header::after {
+    content: "47";
+    position: static;
+    transform: none;
+    font-family: var(--lcars-font);
+    font-size: 0.8rem;
+    letter-spacing: 0.16em;
+    color: var(--lcars-balken);
+    background: #000;
+    border-radius: 999px;
+    padding: 0.05rem 0.7rem;
+    margin-left: auto;
+    pointer-events: none;
+}
+
+[data-theme="startrek"] .card-body {
+    background: #000;
+    padding: 8px 14px 14px 14px;
+}
+
+/* --- Tabellen: Blöcke mit schwarzen Fugen, Zahlen in Orange -------------- */
+
+[data-theme="startrek"] .table {
+    --bs-table-bg: #000;
+    --bs-table-color: var(--text);
+    --bs-table-border-color: #000;
+    --bs-table-striped-bg: #000;
+    --bs-table-striped-color: var(--text);
+    --bs-table-hover-bg: #1c1710;
+    --bs-table-hover-color: var(--lcars-gold);
+    background: #000;
+    border-collapse: separate;
+    border-spacing: 0 var(--lcars-fuge);
+}
+
+[data-theme="startrek"] .table > thead th,
+[data-theme="startrek"] .table > thead td,
+[data-theme="startrek"] .app-view-shell .table thead th {
+    background: #000;
+    color: var(--lcars-orange);
+    font-family: var(--lcars-font);
+    font-size: 0.85rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.16em;
+    border: 0;
+    border-bottom: var(--lcars-fuge) solid var(--lcars-violett);
+    padding: 4px 12px;
+}
+
+[data-theme="startrek"] .table tbody tr > *,
+[data-theme="startrek"] .app-view-shell .table tbody tr > * {
+    background: #14100a;
+    color: var(--text);
+    border: 0;
+    padding: 8px 12px;
+}
+
+/* Die farbige Kappe entsteht als Verlaufsstreifen, nicht als Rahmen — ein
+   Rahmen würde vom Eckradius zur Sichel gebogen. */
+[data-theme="startrek"] .table tbody tr > *:first-child {
+    border-radius: var(--lcars-kappe) 0 0 var(--lcars-kappe);
+    background: linear-gradient(90deg, var(--lcars-zeilenkappe, var(--lcars-blau)) 0 10px, #14100a 10px);
+    padding-left: 20px;
+    color: var(--lcars-orange);
+    font-weight: 600;
+}
+
+[data-theme="startrek"] .table tbody tr > *:last-child {
+    border-radius: 0 var(--lcars-kappe) var(--lcars-kappe) 0;
+}
+
+[data-theme="startrek"] .table tbody tr:nth-child(2n) {
+    --lcars-zeilenkappe: var(--lcars-violett);
+}
+
+[data-theme="startrek"] .table tbody tr:nth-child(3n) {
+    --lcars-zeilenkappe: var(--lcars-sonne);
+}
+
+[data-theme="startrek"] #uebungsleitungNachrichten table tbody tr:not(:first-child) td {
+    border-top: 0;
+}
+
+/* --- Reiter, Marken, Fortschritt ----------------------------------------- */
+
+[data-theme="startrek"] .nav-pills,
+[data-theme="startrek"] .nav-tabs,
+[data-theme="startrek"] .generator-result-tabs {
+    border-bottom: 0;
+    gap: var(--lcars-fuge);
+}
+
+[data-theme="startrek"] .nav-pills .nav-link,
+[data-theme="startrek"] .generator-result-tabs .nav-link {
+    background: var(--lcars-blau);
+    color: #000;
+    border: 0;
+    border-radius: 999px;
+    font-family: var(--lcars-font);
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    font-weight: 600;
+    padding: 0.3rem 1.2rem;
+}
+
+[data-theme="startrek"] .nav-pills .nav-link.active,
+[data-theme="startrek"] .generator-result-tabs .nav-link.active {
+    background: var(--lcars-orange);
+    color: #000;
+    border: 0;
+    box-shadow: none;
+}
+
+[data-theme="startrek"] .badge {
+    border-radius: 999px;
+    border: 0 !important;
+    color: #000 !important;
+    font-family: var(--lcars-font);
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    padding: 0.25em 0.75em;
+}
+
+[data-theme="startrek"] .badge.bg-secondary,
+[data-theme="startrek"] .badge.text-bg-secondary,
+[data-theme="startrek"] .badge.bg-light,
+[data-theme="startrek"] .badge.text-bg-light {
+    background-color: var(--lcars-blau) !important;
+}
+
+[data-theme="startrek"] .badge.bg-success,
+[data-theme="startrek"] .badge.text-bg-success {
+    background-color: var(--lcars-sonne) !important;
+}
+
+[data-theme="startrek"] .badge.bg-warning,
+[data-theme="startrek"] .badge.text-bg-warning {
+    background-color: var(--lcars-butterscotch) !important;
+}
+
+[data-theme="startrek"] .badge.bg-danger,
+[data-theme="startrek"] .badge.text-bg-danger {
+    background-color: var(--lcars-lachs) !important;
+}
+
+[data-theme="startrek"] .badge.bg-primary,
+[data-theme="startrek"] .badge.text-bg-primary {
+    background-color: var(--lcars-orange) !important;
+}
+
+[data-theme="startrek"] .progress {
+    background: #14100a;
+    border: 0;
+    border-radius: 999px;
+    overflow: hidden;
+}
+
+[data-theme="startrek"] .progress-bar,
+[data-theme="startrek"] .progress-bar.bg-success {
+    background-color: var(--lcars-orange) !important;
+}
+
+[data-theme="startrek"] .status-chip {
+    border-radius: 999px;
+    border: 0;
+    font-family: var(--lcars-font);
+    letter-spacing: 0.12em;
+    color: #000;
+    padding: 0.2rem 0.8rem;
+}
+
+[data-theme="startrek"] .status-chip--ok {
+    background: var(--lcars-sonne);
+    color: #000;
+}
+
+[data-theme="startrek"] .status-chip--pending {
+    background: var(--lcars-butterscotch);
+    color: #000;
+    animation: none;
+}
+
+[data-theme="startrek"] .status-chip--critical {
+    background: var(--lcars-lachs);
+    color: #000;
+}
+
+[data-theme="startrek"] .status-ok-row > td,
+[data-theme="startrek"] .status-ok-row > th {
+    background-color: #1d1608 !important;
+    color: var(--lcars-gold) !important;
+    box-shadow: none;
+}
+
+[data-theme="startrek"] .status-pending-row > td,
+[data-theme="startrek"] .status-pending-row > th {
+    background-color: #14100a !important;
+    color: var(--text) !important;
+    box-shadow: none;
+}
+
+[data-theme="startrek"] .status-ok-row > *:first-child {
+    border-left-color: var(--lcars-sonne) !important;
+}
+
+[data-theme="startrek"] .table-success > td,
+[data-theme="startrek"] .table-success > th,
+[data-theme="startrek"] .table-success td,
+[data-theme="startrek"] .table-success th,
+[data-theme="startrek"] .table-striped > tbody > tr.table-success > * {
+    background-color: #1d1608 !important;
+    color: var(--lcars-gold) !important;
+}
+
+[data-theme="startrek"] .admin-standard-uebung-row > * {
+    background-color: #1d1408 !important;
+    color: var(--lcars-sand) !important;
+    box-shadow: none;
+}
+
+/* --- Listen, Hinweise, Überlagerungen ------------------------------------ */
+
+[data-theme="startrek"] .list-group-item {
+    background: #14100a;
+    color: var(--text);
+    border: 0;
+    border-left: 8px solid var(--lcars-blau);
+    border-radius: 0 var(--lcars-kappe) var(--lcars-kappe) 0;
+    margin-bottom: var(--lcars-fuge);
+}
+
+[data-theme="startrek"] .list-group-item:nth-child(2n) {
+    border-left-color: var(--lcars-violett);
+}
+
+[data-theme="startrek"] .list-group-item:nth-child(3n) {
+    border-left-color: var(--lcars-sonne);
+}
+
+[data-theme="startrek"] .list-group-item:hover {
+    background: #1c1710;
+}
+
+[data-theme="startrek"] .alert {
+    background: #14100a;
+    color: var(--text);
+    border: 0;
+    border-left: 10px solid var(--lcars-blau);
+    border-radius: 0 var(--lcars-kappe) var(--lcars-kappe) 0;
+}
+
+[data-theme="startrek"] .alert-success { border-left-color: var(--lcars-sonne); }
+[data-theme="startrek"] .alert-warning { border-left-color: var(--lcars-butterscotch); }
+[data-theme="startrek"] .alert-danger { border-left-color: var(--lcars-lachs); }
+
+[data-theme="startrek"] .modal-content {
+    position: relative;
+    background: #000;
+    color: var(--text);
+    border: 0;
+    border-radius: 0;
+    padding-left: calc(var(--lcars-saeule-breite) + 10px);
+}
+
+[data-theme="startrek"] .modal-content::before {
+    content: "";
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    width: var(--lcars-saeule-breite);
+    background: var(--lcars-orange);
+    border-radius: 999px 0 0 999px;
+}
+
+[data-theme="startrek"] .modal-header {
+    background: var(--lcars-violett);
+    border: 0;
+    border-radius: 0 var(--lcars-kappe) var(--lcars-kappe) 0;
+    margin-bottom: 6px;
+}
+
+[data-theme="startrek"] .modal-title {
+    color: #000;
+    font-family: var(--lcars-font);
+    text-transform: uppercase;
+    letter-spacing: 0.14em;
+}
+
+[data-theme="startrek"] .modal-footer {
+    border: 0;
+}
+
+[data-theme="startrek"] .dropdown-menu {
+    background: #000;
+    border: 0;
+    padding: var(--lcars-fuge);
+    display: flex;
+    flex-direction: column;
+    gap: var(--lcars-fuge);
+}
+
+[data-theme="startrek"] .dropdown-item {
+    background: var(--lcars-blau);
+    color: #000;
+    border-radius: 999px;
+    font-family: var(--lcars-font);
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    justify-content: flex-end;
+}
+
+[data-theme="startrek"] .dropdown-item:nth-child(2n) {
+    background: var(--lcars-violett);
+}
+
+[data-theme="startrek"] .dropdown-item:hover,
+[data-theme="startrek"] .dropdown-item:focus {
+    background: var(--lcars-orange);
+    color: #000;
+}
+
+/* --- Generator ------------------------------------------------------------ */
+
+[data-theme="startrek"] .generator-settings-title {
+    font-family: var(--lcars-font);
+    color: var(--lcars-orange);
+    text-transform: uppercase;
+    letter-spacing: 0.18em;
+    font-size: 0.85rem;
+}
+
+/* Nur die Unterkante ist gezeichnet — ein Radius auf dem hohen Block würde
+   daraus einen riesigen Ellipsenbogen machen. */
+[data-theme="startrek"] .generator-settings-section {
+    border-bottom: var(--lcars-fuge) solid var(--lcars-violett);
+    border-radius: 0;
+    padding-bottom: 10px;
+    margin-bottom: 12px;
+}
+
+[data-theme="startrek"] .generator-action-inner {
+    background: #14100a;
+    border: 0;
+    border-left: 10px solid var(--lcars-orange);
+    border-radius: 0 var(--lcars-kappe) var(--lcars-kappe) 0;
+    padding: 10px 20px;
+}
+
+[data-theme="startrek"] .generator-status-chip {
+    background: var(--lcars-blau);
+    color: #000;
+    border: 0;
+    border-radius: 999px;
+    font-family: var(--lcars-font);
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    padding: 0.25rem 0.9rem;
+}
+
+[data-theme="startrek"] .generator-status-chip:nth-child(2n) {
+    background: var(--lcars-violett);
+}
+
+[data-theme="startrek"] .generator-status-chip strong {
+    color: #000;
+}
+
+[data-theme="startrek"] .generator-link-grid-header {
+    background: #000;
+    border: 0;
+    border-bottom: var(--lcars-fuge) solid var(--lcars-violett);
+    border-radius: 0;
+    color: var(--lcars-orange);
+    font-family: var(--lcars-font);
+    letter-spacing: 0.16em;
+}
+
+[data-theme="startrek"] .generator-link-row {
+    background: #14100a;
+    border: 0;
+    border-left: 8px solid var(--lcars-blau);
+    border-radius: 0 var(--lcars-kappe) var(--lcars-kappe) 0;
+    margin-bottom: var(--lcars-fuge);
+}
+
+[data-theme="startrek"] .generator-link-row:nth-child(2n) {
+    border-left-color: var(--lcars-violett);
+}
+
+[data-theme="startrek"] .generator-link-row:nth-child(3n) {
+    border-left-color: var(--lcars-sonne);
+}
+
+[data-theme="startrek"] .generator-link-badge {
+    border-radius: 999px;
+    border: 0;
+    color: #000;
+    font-family: var(--lcars-font);
+    letter-spacing: 0.12em;
+    padding: 0.2rem 0.8rem;
+}
+
+[data-theme="startrek"] .generator-link-badge.is-uebung {
+    background: var(--lcars-orange);
+    color: #000;
+}
+
+[data-theme="startrek"] .generator-link-badge.is-leitung {
+    background: var(--lcars-lachs);
+    color: #000;
+}
+
+[data-theme="startrek"] .generator-link-badge.is-teilnehmer {
+    background: var(--lcars-himmel);
+    color: #000;
+}
+
+[data-theme="startrek"] .generator-link-name {
+    color: var(--lcars-sonne);
+}
+
+[data-theme="startrek"] .generator-link-url code {
+    background: none;
+    color: var(--lcars-blau);
+}
+
+[data-theme="startrek"] #jsonOutput {
+    background: #14100a !important;
+    color: var(--lcars-sonne);
+    border: 0;
+    border-left: 10px solid var(--lcars-orange);
+    border-radius: 0 999px 999px 0 !important;
+}
+
+[data-theme="startrek"] .app-toast {
+    background: var(--lcars-sonne);
+    color: #000;
+    border: 0;
+    border-radius: 999px;
+    font-family: var(--lcars-font);
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+}
+
+[data-theme="startrek"] .app-toast.is-error {
+    background: var(--lcars-lachs);
+}
+
+/* --- Übungsleitung und Teilnehmer ---------------------------------------- */
+
+[data-theme="startrek"] #uebungsleitungMeta code {
+    background: #14100a;
+    border: 0;
+    border-radius: 999px;
+    color: var(--lcars-sonne);
+}
+
+[data-theme="startrek"] #uebungsleitungMeta strong {
+    color: var(--lcars-blau);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+}
+
+[data-theme="startrek"] .teilnehmer-doc-canvas {
+    border: 0;
+    border-radius: 6px;
+    box-shadow: 0 0 0 6px var(--lcars-orange);
+}
+
+[data-theme="startrek"] .teilnehmer-doc-legend {
+    background: #000;
+    border: 0;
+    border-left: 8px solid var(--lcars-violett);
+    border-radius: 0 var(--lcars-kappe) var(--lcars-kappe) 0;
+}
+
+/* --- Auswahlfelder (Select2) --------------------------------------------- */
+
+[data-theme="startrek"] .select2-container--bootstrap-5 .select2-selection {
+    background: #14100a;
+    border: 0;
+    border-left: 8px solid var(--lcars-blau);
+    border-radius: 0 var(--lcars-kappe) var(--lcars-kappe) 0;
+    color: var(--lcars-sonne);
+}
+
+[data-theme="startrek"] .select2-container--bootstrap-5 .select2-dropdown {
+    background: #000;
+    border: 0;
+    border-left: 8px solid var(--lcars-violett);
+    border-radius: 0;
+}
+
+[data-theme="startrek"] .select2-container--bootstrap-5 .select2-results__option {
+    background: #14100a;
+    color: var(--lcars-sonne);
+    border-radius: 999px;
+    margin-bottom: 3px;
+}
+
+[data-theme="startrek"] .select2-container--bootstrap-5 .select2-results__option--highlighted {
+    background: var(--lcars-orange);
+    color: #000;
+}
+
+[data-theme="startrek"] .select2-container--bootstrap-5 .select2-results__option--selected {
+    background: var(--lcars-blau);
+    color: #000;
+}
+
+[data-theme="startrek"] .select2-container--bootstrap-5 .select2-selection--multiple .select2-selection__rendered .select2-selection__choice,
+[data-theme="startrek"] .select2-container--bootstrap-5 .select2-selection--multiple .select2-selection__rendered .select2-selection__choice__display {
+    background: var(--lcars-violett);
+    color: #000;
+    border: 0;
+    border-radius: 999px;
+    font-family: var(--lcars-font);
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+}
+
+[data-theme="startrek"] .select2-container--bootstrap-5 .select2-selection--multiple .select2-selection__rendered .select2-selection__choice__remove {
+    color: #000;
+    border-right-color: rgba(0, 0, 0, 0.35);
+}
+
+/* --- Fußbereich: Schiene mit Endkappen ----------------------------------- */
+
+[data-theme="startrek"] .main-footer {
+    background: #000;
+    color: var(--lcars-sand);
+    border: 0;
+    box-shadow: none;
+    font-family: var(--lcars-font);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    padding-top: calc(var(--lcars-schiene) + 12px);
+}
+
+[data-theme="startrek"] .main-footer::before {
+    content: "";
+    position: absolute;
+    left: 18px;
+    right: 18px;
+    top: 4px;
+    height: var(--lcars-schiene);
+    border-radius: 999px;
+    background: linear-gradient(
+        90deg,
+        var(--lcars-lachs) 0 22%,
+        #000 22% calc(22% + var(--lcars-fuge)),
+        var(--lcars-blau) calc(22% + var(--lcars-fuge)) 46%,
+        #000 46% calc(46% + var(--lcars-fuge)),
+        var(--lcars-violett) calc(46% + var(--lcars-fuge)) 70%,
+        #000 70% calc(70% + var(--lcars-fuge)),
+        var(--lcars-orange) calc(70% + var(--lcars-fuge)) 100%
+    );
+}
+
+[data-theme="startrek"] .main-footer b {
+    color: var(--lcars-orange);
+}
+
+[data-theme="startrek"] .main-footer a {
+    color: var(--lcars-himmel);
+    text-decoration-color: var(--lcars-himmel);
 }

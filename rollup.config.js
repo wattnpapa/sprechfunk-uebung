@@ -39,6 +39,15 @@ export default {
           dest: 'dist/webfonts'
         },
         {
+          // Nur die Subsets, die @fontsource-variable/*/index.css per @font-face
+          // referenziert (url(./files/...) relativ zu bundle.css).
+          src: [
+            'node_modules/@fontsource-variable/archivo/files/archivo-*-wght-normal.woff2',
+            'node_modules/@fontsource-variable/antonio/files/antonio-*-wght-normal.woff2'
+          ],
+          dest: 'dist/files'
+        },
+        {
           src: 'node_modules/pdfjs-dist/build/pdf.min.mjs',
           dest: 'dist/pdfjs',
           rename: 'pdf.min.js'
