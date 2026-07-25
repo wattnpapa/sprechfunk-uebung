@@ -65,6 +65,7 @@ export class GeneratorController {
             thwmelle: { text: "Funksprüche THW Melle", filename: "assets/funksprueche/nachrichten_thw_melle.txt" },
             thwessen: { text: "Funksprüche THW Essen", filename: "assets/funksprueche/nachrichten_thw_essen.txt" },
             thwlehrte: { text: "Funksprüche THW Lehrte", filename: "assets/funksprueche/nachrichten_thw_lehrte.txt" },
+            thwludwigslust: { text: "Funksprüche THW Ludwigslust", filename: "assets/funksprueche/nachrichten_thw_ludwigslust.txt" },
             vorlageLustig: { text: "Lustige Funksprüche (Chat GPT)", filename: "assets/funksprueche/funksprueche_lustig_kreativ.txt" }
         };
 
