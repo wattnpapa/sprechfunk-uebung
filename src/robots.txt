@@ -1,8 +1,7 @@
+# Die App nutzt Hash-Routen (#/teilnehmer, #/uebungsleitung, #/admin).
+# Fragmente erreichen den Server nie und lassen sich daher weder per
+# Disallow ausschliessen noch von Suchmaschinen als eigene URL indexieren.
 User-agent: *
 Allow: /
-Disallow: /admin
-Disallow: /teilnehmer
-Disallow: /uebungsleitung
-Disallow: /api/
 
 Sitemap: https://sprechfunk-uebung.de/sitemap.xml

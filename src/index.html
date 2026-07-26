@@ -20,12 +20,15 @@
     <meta property="og:type" content="website">
     <meta property="og:locale" content="de_DE">
     <meta property="og:site_name" content="Sprechfunk Übungsgenerator">
-    <meta property="og:image" content="https://sprechfunk-uebung.de/assets/favicon.png">
+    <meta property="og:image" content="https://sprechfunk-uebung.de/assets/og-image.png">
+    <meta property="og:image:width" content="1200">
+    <meta property="og:image:height" content="630">
+    <meta property="og:image:alt" content="Sprechfunk Übungsgenerator – Übungen für den BOS-Sprechfunk erstellen">
 
     <meta name="twitter:card" content="summary_large_image">
     <meta name="twitter:title" content="Sprechfunk Übungsgenerator">
     <meta name="twitter:description" content="Erstelle realistische Sprechfunk-Übungen für Ausbildung und Training mit dem Sprechfunk Übungsgenerator.">
-    <meta name="twitter:image" content="https://sprechfunk-uebung.de/assets/favicon.png">
+    <meta name="twitter:image" content="https://sprechfunk-uebung.de/assets/og-image.png">
 
     <link rel="stylesheet" href="bundle.css">
     <link rel="stylesheet" href="style.css">
@@ -78,6 +81,57 @@
                 "name": "Johannes Rudolph",
                 "url": "https://github.com/wattnpapa"
             }
+        }
+    </script>
+    <script type="application/ld+json">
+        {
+            "@context": "https://schema.org",
+            "@type": "WebSite",
+            "@id": "https://sprechfunk-uebung.de/#website",
+            "name": "Sprechfunk Übungsgenerator",
+            "alternateName": "Sprechfunkübung Generator",
+            "url": "https://sprechfunk-uebung.de/",
+            "inLanguage": "de",
+            "description": "Kostenloser Generator für BOS-Sprechfunkübungen: verteilt Funksprüche auf die Teilnehmer, erzeugt Meldevordruck und Nachrichtenvordruck als PDF und begleitet die Übung live.",
+            "publisher": {
+                "@type": "Person",
+                "@id": "https://sprechfunk-uebung.de/#autor",
+                "name": "Johannes Rudolph",
+                "jobTitle": "Bereichsausbilder Sprechfunk (THW)",
+                "url": "https://sprechfunk-uebung.de/impressum/",
+                "sameAs": [
+                    "https://github.com/wattnpapa",
+                    "https://github.com/wattnpapa/sprechfunk-uebung"
+                ]
+            },
+            "mainEntity": { "@id": "https://sprechfunk-uebung.de/#software" },
+            "hasPart": [
+                {
+                    "@type": "WebPage",
+                    "name": "Anleitung: BOS-Sprechfunkübung erstellen",
+                    "url": "https://sprechfunk-uebung.de/anleitung/"
+                },
+                {
+                    "@type": "WebPage",
+                    "name": "Buchstabiertafel für den BOS-Sprechfunk",
+                    "url": "https://sprechfunk-uebung.de/buchstabiertafel/"
+                },
+                {
+                    "@type": "WebPage",
+                    "name": "Meldevordruck und Nachrichtenvordruck",
+                    "url": "https://sprechfunk-uebung.de/meldevordruck/"
+                },
+                {
+                    "@type": "WebPage",
+                    "name": "Funksprüche für Sprechfunkübungen",
+                    "url": "https://sprechfunk-uebung.de/funksprueche/"
+                },
+                {
+                    "@type": "WebPage",
+                    "name": "Häufige Fragen",
+                    "url": "https://sprechfunk-uebung.de/faq/"
+                }
+            ]
         }
     </script>
 </head>
@@ -181,6 +235,82 @@
 
 <div id="mainAppArea" data-testid="route-generator" style="display: block;">
     <!-- Wird von GeneratorView.ts befüllt -->
+</div>
+
+<!-- Einstiegstext: erklärt die Anwendung für Erstbesucher und Suchmaschinen.
+     Wird von AppView.applyAppMode() außerhalb der Generator-Ansicht ausgeblendet. -->
+<div id="seoIntroArea" data-testid="seo-intro" style="display: block;">
+    <div class="container my-4 app-view-shell">
+        <section class="card">
+            <div class="card-body">
+                <h2 class="h3">Sprechfunkübungen erstellen – ohne Vorbereitungsabend</h2>
+                <p>
+                    Der <strong>Sprechfunk Übungsgenerator</strong> ist ein kostenloses
+                    Werkzeug für die <strong>Sprechfunkausbildung im Bevölkerungs- und
+                    Katastrophenschutz</strong>. Er erstellt vollständige
+                    <strong>BOS-Sprechfunkübungen</strong> für <strong>THW</strong>,
+                    <strong>Feuerwehr</strong>, <strong>Rettungsdienst</strong> und
+                    Hilfsorganisationen: Du trägst die Teilnehmer mit ihren Funkrufnamen ein,
+                    legst fest, wie viele Funksprüche jeder absetzen soll – den Rest übernimmt
+                    die Anwendung.
+                </p>
+
+                <div class="row g-4 mt-1">
+                    <div class="col-md-4">
+                        <h3 class="h5">Funksprüche automatisch verteilen</h3>
+                        <p class="mb-0">
+                            Die Übungstexte werden gleichmäßig auf alle Teilnehmer verteilt –
+                            als Nachricht an einen einzelnen Empfänger, an mehrere Stellen oder
+                            an alle. Mitgeliefert sind über 1.800
+                            <a href="funksprueche/">Funksprüche für Übungen</a>; eigene Texte
+                            lassen sich als Textdatei hochladen.
+                        </p>
+                    </div>
+                    <div class="col-md-4">
+                        <h3 class="h5">Druckunterlagen als PDF</h3>
+                        <p class="mb-0">
+                            Für jeden Teilnehmer entstehen fertige Vordrucke:
+                            <a href="meldevordruck/">Meldevordruck und Nachrichtenvordruck</a>
+                            als PDF, auf Wunsch gebündelt als ZIP-Datei für die gesamte Übung.
+                        </p>
+                    </div>
+                    <div class="col-md-4">
+                        <h3 class="h5">Übung live begleiten</h3>
+                        <p class="mb-0">
+                            Teilnehmer öffnen ihren persönlichen Link ohne Anmeldung und haken
+                            abgesetzte Nachrichten ab. Die Übungsleitung sieht den Fortschritt
+                            in Echtzeit und dokumentiert Anmeldungen, Stärkemeldungen und
+                            Notizen.
+                        </p>
+                    </div>
+                </div>
+
+                <hr class="my-4">
+
+                <h2 class="h4">Buchstabieren und Lösungswörter üben</h2>
+                <p>
+                    Ein Teil der Funksprüche kann als <strong>Buchstabieraufgabe</strong>
+                    ausgegeben werden: Wörter in Großbuchstaben müssen nach der
+                    <a href="buchstabiertafel/">Buchstabiertafel</a> buchstabiert werden.
+                    Zusätzlich lassen sich <strong>Lösungswörter</strong> vergeben, die die
+                    Teilnehmer über die gesamte Übung hinweg Buchstabe für Buchstabe
+                    zusammentragen – ein einfacher Weg, die Aufmerksamkeit bis zum Schluss
+                    hochzuhalten.
+                </p>
+
+                <h2 class="h4">Ohne Installation, ohne Konto, quelloffen</h2>
+                <p class="mb-0">
+                    Die Anwendung läuft im Browser – es ist keine Installation und kein
+                    Benutzerkonto nötig, weder für die Übungsleitung noch für die Teilnehmer.
+                    Der Quellcode steht unter der EUPL-1.2-Lizenz offen auf
+                    <a href="https://github.com/wattnpapa/sprechfunk-uebung" target="_blank" rel="noopener noreferrer">GitHub</a>.
+                    Einen Überblick über den Ablauf gibt die
+                    <a href="anleitung/">Anleitung</a>, Antworten auf typische Fragen das
+                    <a href="faq/">FAQ</a>.
+                </p>
+            </div>
+        </section>
+    </div>
 </div>
 
 <div id="adminArea" data-testid="route-admin" style="display: none;">
@@ -342,88 +472,18 @@
     </div>
 </div>
 
-<div class="modal fade" id="impressumModal" tabindex="-1" aria-labelledby="impressumModalLabel" aria-hidden="true">
-    <div class="modal-dialog modal-lg modal-dialog-scrollable">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title" id="impressumModalLabel">Impressum</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Schließen"></button>
-            </div>
-            <div class="modal-body">
-                <p><strong>Angaben gemaess § 5 DDG</strong></p>
-                <p>
-                    Johannes Rudolph<br>
-                    Kniphauser Straße 16<br>
-                    26419 Schortens<br>
-                    Deutschland
-                </p>
-                <p><strong>Kontakt</strong></p>
-                <p>
-                    E-Mail: <a href="mailto:johannes.rudolph@thw-oldenburg.de">johannes.rudolph@thw-oldenburg.de</a>
-                </p>
-                <p><strong>Verantwortlich fuer den Inhalt nach § 18 Abs. 2 MStV</strong></p>
-                <p>
-                    Johannes Rudolph<br>
-                </p>
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Schließen</button>
-            </div>
-        </div>
-    </div>
-</div>
-
-<div class="modal fade" id="datenschutzModal" tabindex="-1" aria-labelledby="datenschutzModalLabel" aria-hidden="true">
-    <div class="modal-dialog modal-lg modal-dialog-scrollable">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title" id="datenschutzModalLabel">Datenschutz</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Schließen"></button>
-            </div>
-            <div class="modal-body">
-                <h6>1. Verantwortlicher</h6>
-                <p>
-                    Johannes Rudolph<br>
-                    E-Mail: <a href="mailto:johannes.rudolph@thw-oldenburg.de">johannes.rudolph@thw-oldenburg.de</a>
-                </p>
-                <h6>2. Verarbeitung beim Aufruf der Website</h6>
-                <p>
-                    Beim Aufruf werden technisch notwendige Informationen verarbeitet
-                    (z. B. IP-Adresse, Zeitstempel, Browserinformationen), um den Betrieb zu ermoeglichen.
-                </p>
-                <h6>3. Reichweitenmessung (GoatCounter)</h6>
-                <p>
-                    Diese Anwendung nutzt GoatCounter fuer eine anonyme Reichweitenmessung.
-                    Dabei werden keine Cookies gesetzt und keine personenbezogenen Daten
-                    gespeichert; es werden lediglich aggregierte Seitenaufrufe gezaehlt.
-                    Eine Einwilligung ist dafuer nicht erforderlich.
-                </p>
-                <h6>4. Firebase</h6>
-                <p>
-                    Zur Speicherung und Bereitstellung von Uebungsdaten wird Firebase (Google) verwendet.
-                </p>
-                <h6>5. Rechte nach DSGVO</h6>
-                <p>
-                    Du hast u. a. Rechte auf Auskunft, Berichtigung, Loeschung, Einschraenkung
-                    der Verarbeitung und Widerspruch.
-                </p>
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Schließen</button>
-            </div>
-        </div>
-    </div>
-</div>
-
 <footer class="main-footer">
     <span><b>Version</b> <span id="version">dev</span></span>
     <span><b>Übung ID:</b> <span id="uebungsId">-</span></span>
     <span class="footer-links">
-        <button class="btn btn-sm btn-outline-secondary" type="button" data-bs-toggle="modal" data-bs-target="#impressumModal">Impressum</button>
-        <button class="btn btn-sm btn-outline-secondary" type="button" data-bs-toggle="modal" data-bs-target="#datenschutzModal">Datenschutz</button>
+        <a href="impressum/" data-testid="footer-link-impressum">Impressum</a>
+        <a href="datenschutz/" data-testid="footer-link-datenschutz">Datenschutz</a>
     </span>
     <span class="footer-links">
         <a href="anleitung/" data-testid="footer-link-anleitung">Anleitung</a>
+        <a href="buchstabiertafel/" data-testid="footer-link-buchstabiertafel">Buchstabiertafel</a>
+        <a href="meldevordruck/" data-testid="footer-link-meldevordruck">Meldevordruck</a>
+        <a href="funksprueche/" data-testid="footer-link-funksprueche">Funksprüche</a>
         <a href="faq/" data-testid="footer-link-faq">FAQ</a>
     </span>
     <span class="footer-links">

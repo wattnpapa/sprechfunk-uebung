@@ -24,6 +24,7 @@ const makeDocument = () => {
     elements.set("adminArea", makeArea());
     elements.set("uebungsleitungArea", makeArea());
     elements.set("teilnehmerArea", makeArea());
+    elements.set("seoIntroArea", makeArea());
 
     const doc = {
         addEventListener: (event: string, cb: (event: { target: unknown }) => void) => {
@@ -124,6 +125,26 @@ describe("AppView", () => {
 
         view.applyAppMode("teilnehmer");
         expect(elements.get("teilnehmerArea")?.style.display).toBe("block");
+    });
+
+    // Der Einstiegstext der Startseite darf nur in der Generator-Ansicht stehen,
+    // sonst haengt er unter der Teilnehmer- oder Uebungsleitungsansicht.
+    it("shows the intro section only in generator mode", () => {
+        const view = new AppView();
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const { elements } = (globalThis as any)._test;
+
+        view.applyAppMode("generator");
+        expect(elements.get("seoIntroArea")?.style.display).toBe("block");
+
+        view.applyAppMode("teilnehmer");
+        expect(elements.get("seoIntroArea")?.style.display).toBe("none");
+
+        view.applyAppMode("uebungsleitung");
+        expect(elements.get("seoIntroArea")?.style.display).toBe("none");
+
+        view.applyAppMode("admin");
+        expect(elements.get("seoIntroArea")?.style.display).toBe("none");
     });
 
     it("handles missing app mode containers safely", () => {

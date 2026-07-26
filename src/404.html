@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="de">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Seite nicht gefunden | Sprechfunk Übungsgenerator</title>
+    <link rel="icon" type="image/png" href="/assets/favicon.png">
+    <meta name="robots" content="noindex,follow">
+    <meta name="theme-color" content="#0d6efd">
+
+    <link rel="stylesheet" href="/bundle.css">
+    <link rel="stylesheet" href="/style.css">
+
+    <!-- GoatCounter: cookielose, anonyme Reichweitenmessung -->
+    <script data-goatcounter="https://sprechfunk-uebung.goatcounter.com/count"
+            async src="//gc.zgo.at/count.js"></script>
+
+    <script>
+        // Gleiche Theme-Auswahl wie in der App anwenden (statische Seiten laden kein Bundle).
+        document.addEventListener("DOMContentLoaded", function () {
+            var stored = localStorage.getItem("theme");
+            if (stored) {
+                document.body.setAttribute("data-theme", stored);
+            }
+        });
+    </script>
+</head>
+
+<body data-theme="light">
+<header class="app-header">
+    <div class="container app-header-grid">
+        <div class="app-header-title">
+            <h1 class="h2 mb-0">
+                <i class="fas fa-broadcast-tower"></i> Sprechfunk Übungsgenerator
+            </h1>
+        </div>
+        <div class="app-header-actions d-none d-md-flex">
+            <a href="/" class="btn btn-primary">
+                <i class="fas fa-arrow-left"></i> Zur Anwendung
+            </a>
+        </div>
+    </div>
+</header>
+
+<main class="container my-4 app-view-shell">
+    <div class="card">
+        <div class="card-body">
+            <h2 class="h3">Kein Empfang – Seite nicht gefunden</h2>
+            <p>
+                Diese Adresse gibt es nicht (mehr). Möglicherweise ist der Link unvollständig
+                kopiert worden – Teilnehmer- und Übungsleitungslinks sind lang und brechen in
+                E-Mails leicht um.
+            </p>
+            <p>Weiter geht es hier:</p>
+            <ul>
+                <li><a href="/">Übung erstellen (Startseite)</a></li>
+                <li><a href="/anleitung/">Anleitung</a></li>
+                <li><a href="/buchstabiertafel/">Buchstabiertafel</a></li>
+                <li><a href="/meldevordruck/">Meldevordruck und Nachrichtenvordruck</a></li>
+                <li><a href="/funksprueche/">Funksprüche für Übungen</a></li>
+                <li><a href="/faq/">Häufige Fragen</a></li>
+            </ul>
+            <p class="mb-0">
+                <a href="/" class="btn btn-primary">Zur Startseite</a>
+            </p>
+        </div>
+    </div>
+</main>
+
+<footer class="main-footer">
+    <span class="footer-links">
+        <a href="/">Anwendung</a>
+        <a href="/anleitung/">Anleitung</a>
+        <a href="/buchstabiertafel/">Buchstabiertafel</a>
+        <a href="/meldevordruck/">Meldevordruck</a>
+        <a href="/funksprueche/">Funksprüche</a>
+        <a href="/faq/">FAQ</a>
+    </span>
+    <span class="footer-links">
+        <a href="/impressum/">Impressum</a>
+        <a href="/datenschutz/">Datenschutz</a>
+        <a href="https://github.com/wattnpapa/sprechfunk-uebung" target="_blank" rel="noopener noreferrer">GitHub</a>
+    </span>
+</footer>
+
+</body>
+
+</html>

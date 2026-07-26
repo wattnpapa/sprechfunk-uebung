@@ -48,5 +48,12 @@ export class AppView {
         if (active) {
             active.style.display = "block";
         }
+
+        // Der Einstiegstext der Startseite gehoert nur zur Generator-Ansicht;
+        // in Teilnehmer-, Uebungsleitungs- und Admin-Ansicht wuerde er stoeren.
+        const intro = document.getElementById("seoIntroArea");
+        if (intro) {
+            intro.style.display = mode === "generator" ? "block" : "none";
+        }
     }
 }

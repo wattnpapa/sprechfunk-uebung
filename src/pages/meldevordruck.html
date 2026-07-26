@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="de">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Meldevordruck und Nachrichtenvordruck für den Sprechfunk (PDF) | Sprechfunk Übungsgenerator</title>
+    <link rel="icon" type="image/png" href="../assets/favicon.png">
+    <link rel="canonical" href="https://sprechfunk-uebung.de/meldevordruck/">
+    <meta name="robots" content="index,follow,max-image-preview:large,max-snippet:-1">
+    <meta name="theme-color" content="#0d6efd">
+
+    <meta name="description" content="Meldevordruck und Nachrichtenvordruck für den BOS-Sprechfunk: leere Vordrucke als PDF herunterladen, Aufbau der Felder verstehen und für Übungen automatisch mit Funksprüchen befüllen lassen.">
+    <meta name="author" content="Johannes Rudolph">
+
+    <meta property="og:title" content="Meldevordruck und Nachrichtenvordruck für den Sprechfunk (PDF)">
+    <meta property="og:description" content="Leere Vordrucke als PDF herunterladen, den Aufbau der Felder verstehen und für Sprechfunkübungen automatisch befüllen lassen.">
+    <meta property="og:url" content="https://sprechfunk-uebung.de/meldevordruck/">
+    <meta property="og:type" content="article">
+    <meta property="og:locale" content="de_DE">
+    <meta property="og:site_name" content="Sprechfunk Übungsgenerator">
+    <meta property="og:image" content="https://sprechfunk-uebung.de/assets/og-image.png">
+    <meta property="og:image:width" content="1200">
+    <meta property="og:image:height" content="630">
+    <meta property="og:image:alt" content="Sprechfunk Übungsgenerator – Übungen für den BOS-Sprechfunk erstellen">
+
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="Meldevordruck und Nachrichtenvordruck für den Sprechfunk (PDF)">
+    <meta name="twitter:description" content="Leere Vordrucke als PDF herunterladen und für Sprechfunkübungen automatisch befüllen lassen.">
+    <meta name="twitter:image" content="https://sprechfunk-uebung.de/assets/og-image.png">
+
+    <link rel="stylesheet" href="../bundle.css">
+    <link rel="stylesheet" href="../style.css">
+
+    <!-- GoatCounter: cookielose, anonyme Reichweitenmessung -->
+    <script data-goatcounter="https://sprechfunk-uebung.goatcounter.com/count"
+            async src="//gc.zgo.at/count.js"></script>
+
+    <script type="application/ld+json">
+        {
+            "@context": "https://schema.org",
+            "@type": "Article",
+            "headline": "Meldevordruck und Nachrichtenvordruck für den Sprechfunk",
+            "description": "Aufbau und Verwendung von Meldevordruck und Nachrichtenvordruck im BOS-Sprechfunk, leere Vordrucke als PDF und automatisch befüllte Druckunterlagen für Sprechfunkübungen.",
+            "inLanguage": "de",
+            "url": "https://sprechfunk-uebung.de/meldevordruck/",
+            "image": "https://sprechfunk-uebung.de/assets/meldevordruck.png",
+            "author": {
+                "@type": "Person",
+                "name": "Johannes Rudolph",
+                "url": "https://github.com/wattnpapa"
+            },
+            "publisher": {
+                "@type": "Person",
+                "name": "Johannes Rudolph"
+            },
+            "isPartOf": {
+                "@type": "WebSite",
+                "name": "Sprechfunk Übungsgenerator",
+                "url": "https://sprechfunk-uebung.de/"
+            },
+            "about": [
+                { "@type": "Thing", "name": "Meldevordruck" },
+                { "@type": "Thing", "name": "Nachrichtenvordruck" },
+                { "@type": "Thing", "name": "BOS-Sprechfunk" }
+            ]
+        }
+    </script>
+    <script type="application/ld+json">
+        {
+            "@context": "https://schema.org",
+            "@type": "BreadcrumbList",
+            "itemListElement": [
+                {
+                    "@type": "ListItem",
+                    "position": 1,
+                    "name": "Startseite",
+                    "item": "https://sprechfunk-uebung.de/"
+                },
+                {
+                    "@type": "ListItem",
+                    "position": 2,
+                    "name": "Meldevordruck",
+                    "item": "https://sprechfunk-uebung.de/meldevordruck/"
+                }
+            ]
+        }
+    </script>
+    <script>
+        // Gleiche Theme-Auswahl wie in der App anwenden (statische Seiten laden kein Bundle).
+        document.addEventListener("DOMContentLoaded", function () {
+            var stored = localStorage.getItem("theme");
+            if (stored) {
+                document.body.setAttribute("data-theme", stored);
+            }
+        });
+    </script>
+</head>
+
+<body data-theme="light">
+<header class="app-header">
+    <div class="container app-header-grid">
+        <div class="app-header-title">
+            <h1 class="h2 mb-0">
+                <i class="fas fa-broadcast-tower"></i> Sprechfunk Übungsgenerator
+            </h1>
+        </div>
+        <div class="app-header-actions d-none d-md-flex">
+            <a href="../" class="btn btn-primary">
+                <i class="fas fa-arrow-left"></i> Zur Anwendung
+            </a>
+            <a href="../anleitung/" class="btn btn-info">
+                <i class="fas fa-book"></i> Anleitung
+            </a>
+            <a href="https://github.com/wattnpapa/sprechfunk-uebung" class="btn btn-dark">
+                <i class="fab fa-github"></i> GitHub
+            </a>
+        </div>
+    </div>
+</header>
+
+<main class="container my-4 app-view-shell">
+    <nav aria-label="Brotkrumennavigation" class="mb-3">
+        <ol class="breadcrumb mb-0">
+            <li class="breadcrumb-item"><a href="../">Startseite</a></li>
+            <li class="breadcrumb-item active" aria-current="page">Meldevordruck</li>
+        </ol>
+    </nav>
+
+    <article>
+        <div class="card mb-3">
+            <div class="card-body">
+                <h2 class="h3">Meldevordruck und Nachrichtenvordruck</h2>
+                <p>
+                    Im <strong>BOS-Sprechfunk</strong> werden Nachrichten nicht aus dem Kopf
+                    abgesetzt, sondern schriftlich vorbereitet und aufgenommen. Dafür gibt es zwei
+                    Vordrucke: den <strong>Meldevordruck</strong> im Format A5 für eine einzelne
+                    Nachricht und den <strong>Nachrichtenvordruck</strong>, der vier Nachrichten
+                    auf einer Seite bündelt. Beide sorgen dafür, dass Absender, Empfänger und
+                    Nachrichtentext vollständig dokumentiert sind – im Einsatz genauso wie in der
+                    <a href="../anleitung/">Sprechfunkübung</a>.
+                </p>
+            </div>
+        </div>
+
+        <div class="card mb-3">
+            <div class="card-header"><h2 class="h4 mb-0" id="download">Leere Vordrucke als PDF herunterladen</h2></div>
+            <div class="card-body">
+                <div class="row g-4">
+                    <div class="col-md-6">
+                        <figure class="mb-2">
+                            <img src="../assets/meldevordruck.png"
+                                 alt="Leerer Meldevordruck im Format A5 für den BOS-Sprechfunk mit Feldern für Absender, Empfänger, Nachrichtentext und Verfasser"
+                                 class="img-fluid border rounded" loading="lazy">
+                            <figcaption class="small text-muted">Meldevordruck (A5, eine Nachricht je Blatt)</figcaption>
+                        </figure>
+                        <a href="../assets/meldevordruck.pdf" class="btn btn-outline-primary" download>
+                            <i class="fas fa-file-pdf"></i> Meldevordruck als PDF
+                        </a>
+                    </div>
+                    <div class="col-md-6">
+                        <figure class="mb-2">
+                            <img src="../assets/nachrichtenvordruck4fach.png"
+                                 alt="Leerer Nachrichtenvordruck mit vier Nachrichtenfeldern auf einer Seite für den Sprechfunk"
+                                 class="img-fluid border rounded" loading="lazy">
+                            <figcaption class="small text-muted">Nachrichtenvordruck (vier Nachrichten je Seite)</figcaption>
+                        </figure>
+                        <a href="../assets/nachrichtenvordruck4fach.pdf" class="btn btn-outline-primary" download>
+                            <i class="fas fa-file-pdf"></i> Nachrichtenvordruck als PDF
+                        </a>
+                    </div>
+                </div>
+                <p class="mt-3 mb-0">
+                    Die Vordrucke lassen sich unverändert ausdrucken und als Blankoformulare in der
+                    Ausbildung verwenden. Sie sind Bestandteil dieses Open-Source-Projekts und
+                    stehen unter der
+                    <a href="https://github.com/wattnpapa/sprechfunk-uebung/blob/main/LICENSE" target="_blank" rel="noopener noreferrer">EUPL-1.2-Lizenz</a>.
+                </p>
+            </div>
+        </div>
+
+        <div class="card mb-3">
+            <div class="card-header"><h2 class="h4 mb-0" id="aufbau">Aufbau des Meldevordrucks</h2></div>
+            <div class="card-body">
+                <p>Der Meldevordruck hält die Angaben fest, die eine Nachricht nachvollziehbar machen:</p>
+                <ul>
+                    <li><strong>Nummer</strong> – laufende Nummer der Nachricht, in Übungen wahlweise der Zeitpunkt als X-Zeit.</li>
+                    <li><strong>Absender</strong> – Funkrufname der Stelle, die die Nachricht absetzt.</li>
+                    <li><strong>Empfänger</strong> – ein einzelner Funkrufname, mehrere Empfänger oder alle Teilnehmer.</li>
+                    <li><strong>Nachrichtentext</strong> – der eigentliche Wortlaut des Funkspruchs.</li>
+                    <li><strong>Verfasser</strong> – wer die Nachricht inhaltlich verantwortet.</li>
+                </ul>
+                <p class="mb-0">
+                    Auf den vom Generator erzeugten Vordrucken steht am Fuß der Hinweis
+                    „Wörter in GROSSBUCHSTABEN müssen buchstabiert werden“. Damit ist für die
+                    Teilnehmer sofort erkennbar, welcher Teil des Textes nach der
+                    <a href="../buchstabiertafel/">Buchstabiertafel</a> zu buchstabieren ist.
+                </p>
+            </div>
+        </div>
+
+        <div class="card mb-3">
+            <div class="card-header"><h2 class="h4 mb-0" id="unterschied">Wann Meldevordruck, wann Nachrichtenvordruck?</h2></div>
+            <div class="card-body">
+                <ul>
+                    <li>
+                        <strong>Meldevordruck:</strong> eine Nachricht je Blatt, viel Platz zum
+                        Mitschreiben. Gut geeignet für die Grundausbildung und für Übungen, in
+                        denen sauber formulierte Meldungen im Mittelpunkt stehen.
+                    </li>
+                    <li>
+                        <strong>Nachrichtenvordruck:</strong> vier Nachrichten je Seite, deutlich
+                        weniger Papier. Sinnvoll bei längeren Übungen mit vielen Funksprüchen je
+                        Teilnehmer.
+                    </li>
+                </ul>
+                <p class="mb-0">
+                    In der Teilnehmeransicht der Anwendung lässt sich jederzeit zwischen beiden
+                    Darstellungen umschalten – am Rechner mit den Tasten <kbd>M</kbd> und
+                    <kbd>N</kbd>.
+                </p>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-body">
+                <h2 class="h4">Vordrucke automatisch befüllen lassen</h2>
+                <p>
+                    Für eine Übung müssen die Vordrucke nicht von Hand ausgefüllt werden: Der
+                    <strong>Sprechfunk Übungsgenerator</strong> verteilt die Funksprüche auf die
+                    Teilnehmer und erzeugt daraus fertige <strong>PDF-Druckunterlagen</strong> –
+                    je Teilnehmer als Meldevordruck oder Nachrichtenvordruck, auf Wunsch gebündelt
+                    als ZIP-Datei für die gesamte Übung.
+                </p>
+                <p class="mb-0">
+                    <a href="../" class="btn btn-primary">Übung erstellen</a>
+                    <a href="../funksprueche/" class="btn btn-outline-primary">Beispiel-Funksprüche ansehen</a>
+                </p>
+            </div>
+        </div>
+    </article>
+</main>
+
+<footer class="main-footer">
+    <span class="footer-links">
+        <a href="../">Anwendung</a>
+        <a href="../anleitung/">Anleitung</a>
+        <a href="../buchstabiertafel/">Buchstabiertafel</a>
+        <a href="../meldevordruck/">Meldevordruck</a>
+        <a href="../funksprueche/">Funksprüche</a>
+        <a href="../faq/">FAQ</a>
+    </span>
+    <span class="footer-links">
+        <a href="../impressum/">Impressum</a>
+        <a href="../datenschutz/">Datenschutz</a>
+        <a href="mailto:johannes.rudolph@thw-oldenburg.de">Kontakt</a>
+        <a href="https://github.com/wattnpapa/sprechfunk-uebung" target="_blank" rel="noopener noreferrer">GitHub</a>
+        <a href="https://github.com/wattnpapa/sprechfunk-uebung/blob/main/LICENSE" target="_blank" rel="noopener noreferrer">EUPL-1.2-Lizenz</a>
+    </span>
+</footer>
+
+</body>
+
+</html>

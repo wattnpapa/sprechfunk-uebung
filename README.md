@@ -107,6 +107,17 @@ Weitere Fragen und Antworten: [sprechfunk-uebung.de/faq](https://sprechfunk-uebu
 
 ---
 
+## Nachschlagen für die Übungsvorbereitung
+
+- **[Buchstabiertafel](https://sprechfunk-uebung.de/buchstabiertafel/)** – klassische BOS-Tafel,
+  DIN 5009:2022 mit Städtenamen und das internationale NATO-Alphabet
+- **[Meldevordruck und Nachrichtenvordruck](https://sprechfunk-uebung.de/meldevordruck/)** –
+  Aufbau der Felder und leere Vordrucke als PDF
+- **[Funksprüche für Übungen](https://sprechfunk-uebung.de/funksprueche/)** – Beispieltexte und
+  Anleitung für eigene Vorlagen
+
+---
+
 ## Feedback und Ideen
 
 Etwas funktioniert nicht wie erwartet, oder dir fehlt eine Funktion?

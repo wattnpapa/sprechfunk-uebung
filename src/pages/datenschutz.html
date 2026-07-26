@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="de">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Datenschutzerklärung | Sprechfunk Übungsgenerator</title>
+    <link rel="icon" type="image/png" href="../assets/favicon.png">
+    <link rel="canonical" href="https://sprechfunk-uebung.de/datenschutz/">
+    <meta name="robots" content="index,follow">
+    <meta name="theme-color" content="#0d6efd">
+
+    <meta name="description" content="Datenschutzerklärung des Sprechfunk Übungsgenerators: verantwortliche Stelle, Verarbeitung beim Seitenaufruf, cookielose Reichweitenmessung mit GoatCounter, Speicherung der Übungsdaten und Rechte nach DSGVO.">
+    <meta name="author" content="Johannes Rudolph">
+
+    <meta property="og:title" content="Datenschutzerklärung">
+    <meta property="og:description" content="Wie der Sprechfunk Übungsgenerator mit Daten umgeht: cookielose Reichweitenmessung, Übungsdaten und Rechte nach DSGVO.">
+    <meta property="og:url" content="https://sprechfunk-uebung.de/datenschutz/">
+    <meta property="og:type" content="website">
+    <meta property="og:locale" content="de_DE">
+    <meta property="og:site_name" content="Sprechfunk Übungsgenerator">
+    <meta property="og:image" content="https://sprechfunk-uebung.de/assets/og-image.png">
+    <meta property="og:image:width" content="1200">
+    <meta property="og:image:height" content="630">
+    <meta property="og:image:alt" content="Sprechfunk Übungsgenerator – Übungen für den BOS-Sprechfunk erstellen">
+
+    <link rel="stylesheet" href="../bundle.css">
+    <link rel="stylesheet" href="../style.css">
+
+    <!-- GoatCounter: cookielose, anonyme Reichweitenmessung -->
+    <script data-goatcounter="https://sprechfunk-uebung.goatcounter.com/count"
+            async src="//gc.zgo.at/count.js"></script>
+
+    <script type="application/ld+json">
+        {
+            "@context": "https://schema.org",
+            "@type": "BreadcrumbList",
+            "itemListElement": [
+                {
+                    "@type": "ListItem",
+                    "position": 1,
+                    "name": "Startseite",
+                    "item": "https://sprechfunk-uebung.de/"
+                },
+                {
+                    "@type": "ListItem",
+                    "position": 2,
+                    "name": "Datenschutz",
+                    "item": "https://sprechfunk-uebung.de/datenschutz/"
+                }
+            ]
+        }
+    </script>
+    <script>
+        // Gleiche Theme-Auswahl wie in der App anwenden (statische Seiten laden kein Bundle).
+        document.addEventListener("DOMContentLoaded", function () {
+            var stored = localStorage.getItem("theme");
+            if (stored) {
+                document.body.setAttribute("data-theme", stored);
+            }
+        });
+    </script>
+</head>
+
+<body data-theme="light">
+<header class="app-header">
+    <div class="container app-header-grid">
+        <div class="app-header-title">
+            <h1 class="h2 mb-0">
+                <i class="fas fa-broadcast-tower"></i> Sprechfunk Übungsgenerator
+            </h1>
+        </div>
+        <div class="app-header-actions d-none d-md-flex">
+            <a href="../" class="btn btn-primary">
+                <i class="fas fa-arrow-left"></i> Zur Anwendung
+            </a>
+        </div>
+    </div>
+</header>
+
+<main class="container my-4 app-view-shell">
+    <nav aria-label="Brotkrumennavigation" class="mb-3">
+        <ol class="breadcrumb mb-0">
+            <li class="breadcrumb-item"><a href="../">Startseite</a></li>
+            <li class="breadcrumb-item active" aria-current="page">Datenschutz</li>
+        </ol>
+    </nav>
+
+    <article>
+        <div class="card">
+            <div class="card-body">
+                <h2 class="h3">Datenschutzerklärung</h2>
+
+                <h3 class="h5">1. Verantwortlicher</h3>
+                <p>
+                    Johannes Rudolph<br>
+                    E-Mail: <a href="mailto:johannes.rudolph@thw-oldenburg.de">johannes.rudolph@thw-oldenburg.de</a><br>
+                    Vollständige Anbieterangaben im <a href="../impressum/">Impressum</a>.
+                </p>
+
+                <h3 class="h5">2. Verarbeitung beim Aufruf der Website</h3>
+                <p>
+                    Beim Aufruf werden technisch notwendige Informationen verarbeitet
+                    (z. B. IP-Adresse, Zeitstempel, Browserinformationen), um den Betrieb der
+                    Website zu ermöglichen.
+                </p>
+
+                <h3 class="h5">3. Reichweitenmessung (GoatCounter)</h3>
+                <p>
+                    Diese Anwendung nutzt GoatCounter für eine anonyme Reichweitenmessung. Dabei
+                    werden keine Cookies gesetzt und keine personenbezogenen Daten gespeichert;
+                    es werden lediglich aggregierte Seitenaufrufe gezählt. Eine Einwilligung ist
+                    dafür nicht erforderlich.
+                </p>
+
+                <h3 class="h5">4. Firebase</h3>
+                <p>
+                    Zur Speicherung und Bereitstellung von Übungsdaten wird Firebase (Google)
+                    verwendet. Gespeichert werden die Angaben, die beim Erstellen einer Übung
+                    eingetragen werden – insbesondere Übungsname, Funkrufnamen der Teilnehmer und
+                    die generierten Funksprüche. Trage dort keine Daten ein, die nicht in einer
+                    Übung sichtbar sein sollen.
+                </p>
+
+                <h3 class="h5">5. Rechte nach DSGVO</h3>
+                <p class="mb-0">
+                    Du hast u. a. Rechte auf Auskunft, Berichtigung, Löschung, Einschränkung der
+                    Verarbeitung und Widerspruch. Wende dich dafür an die oben genannte
+                    E-Mail-Adresse.
+                </p>
+            </div>
+        </div>
+    </article>
+</main>
+
+<footer class="main-footer">
+    <span class="footer-links">
+        <a href="../">Anwendung</a>
+        <a href="../anleitung/">Anleitung</a>
+        <a href="../buchstabiertafel/">Buchstabiertafel</a>
+        <a href="../meldevordruck/">Meldevordruck</a>
+        <a href="../funksprueche/">Funksprüche</a>
+        <a href="../faq/">FAQ</a>
+    </span>
+    <span class="footer-links">
+        <a href="../impressum/">Impressum</a>
+        <a href="../datenschutz/">Datenschutz</a>
+        <a href="mailto:johannes.rudolph@thw-oldenburg.de">Kontakt</a>
+        <a href="https://github.com/wattnpapa/sprechfunk-uebung" target="_blank" rel="noopener noreferrer">GitHub</a>
+        <a href="https://github.com/wattnpapa/sprechfunk-uebung/blob/main/LICENSE" target="_blank" rel="noopener noreferrer">EUPL-1.2-Lizenz</a>
+    </span>
+</footer>
+
+</body>
+
+</html>

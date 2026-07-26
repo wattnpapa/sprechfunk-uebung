@@ -380,6 +380,72 @@ test("@smoke start page exposes SoftwareApplication schema and links the content
 
     await expect(page.getByTestId("footer-link-anleitung")).toHaveAttribute("href", "anleitung/");
     await expect(page.getByTestId("footer-link-faq")).toHaveAttribute("href", "faq/");
+    await expect(page.getByTestId("footer-link-buchstabiertafel")).toHaveAttribute("href", "buchstabiertafel/");
+    await expect(page.getByTestId("footer-link-meldevordruck")).toHaveAttribute("href", "meldevordruck/");
+    await expect(page.getByTestId("footer-link-funksprueche")).toHaveAttribute("href", "funksprueche/");
+    await expect(page.getByTestId("footer-link-impressum")).toHaveAttribute("href", "impressum/");
+    await expect(page.getByTestId("footer-link-datenschutz")).toHaveAttribute("href", "datenschutz/");
+
+    const website = (await readJsonLd(page)).find(entry => entry["@type"] === "WebSite");
+    expect(website.publisher.sameAs).toContain("https://github.com/wattnpapa");
+});
+
+test("@smoke start page shows the intro text only in generator mode", async ({ page }) => {
+    await page.goto("/");
+    await expect(page.getByTestId("seo-intro")).toBeVisible();
+    await expect(page.getByRole("heading", { name: /Sprechfunkübungen erstellen/ })).toBeVisible();
+
+    await page.goto("/#/admin");
+    await expect(page.getByTestId("seo-intro")).toBeHidden();
+});
+
+test("@smoke buchstabiertafel page lists the BOS and DIN 5009 tables", async ({ page }) => {
+    await page.goto("/buchstabiertafel/");
+
+    await expect(page).toHaveTitle(/Buchstabiertafel/);
+    await expect(page.locator("link[rel='canonical']")).toHaveAttribute(
+        "href",
+        "https://sprechfunk-uebung.de/buchstabiertafel/"
+    );
+
+    // Stichproben aus allen drei Tafeln – vertauschte Spalten fielen sonst nicht auf.
+    await expect(page.getByRole("cell", { name: "Anton", exact: true })).toBeVisible();
+    await expect(page.getByRole("cell", { name: "Chemnitz", exact: true })).toBeVisible();
+    await expect(page.getByRole("cell", { name: "Foxtrot", exact: true })).toBeVisible();
+
+    const types = (await readJsonLd(page)).map(entry => entry["@type"]);
+    expect(types).toContain("Article");
+    expect(types).toContain("BreadcrumbList");
+});
+
+test("@smoke meldevordruck page offers the blank PDFs", async ({ page }) => {
+    await page.goto("/meldevordruck/");
+
+    await expect(page).toHaveTitle(/Meldevordruck/);
+    await expect(page.locator("a[href$='assets/meldevordruck.pdf']")).toBeVisible();
+    await expect(page.locator("a[href$='assets/nachrichtenvordruck4fach.pdf']")).toBeVisible();
+    await expect(page.locator("img[src$='assets/meldevordruck.png']")).toHaveAttribute("alt", /Meldevordruck/);
+});
+
+test("@smoke funksprueche page explains the template format", async ({ page }) => {
+    await page.goto("/funksprueche/");
+
+    await expect(page).toHaveTitle(/Funksprüche/);
+    await expect(page.getByRole("heading", { name: /Buchstabieraufgaben einbauen/ })).toBeVisible();
+    await expect(page.locator("link[rel='canonical']")).toHaveAttribute(
+        "href",
+        "https://sprechfunk-uebung.de/funksprueche/"
+    );
+});
+
+test("@smoke legal pages are reachable as own URLs", async ({ page }) => {
+    await page.goto("/impressum/");
+    await expect(page.getByRole("heading", { name: "Impressum" })).toBeVisible();
+    await expect(page.getByText("Angaben gemäß § 5 DDG")).toBeVisible();
+
+    await page.goto("/datenschutz/");
+    await expect(page.getByRole("heading", { name: "Datenschutzerklärung" })).toBeVisible();
+    await expect(page.getByRole("heading", { name: /Reichweitenmessung \(GoatCounter\)/ })).toBeVisible();
 });
 
 test("@smoke anleitung page is crawlable without the app bundle", async ({ page }) => {
