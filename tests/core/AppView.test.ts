@@ -81,6 +81,25 @@ describe("AppView", () => {
         expect(select2).toHaveBeenCalled();
     });
 
+    it("stops the chip remove click before select2 toggles the dropdown", () => {
+        const on = vi.fn();
+        const select2 = vi.fn();
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        (globalThis as any).window.$ = vi.fn(() => ({
+            select2,
+            data: (key: string) => key === "select2"
+                ? { $container: { find: () => ({ on }) } }
+                : undefined
+        }));
+
+        new AppView().initGlobalListeners();
+
+        expect(on).toHaveBeenCalledWith("click", ".select2-selection__choice__remove", expect.any(Function));
+        const stopPropagation = vi.fn();
+        on.mock.calls[0][2]({ stopPropagation });
+        expect(stopPropagation).toHaveBeenCalled();
+    });
+
     it("does not initialize select2 when select is missing", () => {
         const view = new AppView();
         const oldGet = (globalThis as any).document.getElementById;

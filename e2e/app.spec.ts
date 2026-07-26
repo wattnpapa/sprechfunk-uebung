@@ -681,11 +681,29 @@ test("@generator select2 dropdown selects and removes templates via mouse", asyn
     await expect(chips).toHaveCount(before - 1);
     expect(await selectedValues()).not.toContain("thwleer");
 
+    // Wieder zu, damit die folgende Sequenz beim geschlossenen Dropdown startet -
+    // so wie ein Nutzer, der nur einen Chip loswerden will.
+    await container.locator(".select2-search__field").click();
+    await expect(page.locator(".select2-dropdown")).toHaveCount(0);
+
     // Chip-Entfernen muss ebenfalls auf das native <select> durchschlagen.
     const remaining = await selectedValues();
     await chips.first().locator(".select2-selection__choice__remove").click();
     await expect(chips).toHaveCount(before - 2);
     expect((await selectedValues()).length).toBe(remaining.length - 1);
+
+    // Der Klick auf das x darf das Dropdown nicht mit aufziehen - sonst wuerde
+    // der naechste Mausklick es schliessen statt oeffnen.
+    await expect(page.locator(".select2-dropdown")).toHaveCount(0);
+
+    // Genau diese Sequenz war kaputt: nach dem Entfernen liess sich das Dropdown
+    // per Maus nicht mehr oeffnen und damit auch nichts mehr auswaehlen.
+    await container.locator(".select2-search__field").click();
+    await expect(page.locator(".select2-dropdown")).toBeVisible();
+
+    await page.locator(".select2-results__option", { hasText: "Funksprüche THW Leer" }).first().click();
+    await expect(chips).toHaveCount(before - 1);
+    expect(await selectedValues()).toContain("thwleer");
 });
 
 test("@generator @chart statistics tab renders the distribution chart", async ({ page }) => {
