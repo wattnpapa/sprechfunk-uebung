@@ -71,6 +71,27 @@ describe("TeilnehmerView", () => {
         expect(document.getElementById("teilnehmerNachrichtenBody")?.textContent).toContain("Keine Nachrichten vorhanden");
     });
 
+    it("escapes exercise data in the header and in message rows", () => {
+        const view = new TeilnehmerView();
+        const payload = "<img src=x onerror=alert(1)>";
+        view.renderHeader(
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            { name: payload, datum: new Date(), rufgruppe: payload, leitung: payload } as any,
+            payload
+        );
+        const headerHtml = document.getElementById("teilnehmerContent")?.innerHTML ?? "";
+        expect(headerHtml).not.toContain("<img src=x");
+        expect(headerHtml.match(/&lt;img src=x onerror=alert\(1\)&gt;/g)?.length).toBe(4);
+
+        view.renderNachrichten([{ id: 1, empfaenger: [payload], nachricht: "x" }], {
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            hideTransmitted: false, nachrichten: {}
+        } as any);
+        const rowHtml = document.getElementById("teilnehmerNachrichtenBody")?.innerHTML ?? "";
+        expect(rowHtml).not.toContain("<img src=x");
+        expect(rowHtml).toContain("&lt;img src=x onerror=alert(1)&gt;");
+    });
+
     it("binds click/change/search/doc view events and keyboard shortcuts", () => {
         const view = renderBase();
         view.renderNachrichten([{ id: 1, empfaenger: ["B"], nachricht: "text" }], {
@@ -194,21 +215,74 @@ describe("TeilnehmerView", () => {
         expect(onToggle).not.toHaveBeenCalledWith(NaN, expect.anything());
     });
 
-    it("covers keyboard typing targets and no modal branch", () => {
+    it("ignores shortcuts while typing in the search field", () => {
         const view = renderBase();
         view.renderNachrichten([{ id: 1, empfaenger: ["B"], nachricht: "x" }], {
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             hideTransmitted: false, nachrichten: {}
         } as any);
+        const onDocViewChange = vi.fn();
         const onDocToggleCurrent = vi.fn();
         const onToggleHide = vi.fn();
-        view.bindEvents(vi.fn(), onToggleHide, vi.fn(), vi.fn(), vi.fn(), vi.fn(), vi.fn(), onDocToggleCurrent, vi.fn(), vi.fn());
+        const onDocClose = vi.fn();
+        view.bindEvents(
+            vi.fn(), onToggleHide, vi.fn(), onDocViewChange, vi.fn(), vi.fn(),
+            onDocClose, onDocToggleCurrent, vi.fn(), vi.fn()
+        );
 
+        // Modal offen, damit ausschliesslich der Tipp-Schutz greift.
+        (document.getElementById("teilnehmerDocModal") as HTMLElement).classList.add("show");
         const input = document.getElementById("teilnehmerSearchInput") as HTMLInputElement;
+        for (const init of [
+            { code: "Space" }, { key: "ü" }, { key: "[" }, { key: "m" },
+            { key: "n" }, { key: "Escape" }, { key: "ArrowLeft" }, { key: "ArrowRight" }
+        ]) {
+            input.dispatchEvent(new window.KeyboardEvent("keydown", { ...init, bubbles: true }));
+        }
+
+        expect(onDocViewChange).not.toHaveBeenCalled();
+        expect(onToggleHide).not.toHaveBeenCalled();
+        expect(onDocToggleCurrent).not.toHaveBeenCalled();
+        expect(onDocClose).not.toHaveBeenCalled();
+    });
+
+    it("ignores shortcuts while the doc modal is closed", () => {
+        const view = renderBase();
+        view.renderNachrichten([{ id: 1, empfaenger: ["B"], nachricht: "x" }], {
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            hideTransmitted: false, nachrichten: {}
+        } as any);
+        const onDocViewChange = vi.fn();
+        const onDocToggleCurrent = vi.fn();
+        const onToggleHide = vi.fn();
+        view.bindEvents(
+            vi.fn(), onToggleHide, vi.fn(), onDocViewChange, vi.fn(), vi.fn(),
+            vi.fn(), onDocToggleCurrent, vi.fn(), vi.fn()
+        );
+
         document.dispatchEvent(new window.KeyboardEvent("keydown", { code: "Space" }));
-        input.dispatchEvent(new window.KeyboardEvent("keydown", { code: "Space", bubbles: true }));
         document.dispatchEvent(new window.KeyboardEvent("keydown", { key: "[" }));
-        expect(onToggleHide).toHaveBeenCalled();
+        document.dispatchEvent(new window.KeyboardEvent("keydown", { key: "m" }));
+        expect(onToggleHide).not.toHaveBeenCalled();
+        expect(onDocViewChange).not.toHaveBeenCalled();
+        expect(onDocToggleCurrent).not.toHaveBeenCalled();
+    });
+
+    it("keeps shortcuts alive on modal checkboxes and leaves Space native there", () => {
+        const view = renderBase();
+        const onDocViewChange = vi.fn();
+        const onDocToggleCurrent = vi.fn();
+        view.bindEvents(
+            vi.fn(), vi.fn(), vi.fn(), onDocViewChange, vi.fn(), vi.fn(),
+            vi.fn(), onDocToggleCurrent, vi.fn(), vi.fn()
+        );
+
+        (document.getElementById("teilnehmerDocModal") as HTMLElement).classList.add("show");
+        const checkbox = document.getElementById("toggle-hide-transmitted-modal") as HTMLInputElement;
+        checkbox.dispatchEvent(new window.KeyboardEvent("keydown", { key: "n", bubbles: true }));
+        expect(onDocViewChange).toHaveBeenCalledWith("nachrichtenvordruck");
+
+        checkbox.dispatchEvent(new window.KeyboardEvent("keydown", { code: "Space", bubbles: true }));
         expect(onDocToggleCurrent).not.toHaveBeenCalled();
     });
 

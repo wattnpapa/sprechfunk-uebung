@@ -30,7 +30,29 @@ const loadPdfJs = async (): Promise<PdfJsModule> => {
     return pdfJsPromise;
 };
 
+// Eingabetypen, bei denen Tastendrücke keine Texteingabe sind (Space toggelt dort z. B. nur).
+const NON_TEXT_INPUT_TYPES = new Set([
+    "checkbox", "radio", "button", "submit", "reset", "file", "range", "color", "image"
+]);
+
 export class TeilnehmerView {
+    private isTypingTarget(target: HTMLElement | null): boolean {
+        if (!target) {
+            return false;
+        }
+        if (target.isContentEditable) {
+            return true;
+        }
+        if (target.tagName === "TEXTAREA" || target.tagName === "SELECT") {
+            return true;
+        }
+        if (target.tagName !== "INPUT") {
+            return false;
+        }
+        const type = (target as HTMLInputElement).type?.toLowerCase() || "text";
+        return !NON_TEXT_INPUT_TYPES.has(type);
+    }
+
     public renderJoinForm(prefilledUebungCode = "", prefilledTeilnehmerCode = ""): void {
         const container = document.getElementById("teilnehmerContent");
         if (!container) {
@@ -46,11 +68,11 @@ export class TeilnehmerView {
                     <form id="teilnehmerJoinForm" class="row g-3" autocomplete="off">
                         <div class="col-md-6">
                             <label class="form-label" for="joinUebungCode">Übungscode</label>
-                            <input class="form-control text-uppercase" id="joinUebungCode" maxlength="6" placeholder="z. B. K7M4Q2" value="${prefilledUebungCode}">
+                            <input class="form-control text-uppercase" id="joinUebungCode" maxlength="6" placeholder="z. B. K7M4Q2" value="${escapeHtml(prefilledUebungCode)}">
                         </div>
                         <div class="col-md-6">
                             <label class="form-label" for="joinTeilnehmerCode">Teilnehmercode</label>
-                            <input class="form-control text-uppercase" id="joinTeilnehmerCode" maxlength="4" placeholder="z. B. 9F3K" value="${prefilledTeilnehmerCode}">
+                            <input class="form-control text-uppercase" id="joinTeilnehmerCode" maxlength="4" placeholder="z. B. 9F3K" value="${escapeHtml(prefilledTeilnehmerCode)}">
                         </div>
                         <div class="col-12">
                             <button type="submit" class="btn btn-primary" id="joinSubmitBtn">
@@ -108,11 +130,17 @@ export class TeilnehmerView {
             return;
         }
 
+        const safeName = escapeHtml(uebung.name || "–");
+        const safeTeilnehmer = escapeHtml(teilnehmer);
+        const safeDatum = escapeHtml(formatNatoDate(uebung.datum));
+        const safeRufgruppe = escapeHtml(uebung.rufgruppe || "–");
+        const safeLeitung = escapeHtml(uebung.leitung || "–");
+
         // Header Card
         const headerHtml = `
             <div class="card mb-4">
                 <div class="card-header d-flex justify-content-between align-items-center">
-                    <h3 class="card-title mb-0">Sprechfunkübung: ${uebung.name}</h3>
+                    <h3 class="card-title mb-0">Sprechfunkübung: ${safeName}</h3>
                     <div class="d-flex gap-2">
                         <button class="btn btn-sm btn-outline-light" id="btn-download-teilnehmer-zip">
                             <i class="fas fa-file-archive"></i> ZIP herunterladen
@@ -125,12 +153,12 @@ export class TeilnehmerView {
                 <div class="card-body">
                     <div class="row">
                         <div class="col-md-6">
-                            <p><strong>Eigener Funkrufname:</strong> ${teilnehmer}</p>
-                            <p><strong>Datum:</strong> ${formatNatoDate(uebung.datum)}</p>
+                            <p><strong>Eigener Funkrufname:</strong> ${safeTeilnehmer}</p>
+                            <p><strong>Datum:</strong> ${safeDatum}</p>
                         </div>
                         <div class="col-md-6">
-                            <p><strong>Rufgruppe:</strong> ${uebung.rufgruppe}</p>
-                            <p><strong>Übungsleitung:</strong> ${uebung.leitung}</p>
+                            <p><strong>Rufgruppe:</strong> ${safeRufgruppe}</p>
+                            <p><strong>Übungsleitung:</strong> ${safeLeitung}</p>
                         </div>
                     </div>
                 </div>
@@ -271,7 +299,7 @@ export class TeilnehmerView {
                 return `
             <tr class="${isUebertragen ? "status-ok-row" : "status-pending-row"}">
                 <td>${n.id}</td>
-                <td>${n.empfaenger.join(", ")}</td>
+                <td>${escapeHtml(n.empfaenger.join(", "))}</td>
                 <td>${escapeHtml(n.nachricht).replace(/\\n/g, "<br>").replace(/\n/g, "<br>")}</td>
                 ${xZeitCell}
                 <td>
@@ -341,14 +369,21 @@ export class TeilnehmerView {
 
         document.addEventListener("keydown", e => {
             const target = e.target as HTMLElement | null;
-            const isTypingTarget = !!target && (
-                target.tagName === "INPUT" ||
-                target.tagName === "TEXTAREA" ||
-                target.tagName === "SELECT" ||
-                target.isContentEditable
-            );
 
-            if (e.code === "Space" && !isTypingTarget && document.getElementById("teilnehmerDocModal")?.classList.contains("show")) {
+            // Wer tippt (z. B. im Suchfeld), darf keine Kürzel auslösen.
+            if (this.isTypingTarget(target)) {
+                return;
+            }
+            // Alle Kürzel gehören zum Vordruck-Modal und greifen nur, solange es offen ist.
+            if (!document.getElementById("teilnehmerDocModal")?.classList.contains("show")) {
+                return;
+            }
+
+            if (e.code === "Space") {
+                // Auf Eingabefeldern (z. B. der Checkbox im Modal) bleibt Space die native Aktivierung.
+                if (target?.tagName === "INPUT") {
+                    return;
+                }
                 e.preventDefault();
                 onDocToggleCurrent();
                 return;
