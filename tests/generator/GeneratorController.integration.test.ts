@@ -5,13 +5,6 @@ vi.mock("chart.js", () => ({
     registerables: []
 }));
 
-vi.mock("../../src/core/select2-setup", () => ({
-    default: () => ({
-        trigger: vi.fn(),
-        val: vi.fn()
-    })
-}));
-
 vi.mock("../../src/services/pdfGenerator", () => ({
     default: { generateAllPDFsAsZip: vi.fn() }
 }));

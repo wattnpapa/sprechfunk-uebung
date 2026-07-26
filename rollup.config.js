@@ -19,7 +19,7 @@ export default {
       browser: true,
       preferBuiltins: false,
       extensions: ['.mjs', '.js', '.ts'],
-      dedupe: ['jspdf', 'jquery']
+      dedupe: ['jspdf']
     }),
     commonjs({
       include: ['node_modules/**'],

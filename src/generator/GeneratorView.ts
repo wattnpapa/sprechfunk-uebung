@@ -1,5 +1,5 @@
 import { FunkUebung } from "../models/FunkUebung";
-import $ from "../core/select2-setup";
+import { MultiSelect } from "../core/MultiSelect";
 import type { UebungsDauerStats, VerteilungsStats } from "./GeneratorStatsService";
 import type { PreviewPage } from "./GeneratorPreviewService";
 import { uiFeedback } from "../core/UiFeedback";
@@ -13,6 +13,7 @@ export class GeneratorView {
     private linksRenderer = new GeneratorLinksRenderer();
     private teilnehmerRenderer = new GeneratorTeilnehmerTableRenderer();
     private resultRenderer = new GeneratorResultRenderer();
+    private templatePicker: MultiSelect | null = null;
     
     // Cache für DOM-Elemente könnte hier angelegt werden, 
     // aber für diesen Refactor reicht der direkte Zugriff über gekapselte Methoden.
@@ -407,12 +408,17 @@ export class GeneratorView {
             option.selected = selected.length === 0 || selected.includes(key);
             selectBox.appendChild(option);
         }
-        // Trigger Select2 update
-        $("#funkspruchVorlage").trigger("change");
+        // Das Multi-Select-Widget haengt an genau diesem Event und zeichnet
+        // Chips und Trefferliste daraufhin neu.
+        selectBox.dispatchEvent(new Event("change", { bubbles: true }));
     }
 
     public getSelectedTemplates(): string[] {
-        return ($("#funkspruchVorlage").val() as string[]) || [];
+        const selectBox = document.getElementById("funkspruchVorlage") as HTMLSelectElement | null;
+        if (!selectBox) {
+            return [];
+        }
+        return Array.from(selectBox.selectedOptions).map(option => option.value);
     }
 
     public getSelectedSource(): "vorlagen" | "upload" {
@@ -506,5 +512,16 @@ export class GeneratorView {
             return;
         }
         container.innerHTML = GENERATOR_VIEW_MARKUP;
+        // Das Markup wird bei jedem render() neu gesetzt, das <select> ist also
+        // jedes Mal ein frisches Element und braucht das Widget erneut.
+        this.templatePicker?.destroy();
+        this.templatePicker = MultiSelect.enhance(
+            document.getElementById("funkspruchVorlage") as HTMLSelectElement | null,
+            {
+                placeholder: "Vorlagen auswählen ...",
+                search: "Vorlage suchen ...",
+                empty: "Keine passende Vorlage"
+            }
+        );
     }
 }

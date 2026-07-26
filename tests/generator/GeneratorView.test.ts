@@ -4,8 +4,6 @@ import { JSDOM } from "jsdom";
 const mocks = vi.hoisted(() => ({
     chartDestroy: vi.fn(),
     chartCtor: vi.fn(),
-    selectTrigger: vi.fn(),
-    selectVal: vi.fn(),
     zip: vi.fn().mockResolvedValue(new Blob(["zip"])),
     uiSuccess: vi.fn(),
     uiError: vi.fn()
@@ -18,10 +16,6 @@ vi.mock("chart.js", () => ({
     },
     registerables: []
 }));
-vi.mock("../../src/core/select2-setup", () => ({
-    default: () => ({ trigger: mocks.selectTrigger, val: mocks.selectVal })
-}));
-
 vi.mock("../../src/services/pdfGenerator", () => ({
     default: {
         generateTeilnehmerPDFsAsZip: mocks.zip,
@@ -38,11 +32,13 @@ import { FunkUebung } from "../../src/models/FunkUebung";
 describe("GeneratorView", () => {
     beforeEach(() => {
         vi.clearAllMocks();
-        mocks.selectVal.mockReturnValue(undefined);
         const dom = new JSDOM("<div id=\"mainAppArea\"></div><div id=\"output-container\" style=\"display:none\"></div><div id=\"uebungsId\"></div><div id=\"version\"></div>");
         vi.stubGlobal("window", dom.window);
         vi.stubGlobal("document", dom.window.document);
         vi.stubGlobal("AbortController", dom.window.AbortController);
+        // JSDOM prueft die Event-Identitaet: Node-globales Event wuerde von
+        // dispatchEvent() abgelehnt.
+        vi.stubGlobal("Event", dom.window.Event);
         vi.stubGlobal("navigator", { clipboard: { writeText: vi.fn().mockResolvedValue(undefined) } });
         vi.stubGlobal("setTimeout", vi.fn((cb: () => void) => { cb(); return 1; }));
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -173,9 +169,9 @@ describe("GeneratorView", () => {
         const view = new GeneratorView();
         view.render();
         view.populateTemplateSelect({ a: { text: "A" }, b: { text: "B" } }, ["a"]);
-        expect(mocks.selectTrigger).toHaveBeenCalledWith("change");
-        mocks.selectVal.mockReturnValue(["a"]);
         expect(view.getSelectedTemplates()).toEqual(["a"]);
+        // Das Widget muss die Vorauswahl als Chips uebernommen haben.
+        expect(document.querySelectorAll(".multiselect-chip")).toHaveLength(1);
 
         document.body.innerHTML += "<iframe id=\"resultFrame\"></iframe><span id=\"current-page\"></span><canvas id=\"distributionChart\"></canvas>";
         const iframe = document.getElementById("resultFrame") as HTMLIFrameElement;
@@ -279,7 +275,6 @@ describe("GeneratorView", () => {
         view.render();
         document.getElementById("funkspruchVorlage")?.remove();
         view.populateTemplateSelect({ a: { text: "A" } });
-        mocks.selectVal.mockReturnValue(undefined);
         expect(view.getSelectedTemplates()).toEqual([]);
 
         document.getElementById("output-container")?.remove();

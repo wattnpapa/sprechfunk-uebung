@@ -651,16 +651,18 @@ test("@teilnehmer @pdf doc preview renders pdf content onto the canvas", async (
     ).toBeGreaterThan(100);
 });
 
-test("@generator select2 dropdown selects and removes templates via mouse", async ({ page }) => {
+test("@generator multi-select dropdown selects, searches and removes templates via mouse", async ({ page }) => {
     await page.goto("/");
 
     // Die uebrigen Tests setzen die Vorlagen per selectOption direkt am nativen
-    // <select>. Hier laeuft alles ueber das select2-Widget, damit jQuery- und
-    // Bundling-Regressionen auffallen.
-    const container = page.locator(".select2-container").first();
+    // <select>. Hier laeuft alles ueber das Multi-Select-Widget, damit
+    // Bundling- und Verdrahtungsregressionen auffallen.
+    const container = page.locator(".multiselect").first();
     await expect(container).toBeVisible();
 
-    const chips = container.locator(".select2-selection__choice");
+    const chips = container.locator(".multiselect-chip");
+    const dropdown = container.locator(".multiselect-dropdown");
+    const search = container.locator(".multiselect-search");
     const selectedValues = () => page.locator("#funkspruchVorlage").evaluate(el =>
         Array.from((el as HTMLSelectElement).selectedOptions).map(o => o.value)
     );
@@ -671,37 +673,41 @@ test("@generator select2 dropdown selects and removes templates via mouse", asyn
     expect(before).toBeGreaterThan(0);
     expect(await selectedValues()).toContain("thwleer");
 
-    // Bei Mehrfachauswahl fuellen die Chips die Selection-Flaeche aus; das
-    // Suchfeld ist der verlaessliche Weg, das Dropdown per Maus zu oeffnen.
-    await container.locator(".select2-search__field").click();
-    await expect(page.locator(".select2-dropdown")).toBeVisible();
+    await search.click();
+    await expect(dropdown).toBeVisible();
 
-    // Klick auf eine bereits gewaehlte Option nimmt sie aus der Auswahl.
-    await page.locator(".select2-results__option", { hasText: "Funksprüche THW Leer" }).first().click();
+    // Klick auf eine bereits gewaehlte Option nimmt sie aus der Auswahl, das
+    // Dropdown bleibt fuer weitere Klicks offen.
+    await container.locator(".multiselect-option", { hasText: "Funksprüche THW Leer" }).first().click();
     await expect(chips).toHaveCount(before - 1);
     expect(await selectedValues()).not.toContain("thwleer");
+    await expect(dropdown).toBeVisible();
 
-    // Wieder zu, damit die folgende Sequenz beim geschlossenen Dropdown startet -
-    // so wie ein Nutzer, der nur einen Chip loswerden will.
-    await container.locator(".select2-search__field").click();
-    await expect(page.locator(".select2-dropdown")).toHaveCount(0);
+    // Zu, damit die folgende Sequenz beim geschlossenen Dropdown startet - so wie
+    // ein Nutzer, der nur einen Chip loswerden will.
+    await page.keyboard.press("Escape");
+    await expect(dropdown).toBeHidden();
 
     // Chip-Entfernen muss ebenfalls auf das native <select> durchschlagen.
     const remaining = await selectedValues();
-    await chips.first().locator(".select2-selection__choice__remove").click();
+    await chips.first().locator(".multiselect-chip-remove").click();
     await expect(chips).toHaveCount(before - 2);
     expect((await selectedValues()).length).toBe(remaining.length - 1);
 
     // Der Klick auf das x darf das Dropdown nicht mit aufziehen - sonst wuerde
     // der naechste Mausklick es schliessen statt oeffnen.
-    await expect(page.locator(".select2-dropdown")).toHaveCount(0);
+    await expect(dropdown).toBeHidden();
 
-    // Genau diese Sequenz war kaputt: nach dem Entfernen liess sich das Dropdown
-    // per Maus nicht mehr oeffnen und damit auch nichts mehr auswaehlen.
-    await container.locator(".select2-search__field").click();
-    await expect(page.locator(".select2-dropdown")).toBeVisible();
+    // Genau diese Sequenz war unter select2 kaputt: nach dem Entfernen liess sich
+    // das Dropdown per Maus nicht mehr oeffnen und damit nichts mehr auswaehlen.
+    await search.click();
+    await expect(dropdown).toBeVisible();
 
-    await page.locator(".select2-results__option", { hasText: "Funksprüche THW Leer" }).first().click();
+    // Die Suche filtert die Liste auf den Treffer herunter.
+    await search.fill("THW Leer");
+    await expect(container.locator(".multiselect-option")).toHaveCount(1);
+
+    await container.locator(".multiselect-option").first().click();
     await expect(chips).toHaveCount(before - 1);
     expect(await selectedValues()).toContain("thwleer");
 });

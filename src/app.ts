@@ -19,7 +19,6 @@ import "@fontsource-variable/archivo";
 import "@fontsource-variable/antonio";
 import "bootstrap/dist/js/bootstrap.bundle.min.js";
 import pdfGenerator from "./services/pdfGenerator";
-import "./core/select2-setup";
 import { NatoClock } from "./core/NatoClock";
 import { ThemeManager } from "./core/ThemeManager";
 import { AppView } from "./core/AppView";
@@ -38,8 +37,6 @@ declare global {
         app: any; 
         pdfGenerator: typeof pdfGenerator;
         admin: typeof admin;
-        $: typeof import("jquery");
-        jQuery: typeof import("jquery");
     }
 }
 

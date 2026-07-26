@@ -1023,82 +1023,154 @@ select option {
     border-color: var(--alarm-linie);
 }
 
-/* --- Select2 (themeneutral über Token) ----------------------------------- */
+/* --- Multi-Select mit Suche (themeneutral über Token) --------------------- */
 
-.select2-container--bootstrap-5 .select2-selection {
+/* Das native <select multiple> bleibt im DOM und ist die Quelle der Wahrheit;
+   es wird nur unsichtbar geschrumpft, damit Formulare und Tests weiter greifen. */
+.multiselect-native {
+    position: absolute !important;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+    white-space: nowrap;
+    border: 0;
+}
+
+.multiselect {
+    position: relative;
+    width: 100%;
+}
+
+.multiselect-control {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.25rem;
+    padding: 0.25rem 2rem 0.25rem 0.5rem;
     background-color: var(--flaeche);
     color: var(--text);
     border: var(--strich-stark) solid var(--linie-stark);
     border-radius: var(--radius);
     min-height: calc(2.25rem + var(--ziel));
+    cursor: text;
 }
 
-.select2-container--bootstrap-5.select2-container--focus .select2-selection,
-.select2-container--bootstrap-5.select2-container--open .select2-selection {
+.multiselect--open .multiselect-control,
+.multiselect-control:focus-within {
     border-color: var(--akzent);
     outline: var(--fokus) solid var(--fokus-farbe);
-    box-shadow: none;
 }
 
-.select2-container--bootstrap-5 .select2-selection__rendered {
-    color: var(--text);
-}
-
-.select2-container--bootstrap-5 .select2-selection__placeholder {
+.multiselect-placeholder {
     color: var(--text-3);
 }
 
-.select2-container--bootstrap-5 .select2-dropdown {
+.multiselect-search {
+    flex: 1 1 6rem;
+    min-width: 6rem;
+    padding: 0.25rem 0;
+    background: transparent;
+    color: var(--text);
+    border: 0;
+    outline: none;
+}
+
+.multiselect-search::placeholder {
+    color: var(--text-3);
+}
+
+.multiselect-arrow {
+    position: absolute;
+    top: 50%;
+    right: 0.75rem;
+    width: 0;
+    height: 0;
+    margin-top: -2px;
+    border: 4px solid transparent;
+    border-top-color: var(--text);
+    cursor: pointer;
+}
+
+.multiselect-chip {
+    display: inline-flex;
+    align-items: center;
+    background-color: var(--flaeche-2);
+    color: var(--text);
+    border: var(--strich) solid var(--linie);
+    border-radius: var(--radius);
+    max-width: 100%;
+}
+
+.multiselect-chip-label {
+    padding: 0.1rem 0.4rem;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.multiselect-chip-remove {
+    padding: 0.1rem 0.4rem;
+    background: none;
+    color: var(--text-2);
+    border: 0;
+    border-left: var(--strich) solid var(--linie);
+    line-height: 1;
+    cursor: pointer;
+}
+
+.multiselect-chip-remove:hover {
+    color: var(--alarm);
+}
+
+.multiselect-dropdown {
+    position: absolute;
+    z-index: 1055;
+    top: calc(100% + 2px);
+    left: 0;
+    right: 0;
     background-color: var(--flaeche);
     border: var(--strich) solid var(--linie-stark);
     border-radius: var(--radius);
+    max-height: 15rem;
+    overflow-y: auto;
 }
 
-.select2-container--bootstrap-5 .select2-results__option {
+.multiselect-options {
+    margin: 0;
+    padding: 0.25rem;
+    list-style: none;
+}
+
+.multiselect-option {
+    padding: 0.35rem 0.5rem;
     background-color: var(--flaeche);
     color: var(--text);
+    border-radius: var(--radius);
+    cursor: pointer;
 }
 
-.select2-container--bootstrap-5 .select2-results__option--highlighted {
+.multiselect-option--active {
     background-color: var(--flaeche-2);
     color: var(--text);
 }
 
-.select2-container--bootstrap-5 .select2-results__option--selected {
+.multiselect-option--selected {
     background-color: var(--akzent);
     color: var(--auf-akzent);
 }
 
-/* Die Spezifität folgt dem select2-bootstrap-5-Theme, das die Auswahlmarken
-   über vier Klassen adressiert. */
-.select2-container--bootstrap-5 .select2-selection--multiple .select2-selection__rendered .select2-selection__choice,
-.select2-container--bootstrap-5 .select2-selection--multiple .select2-selection__rendered .select2-selection__choice__display {
-    background-color: var(--flaeche-2);
-    color: var(--text);
-    border-radius: var(--radius);
+.multiselect-option--disabled {
+    color: var(--text-3);
+    cursor: not-allowed;
 }
 
-.select2-container--bootstrap-5 .select2-selection--multiple .select2-selection__rendered .select2-selection__choice {
-    border: var(--strich) solid var(--linie);
-}
-
-.select2-container--bootstrap-5 .select2-selection--multiple .select2-selection__rendered .select2-selection__choice__remove {
-    color: var(--text-2);
-    background: none;
-    border-right-color: var(--linie);
-}
-
-.select2-container--bootstrap-5 .select2-selection--multiple .select2-selection__rendered .select2-selection__choice__remove:hover {
-    color: var(--alarm);
-}
-
-.select2-container--bootstrap-5 .select2-selection__arrow b {
-    border-color: var(--text) transparent transparent transparent;
-}
-
-.select2-container--bootstrap-5 .select2-search__field {
-    background-color: var(--flaeche);
-    color: var(--text);
+.multiselect-empty {
+    margin: 0;
+    padding: 0.5rem;
+    color: var(--text-3);
 }
 
 /* --- Statusanzeigen ------------------------------------------------------- */
@@ -2673,9 +2745,9 @@ html:has(> body[data-theme="startrek"]) {
     border-radius: 0 var(--lcars-kappe) var(--lcars-kappe) 0;
 }
 
-/* --- Auswahlfelder (Select2) --------------------------------------------- */
+/* --- Auswahlfelder (Multi-Select) ---------------------------------------- */
 
-[data-theme="startrek"] .select2-container--bootstrap-5 .select2-selection {
+[data-theme="startrek"] .multiselect-control {
     background: #14100a;
     border: 0;
     border-left: 8px solid var(--lcars-blau);
@@ -2683,32 +2755,40 @@ html:has(> body[data-theme="startrek"]) {
     color: var(--lcars-sonne);
 }
 
-[data-theme="startrek"] .select2-container--bootstrap-5 .select2-dropdown {
+[data-theme="startrek"] .multiselect-search,
+[data-theme="startrek"] .multiselect-placeholder {
+    color: var(--lcars-sonne);
+}
+
+[data-theme="startrek"] .multiselect-arrow {
+    border-top-color: var(--lcars-sonne);
+}
+
+[data-theme="startrek"] .multiselect-dropdown {
     background: #000;
     border: 0;
     border-left: 8px solid var(--lcars-violett);
     border-radius: 0;
 }
 
-[data-theme="startrek"] .select2-container--bootstrap-5 .select2-results__option {
+[data-theme="startrek"] .multiselect-option {
     background: #14100a;
     color: var(--lcars-sonne);
     border-radius: 999px;
     margin-bottom: 3px;
 }
 
-[data-theme="startrek"] .select2-container--bootstrap-5 .select2-results__option--highlighted {
+[data-theme="startrek"] .multiselect-option--active {
     background: var(--lcars-orange);
     color: #000;
 }
 
-[data-theme="startrek"] .select2-container--bootstrap-5 .select2-results__option--selected {
+[data-theme="startrek"] .multiselect-option--selected {
     background: var(--lcars-blau);
     color: #000;
 }
 
-[data-theme="startrek"] .select2-container--bootstrap-5 .select2-selection--multiple .select2-selection__rendered .select2-selection__choice,
-[data-theme="startrek"] .select2-container--bootstrap-5 .select2-selection--multiple .select2-selection__rendered .select2-selection__choice__display {
+[data-theme="startrek"] .multiselect-chip {
     background: var(--lcars-violett);
     color: #000;
     border: 0;
@@ -2718,9 +2798,9 @@ html:has(> body[data-theme="startrek"]) {
     letter-spacing: 0.06em;
 }
 
-[data-theme="startrek"] .select2-container--bootstrap-5 .select2-selection--multiple .select2-selection__rendered .select2-selection__choice__remove {
+[data-theme="startrek"] .multiselect-chip-remove {
     color: #000;
-    border-right-color: rgba(0, 0, 0, 0.35);
+    border-left-color: rgba(0, 0, 0, 0.35);
 }
 
 /* --- Fußbereich: Schiene mit Endkappen ----------------------------------- */

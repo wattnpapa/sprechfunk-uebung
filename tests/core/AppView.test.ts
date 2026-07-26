@@ -1,14 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-vi.mock("../../src/core/select2-setup", () => ({
-    default: (arg: unknown) => {
-        if (arg === (globalThis as any).document) {
-            return { ready: (cb: () => void) => cb() };
-        }
-        return { select2: vi.fn() };
-    }
-}));
-
 import { AppView } from "../../src/core/AppView";
 
 const makeDocument = () => {
@@ -27,7 +18,6 @@ const makeDocument = () => {
         innerHTML: ""
     };
 
-    const selectEl = {};
     const elements = new Map<string, { style: { display: string } }>();
     const makeArea = () => ({ style: { display: "none" } });
     elements.set("mainAppArea", makeArea());
@@ -43,7 +33,6 @@ const makeDocument = () => {
         getElementById: (id: string) => {
             if (id === "howtoContent") return howtoContent;
             if (id === "howtoModal") return howtoModal;
-            if (id === "funkspruchVorlage") return selectEl;
             if (elements.has(id)) return elements.get(id) ?? null;
             return null;
         }
@@ -58,10 +47,7 @@ describe("AppView", () => {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         (globalThis as any).document = document;
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        (globalThis as any).window = {
-            $: vi.fn(() => ({ select2: vi.fn() })),
-            jQuery: vi.fn()
-        };
+        (globalThis as any).window = {};
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         (globalThis as any).fetch = vi.fn().mockResolvedValue({
             text: async () => "# Hello"
@@ -70,54 +56,16 @@ describe("AppView", () => {
         (globalThis as any)._test = { listeners, howtoContent, modalHandlers, elements };
     });
 
-    it("initializes select2 for the template picker", () => {
-        const select2 = vi.fn();
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        (globalThis as any).window.$ = vi.fn(() => ({ select2 }));
-
+    // Die Vorlagenauswahl haengt seit dem select2-Ausbau in GeneratorView.render();
+    // AppView darf dafuer nichts mehr am DOM anfassen.
+    it("registers no global listeners for the template picker", () => {
         const view = new AppView();
+        const getElementById = vi.spyOn((globalThis as any).document, "getElementById");
+
         view.initGlobalListeners();
 
-        expect(select2).toHaveBeenCalled();
-    });
-
-    it("stops the chip remove click before select2 toggles the dropdown", () => {
-        const on = vi.fn();
-        const select2 = vi.fn();
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        (globalThis as any).window.$ = vi.fn(() => ({
-            select2,
-            data: (key: string) => key === "select2"
-                ? { $container: { find: () => ({ on }) } }
-                : undefined
-        }));
-
-        new AppView().initGlobalListeners();
-
-        expect(on).toHaveBeenCalledWith("click", ".select2-selection__choice__remove", expect.any(Function));
-        const stopPropagation = vi.fn();
-        on.mock.calls[0][2]({ stopPropagation });
-        expect(stopPropagation).toHaveBeenCalled();
-    });
-
-    it("does not initialize select2 when select is missing", () => {
-        const view = new AppView();
-        const oldGet = (globalThis as any).document.getElementById;
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        (globalThis as any).document.getElementById = (id: string) => {
-            if (id === "funkspruchVorlage") {
-                return null;
-            }
-            return oldGet(id);
-        };
-        view.initGlobalListeners();
-    });
-
-    it("does not initialize select2 when plugin is missing", () => {
-        const view = new AppView();
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        (globalThis as any).window.$ = vi.fn(() => ({}));
-        view.initGlobalListeners();
+        expect(getElementById).not.toHaveBeenCalled();
+        getElementById.mockRestore();
     });
 
     it("loads howto modal content", async () => {

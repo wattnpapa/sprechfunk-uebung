@@ -1,39 +1,13 @@
 import { AppMode } from "./appModes";
 import { marked } from "marked";
-import $ from "./select2-setup";
 
 export class AppView {
 
+    // Die Vorlagenauswahl wird nicht mehr hier initialisiert: ihr <select>
+    // entsteht erst beim Rendern der Generator-Ansicht, deshalb haengt das
+    // Multi-Select-Widget direkt in GeneratorView.render().
     public initGlobalListeners(): void {
-        // Select2 Init
-        $(document).ready(() => {
-            const select = document.getElementById("funkspruchVorlage");
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            const $select = select ? (window as any).$(select) : null;
-            if ($select && $select.select2) {
-                $select.select2({
-                    placeholder: "Vorlagen auswählen...",
-                    theme: "bootstrap-5",
-                    width: "100%",
-                    closeOnSelect: false
-                });
-                this.suppressDropdownToggleOnChipRemove($select);
-            }
-        });
-    }
-
-    // select2 4.1.0 haengt zwei Klick-Handler an dieselbe .select2-selection: einen
-    // delegierten fuer das x eines Chips und einen direkten, der das Dropdown
-    // umschaltet. Beim Entfernen laufen beide, das Dropdown geht also ungewollt auf -
-    // und der naechste Mausklick schliesst es wieder, statt es zu oeffnen. Unser
-    // Handler wird nach dem von select2 registriert, entfernt den Chip also
-    // weiterhin, stoppt aber die Weitergabe an den Toggle-Handler.
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    private suppressDropdownToggleOnChipRemove($select: any): void {
-        const $selection = $select.data?.("select2")?.$container?.find(".select2-selection");
-        $selection?.on("click", ".select2-selection__choice__remove", (evt: Event) => {
-            evt.stopPropagation();
-        });
+        // Aktuell keine globalen Listener noetig.
     }
 
     public initModals(): void {
