@@ -1,11 +1,14 @@
 export interface FeatureFlags {
     enableStartrekTheme: boolean;
     enableGlobalErrorMonitoring: boolean;
+    /** Live-Sync des Übungsstatus über die Firestore-Subcollection `status`. */
+    enableLiveStatusSync: boolean;
 }
 
 const DEFAULT_FLAGS: FeatureFlags = {
     enableStartrekTheme: true,
-    enableGlobalErrorMonitoring: true
+    enableGlobalErrorMonitoring: true,
+    enableLiveStatusSync: true
 };
 
 const STORAGE_KEY = "featureFlags";

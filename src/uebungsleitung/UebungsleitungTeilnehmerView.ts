@@ -3,6 +3,7 @@ import type { Nachricht } from "../types/Nachricht";
 import { formatNatoDate } from "../utils/date";
 import { TeilnehmerStatus } from "../types/Storage";
 import { escapeHtml } from "../utils/html";
+import type { TeilnehmerFortschritt } from "../services/liveStatusMerge";
 
 type TeilnehmerCallbacks = {
     onAnmelden: (name: string) => void;
@@ -17,7 +18,8 @@ export class UebungsleitungTeilnehmerView {
     public render(
         uebung: Uebung,
         teilnehmerStatus: Record<string, TeilnehmerStatus>,
-        showStaerkeDetails: boolean
+        showStaerkeDetails: boolean,
+        fortschritt: Record<string, TeilnehmerFortschritt> = {}
     ): void {
         const container = document.getElementById("uebungsleitungTeilnehmer");
         if (!container) {
@@ -35,6 +37,8 @@ export class UebungsleitungTeilnehmerView {
         const showLoesungswort = Object.keys(loesungswoerter).length > 0;
         const showStaerke = Object.keys(staerken).length > 0;
         const codeByTeilnehmer = this.buildCodeByTeilnehmer(uebung.teilnehmerIds);
+        // Nachzügler: alle, die spürbar hinter dem Median der Gruppe liegen.
+        const nachzuegler = this.findeNachzuegler(teilnehmerListe, fortschritt);
         const rows = teilnehmerListe.map(name =>
             this.renderTeilnehmerRow({
                 uebung,
@@ -45,7 +49,9 @@ export class UebungsleitungTeilnehmerView {
                 showStaerkeDetails,
                 loesungswoerter,
                 staerken,
-                codeByTeilnehmer
+                codeByTeilnehmer,
+                fortschritt: fortschritt[name],
+                istNachzuegler: nachzuegler.has(name)
             })
         ).join("");
 
@@ -55,6 +61,7 @@ export class UebungsleitungTeilnehmerView {
            <thead>
               <tr>
                 <th>Teilnehmer</th>
+                <th style="width:170px;">Fortschritt</th>
                 <th>Angemeldet</th>
                 ${showLoesungswort ? "<th>Lösungswort</th>" : ""}
                 ${showStaerke ? `<th>
@@ -129,6 +136,8 @@ export class UebungsleitungTeilnehmerView {
         loesungswoerter: Record<string, string>;
         staerken: Record<string, string>;
         codeByTeilnehmer: Record<string, string>;
+        fortschritt: TeilnehmerFortschritt | undefined;
+        istNachzuegler: boolean;
     }): string {
         const {
             uebung,
@@ -139,15 +148,18 @@ export class UebungsleitungTeilnehmerView {
             showStaerkeDetails,
             loesungswoerter,
             staerken,
-            codeByTeilnehmer
+            codeByTeilnehmer,
+            fortschritt,
+            istNachzuegler
         } = options;
 
         const safeName = escapeHtml(name);
         const nameHtml = this.renderTeilnehmerName(uebung, name, safeName, codeByTeilnehmer);
 
         return `
-          <tr>
+          <tr${istNachzuegler ? " class=\"table-warning\" data-nachzuegler=\"1\"" : ""}>
             <td>${nameHtml}</td>
+            <td>${this.renderFortschrittCell(fortschritt, istNachzuegler)}</td>
             <td>${this.renderAnmeldeCell(name, status)}</td>
             ${showLoesungswort ? this.renderLoesungswortCell(name, status, loesungswoerter) : ""}
             ${showStaerke ? this.renderStaerkeCell({ uebung, name, status, staerken, showStaerkeDetails }) : ""}
@@ -205,6 +217,63 @@ export class UebungsleitungTeilnehmerView {
                       <i class="fas fa-copy" aria-hidden="true"></i>
                     </button>
                 </div>`;
+    }
+
+    /**
+     * Nachzügler sind Teilnehmer, die weniger als die Hälfte des Median-Fortschritts
+     * der Gruppe erreicht haben. Erst ab drei aktiven Meldungen sinnvoll auswertbar.
+     */
+    private findeNachzuegler(
+        teilnehmerListe: string[],
+        fortschritt: Record<string, TeilnehmerFortschritt>
+    ): Set<string> {
+        const aktive = teilnehmerListe
+            .map(name => fortschritt[name])
+            .filter((f): f is TeilnehmerFortschritt => Boolean(f?.online));
+        if (aktive.length < 3) {
+            return new Set();
+        }
+
+        const quoten = aktive
+            .map(f => (f.gesamt > 0 ? f.gemeldet / f.gesamt : 0))
+            .sort((a, b) => a - b);
+        const mitte = Math.floor(quoten.length / 2);
+        const median = quoten.length % 2 === 0
+            ? ((quoten[mitte - 1] ?? 0) + (quoten[mitte] ?? 0)) / 2
+            : (quoten[mitte] ?? 0);
+        if (median <= 0) {
+            return new Set();
+        }
+
+        return new Set(
+            aktive
+                .filter(f => (f.gesamt > 0 ? f.gemeldet / f.gesamt : 0) < median / 2)
+                .map(f => f.teilnehmer)
+        );
+    }
+
+    private renderFortschrittCell(fortschritt?: TeilnehmerFortschritt, istNachzuegler?: boolean): string {
+        if (!fortschritt?.online) {
+            return "<span class=\"badge bg-secondary\" title=\"Noch keine Live-Meldung von diesem Teilnehmer\">keine Meldung</span>";
+        }
+
+        const { gemeldet, gesamt, letzteMeldungUm } = fortschritt;
+        const percent = gesamt > 0 ? Math.round((gemeldet / gesamt) * 100) : 0;
+        const barCss = istNachzuegler ? "bg-warning" : "bg-success";
+        const letzte = letzteMeldungUm
+            ? `<small class="text-body-secondary">zuletzt ${formatNatoDate(letzteMeldungUm)}</small>`
+            : "<small class=\"text-body-secondary\">noch nichts übertragen</small>";
+
+        return `
+            <div class="progress" style="height:6px;" role="progressbar" aria-valuenow="${percent}" aria-valuemin="0" aria-valuemax="100">
+              <div class="progress-bar ${barCss}" style="width:${percent}%"></div>
+            </div>
+            <div class="d-flex justify-content-between align-items-center mt-1">
+              <small><strong>${gemeldet}</strong> / ${gesamt}</small>
+              ${istNachzuegler ? "<span class=\"badge bg-warning text-dark\">Nachzügler</span>" : ""}
+            </div>
+            ${letzte}
+        `;
     }
 
     private renderAnmeldeCell(name: string, status?: TeilnehmerStatus): string {

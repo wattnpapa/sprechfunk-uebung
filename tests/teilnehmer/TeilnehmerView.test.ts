@@ -311,6 +311,45 @@ describe("TeilnehmerView", () => {
         expect(onToggle).not.toHaveBeenCalled();
     });
 
+    it("zeigt Bestätigungen der Übungsleitung je Nachricht", () => {
+        const view = renderBase();
+        view.renderNachrichten(
+            [
+                { id: 1, empfaenger: ["B"], nachricht: "eins" },
+                { id: 2, empfaenger: ["C"], nachricht: "zwei" }
+            ],
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            { hideTransmitted: false, nachrichten: {} } as any,
+            { bestaetigungen: { "1": { abgesetztUm: "2026-07-26T10:00:00.000Z" } } }
+        );
+
+        const rows = document.querySelectorAll("#teilnehmerNachrichtenBody tr");
+        expect(rows[0]?.textContent).toContain("bestätigt");
+        // Ohne Bestätigung bleibt die Spalte leer.
+        expect(rows[1]?.textContent).not.toContain("bestätigt");
+    });
+
+    it("spiegelt den Sync-Zustand im Kopfbereich", () => {
+        const view = renderBase();
+        const badge = document.getElementById("teilnehmerLiveSyncBadge");
+
+        view.updateLiveSyncState("live");
+        expect(badge?.textContent).toContain("live");
+        expect(badge?.className).toContain("bg-success");
+
+        view.updateLiveSyncState("fehler");
+        expect(badge?.textContent).toContain("offline");
+
+        view.updateLiveSyncState("verbinde");
+        expect(badge?.textContent).toContain("verbinde");
+
+        view.updateLiveSyncState("aus");
+        expect(badge?.textContent).toContain("aus");
+
+        badge?.remove();
+        expect(() => view.updateLiveSyncState("live")).not.toThrow();
+    });
+
     it("covers setDocMode guard and no-modal toggle path", () => {
         const view = new TeilnehmerView();
         // no elements branch

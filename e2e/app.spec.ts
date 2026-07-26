@@ -73,9 +73,11 @@ const makeSeedData = () => {
     return result;
 };
 
-test.beforeEach(async ({ page }) => {
+// Auf dem Context statt der Seite, damit auch zusätzlich geöffnete Tabs
+// (Live-Sync-Tests) denselben Seed sehen.
+test.beforeEach(async ({ context }) => {
     const seedData = makeSeedData();
-    await page.addInitScript(seed => {
+    await context.addInitScript(seed => {
         window.localStorage.setItem("useFirestoreEmulator", "1");
         window.localStorage.setItem("e2eFirestoreSeed", JSON.stringify(seed));
     }, seedData);
@@ -584,6 +586,39 @@ test("@teilnehmer teilnehmer route renders seeded messages and toggles status ch
     const firstRow = page.locator("#teilnehmerNachrichtenBody tr").first();
     await firstRow.locator(".btn-toggle-uebertragen-chip").click();
     await expect(firstRow).toHaveClass(/status-ok-row/);
+});
+
+test("@teilnehmer @uebungsleitung teilnehmer status reaches the uebungsleitung live", async ({ context }) => {
+    const leitung = await context.newPage();
+    await leitung.goto("/#/uebungsleitung/u1");
+    await expect(leitung.locator("#uebungsleitungTeilnehmer")).toContainText("keine Meldung");
+    await expect(leitung.locator("#nachrichtenProgressLabel")).toHaveText("0 / 3");
+
+    const teilnehmer = await context.newPage();
+    await teilnehmer.goto("/#/teilnehmer/u1/A1B2");
+    await teilnehmer.locator("#teilnehmerNachrichtenBody tr").first()
+        .locator(".btn-toggle-uebertragen-chip").click();
+
+    // Die Übungsleitung sieht die Selbstmeldung, ohne selbst etwas anzuklicken.
+    const zeile = leitung.locator("#uebungsleitungTeilnehmer tbody tr").filter({ hasText: "16/11" });
+    await expect(zeile).toContainText("1", { timeout: 10000 });
+    await expect(leitung.locator("#nachrichtenProgressLabel")).toContainText("1 / 3");
+    await expect(leitung.locator("#nachrichtenProgressLabel")).toContainText("1 nur gemeldet");
+    await expect(leitung.locator("#uebungsleitungNachrichten")).toContainText("gemeldet");
+    await expect(leitung.locator("#uebungsleitungLiveSyncBadge")).toContainText("live");
+});
+
+test("@teilnehmer @uebungsleitung leitung confirmation reaches the teilnehmer live", async ({ context }) => {
+    const teilnehmer = await context.newPage();
+    await teilnehmer.goto("/#/teilnehmer/u1/A1B2");
+    await expect(teilnehmer.locator("#teilnehmerLiveSyncBadge")).toContainText("live");
+
+    const leitung = await context.newPage();
+    await leitung.goto("/#/uebungsleitung/u1");
+    await leitung.locator("#uebungsleitungNachrichten button[data-action='abgesetzt'][data-nr='1']").click();
+
+    const zeile = teilnehmer.locator("#teilnehmerNachrichtenBody tr").first();
+    await expect(zeile).toContainText("bestätigt", { timeout: 10000 });
 });
 
 test("@teilnehmer teilnehmer keyboard shortcuts work in modal", async ({ page }) => {

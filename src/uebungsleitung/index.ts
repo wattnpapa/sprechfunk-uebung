@@ -3,13 +3,25 @@ import { UebungsleitungView } from "./UebungsleitungView";
 import { FirebaseService } from "../services/FirebaseService";
 import { store } from "../state/store";
 import { router } from "../core/router";
-import { UebungsleitungStorage } from "../types/Storage";
+import { TeilnehmerStatus, UebungsleitungStorage } from "../types/Storage";
 import type { Firestore } from "firebase/firestore";
 import {FunkUebung} from "../models/FunkUebung";
 import { uiFeedback } from "../core/UiFeedback";
 import { debounce } from "../utils/debounce";
 import { formatNatoDate } from "../utils/date";
 import pdfGenerator from "../services/pdfGenerator";
+import { LiveStatusService } from "../services/LiveStatusService";
+import {
+    buildEffektiveNachrichtenStatus,
+    buildTeilnehmerFortschritt,
+    mergeLeitungLiveDoc,
+    mergeLeitungPublicLiveDoc,
+    toLeitungLiveDoc,
+    toLeitungPublicLiveDoc,
+    type EffektiverNachrichtenStatus,
+    type TeilnehmerFortschritt
+} from "../services/liveStatusMerge";
+import type { TeilnehmerLiveDoc } from "../types/LiveStatus";
 
 interface FlattenedNachricht {
     nr: number;
@@ -48,10 +60,16 @@ export class UebungsleitungController {
     private debouncedSaveNotiz = debounce((sender: string, nr: number, val: string) => {
         this.persistNachrichtNotiz(sender, nr, val);
     }, 220);
+    private db: Firestore;
+    private liveStatus: LiveStatusService | null = null;
+    /** Zuletzt empfangene Selbstmeldungen der Teilnehmer. */
+    private teilnehmerLiveDocs: TeilnehmerLiveDoc[] = [];
+    private disposeListener: (() => void) | null = null;
 
     constructor(db: Firestore) {
         this.view = new UebungsleitungView();
         this.firebaseService = new FirebaseService(db);
+        this.db = db;
     }
 
     public async init() {
@@ -112,6 +130,82 @@ export class UebungsleitungController {
                 this.textFilter = val; this.debouncedRenderNachrichten();
             }
         });
+
+        this.startLiveSync();
+    }
+
+    /**
+     * Abonniert die Status-Subcollection: Selbstmeldungen der Teilnehmer sowie
+     * die eigenen Dokumente (für Gerätewechsel und mehrere Leitungs-Arbeitsplätze).
+     */
+    private startLiveSync(): void {
+        if (!this.uebungId) {
+            return;
+        }
+
+        const live = new LiveStatusService(this.db, this.uebungId);
+        this.liveStatus = live;
+        if (!live.enabled) {
+            this.view.updateLiveSyncState("aus");
+            return;
+        }
+
+        live.onStateChange(state => this.view.updateLiveSyncState(state));
+
+        live.subscribeAlleTeilnehmer(docs => {
+            this.teilnehmerLiveDocs = docs;
+            this.renderTeilnehmer();
+            this.renderNachrichten();
+        });
+
+        live.subscribeLeitungPublic(remote => {
+            if (!remote || !this.storage) {
+                return;
+            }
+            const { merged, changed } = mergeLeitungPublicLiveDoc(this.storage, remote);
+            if (!changed) {
+                return;
+            }
+            this.storage = merged;
+            saveUebungsleitungStorage(this.storage);
+            this.renderNachrichten();
+        });
+
+        live.subscribeLeitungInternal(remote => {
+            if (!remote || !this.storage) {
+                return;
+            }
+            const { merged, changed } = mergeLeitungLiveDoc(this.storage, remote);
+            if (!changed) {
+                return;
+            }
+            this.storage = merged;
+            saveUebungsleitungStorage(this.storage);
+            this.renderTeilnehmer();
+            this.renderNachrichten();
+        });
+
+        this.publishLeitungStatus();
+
+        const onHashChange = () => this.dispose();
+        window.addEventListener("hashchange", onHashChange, { once: true });
+        this.disposeListener = () => window.removeEventListener("hashchange", onHashChange);
+    }
+
+    private publishLeitungStatus(): void {
+        if (!this.liveStatus?.enabled || !this.storage) {
+            return;
+        }
+        this.liveStatus.publishLeitungPublic(toLeitungPublicLiveDoc(this.storage));
+        this.liveStatus.publishLeitungInternal(toLeitungLiveDoc(this.storage));
+    }
+
+    public dispose(): void {
+        void this.liveStatus?.flush();
+        this.liveStatus?.dispose();
+        this.liveStatus = null;
+        this.disposeListener?.();
+        this.disposeListener = null;
     }
 
     private renderTeilnehmer() {
@@ -119,10 +213,36 @@ export class UebungsleitungController {
             return;
         }
         this.view.renderTeilnehmerListe(
-            this.uebung, 
-            this.storage.teilnehmer, 
-            this.showStaerkeDetails
+            this.uebung,
+            this.storage.teilnehmer,
+            this.showStaerkeDetails,
+            this.buildFortschritt()
         );
+    }
+
+    /** Fortschritt je Teilnehmer aus den Live-Meldungen – Basis für Nachzügler-Erkennung. */
+    private buildFortschritt(): Record<string, TeilnehmerFortschritt> {
+        if (!this.uebung) {
+            return {};
+        }
+        const nachrichtenProTeilnehmer = Object.entries(this.uebung.nachrichten ?? {})
+            .reduce<Record<string, number>>((acc, [sender, msgs]) => {
+                acc[sender] = msgs.length;
+                return acc;
+            }, {});
+        return buildTeilnehmerFortschritt(
+            this.uebung.teilnehmerListe ?? [],
+            nachrichtenProTeilnehmer,
+            this.teilnehmerLiveDocs
+        );
+    }
+
+    /**
+     * Bestätigungen der Leitung und Selbstmeldungen der Teilnehmer zusammengeführt.
+     * Grundlage für Fortschritt, ETA, Tempo, Funklast, Heatmap und Timeline.
+     */
+    private buildEffektivenStatus(): Record<string, EffektiverNachrichtenStatus> {
+        return buildEffektiveNachrichtenStatus(this.storage?.nachrichten ?? {}, this.teilnehmerLiveDocs);
     }
 
     private renderNachrichten() {
@@ -149,21 +269,29 @@ export class UebungsleitungController {
         });
         nachrichten.sort((a, b) => a.nr - b.nr);
 
-        // Calculate Progress
-        let done = 0;
         const storage = this.storage;
         if (!storage) {
             return;
         }
+
+        // Fortschritt zählt jede Nachricht, die Teilnehmer oder Leitung markiert hat.
+        const effektiv = this.buildEffektivenStatus();
+        let done = 0;
+        let nurGemeldet = 0;
         nachrichten.forEach(n => {
-            const key = `${n.sender}__${n.nr}`;
-            if (storage.nachrichten[key]?.abgesetztUm) {
-                done++;
+            const status = effektiv[`${n.sender}__${n.nr}`];
+            if (!status?.erledigtUm) {
+                return;
+            }
+            done++;
+            if (!status.abgesetztUm) {
+                nurGemeldet++;
             }
         });
-        const etaLabel = this.calculateEtaLabel(nachrichten);
-        this.view.updateProgress(nachrichten.length, done, etaLabel);
-        const sentNachrichten = this.collectSentNachrichten(nachrichten);
+
+        const etaLabel = this.calculateEtaLabel(nachrichten, effektiv);
+        this.view.updateProgress(nachrichten.length, done, etaLabel, nurGemeldet);
+        const sentNachrichten = this.collectSentNachrichten(nachrichten, effektiv);
         const heatmapBins = this.buildHeatmapBins(sentNachrichten);
         this.view.updateOperationalStats(
             this.calculateTempoLabel(sentNachrichten),
@@ -173,14 +301,14 @@ export class UebungsleitungController {
 
         this.view.renderNachrichtenListe({
             nachrichten,
-            nachrichtenStatus: storage.nachrichten,
+            nachrichtenStatus: effektiv,
             hideAbgesetzt: this.hideAbgesetzt,
             senderFilter: this.senderFilter,
             empfaengerFilter: this.empfaengerFilter,
             textFilter: this.textFilter
         });
         this.view.updateHeatmap(heatmapBins);
-        this.view.updateTeilnehmerTimeline(this.buildTeilnehmerTimeline(nachrichten));
+        this.view.updateTeilnehmerTimeline(this.buildTeilnehmerTimeline(nachrichten, effektiv));
 
         if (shouldRestoreTextFilterFocus) {
             const input = document.getElementById("nachrichtenTextFilterInput") as HTMLInputElement | null;
@@ -192,16 +320,16 @@ export class UebungsleitungController {
         }
     }
 
-    private calculateEtaLabel(nachrichten: FlattenedNachricht[]): string {
+    private calculateEtaLabel(
+        nachrichten: FlattenedNachricht[],
+        effektiv: Record<string, EffektiverNachrichtenStatus> = this.buildEffektivenStatus()
+    ): string {
         if (!this.storage || nachrichten.length === 0) {
             return "ETA: –";
         }
 
         const sentTimestamps = nachrichten
-            .map(n => {
-                const key = `${n.sender}__${n.nr}`;
-                return this.storage?.nachrichten[key]?.abgesetztUm ?? "";
-            })
+            .map(n => effektiv[`${n.sender}__${n.nr}`]?.erledigtUm ?? "")
             .map(iso => Date.parse(iso))
             .filter(ts => Number.isFinite(ts))
             .sort((a, b) => a - b);
@@ -232,15 +360,17 @@ export class UebungsleitungController {
         return `ETA: ${formatNatoDate(etaTs)} (Rest: ${remainingMinutes} min)`;
     }
 
-    private collectSentNachrichten(nachrichten: FlattenedNachricht[]): SentNachricht[] {
+    private collectSentNachrichten(
+        nachrichten: FlattenedNachricht[],
+        effektiv: Record<string, EffektiverNachrichtenStatus> = this.buildEffektivenStatus()
+    ): SentNachricht[] {
         if (!this.storage) {
             return [];
         }
 
         return nachrichten
             .map(n => {
-                const key = `${n.sender}__${n.nr}`;
-                const iso = this.storage?.nachrichten[key]?.abgesetztUm ?? "";
+                const iso = effektiv[`${n.sender}__${n.nr}`]?.erledigtUm ?? "";
                 return {
                     sender: n.sender,
                     empfaenger: n.empfaenger,
@@ -341,7 +471,10 @@ export class UebungsleitungController {
         return fullBins.slice(-24);
     }
 
-    private buildTeilnehmerTimeline(nachrichten: FlattenedNachricht[]): { teilnehmer: string; events: TimelineEvent[] }[] {
+    private buildTeilnehmerTimeline(
+        nachrichten: FlattenedNachricht[],
+        effektiv: Record<string, EffektiverNachrichtenStatus> = this.buildEffektivenStatus()
+    ): { teilnehmer: string; events: TimelineEvent[] }[] {
         if (!this.storage || !this.uebung) {
             return [];
         }
@@ -351,8 +484,7 @@ export class UebungsleitungController {
         participants.forEach(name => timeline.set(name, []));
 
         nachrichten.forEach(n => {
-            const key = `${n.sender}__${n.nr}`;
-            const ts = Date.parse(this.storage?.nachrichten[key]?.abgesetztUm ?? "");
+            const ts = Date.parse(effektiv[`${n.sender}__${n.nr}`]?.erledigtUm ?? "");
             if (!Number.isFinite(ts)) {
                 return;
             }
@@ -403,41 +535,52 @@ export class UebungsleitungController {
 
     // --- Actions ---
 
-    private markAngemeldet(name: string) {
+    /** Holt den Teilnehmer-Eintrag und stempelt ihn für den Live-Sync-Merge. */
+    private touchTeilnehmer(name: string): TeilnehmerStatus | null {
         if (!this.storage) {
+            return null;
+        }
+        const entry = this.storage.teilnehmer[name] || {};
+        entry.geaendertUm = new Date().toISOString();
+        this.storage.teilnehmer[name] = entry;
+        return entry;
+    }
+
+    private markAngemeldet(name: string) {
+        const entry = this.touchTeilnehmer(name);
+        if (!entry) {
             return;
         }
-        this.storage.teilnehmer[name] = this.storage.teilnehmer[name] || {};
-        this.storage.teilnehmer[name].angemeldetUm = new Date().toISOString();
+        entry.angemeldetUm = new Date().toISOString();
         this.save();
         this.renderTeilnehmer();
     }
 
     private updateLoesungswort(name: string, val: string) {
-        if (!this.storage) {
+        const entry = this.touchTeilnehmer(name);
+        if (!entry) {
             return;
         }
-        this.storage.teilnehmer[name] = this.storage.teilnehmer[name] || {};
-        this.storage.teilnehmer[name].loesungswortGesendet = val;
+        entry.loesungswortGesendet = val;
         this.save();
     }
 
     private updateStaerke(name: string, idx: number, val: string) {
-        if (!this.storage) {
+        const entry = this.touchTeilnehmer(name);
+        if (!entry) {
             return;
         }
-        this.storage.teilnehmer[name] = this.storage.teilnehmer[name] || {};
-        this.storage.teilnehmer[name].teilstaerken = this.storage.teilnehmer[name].teilstaerken || [];
-        this.storage.teilnehmer[name].teilstaerken[idx] = val;
+        entry.teilstaerken = entry.teilstaerken || [];
+        entry.teilstaerken[idx] = val;
         this.save();
     }
 
     private updateNotiz(name: string, val: string) {
-        if (!this.storage) {
+        const entry = this.touchTeilnehmer(name);
+        if (!entry) {
             return;
         }
-        this.storage.teilnehmer[name] = this.storage.teilnehmer[name] || {};
-        this.storage.teilnehmer[name].notizen = val;
+        entry.notizen = val;
         this.save();
     }
 
@@ -469,9 +612,12 @@ export class UebungsleitungController {
         if (!this.storage) {
             return;
         }
+        const now = new Date().toISOString();
         const key = `${sender}__${nr}`;
-        this.storage.nachrichten[key] = this.storage.nachrichten[key] || {};
-        this.storage.nachrichten[key].abgesetztUm = new Date().toISOString();
+        const entry = this.storage.nachrichten[key] || {};
+        entry.abgesetztUm = now;
+        entry.statusGeaendertUm = now;
+        this.storage.nachrichten[key] = entry;
         this.save();
         this.renderNachrichten();
     }
@@ -481,8 +627,11 @@ export class UebungsleitungController {
             return;
         }
         const key = `${sender}__${nr}`;
-        if (this.storage.nachrichten[key]) {
-            delete this.storage.nachrichten[key].abgesetztUm;
+        const entry = this.storage.nachrichten[key];
+        if (entry) {
+            delete entry.abgesetztUm;
+            // Zeitstempel bleibt gesetzt, damit das Zurücksetzen den Merge gewinnt.
+            entry.statusGeaendertUm = new Date().toISOString();
         }
         this.save();
         this.renderNachrichten();
@@ -497,8 +646,10 @@ export class UebungsleitungController {
             return;
         }
         const key = `${sender}__${nr}`;
-        this.storage.nachrichten[key] = this.storage.nachrichten[key] || {};
-        this.storage.nachrichten[key].notiz = val;
+        const entry = this.storage.nachrichten[key] || {};
+        entry.notiz = val;
+        entry.notizGeaendertUm = new Date().toISOString();
+        this.storage.nachrichten[key] = entry;
         this.save();
     }
 
@@ -538,18 +689,58 @@ export class UebungsleitungController {
     }
 
     private resetData() {
-        if (!uiFeedback.confirm("Wirklich alle lokalen Daten zurücksetzen?")) {
+        const message = this.liveStatus?.enabled
+            ? "Wirklich alle Daten der Übungsleitung zurücksetzen? Das wirkt auch für Teilnehmer und weitere Leitungs-Arbeitsplätze."
+            : "Wirklich alle lokalen Daten zurücksetzen?";
+        if (!uiFeedback.confirm(message)) {
             return;
         }
-        if (this.uebungId) {
-            localStorage.removeItem(`sprechfunk:uebungsleitung:${this.uebungId}`);
-            window.location.reload();
+        void this.performReset();
+    }
+
+    /**
+     * Setzt lokal und – falls aktiv – auch remote zurück. Remote werden dazu
+     * Zurücksetz-Marker mit aktuellem Zeitstempel geschrieben; ein leeres Dokument
+     * würde vom Last-Write-Wins-Merge nicht gewinnen.
+     */
+    private async performReset(): Promise<void> {
+        if (!this.uebungId) {
+            return;
         }
+        if (this.liveStatus?.enabled && this.storage) {
+            const now = new Date().toISOString();
+            const nachrichten = Object.keys(this.storage.nachrichten).reduce<UebungsleitungStorage["nachrichten"]>(
+                (acc, key) => {
+                    acc[key] = { statusGeaendertUm: now, notiz: "", notizGeaendertUm: now };
+                    return acc;
+                },
+                {}
+            );
+            const teilnehmer = Object.keys(this.storage.teilnehmer).reduce<UebungsleitungStorage["teilnehmer"]>(
+                (acc, key) => {
+                    acc[key] = { geaendertUm: now };
+                    return acc;
+                },
+                {}
+            );
+            const cleared: UebungsleitungStorage = {
+                ...this.storage,
+                lastUpdated: now,
+                nachrichten,
+                teilnehmer
+            };
+            this.liveStatus.publishLeitungPublic(toLeitungPublicLiveDoc(cleared));
+            this.liveStatus.publishLeitungInternal(toLeitungLiveDoc(cleared));
+            await this.liveStatus.flush();
+        }
+        localStorage.removeItem(`sprechfunk:uebungsleitung:${this.uebungId}`);
+        window.location.reload();
     }
 
     private save() {
         if (this.storage) {
             saveUebungsleitungStorage(this.storage);
+            this.publishLeitungStatus();
         }
     }
 

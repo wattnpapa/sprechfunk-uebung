@@ -3,6 +3,7 @@ import { formatNatoDate } from "../utils/date";
 import { escapeHtml } from "../utils/html";
 import { TeilnehmerStorage } from "../types/Storage";
 import { Nachricht } from "../types/Nachricht";
+import type { LeitungBestaetigung, LiveSyncState } from "../types/LiveStatus";
 
 interface PdfPage {
     getViewport: (options: { scale: number; rotation?: number }) => { width: number; height: number };
@@ -141,7 +142,8 @@ export class TeilnehmerView {
             <div class="card mb-4">
                 <div class="card-header d-flex justify-content-between align-items-center">
                     <h3 class="card-title mb-0">Sprechfunkübung: ${safeName}</h3>
-                    <div class="d-flex gap-2">
+                    <div class="d-flex gap-2 align-items-center">
+                        <span id="teilnehmerLiveSyncBadge" class="badge bg-secondary" aria-live="polite" title="Status der Live-Übertragung an die Übungsleitung">Sync: –</span>
                         <button class="btn btn-sm btn-outline-light" id="btn-download-teilnehmer-zip">
                             <i class="fas fa-file-archive"></i> ZIP herunterladen
                         </button>
@@ -201,6 +203,7 @@ export class TeilnehmerView {
                             <th>Nachricht</th>
                             ${uebung.spielModus === "xZeit" ? "<th style=\"width: 90px;\">X-Zeit</th>" : ""}
                             <th style="width: 150px;">Status</th>
+                            <th style="width: 120px;">Leitung</th>
                         </tr>
                     </thead>
                     <tbody id="teilnehmerNachrichtenBody"></tbody>
@@ -250,12 +253,40 @@ export class TeilnehmerView {
         container.innerHTML = headerHtml;
     }
 
+    /**
+     * Aktualisiert die Sync-Anzeige im Kopfbereich.
+     * Zeigt an, ob der Status gerade wirklich bei der Übungsleitung ankommt.
+     */
+    public updateLiveSyncState(state: LiveSyncState): void {
+        const badge = document.getElementById("teilnehmerLiveSyncBadge");
+        if (!badge) {
+            return;
+        }
+        const labels: Record<LiveSyncState, { text: string; css: string; title: string }> = {
+            aus: { text: "Sync: aus", css: "bg-secondary", title: "Live-Übertragung deaktiviert – Status bleibt nur auf diesem Gerät." },
+            verbinde: { text: "Sync: verbinde…", css: "bg-secondary", title: "Verbindung zur Übungsleitung wird aufgebaut." },
+            live: { text: "Sync: live", css: "bg-success", title: "Status wird live an die Übungsleitung übertragen." },
+            fehler: { text: "Sync: offline", css: "bg-warning text-dark", title: "Keine Verbindung – Status wird lokal gespeichert und später übertragen." }
+        };
+        const label = labels[state];
+        badge.className = `badge ${label.css}`;
+        badge.textContent = label.text;
+        badge.setAttribute("title", label.title);
+    }
+
     public renderNachrichten(
         nachrichten: Nachricht[],
         storage: TeilnehmerStorage,
-        showXZeit = false,
-        xZeitBasis?: string
+        optionen: {
+            showXZeit?: boolean;
+            xZeitBasis?: string;
+            /** Bestätigungen der Übungsleitung, Key = Nachrichten-ID als String. */
+            bestaetigungen?: Record<string, LeitungBestaetigung>;
+        } = {}
     ) {
+        const showXZeit = optionen.showXZeit ?? false;
+        const xZeitBasis = optionen.xZeitBasis;
+        const bestaetigungen = optionen.bestaetigungen ?? {};
         const tbody = document.getElementById("teilnehmerNachrichtenBody");
         if (!tbody) {
             return;
@@ -315,13 +346,22 @@ export class TeilnehmerView {
                             data-id="${n.id}" ${isUebertragen ? "checked" : ""}>
                     </div>
                 </td>
+                <td>${this.renderBestaetigungCell(bestaetigungen[String(n.id)])}</td>
             </tr>
         `;
             }).join("");
 
-        const colspan = showXZeit ? "5" : "4";
+        const colspan = showXZeit ? "6" : "5";
         tbody.innerHTML = rows || `<tr><td colspan="${colspan}" class="text-center text-muted">Keine Nachrichten vorhanden.</td></tr>`;
 
+    }
+
+    /** Zeigt an, ob die Übungsleitung den Spruch bereits als abgesetzt bestätigt hat. */
+    private renderBestaetigungCell(bestaetigung?: LeitungBestaetigung): string {
+        if (!bestaetigung?.abgesetztUm) {
+            return "<span class=\"text-muted small\">–</span>";
+        }
+        return `<span class="badge bg-success" title="Von der Übungsleitung bestätigt">bestätigt ${formatNatoDate(bestaetigung.abgesetztUm)}</span>`;
     }
 
     public bindEvents(

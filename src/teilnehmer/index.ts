@@ -11,6 +11,9 @@ import { FunkUebung } from "../models/FunkUebung";
 import { Nachricht } from "../types/Nachricht";
 import { uiFeedback } from "../core/UiFeedback";
 import { debounce } from "../utils/debounce";
+import { LiveStatusService } from "../services/LiveStatusService";
+import { mergeTeilnehmerLiveDoc, toTeilnehmerLiveDoc } from "../services/liveStatusMerge";
+import type { LeitungBestaetigung } from "../types/LiveStatus";
 
 type DocMode = "table" | "meldevordruck" | "nachrichtenvordruck";
 
@@ -36,10 +39,16 @@ export class TeilnehmerController {
     private preloadToken = 0;
     private debouncedRenderNachrichten = debounce(() => this.renderNachrichten(), 140);
     private xZeitInterval: ReturnType<typeof setInterval> | null = null;
+    private db: Firestore;
+    private liveStatus: LiveStatusService | null = null;
+    /** Bestätigungen der Übungsleitung, Key = `${funkrufname}__${nachrichtenNr}`. */
+    private leitungBestaetigungen: Record<string, LeitungBestaetigung> = {};
+    private disposeListener: (() => void) | null = null;
 
     constructor(db: Firestore) {
         this.view = new TeilnehmerView();
         this.firebaseService = new FirebaseService(db);
+        this.db = db;
     }
 
     public async init() {
@@ -84,34 +93,22 @@ export class TeilnehmerController {
         this.renderNachrichten();
         this.view.setDocMode(this.docMode);
 
+        this.startLiveSync();
+
         // X-Zeit Ticker + Events
         if (this.uebung.spielModus === "xZeit") {
             if (this.storage.xZeitBasis) {
                 this.view.setXZeitBasisInputValue(this.storage.xZeitBasis);
             }
             this.view.bindXZeitEvents(
-                (value) => {
-                    if (!this.storage) return;
-                    if (value) {
-                        this.storage.xZeitBasis = value;
-                    } else {
-                        delete this.storage.xZeitBasis;
-                    }
-                    saveTeilnehmerStorage(this.storage);
-                    this.renderNachrichten();
-                    this.startXZeitTicker();
-                },
+                (value) => this.setXZeitBasis(value),
                 () => {
                     const now = new Date();
                     const hh = String(now.getHours()).padStart(2, "0");
                     const mm = String(now.getMinutes()).padStart(2, "0");
                     const value = `${hh}:${mm}`;
                     this.view.setXZeitBasisInputValue(value);
-                    if (!this.storage) return;
-                    this.storage.xZeitBasis = value;
-                    saveTeilnehmerStorage(this.storage);
-                    this.renderNachrichten();
-                    this.startXZeitTicker();
+                    this.setXZeitBasis(value);
                 }
             );
             if (this.storage.xZeitBasis) {
@@ -132,6 +129,71 @@ export class TeilnehmerController {
             () => this.downloadTeilnehmerZip(),
             () => this.debouncedRenderNachrichten()
         );
+    }
+
+    /**
+     * Startet den Live-Sync: eigener Status wird veröffentlicht, die Bestätigungen
+     * der Übungsleitung werden abonniert. Der lokale Cache bleibt führend für die
+     * Anzeige, damit die Übung auch ohne Netz weiterläuft.
+     */
+    private startLiveSync(): void {
+        if (!this.uebungId || !this.teilnehmerId || !this.storage) {
+            return;
+        }
+
+        const live = new LiveStatusService(this.db, this.uebungId);
+        this.liveStatus = live;
+        if (!live.enabled) {
+            this.view.updateLiveSyncState("aus");
+            return;
+        }
+
+        live.onStateChange(state => this.view.updateLiveSyncState(state));
+
+        live.subscribeEigenenStatus(this.teilnehmerId, remote => {
+            if (!remote || !this.storage) {
+                return;
+            }
+            const { merged, changed } = mergeTeilnehmerLiveDoc(this.storage, remote);
+            if (!changed) {
+                return;
+            }
+            this.storage = merged;
+            saveTeilnehmerStorage(this.storage);
+            if (this.storage.xZeitBasis) {
+                this.view.setXZeitBasisInputValue(this.storage.xZeitBasis);
+            }
+            this.renderNachrichten();
+            this.invalidateDocCache();
+        });
+
+        live.subscribeLeitungPublic(remote => {
+            this.leitungBestaetigungen = remote?.nachrichten ?? {};
+            this.renderNachrichten();
+        });
+
+        this.publishStatus();
+
+        const onHashChange = () => this.dispose();
+        window.addEventListener("hashchange", onHashChange, { once: true });
+        this.disposeListener = () => window.removeEventListener("hashchange", onHashChange);
+    }
+
+    /** Meldet den aktuellen lokalen Stand an die Übungsleitung. */
+    private publishStatus(): void {
+        if (!this.liveStatus?.enabled || !this.storage || !this.teilnehmerId) {
+            return;
+        }
+        this.liveStatus.publishTeilnehmerStatus(toTeilnehmerLiveDoc(this.storage, this.teilnehmerId));
+    }
+
+    public dispose(): void {
+        this.stopXZeitTicker();
+        void this.liveStatus?.flush();
+        this.liveStatus?.dispose();
+        this.liveStatus = null;
+        this.disposeListener?.();
+        this.disposeListener = null;
     }
 
     private async resolveJoinAndNavigate(uebungCode: string, teilnehmerCode: string): Promise<void> {
@@ -162,12 +224,49 @@ export class TeilnehmerController {
         };
     }
 
+    private setXZeitBasis(value: string): void {
+        if (!this.storage) {
+            return;
+        }
+        if (value) {
+            this.storage.xZeitBasis = value;
+        } else {
+            delete this.storage.xZeitBasis;
+        }
+        this.storage.xZeitBasisGeaendertUm = new Date().toISOString();
+        saveTeilnehmerStorage(this.storage);
+        this.publishStatus();
+        this.renderNachrichten();
+        this.startXZeitTicker();
+    }
+
     private renderNachrichten() {
         if (!this.uebung || !this.storage || !this.teilnehmerName) {
             return;
         }
         const nachrichten = this.uebung.nachrichten[this.teilnehmerName] || [];
-        this.view.renderNachrichten(nachrichten, this.storage, this.uebung.spielModus === "xZeit", this.storage.xZeitBasis);
+        this.view.renderNachrichten(nachrichten, this.storage, {
+            showXZeit: this.uebung.spielModus === "xZeit",
+            ...(this.storage.xZeitBasis ? { xZeitBasis: this.storage.xZeitBasis } : {}),
+            bestaetigungen: this.getEigeneBestaetigungen()
+        });
+    }
+
+    /** Bestätigungen der Leitung, umgeschlüsselt auf die eigene Nachrichten-ID. */
+    private getEigeneBestaetigungen(): Record<string, LeitungBestaetigung> {
+        if (!this.teilnehmerName) {
+            return {};
+        }
+        const prefix = `${this.teilnehmerName}__`;
+        return Object.entries(this.leitungBestaetigungen).reduce<Record<string, LeitungBestaetigung>>(
+            (acc, [key, value]) => {
+                if (key.startsWith(prefix) && value.abgesetztUm) {
+                    acc[key.slice(prefix.length)] = value;
+                }
+                return acc;
+            },
+            {}
+        );
     }
 
     private startXZeitTicker(): void {
@@ -198,22 +297,28 @@ export class TeilnehmerController {
         }
     }
 
+    /**
+     * Setzt den Übertragungsstatus. Ein Zurücksetzen wird als `uebertragen: false`
+     * gespeichert statt gelöscht, damit der Live-Sync es nicht durch ein älteres
+     * Remote-Dokument wieder überschreibt.
+     */
+    private setUebertragen(id: number, uebertragen: boolean): void {
+        if (!this.storage) {
+            return;
+        }
+        const now = new Date().toISOString();
+        this.storage.nachrichten[id] = uebertragen
+            ? { uebertragen: true, uebertragenUm: now, geaendertUm: now }
+            : { uebertragen: false, geaendertUm: now };
+        saveTeilnehmerStorage(this.storage);
+        this.publishStatus();
+    }
+
     private toggleUebertragen(id: number, checked: boolean) {
         if (!this.storage) {
             return;
         }
-
-        if (checked) {
-            this.storage.nachrichten[id] = {
-                uebertragen: true,
-                uebertragenUm: new Date().toISOString()
-            };
-        } else {
-             
-            delete this.storage.nachrichten[id];
-        }
-
-        saveTeilnehmerStorage(this.storage);
+        this.setUebertragen(id, checked);
         this.renderNachrichten();
     }
 
@@ -238,11 +343,46 @@ export class TeilnehmerController {
         if (!this.uebungId || !this.teilnehmerName) {
             return;
         }
-        if (uiFeedback.confirm("Möchten Sie wirklich alle lokalen Daten für diese Übung löschen? Ihr Übertragungsstatus geht verloren.")) {
-            clearTeilnehmerStorage(this.uebungId, this.teilnehmerName);
-            this.revokeDocUrl();
-            window.location.reload();
+        const message = this.liveStatus?.enabled
+            ? "Möchten Sie wirklich Ihren Übertragungsstatus für diese Übung zurücksetzen? Das wirkt auch für die Übungsleitung und Ihre anderen Geräte."
+            : "Möchten Sie wirklich alle lokalen Daten für diese Übung löschen? Ihr Übertragungsstatus geht verloren.";
+        if (!uiFeedback.confirm(message)) {
+            return;
         }
+        void this.performReset();
+    }
+
+    /**
+     * Setzt lokal und – falls aktiv – auch remote zurück. Remote werden dazu
+     * Zurücksetz-Marker mit aktuellem Zeitstempel geschrieben; ein bloß leeres
+     * Dokument würde vom Last-Write-Wins-Merge nicht gewinnen.
+     */
+    private async performReset(): Promise<void> {
+        if (!this.uebungId || !this.teilnehmerName) {
+            return;
+        }
+        if (this.liveStatus?.enabled && this.storage && this.teilnehmerId) {
+            const now = new Date().toISOString();
+            const nachrichten = Object.keys(this.storage.nachrichten).reduce<TeilnehmerStorage["nachrichten"]>(
+                (acc, key) => {
+                    acc[key] = { uebertragen: false, geaendertUm: now };
+                    return acc;
+                },
+                {}
+            );
+            const cleared: TeilnehmerStorage = {
+                ...this.storage,
+                nachrichten,
+                lastUpdated: now,
+                xZeitBasisGeaendertUm: now
+            };
+            delete cleared.xZeitBasis;
+            this.liveStatus.publishTeilnehmerStatus(toTeilnehmerLiveDoc(cleared, this.teilnehmerId));
+            await this.liveStatus.flush();
+        }
+        clearTeilnehmerStorage(this.uebungId, this.teilnehmerName);
+        this.revokeDocUrl();
+        window.location.reload();
     }
 
     private async setDocMode(mode: DocMode) {
@@ -343,16 +483,7 @@ export class TeilnehmerController {
             return;
         }
         const current = !!this.storage.nachrichten[msg.id]?.uebertragen;
-        if (current) {
-             
-            delete this.storage.nachrichten[msg.id];
-        } else {
-            this.storage.nachrichten[msg.id] = {
-                uebertragen: true,
-                uebertragenUm: new Date().toISOString()
-            };
-        }
-        saveTeilnehmerStorage(this.storage);
+        this.setUebertragen(msg.id, !current);
         this.renderNachrichten();
         this.invalidateDocCache();
         if (this.storage.hideTransmitted && !current) {

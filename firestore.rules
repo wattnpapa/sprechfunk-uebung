@@ -44,7 +44,21 @@ service cloud.firestore {
       // Siehe Restrisiko 1: ohne Identität nicht weiter einschränkbar.
       allow delete: if true;
 
-      // Unterkollektionen nutzt die Anwendung nicht.
+      // Live-Sync des Übungsstatus (ADR 0006). Je ein Dokument pro Teilnehmer
+      // plus leitung-public (Bestätigungen) und leitung (interne Notizen).
+      // Ohne Identität lässt sich nicht erzwingen, dass nur der jeweilige
+      // Teilnehmer sein Dokument schreibt; geprüft werden Dokument-ID und
+      // Struktur. Löschen ist nicht vorgesehen — Zurücksetzen schreibt Marker.
+      match /status/{statusId} {
+        allow get, list: if true;
+
+        allow create, update: if istBekanntesStatusDokument(statusId)
+                              && istGueltigerStatus(request.resource.data);
+
+        allow delete: if false;
+      }
+
+      // Andere Unterkollektionen nutzt die Anwendung nicht.
       match /{unterpfad=**} {
         allow read, write: if false;
       }
@@ -150,4 +164,45 @@ function sindStatistikFelderGueltig(daten) {
          && optionalOk(daten, 'statHatLoesungswoerter', daten.statHatLoesungswoerter is bool)
          && optionalOk(daten, 'statHatLoesungsStaerken', daten.statHatLoesungsStaerken is bool)
          && optionalOk(daten, 'statHatBuchstabieren', daten.statHatBuchstabieren is bool);
+}
+
+// ---------------------------------------------------------------------------
+// Live-Sync des Übungsstatus (ADR 0006)
+// ---------------------------------------------------------------------------
+
+// Dokument-IDs synchron halten mit src/types/LiveStatus.ts.
+function istBekanntesStatusDokument(statusId) {
+  return statusId == 'leitung'
+         || statusId == 'leitung-public'
+         || statusId.matches('^teilnehmer-[A-Za-z0-9]{1,32}$');
+}
+
+function erlaubteStatusFelder() {
+  return [
+    'version', 'lastUpdated',
+    // teilnehmer-<id>
+    'teilnehmerId', 'teilnehmer', 'nachrichten', 'xZeitBasis', 'xZeitBasisGeaendertUm',
+    // leitung
+    'nachrichtenNotizen'
+  ];
+}
+
+function istGueltigerStatus(daten) {
+  return daten.keys().hasOnly(erlaubteStatusFelder())
+         && daten.keys().hasAll(['version', 'lastUpdated'])
+         && istZahlImBereich(daten.version, 1, 100)
+         && istZeitpunkt(daten.lastUpdated)
+         && optionalOk(daten, 'teilnehmerId', istText(daten.teilnehmerId, 32))
+         // `teilnehmer` ist im Teilnehmer-Dokument der Funkrufname, im
+         // leitung-Dokument die Statusliste je Teilnehmer.
+         && optionalOk(daten, 'teilnehmer', istText(daten.teilnehmer, 100)
+                                            || (daten.teilnehmer is map
+                                                && daten.teilnehmer.size() <= 100))
+         && optionalOk(daten, 'xZeitBasis', istText(daten.xZeitBasis, 5))
+         && optionalOk(daten, 'xZeitBasisGeaendertUm', istZeitpunkt(daten.xZeitBasisGeaendertUm))
+         // Obergrenzen wie bei den Übungsdaten: 100 Teilnehmer, 100 Nachrichten.
+         && optionalOk(daten, 'nachrichten', daten.nachrichten is map
+                                             && daten.nachrichten.size() <= 10000)
+         && optionalOk(daten, 'nachrichtenNotizen', daten.nachrichtenNotizen is map
+                                                    && daten.nachrichtenNotizen.size() <= 10000);
 }

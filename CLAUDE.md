@@ -82,4 +82,8 @@ Rollup bundles `src/app.ts` → `dist/bundle.js`. PostCSS extracts CSS. FontAwes
 - **TypeScript**: strict mode; no implicit `any` (explicit casts require ESLint disable comment)
 - **Firestore**: sanitize data before writing (no `undefined` fields, no empty keys); queries must handle missing-index errors gracefully
 - **`firebase-config.js`** is gitignored — never commit real Firebase credentials
+- **`firestore.rules`** denies every subcollection of `/uebungen` except
+  `status`; new persisted fields must be added to the allowlists there, or
+  Firestore rejects the write in production (guarded by
+  `tests/services/FirestoreRules.contract.test.ts`)
 - **`localStorage` seed paths** support mock/E2E mode; don't break them when refactoring storage logic

@@ -9,6 +9,8 @@ import {
     TeilnehmerTimeline
 } from "./UebungsleitungNachrichtenView";
 import { UebungsleitungTeilnehmerView } from "./UebungsleitungTeilnehmerView";
+import type { LiveSyncState } from "../types/LiveStatus";
+import type { EffektiverNachrichtenStatus, TeilnehmerFortschritt } from "../services/liveStatusMerge";
 
 export class UebungsleitungView {
     private teilnehmerView = new UebungsleitungTeilnehmerView();
@@ -30,12 +32,18 @@ export class UebungsleitungView {
         }
     }
 
+    /** Reicht den Live-Sync-Status an die Nachrichten-Ansicht durch. */
+    public updateLiveSyncState(state: LiveSyncState): void {
+        this.nachrichtenView.updateLiveSyncState(state);
+    }
+
     public renderTeilnehmerListe(
         uebung: Uebung,
         teilnehmerStatus: Record<string, TeilnehmerStatus>,
-        showStaerkeDetails: boolean
+        showStaerkeDetails: boolean,
+        fortschritt: Record<string, TeilnehmerFortschritt> = {}
     ): void {
-        this.teilnehmerView.render(uebung, teilnehmerStatus, showStaerkeDetails);
+        this.teilnehmerView.render(uebung, teilnehmerStatus, showStaerkeDetails, fortschritt);
     }
 
     public bindTeilnehmerEvents(callbacks: {
@@ -51,7 +59,7 @@ export class UebungsleitungView {
 
     public renderNachrichtenListe(options: {
         nachrichten: FlattenedNachricht[];
-        nachrichtenStatus: Record<string, NachrichtenStatus>;
+        nachrichtenStatus: Record<string, NachrichtenStatus | EffektiverNachrichtenStatus>;
         hideAbgesetzt: boolean;
         senderFilter: string;
         empfaengerFilter: string;
@@ -67,8 +75,8 @@ export class UebungsleitungView {
         });
     }
 
-    public updateProgress(total: number, done: number, etaLabel: string): void {
-        this.nachrichtenView.updateProgress(total, done, etaLabel);
+    public updateProgress(total: number, done: number, etaLabel: string, nurGemeldet = 0): void {
+        this.nachrichtenView.updateProgress(total, done, etaLabel, nurGemeldet);
     }
 
     public updateOperationalStats(tempoLabel: string, loadLabel: string, heatmapLabel: string): void {

@@ -20,7 +20,31 @@ const mocks = vi.hoisted(() => ({
     uiError: vi.fn(),
     getDocumentById: vi.fn(),
     generateDebrief: vi.fn(),
-    jspdfSave: vi.fn()
+    jspdfSave: vi.fn(),
+    updateLiveSyncState: vi.fn(),
+    publishLeitungPublic: vi.fn(),
+    publishLeitungInternal: vi.fn(),
+    subscribeAlleTeilnehmer: vi.fn(),
+    subscribeLeitungPublic: vi.fn(),
+    subscribeLeitungInternal: vi.fn(),
+    liveFlush: vi.fn().mockResolvedValue(undefined),
+    liveDispose: vi.fn()
+}));
+
+vi.mock("../../src/services/LiveStatusService", () => ({
+    LiveStatusService: class {
+        public enabled = true;
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        constructor(_db: unknown, _uebungId: string) {}
+        onStateChange = (cb: (state: string) => void) => cb("live");
+        publishLeitungPublic = mocks.publishLeitungPublic;
+        publishLeitungInternal = mocks.publishLeitungInternal;
+        subscribeAlleTeilnehmer = mocks.subscribeAlleTeilnehmer;
+        subscribeLeitungPublic = mocks.subscribeLeitungPublic;
+        subscribeLeitungInternal = mocks.subscribeLeitungInternal;
+        flush = mocks.liveFlush;
+        dispose = mocks.liveDispose;
+    }
 }));
 
 vi.mock("../../src/core/router", () => ({ router: { parseHash: mocks.parseHash } }));
@@ -43,6 +67,7 @@ vi.mock("../../src/uebungsleitung/UebungsleitungView", () => ({
         bindMetaEvents = mocks.bindMetaEvents;
         bindTeilnehmerEvents = mocks.bindTeilnehmerEvents;
         bindNachrichtenEvents = mocks.bindNachrichtenEvents;
+        updateLiveSyncState = mocks.updateLiveSyncState;
     }
 }));
 vi.mock("../../src/state/store", () => ({ store: { setState: vi.fn() } }));
@@ -75,7 +100,11 @@ vi.mock("../../src/pdf/Uebungsleitung", () => ({
 describe("UebungsleitungController", () => {
     beforeEach(() => {
         vi.clearAllMocks();
-        vi.stubGlobal("window", { location: { reload: vi.fn() } });
+        vi.stubGlobal("window", {
+            location: { reload: vi.fn() },
+            addEventListener: vi.fn(),
+            removeEventListener: vi.fn()
+        });
         vi.stubGlobal("localStorage", { removeItem: vi.fn() });
         const idEl = { textContent: "" };
         const area = { style: { display: "none" } };

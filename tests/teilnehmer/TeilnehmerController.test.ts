@@ -21,7 +21,29 @@ const mocks = vi.hoisted(() => ({
     setDocMode: vi.fn(),
     bindEvents: vi.fn(),
     renderPdfPage: vi.fn().mockResolvedValue(undefined),
-    setDocTransmitted: vi.fn()
+    setDocTransmitted: vi.fn(),
+    updateLiveSyncState: vi.fn(),
+    setXZeitBasisInputValue: vi.fn(),
+    bindXZeitEvents: vi.fn(),
+    publishTeilnehmerStatus: vi.fn(),
+    subscribeEigenenStatus: vi.fn(),
+    subscribeLeitungPublic: vi.fn(),
+    liveFlush: vi.fn().mockResolvedValue(undefined),
+    liveDispose: vi.fn()
+}));
+
+vi.mock("../../src/services/LiveStatusService", () => ({
+    LiveStatusService: class {
+        public enabled = true;
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        constructor(_db: unknown, _uebungId: string) {}
+        onStateChange = (cb: (state: string) => void) => cb("live");
+        publishTeilnehmerStatus = mocks.publishTeilnehmerStatus;
+        subscribeEigenenStatus = mocks.subscribeEigenenStatus;
+        subscribeLeitungPublic = mocks.subscribeLeitungPublic;
+        flush = mocks.liveFlush;
+        dispose = mocks.liveDispose;
+    }
 }));
 
 vi.mock("../../src/teilnehmer/TeilnehmerView", () => ({
@@ -35,6 +57,9 @@ vi.mock("../../src/teilnehmer/TeilnehmerView", () => ({
         bindEvents = mocks.bindEvents;
         renderPdfPage = mocks.renderPdfPage;
         setDocTransmitted = mocks.setDocTransmitted;
+        updateLiveSyncState = mocks.updateLiveSyncState;
+        setXZeitBasisInputValue = mocks.setXZeitBasisInputValue;
+        bindXZeitEvents = mocks.bindXZeitEvents;
     }
 }));
 
@@ -156,8 +181,12 @@ describe("TeilnehmerController", () => {
 
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         (controller as any).toggleUebertragen(3, false);
+        // Zurückgesetzt wird als Marker gespeichert, nicht gelöscht – sonst würde der
+        // Live-Sync den Eintrag aus einem älteren Remote-Stand wiederbeleben.
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        expect((controller as any).storage.nachrichten[3]).toBeUndefined();
+        expect((controller as any).storage.nachrichten[3].uebertragen).toBe(false);
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        expect((controller as any).storage.nachrichten[3].geaendertUm).toBeTruthy();
     });
 
     it("init handles join mode and missing/unknown exercises", async () => {
@@ -349,11 +378,11 @@ describe("TeilnehmerController", () => {
         expect(invalidateSpy).toHaveBeenCalled();
         expect(renderDocSpy).toHaveBeenCalled();
 
-        // second toggle removes flag again
+        // second toggle clears the flag again (as a reset marker, not by deleting)
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         (controller as any).toggleCurrentDocMessage();
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        expect((controller as any).storage.nachrichten[2]).toBeUndefined();
+        expect((controller as any).storage.nachrichten[2].uebertragen).toBe(false);
     });
 
     it("toggleCurrentDocMessage adjusts page when hideTransmitted is active", async () => {

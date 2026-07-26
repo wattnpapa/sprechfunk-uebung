@@ -1,6 +1,7 @@
 import { Chart } from "chart.js/auto";
 import { formatNatoDate } from "../utils/date";
-import { NachrichtenStatus } from "../types/Storage";
+import type { LiveSyncState } from "../types/LiveStatus";
+import type { EffektiverNachrichtenStatus } from "../services/liveStatusMerge";
 import { escapeHtml } from "../utils/html";
 
 export interface FlattenedNachricht {
@@ -47,7 +48,7 @@ type NachrichtenCallbacks = {
 export class UebungsleitungNachrichtenView {
     public render(options: {
         nachrichten: FlattenedNachricht[];
-        nachrichtenStatus: Record<string, NachrichtenStatus>;
+        nachrichtenStatus: Record<string, EffektiverNachrichtenStatus>;
         hideAbgesetzt: boolean;
         senderFilter: string;
         empfaengerFilter: string;
@@ -178,7 +179,11 @@ export class UebungsleitungNachrichtenView {
         });
     }
 
-    public updateProgress(total: number, done: number, etaLabel: string): void {
+    /**
+     * @param done       erledigt laut Teilnehmer-Meldung oder Bestätigung der Leitung
+     * @param nurGemeldet Teilmenge davon, die die Leitung noch nicht bestätigt hat
+     */
+    public updateProgress(total: number, done: number, etaLabel: string, nurGemeldet = 0): void {
         const bar = document.getElementById("nachrichtenProgressBar");
         const label = document.getElementById("nachrichtenProgressLabel");
         const eta = document.getElementById("nachrichtenEtaLabel");
@@ -188,8 +193,28 @@ export class UebungsleitungNachrichtenView {
         const percent = total > 0 ? Math.round((done / total) * 100) : 0;
         bar.style.width = `${percent}%`;
         bar.setAttribute("aria-valuenow", String(percent));
-        label.textContent = `${done} / ${total}`;
+        label.textContent = nurGemeldet > 0
+            ? `${done} / ${total} (${nurGemeldet} nur gemeldet)`
+            : `${done} / ${total}`;
         eta.textContent = etaLabel;
+    }
+
+    /** Zeigt an, ob die Live-Meldungen der Teilnehmer gerade eintreffen. */
+    public updateLiveSyncState(state: LiveSyncState): void {
+        const badge = document.getElementById("uebungsleitungLiveSyncBadge");
+        if (!badge) {
+            return;
+        }
+        const labels: Record<LiveSyncState, { text: string; css: string; title: string }> = {
+            aus: { text: "Live-Status: aus", css: "bg-secondary", title: "Live-Sync deaktiviert – es zählt nur, was hier manuell markiert wird." },
+            verbinde: { text: "Live-Status: verbinde…", css: "bg-secondary", title: "Verbindung wird aufgebaut." },
+            live: { text: "Live-Status: live", css: "bg-success", title: "Teilnehmer-Meldungen treffen live ein." },
+            fehler: { text: "Live-Status: offline", css: "bg-warning text-dark", title: "Keine Verbindung – angezeigt wird der zuletzt bekannte Stand." }
+        };
+        const label = labels[state];
+        badge.className = `badge ${label.css}`;
+        badge.textContent = label.text;
+        badge.setAttribute("title", label.title);
     }
 
     public updateOperationalStats(tempoLabel: string, loadLabel: string, heatmapLabel: string): void {
@@ -279,12 +304,14 @@ export class UebungsleitungNachrichtenView {
 
     private renderNachrichtenRow(
         nachricht: FlattenedNachricht,
-        nachrichtenStatus: Record<string, NachrichtenStatus>
+        nachrichtenStatus: Record<string, EffektiverNachrichtenStatus>
     ): string {
-        const key = `${nachricht.sender}__${nachricht.nr}`;
-        const status = nachrichtenStatus[key];
-        const abgesetzt = Boolean(status?.abgesetztUm);
-        const notiz = status?.notiz ?? "";
+        const status: EffektiverNachrichtenStatus = nachrichtenStatus[`${nachricht.sender}__${nachricht.nr}`] ?? {};
+        const abgesetzt = Boolean(status.abgesetztUm);
+        const gemeldetUm = status.gemeldetUm;
+        const notiz = status.notiz ?? "";
+        // `erledigtUm` ist der frühere Zeitpunkt aus Teilnehmer-Meldung und Bestätigung.
+        const zeitpunkt = status.erledigtUm ?? status.abgesetztUm;
         return `
                 <tr class="${abgesetzt ? "status-ok-row" : "status-pending-row"}">
                   <td class="text-center fw-bold">${nachricht.nr}</td>
@@ -299,28 +326,48 @@ export class UebungsleitungNachrichtenView {
                         placeholder="Notiz zur Nachricht…"
                       >${escapeHtml(notiz)}</textarea>
                     </td>
-                  <td class="text-center">
-                    ${abgesetzt ? `
-                      <div class="d-flex gap-2 justify-content-center">
-                        <span class="status-chip status-chip--ok">abgesetzt</span>
-                        <button class="btn btn-sm btn-outline-danger" data-action="reset" data-nr="${nachricht.nr}" data-sender="${this.escapeAttr(nachricht.sender)}" title="Status zurücksetzen">↺</button>
-                      </div>
-                    ` : `
-                      <div class="d-flex gap-2 justify-content-center">
-                        <span class="status-chip status-chip--pending">offen</span>
-                        <button class="btn btn-sm btn-outline-success" data-action="abgesetzt" data-nr="${nachricht.nr}" data-sender="${this.escapeAttr(nachricht.sender)}">✓ abgesetzt</button>
-                      </div>
-                    `}
-                  </td>
+                  <td class="text-center">${this.renderStatusCell(nachricht, abgesetzt, gemeldetUm)}</td>
                   <td>${nachricht.xZeitSlot !== undefined ? `<span class="badge bg-secondary">X+${nachricht.xZeitSlot}</span>` : ""}</td>
-                  <td>${status?.abgesetztUm ? formatNatoDate(status.abgesetztUm) : ""}</td>
+                  <td>${zeitpunkt ? formatNatoDate(zeitpunkt) : ""}</td>
                 </tr>
               `;
     }
 
+    /**
+     * Statuszelle einer Nachricht. Drei Zustände: von der Leitung bestätigt,
+     * vom Teilnehmer gemeldet (aber unbestätigt) oder offen.
+     */
+    private renderStatusCell(
+        nachricht: FlattenedNachricht,
+        abgesetzt: boolean,
+        gemeldetUm: string | undefined
+    ): string {
+        const sender = this.escapeAttr(nachricht.sender);
+        if (abgesetzt) {
+            return `
+                      <div class="d-flex gap-2 justify-content-center">
+                        <span class="status-chip status-chip--ok">abgesetzt</span>
+                        <button class="btn btn-sm btn-outline-danger" data-action="reset" data-nr="${nachricht.nr}" data-sender="${sender}" title="Status zurücksetzen">↺</button>
+                      </div>`;
+        }
+
+        const nurGemeldet = Boolean(gemeldetUm);
+        const hinweis = nurGemeldet
+            ? `<small class="text-body-secondary" title="Vom Teilnehmer selbst gemeldet, noch nicht bestätigt">Teilnehmer: ${formatNatoDate(gemeldetUm as string)}</small>`
+            : "";
+        return `
+                      <div class="d-flex flex-column gap-1 align-items-center">
+                        <div class="d-flex gap-2 justify-content-center">
+                          <span class="status-chip ${nurGemeldet ? "status-chip--ok" : "status-chip--pending"}">${nurGemeldet ? "gemeldet" : "offen"}</span>
+                          <button class="btn btn-sm btn-outline-success" data-action="abgesetzt" data-nr="${nachricht.nr}" data-sender="${sender}">✓ abgesetzt</button>
+                        </div>
+                        ${hinweis}
+                      </div>`;
+    }
+
     private passesFilter(options: {
         nachricht: FlattenedNachricht;
-        nachrichtenStatus: Record<string, NachrichtenStatus>;
+        nachrichtenStatus: Record<string, EffektiverNachrichtenStatus>;
         hideAbgesetzt: boolean;
         senderFilter: string;
         empfaengerFilter: string;

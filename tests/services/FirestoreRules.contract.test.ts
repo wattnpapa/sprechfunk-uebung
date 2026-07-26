@@ -3,6 +3,11 @@ import path from "node:path";
 import { describe, expect, it, vi } from "vitest";
 import { FirebaseService } from "../../src/services/FirebaseService";
 import { FunkUebung } from "../../src/models/FunkUebung";
+import {
+    toLeitungLiveDoc,
+    toLeitungPublicLiveDoc,
+    toTeilnehmerLiveDoc
+} from "../../src/services/liveStatusMerge";
 
 /**
  * firestore.rules lässt über `hasOnly(erlaubteFelder())` nur bekannte Felder zu.
@@ -77,6 +82,52 @@ describe("firestore.rules Feldvertrag", () => {
         const pflicht = leseFeldliste("pflichtFelder");
         const fehlend = pflicht.filter(feld => !(feld in gespeichert));
         expect(fehlend).toEqual([]);
+    });
+
+    it("erlaubt jedes Feld, das der Live-Sync in die status-Subcollection schreibt", () => {
+        const jetzt = "2026-07-26T10:00:00.000Z";
+        const teilnehmerDoc = toTeilnehmerLiveDoc({
+            version: 1,
+            uebungId: "u1",
+            teilnehmer: "Heros Jever 21/10",
+            lastUpdated: jetzt,
+            nachrichten: { "1": { uebertragen: true, uebertragenUm: jetzt, geaendertUm: jetzt } },
+            hideTransmitted: false,
+            xZeitBasis: "09:00",
+            xZeitBasisGeaendertUm: jetzt
+        }, "A1B2");
+        const leitungStorage = {
+            version: 1,
+            uebungId: "u1",
+            lastUpdated: jetzt,
+            teilnehmer: { "Heros Jever 21/10": { angemeldetUm: jetzt, geaendertUm: jetzt } },
+            nachrichten: {
+                "Heros Jever 21/10__1": {
+                    abgesetztUm: jetzt,
+                    statusGeaendertUm: jetzt,
+                    notiz: "n",
+                    notizGeaendertUm: jetzt
+                }
+            }
+        };
+
+        const erlaubt = leseFeldliste("erlaubteStatusFelder");
+        const geschrieben = new Set([
+            ...Object.keys(teilnehmerDoc),
+            ...Object.keys(toLeitungPublicLiveDoc(leitungStorage)),
+            ...Object.keys(toLeitungLiveDoc(leitungStorage))
+        ]);
+
+        const nichtErlaubt = [...geschrieben].filter(feld => !erlaubt.includes(feld));
+        expect(nichtErlaubt).toEqual([]);
+        // Umgekehrt keine Karteileichen in der Regel-Allowlist.
+        expect(erlaubt.filter(feld => !geschrieben.has(feld))).toEqual([]);
+    });
+
+    it("lässt genau die bekannten Statusdokumente zu", () => {
+        expect(rulesQuelltext).toContain("match /status/{statusId}");
+        expect(rulesQuelltext).toContain("statusId == 'leitung-public'");
+        expect(rulesQuelltext).toContain("^teilnehmer-[A-Za-z0-9]{1,32}$");
     });
 
     it("dokumentiert das Sicherheitsmodell und sperrt fremde Collections", () => {

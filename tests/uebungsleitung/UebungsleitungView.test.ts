@@ -28,6 +28,7 @@ const setDom = () => {
       <div id="nachrichtenTempoLabel"></div>
       <div id="nachrichtenLoadLabel"></div>
       <div id="nachrichtenHeatmapLabel"></div>
+      <span id="uebungsleitungLiveSyncBadge"></span>
     `);
     vi.stubGlobal("window", dom.window);
     vi.stubGlobal("document", dom.window.document);
@@ -505,4 +506,130 @@ describe("UebungsleitungView", () => {
         view.bindMetaEvents(vi.fn(), vi.fn());
         expect(true).toBe(true);
     });
+
+});
+
+describe("UebungsleitungView – Live-Status", () => {
+    beforeEach(() => {
+        vi.clearAllMocks();
+        setDom();
+    });
+
+    {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const uebung = (teilnehmerListe: string[]): any => ({
+            teilnehmerListe,
+            nachrichten: {},
+            loesungswoerter: {},
+            loesungsStaerken: {},
+            teilnehmerIds: {},
+            id: "u1",
+            uebungCode: "AB12CD"
+        });
+
+        it("zeigt fehlende Live-Meldungen als solche an", () => {
+            const view = new UebungsleitungView();
+            view.renderTeilnehmerListe(uebung(["A"]), {}, false);
+
+            const html = document.getElementById("uebungsleitungTeilnehmer")?.textContent ?? "";
+            expect(html).toContain("keine Meldung");
+        });
+
+        it("zeigt Fortschritt und letzte Meldung je Teilnehmer", () => {
+            const view = new UebungsleitungView();
+            view.renderTeilnehmerListe(uebung(["A"]), {}, false, {
+                A: {
+                    teilnehmer: "A",
+                    gemeldet: 2,
+                    gesamt: 4,
+                    online: true,
+                    letzteMeldungUm: "2026-07-26T10:05:00.000Z"
+                }
+            });
+
+            const container = document.getElementById("uebungsleitungTeilnehmer");
+            expect(container?.textContent).toContain("2");
+            expect(container?.textContent).toContain("zuletzt");
+            expect(container?.innerHTML).toContain("width:50%");
+        });
+
+        it("weist Teilnehmer ohne Meldung als noch nicht übertragen aus", () => {
+            const view = new UebungsleitungView();
+            view.renderTeilnehmerListe(uebung(["A"]), {}, false, {
+                A: { teilnehmer: "A", gemeldet: 0, gesamt: 0, online: true }
+            });
+
+            expect(document.getElementById("uebungsleitungTeilnehmer")?.textContent)
+                .toContain("noch nichts übertragen");
+        });
+
+        it("markiert Nachzügler gegenüber dem Median der Gruppe", () => {
+            const view = new UebungsleitungView();
+            view.renderTeilnehmerListe(uebung(["A", "B", "C"]), {}, false, {
+                A: { teilnehmer: "A", gemeldet: 8, gesamt: 10, online: true },
+                B: { teilnehmer: "B", gemeldet: 8, gesamt: 10, online: true },
+                C: { teilnehmer: "C", gemeldet: 1, gesamt: 10, online: true }
+            });
+
+            const container = document.getElementById("uebungsleitungTeilnehmer");
+            expect(container?.textContent).toContain("Nachzügler");
+            expect(container?.querySelectorAll("tr[data-nachzuegler]")).toHaveLength(1);
+        });
+
+        it("markiert niemanden, solange zu wenige Teilnehmer melden", () => {
+            const view = new UebungsleitungView();
+            view.renderTeilnehmerListe(uebung(["A", "B"]), {}, false, {
+                A: { teilnehmer: "A", gemeldet: 8, gesamt: 10, online: true },
+                B: { teilnehmer: "B", gemeldet: 0, gesamt: 10, online: true }
+            });
+
+            expect(document.getElementById("uebungsleitungTeilnehmer")?.textContent)
+                .not.toContain("Nachzügler");
+        });
+
+        it("weist unbestätigte Teilnehmer-Meldungen im Fortschritt aus", () => {
+            const view = new UebungsleitungView();
+            view.updateProgress(10, 6, "ETA: 10:30", 2);
+
+            expect(document.getElementById("nachrichtenProgressLabel")?.textContent)
+                .toBe("6 / 10 (2 nur gemeldet)");
+
+            view.updateProgress(10, 6, "ETA: 10:30");
+            expect(document.getElementById("nachrichtenProgressLabel")?.textContent).toBe("6 / 10");
+        });
+
+        it("spiegelt den Sync-Zustand im Badge", () => {
+            const view = new UebungsleitungView();
+            const badge = document.getElementById("uebungsleitungLiveSyncBadge");
+
+            view.updateLiveSyncState("live");
+            expect(badge?.textContent).toContain("live");
+            expect(badge?.className).toContain("bg-success");
+
+            view.updateLiveSyncState("fehler");
+            expect(badge?.textContent).toContain("offline");
+            expect(badge?.className).toContain("bg-warning");
+
+            view.updateLiveSyncState("aus");
+            expect(badge?.textContent).toContain("aus");
+        });
+
+        it("zeigt vom Teilnehmer gemeldete, aber unbestätigte Nachrichten an", () => {
+            const view = new UebungsleitungView();
+            view.renderNachrichtenListe({
+                nachrichten: [{ nr: 1, sender: "A", empfaenger: ["B"], text: "Text" }],
+                nachrichtenStatus: {
+                    "A__1": { gemeldetUm: "2026-07-26T10:00:00.000Z", erledigtUm: "2026-07-26T10:00:00.000Z" }
+                },
+                hideAbgesetzt: false,
+                senderFilter: "",
+                empfaengerFilter: "",
+                textFilter: ""
+            });
+
+            const html = document.getElementById("uebungsleitungNachrichten")?.textContent ?? "";
+            expect(html).toContain("gemeldet");
+            expect(html).toContain("Teilnehmer:");
+        });
+    }
 });
