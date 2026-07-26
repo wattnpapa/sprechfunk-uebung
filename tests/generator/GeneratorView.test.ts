@@ -9,12 +9,11 @@ const mocks = vi.hoisted(() => ({
     uiError: vi.fn()
 }));
 
-vi.mock("chart.js", () => ({
+vi.mock("../../src/core/chart", () => ({
     Chart: function (...args: unknown[]) {
         mocks.chartCtor(...args);
         return { destroy: mocks.chartDestroy };
-    },
-    registerables: []
+    }
 }));
 vi.mock("../../src/services/pdfGenerator", () => ({
     default: {

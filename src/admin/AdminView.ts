@@ -1,5 +1,5 @@
 import { Uebung } from "../types/Uebung";
-import { Chart } from "chart.js/auto";
+import { Chart } from "../core/chart";
 
 export class AdminView {
 

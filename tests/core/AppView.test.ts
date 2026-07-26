@@ -74,9 +74,8 @@ describe("AppView", () => {
 
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const { howtoContent, modalHandlers } = (globalThis as any)._test;
-        modalHandlers[0]?.();
-        await new Promise(resolve => setImmediate(resolve));
-        await new Promise(resolve => setImmediate(resolve));
+        // loadHowTo laedt marked dynamisch nach, der Handler ist deshalb async.
+        await modalHandlers[0]?.();
         expect(howtoContent.innerHTML).toContain("<h1");
     });
 

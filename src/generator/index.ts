@@ -7,10 +7,7 @@ import { GeneratorStateService, type LoesungswortOption } from "./GeneratorState
 import { GeneratorStatsService } from "./GeneratorStatsService";
 import { GeneratorPreviewService } from "./GeneratorPreviewService";
 import pdfGenerator from "../services/pdfGenerator";
-import { Chart, registerables } from "chart.js";
 import { uiFeedback } from "../core/UiFeedback";
-
-Chart.register(...registerables);
 
 export class GeneratorController {
     private static instance: GeneratorController;

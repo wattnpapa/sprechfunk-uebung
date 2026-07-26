@@ -1,5 +1,4 @@
 import { AppMode } from "./appModes";
-import { marked } from "marked";
 
 export class AppView {
 
@@ -13,16 +12,18 @@ export class AppView {
     public initModals(): void {
         const modalContent = document.getElementById("howtoContent");
         if (modalContent) {
-            const loadHowTo = () => {
-                fetch("howto.md")
-                    .then(response => response.text())
-                    .then(data => {
-                        modalContent.innerHTML = marked(data) as string;
-                    })
-                    .catch(error => {
-                        console.error("Fehler beim Laden der Anleitung:", error);
-                        modalContent.innerHTML = "Es gab einen Fehler beim Laden der Anleitung.";
-                    });
+            const loadHowTo = async () => {
+                try {
+                    // marked (41 kB) laedt erst mit der Anleitung statt beim Start.
+                    const [{ marked }, response] = await Promise.all([
+                        import("marked"),
+                        fetch("howto.md")
+                    ]);
+                    modalContent.innerHTML = marked(await response.text()) as string;
+                } catch (error) {
+                    console.error("Fehler beim Laden der Anleitung:", error);
+                    modalContent.innerHTML = "Es gab einen Fehler beim Laden der Anleitung.";
+                }
             };
             const howtoModal = document.getElementById("howtoModal");
             howtoModal?.addEventListener("show.bs.modal", loadHowTo);

@@ -7,7 +7,7 @@ const { chartCtor, getChart, destroy } = vi.hoisted(() => ({
     destroy: vi.fn()
 }));
 
-vi.mock("chart.js/auto", () => {
+vi.mock("../../src/core/chart", () => {
     const Chart = function (...args: unknown[]) {
         chartCtor(...args);
     };

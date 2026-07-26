@@ -18,11 +18,9 @@ import {
     generateMeldevordruckA4PDFsBlob,
     generateNachrichtenvordruckA4PDFsBlob
 } from "./pdfA4Service";
-import {
-    createZipDownloadName,
-    generateAllPDFsAsZipBlob,
-    generateTeilnehmerPDFsAsZipBlob
-} from "./pdfZipService";
+// pdfZipService wird bewusst nur bei Bedarf geladen: JSZip samt pako sind rund
+// 200 kB, der ZIP-Export laeuft aber erst auf Klick. Rollup legt daraus einen
+// eigenen Chunk an, der beim Start nicht mitgeladen wird.
 
 class PDFGenerator {
     constructor() {
@@ -422,6 +420,7 @@ class PDFGenerator {
     }
 
     async generateAllPDFsAsZip(funkUebung: FunkUebung) {
+        const { createZipDownloadName, generateAllPDFsAsZipBlob } = await import("./pdfZipService");
         const zipBlob = await generateAllPDFsAsZipBlob(funkUebung, {
             sanitizeFileName: this.sanitizeFileName,
             generateTeilnehmerPDFsBlob: this.generateTeilnehmerPDFsBlob.bind(this),
@@ -451,6 +450,7 @@ class PDFGenerator {
     }
 
     async generateTeilnehmerPDFsAsZip(funkUebung: FunkUebung, teilnehmer: string): Promise<Blob> {
+        const { generateTeilnehmerPDFsAsZipBlob } = await import("./pdfZipService");
         return generateTeilnehmerPDFsAsZipBlob(funkUebung, teilnehmer, {
             sanitizeFileName: this.sanitizeFileName,
             generateTeilnehmerPDFsBlob: this.generateTeilnehmerPDFsBlob.bind(this),

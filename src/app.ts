@@ -27,8 +27,9 @@ import { featureFlags } from "./services/featureFlags";
 import { errorMonitoring } from "./services/errorMonitoring";
 import { initFirebaseClient } from "./services/firebaseClient";
 
-import { Chart, registerables } from "chart.js";
-Chart.register(...registerables);
+// Registriert die genutzten Chart.js-Bausteine (Bar + Scatter) einmalig.
+import "./core/chart";
+import type { Chart } from "chart.js";
 
 declare global {
     interface Window {

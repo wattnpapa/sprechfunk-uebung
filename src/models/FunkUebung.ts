@@ -1,7 +1,9 @@
 import { NAMENS_POOL } from "../data/namen-funkuebungen";
 import type { Uebung } from "../types/Uebung";
 import type { Nachricht } from "../types/Nachricht";
-import CryptoJS from "crypto-js";
+// Tiefer Import: "crypto-js" als Ganzes zieht die komplette Cipher-Suite
+// (AES, Blowfish, TripleDES, cipher-core) ins Bundle, gebraucht wird nur MD5.
+import MD5 from "crypto-js/md5";
 
 export class FunkUebung implements Uebung {
 
@@ -106,7 +108,7 @@ export class FunkUebung implements Uebung {
             nachrichten: this.nachrichten
         });
 
-        this.checksumme = CryptoJS.MD5(data).toString();
+        this.checksumme = MD5(data).toString();
     }
 
     toJson() {

@@ -1,8 +1,7 @@
 import { describe, expect, it, vi, beforeEach } from "vitest";
 
-vi.mock("chart.js", () => ({
-    Chart: { register: vi.fn() },
-    registerables: []
+vi.mock("../../src/core/chart", () => ({
+    Chart: { register: vi.fn() }
 }));
 
 vi.mock("../../src/services/pdfGenerator", () => ({

@@ -1,4 +1,4 @@
-import { Chart } from "chart.js";
+import { Chart } from "../core/chart";
 import { FunkUebung } from "../models/FunkUebung";
 import type { PreviewPage } from "./GeneratorPreviewService";
 import type { UebungsDauerStats, VerteilungsStats } from "./GeneratorStatsService";

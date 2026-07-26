@@ -1,4 +1,4 @@
-import { Chart } from "chart.js/auto";
+import { Chart } from "../core/chart";
 import { formatNatoDate } from "../utils/date";
 import type { LiveSyncState } from "../types/LiveStatus";
 import type { EffektiverNachrichtenStatus } from "../services/liveStatusMerge";
