@@ -342,4 +342,143 @@ describe("GenerationService", () => {
             expect(u.nachrichten.A?.[0]?.nachricht).toBe("Ich melde mich in Ihrem Sprechfunkverkehrskreis an.");
         });
     });
+
+    describe("Empfängergruppen bei 'an Mehrere'", () => {
+        const baueGruppenUebung = (): FunkUebung => {
+            const u = new FunkUebung("dev");
+            u.seed = "gruppengroessen";
+            u.teilnehmerListe = Array.from({ length: 20 }, (_, i) => `TN${i + 1}`);
+            u.leitung = "L";
+            u.spruecheProTeilnehmer = 8;
+            u.spruecheAnAlle = 1;
+            u.spruecheAnMehrere = 5;
+            u.buchstabierenAn = 0;
+            u.anmeldungAktiv = true;
+            u.autoStaerkeErgaenzen = false;
+            u.loesungswoerter = {};
+            u.funksprueche = Array.from({ length: 200 }, (_, i) => `Meldung ${i}`);
+            return u;
+        };
+
+        const gruppengroessen = (u: FunkUebung): number[] =>
+            Object.values(u.nachrichten)
+                .flat()
+                .map(n => n.empfaenger.length)
+                .filter(laenge => laenge > 1);
+
+        it("bleibt innerhalb der übrigen Teilnehmer", () => {
+            const u = baueGruppenUebung();
+            const andere = u.teilnehmerListe.length - 1;
+
+            new GenerationService().generate(u);
+
+            const groessen = gruppengroessen(u);
+            expect(groessen.length).toBeGreaterThan(0);
+            groessen.forEach(groesse => {
+                expect(groesse).toBeGreaterThanOrEqual(2);
+                expect(groesse).toBeLessThanOrEqual(andere);
+            });
+        });
+
+        it("erreicht die 85-%-Stufe, ohne immer die volle Liste zu nehmen", () => {
+            const u = baueGruppenUebung();
+            const andere = u.teilnehmerListe.length - 1;
+            const untergrenze = Math.ceil(andere * 0.85);
+
+            new GenerationService().generate(u);
+
+            // Werte zwischen 85 % und 100 % sind nur über die größte Stufe
+            // erreichbar. Mit vertauschten Grenzen lieferte sie ausschließlich
+            // die volle Liste, dieser Bereich blieb also leer.
+            const inGrossstufe = gruppengroessen(u).filter(
+                groesse => groesse >= untergrenze && groesse < andere
+            );
+            expect(inGrossstufe.length).toBeGreaterThan(0);
+        });
+    });
+
+    describe("Seed", () => {
+        const baueSeedUebung = (seed?: string): FunkUebung => {
+            const u = new FunkUebung("dev");
+            // Name und Datum vergibt der Konstruktor zufällig bzw. aus der Uhr;
+            // für den Vergleich zweier Läufe müssen sie fix sein.
+            u.name = "Vergleichsübung";
+            u.datum = new Date("2026-01-01T00:00:00.000Z");
+            u.teilnehmerListe = ["A", "B", "C", "D"];
+            u.leitung = "L";
+            u.spruecheProTeilnehmer = 8;
+            u.spruecheAnAlle = 1;
+            u.spruecheAnMehrere = 2;
+            u.buchstabierenAn = 2;
+            u.anmeldungAktiv = true;
+            u.autoStaerkeErgaenzen = true;
+            u.loesungswoerter = { A: "ALFA", B: "BRAVO", C: "CHARLIE", D: "DELTA" };
+            u.funksprueche = Array.from({ length: 40 }, (_, i) => `Meldung ${i} an NIENBURG${i}`);
+            if (seed) {
+                u.seed = seed;
+            }
+            return u;
+        };
+
+        // Der Seed selbst und die daraus abgeleiteten Codes sind Teil des
+        // Ergebnisses; verglichen wird alles, was die Übung inhaltlich ausmacht.
+        const ergebnis = (u: FunkUebung): string => JSON.stringify({
+            nachrichten: u.nachrichten,
+            teilnehmerIds: u.teilnehmerIds,
+            uebungCode: u.uebungCode,
+            loesungsStaerken: u.loesungsStaerken
+        });
+
+        it("erzeugt bei gleichem Seed exakt dieselbe Übung", () => {
+            const a = baueSeedUebung("vergleichslauf-2026");
+            const b = baueSeedUebung("vergleichslauf-2026");
+
+            new GenerationService().generate(a);
+            new GenerationService().generate(b);
+
+            expect(ergebnis(b)).toBe(ergebnis(a));
+            expect(a.checksumme).toBe(b.checksumme);
+        });
+
+        it("erzeugt bei unterschiedlichem Seed unterschiedliche Übungen", () => {
+            const a = baueSeedUebung("gruppe-nord");
+            const b = baueSeedUebung("gruppe-sued");
+
+            new GenerationService().generate(a);
+            new GenerationService().generate(b);
+
+            expect(ergebnis(b)).not.toBe(ergebnis(a));
+        });
+
+        it("hinterlegt einen Seed, wenn keiner gesetzt ist", () => {
+            const u = baueSeedUebung();
+
+            new GenerationService().generate(u);
+
+            expect(u.seed).toBeTruthy();
+        });
+
+        it("lässt sich mit dem hinterlegten Seed exakt nachstellen", () => {
+            const original = baueSeedUebung();
+            new GenerationService().generate(original);
+
+            // So wird ein gemeldeter Fehler reproduziert: Seed der gespeicherten
+            // Übung übernehmen und neu generieren.
+            const nachgestellt = baueSeedUebung(original.seed);
+            new GenerationService().generate(nachgestellt);
+
+            expect(ergebnis(nachgestellt)).toBe(ergebnis(original));
+        });
+
+        it("bleibt über mehrere Läufe derselben Instanz deterministisch", () => {
+            const service = new GenerationService();
+            const a = baueSeedUebung("wiederverwendung");
+            const b = baueSeedUebung("wiederverwendung");
+
+            service.generate(a);
+            service.generate(b);
+
+            expect(ergebnis(b)).toBe(ergebnis(a));
+        });
+    });
 });

@@ -337,8 +337,10 @@ export class GeneratorController {
         });
         try {
             const texts = await Promise.all(promises);
-            this.funkUebung.funksprueche = this.normalizeFunksprueche(texts.flatMap(t => t.split("\n")))
-                .sort(() => Math.random() - 0.5);
+            // Reihenfolge bleibt die der Vorlagen: GenerationService mischt den
+            // Spruch-Pool ohnehin selbst, und zwar mit dem Seed der Übung. Ein
+            // Vorab-Mischen hier würde die Reproduzierbarkeit wieder aushebeln.
+            this.funkUebung.funksprueche = this.normalizeFunksprueche(texts.flatMap(t => t.split("\n")));
             return true;
         } catch (error) {
             console.error(error);

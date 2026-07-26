@@ -6,6 +6,7 @@ import {
     erzeugeBuchstabierAufgabe
 } from "../utils/buchstabieren";
 import CryptoJS from "crypto-js";
+import { createRandomSeed, createSeededRng, randomInt, randomIntBetween, shuffle, type Rng } from "../utils/random";
 
 export class GenerationService {
     private static readonly SHORT_CODE_ALPHABET = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
@@ -13,11 +14,18 @@ export class GenerationService {
     private static readonly TEILNEHMER_CODE_LENGTH = 4;
 
     /**
+     * Zufallsquelle des laufenden Generierungsvorgangs. Wird zu Beginn von
+     * `generate` aus dem Seed der Übung aufgebaut.
+     */
+    private rng: Rng = Math.random;
+
+    /**
      * Hauptfunktion zum Erstellen einer Übung.
      * Füllt die Nachrichten, Lösungswörter und Stärken.
      */
     public generate(uebung: FunkUebung): void {
         uebung.createDate = new Date();
+        this.rng = this.erzeugeZufallsquelle(uebung);
         uebung.nachrichten = this.verteileNachrichtenFair(uebung);
         this.assignXZeitSlots(uebung);
         this.verteileLoesungswoerterMitIndex(uebung);
@@ -25,6 +33,22 @@ export class GenerationService {
 
         this.updateChecksum(uebung);
         this.berechneLoesungsStaerken(uebung);
+    }
+
+    /**
+     * Legt die Zufallsquelle für einen Generierungslauf fest.
+     *
+     * Ist an der Übung kein Seed hinterlegt, wird einer erzeugt und dort
+     * gespeichert. Damit lässt sich jede Übung nachträglich exakt wiederholen –
+     * für Vergleichsläufe zweier Gruppen oder um einen gemeldeten Fehler
+     * nachzustellen –, ohne dass jemand vorher an das Setzen eines Seeds denken
+     * muss.
+     */
+    private erzeugeZufallsquelle(uebung: FunkUebung): Rng {
+        if (!uebung.seed) {
+            uebung.seed = createRandomSeed();
+        }
+        return createSeededRng(uebung.seed);
     }
 
     private assignXZeitSlots(uebung: FunkUebung): void {
@@ -106,7 +130,7 @@ export class GenerationService {
         const alphabet = GenerationService.SHORT_CODE_ALPHABET;
         let result = "";
         for (let i = 0; i < length; i++) {
-            result += alphabet[Math.floor(Math.random() * alphabet.length)];
+            result += alphabet[randomInt(alphabet.length, this.rng)];
         }
         return result;
     }
@@ -146,7 +170,7 @@ export class GenerationService {
             return nachrichtenVerteilung;
         }
 
-        const dealer = this.createSpruchDealer(uebung.funksprueche);
+        const dealer = this.createSpruchDealer(uebung.funksprueche, this.rng);
         if (dealer.poolSize === 0) {
             return nachrichtenVerteilung;
         }
@@ -216,7 +240,6 @@ export class GenerationService {
         });
 
         // Mische alle Nachrichten
-        alleNachrichten.sort(() => Math.random() - 0.5);
         const gemischt = this.shuffleSmart(alleNachrichten);
 
         // Zuerst zuweisen, danach die Buchstabier-Aufgaben auf den Zielwert bringen.
@@ -324,7 +347,7 @@ export class GenerationService {
     }
 
     private shuffle<T>(liste: T[]): T[] {
-        return [...liste].sort(() => Math.random() - 0.5);
+        return shuffle(liste, this.rng);
     }
 
     /**
@@ -332,11 +355,11 @@ export class GenerationService {
      * bevor überhaupt ein Spruch ein zweites Mal vorkommt. Zusätzlich bekommt kein
      * Teilnehmer denselben Spruch doppelt, solange der Pool das hergibt.
      */
-    private createSpruchDealer(funksprueche: string[]): { poolSize: number; draw(bereitsVerwendet: Set<string>): string | undefined } {
+    private createSpruchDealer(funksprueche: string[], rng: Rng): { poolSize: number; draw(bereitsVerwendet: Set<string>): string | undefined } {
         const eindeutig = [...new Set(
             funksprueche.map(spruch => spruch.trim()).filter(spruch => spruch.length > 0)
         )];
-        const mischen = (): string[] => [...eindeutig].sort(() => Math.random() - 0.5);
+        const mischen = (): string[] => shuffle(eindeutig, rng);
         const deck: string[] = mischen();
 
         return {
@@ -364,10 +387,10 @@ export class GenerationService {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     private shuffleSmart(nachrichtenListe: any[]): any[] {
         const maxVersuche = 100;
-        const durchmischteListe = [...nachrichtenListe];
+        let durchmischteListe = [...nachrichtenListe];
 
         for (let versuch = 0; versuch < maxVersuche; versuch++) {
-            durchmischteListe.sort(() => Math.random() - 0.5);
+            durchmischteListe = shuffle(durchmischteListe, this.rng);
 
             let istGueltig = true;
             for (let i = 1; i < durchmischteListe.length; i++) {
@@ -396,23 +419,25 @@ export class GenerationService {
     private getRandomSubsetOfOthers(teilnehmerListe: string[], aktuellerTeilnehmer: string): string[] {
         const andere = teilnehmerListe.filter(t => t !== aktuellerTeilnehmer);
         const gesamtTeilnehmer = andere.length;
-        const gemischt = [...andere].sort(() => Math.random() - 0.5);
+        const gemischt = shuffle(andere, this.rng);
 
         let zufallsGroesse;
-        const zufallsWert = Math.random();
+        const zufallsWert = this.rng();
 
         if (zufallsWert < 0.8) {
-            zufallsGroesse = Math.floor(Math.random() * 2) + 2; 
+            zufallsGroesse = randomIntBetween(2, 3, this.rng);
         } else if (zufallsWert < 0.9) {
-            const maxHaelfte = Math.ceil(gesamtTeilnehmer / 2);
-            zufallsGroesse = Math.floor(Math.random() * (maxHaelfte - 4 + 1)) + 4;
+            zufallsGroesse = randomIntBetween(4, Math.ceil(gesamtTeilnehmer / 2), this.rng);
         } else if (zufallsWert < 0.95) {
-            const minFiftyPercent = Math.ceil(gesamtTeilnehmer * 0.5);
-            const maxSeventyFivePercent = Math.ceil(gesamtTeilnehmer * 0.75);
-            zufallsGroesse = Math.floor(Math.random() * (maxSeventyFivePercent - minFiftyPercent + 1)) + minFiftyPercent;
+            zufallsGroesse = randomIntBetween(
+                Math.ceil(gesamtTeilnehmer * 0.5),
+                Math.ceil(gesamtTeilnehmer * 0.75),
+                this.rng
+            );
         } else {
-            const maxAchtzigFuenfPercent = Math.ceil(gesamtTeilnehmer * 0.85);
-            zufallsGroesse = Math.floor(Math.random() * (maxAchtzigFuenfPercent - gesamtTeilnehmer + 1)) + gesamtTeilnehmer;
+            // Größte Stufe: 85 % bis alle. Vorher standen hier Unter- und
+            // Obergrenze vertauscht, wodurch der Zweig immer die volle Liste ergab.
+            zufallsGroesse = randomIntBetween(Math.ceil(gesamtTeilnehmer * 0.85), gesamtTeilnehmer, this.rng);
         }
 
         zufallsGroesse = Math.min(zufallsGroesse, gesamtTeilnehmer);
@@ -424,7 +449,7 @@ export class GenerationService {
         if (andere.length === 0) {
             return aktuellerTeilnehmer;
         }
-        const randomIndex = Math.floor(Math.random() * andere.length);
+        const randomIndex = randomInt(andere.length, this.rng);
         return andere[randomIndex] ?? aktuellerTeilnehmer;
     }
 
@@ -455,9 +480,8 @@ export class GenerationService {
                     return;
                 }
                 const ersteHaelfte = nachrichtenFuerEmpfaenger.slice(0, Math.ceil(nachrichtenFuerEmpfaenger.length / 2));
-                buchstabenMitIndex.sort(() => Math.random() - 0.5);
 
-                buchstabenMitIndex.forEach((buchstabeMitIndex, i) => {
+                shuffle(buchstabenMitIndex, this.rng).forEach((buchstabeMitIndex, i) => {
                     const zielNachricht = i < ersteHaelfte.length
                         ? ersteHaelfte[i]
                         : nachrichtenFuerEmpfaenger[i % nachrichtenFuerEmpfaenger.length];
@@ -590,15 +614,15 @@ export class GenerationService {
                         const ohneStaerke = einzelnEmpfangene.filter(e =>
                             !/(\d+)\s*\/+\s*(\d+)\s*\/+\s*(\d+)(?:\s*\/+\s*(\d+))?/.test(e.nachricht.nachricht)
                         );
-                        const gemischt = [...ohneStaerke].sort(() => Math.random() - 0.5);
+                        const gemischt = shuffle(ohneStaerke, this.rng);
                         auszuwahlende = gemischt.slice(0, anzahlStaerken);
                     }
 
                     for (const eintrag of auszuwahlende) {
                         if (eintrag.nachricht.empfaenger && eintrag.nachricht.empfaenger.length > 0) {
-                            const fuehrer = Math.floor(Math.random() * 4);
-                            const unterfuehrer = Math.floor(Math.random() * 9);
-                            const helfer = Math.floor(Math.random() * 31);
+                            const fuehrer = randomInt(4, this.rng);
+                            const unterfuehrer = randomInt(9, this.rng);
+                            const helfer = randomInt(31, this.rng);
                             const gesamt = fuehrer + unterfuehrer + helfer;
                             const staerkeText = `Aktuelle Stärke: ${fuehrer}/${unterfuehrer}/${helfer}/${gesamt}`;
                             eintrag.nachricht.nachricht += " " + staerkeText;

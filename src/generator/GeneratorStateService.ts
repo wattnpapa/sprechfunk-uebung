@@ -1,4 +1,5 @@
 import { FunkUebung } from "../models/FunkUebung";
+import { randomElement, shuffle } from "../utils/random";
 
 export type LoesungswortOption = "none" | "central" | "individual";
 
@@ -83,15 +84,13 @@ export class GeneratorStateService {
             if (predefinedWoerter.length === 0) {
                 return { error: "Keine vordefinierten Lösungswörter verfügbar." };
             }
-            const zentralesWort = predefinedWoerter[
-                Math.floor(Math.random() * predefinedWoerter.length)
-            ] ?? "";
+            const zentralesWort = randomElement(predefinedWoerter) ?? "";
             this.setZentralesLoesungswort(uebung, zentralesWort);
             return { centralWord: zentralesWort };
         }
 
         if (option === "individual") {
-            const shuffledWords = [...predefinedWoerter].sort(() => Math.random() - 0.5);
+            const shuffledWords = shuffle(predefinedWoerter);
             if (shuffledWords.length === 0) {
                 return { error: "Keine vordefinierten Lösungswörter verfügbar." };
             }

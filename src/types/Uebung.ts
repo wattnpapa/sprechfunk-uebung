@@ -30,6 +30,12 @@ export interface Uebung {
     checksumme: string;
     funksprueche: string[];
     anmeldungAktiv: boolean;
+    /**
+   * Startwert des Zufallsgenerators. Derselbe Seed erzeugt bei gleichen
+   * Eingaben (Teilnehmer, Vorlagen, Einstellungen) exakt dieselbe Übung.
+   * Optional für Rückwärtskompatibilität mit älteren Übungen.
+   */
+    seed?: string;
     istStandardKonfiguration?: boolean;
     spielModus?: "klassisch" | "xZeit";
     xZeitIntervallMinuten?: number;

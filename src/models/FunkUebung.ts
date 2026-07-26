@@ -29,6 +29,7 @@ export class FunkUebung implements Uebung {
     anmeldungAktiv = true;
     verwendeteVorlagen?: string[];
     istStandardKonfiguration?: boolean;
+    seed?: string;
     spielModus?: "klassisch" | "xZeit";
     xZeitIntervallMinuten?: number;
     xZeitStartOffsetMinuten?: number;
@@ -124,6 +125,7 @@ export class FunkUebung implements Uebung {
             spruecheAnMehrere: this.spruecheAnMehrere,
             buchstabierenAn: this.buchstabierenAn,
             anmeldungAktiv: this.anmeldungAktiv,
+            seed: this.seed,
             verwendeteVorlagen: this.verwendeteVorlagen,
             istStandardKonfiguration: this.istStandardKonfiguration,
             spielModus: this.spielModus,
