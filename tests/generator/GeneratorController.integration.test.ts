@@ -17,6 +17,7 @@ vi.mock("../../src/services/FirebaseService", () => ({
         getUebung(_id: any) { return null; }
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         saveUebung(_u: any) { return Promise.resolve(); }
+        isUebungCodeVergeben() { return Promise.resolve(false); }
     }
 }));
 
@@ -24,6 +25,10 @@ vi.mock("../../src/services/GenerationService", () => ({
     GenerationService: class {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         generate(_u: any) {}
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        ensureUniqueUebungCode(_u: any, istVergeben: (code: string) => Promise<boolean>) {
+            return istVergeben("K7M4Q2").then(vergeben => !vergeben);
+        }
     }
 }));
 
@@ -77,9 +82,9 @@ describe("GeneratorController startUebung integration", () => {
         const generate = vi.fn();
         const saveUebung = vi.fn().mockResolvedValue(undefined);
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        (controller as any).generationService = { generate };
+        (controller as any).generationService = { generate, ensureUniqueUebungCode: vi.fn().mockResolvedValue(true) };
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        (controller as any).firebaseService = { saveUebung };
+        (controller as any).firebaseService = { saveUebung, isUebungCodeVergeben: vi.fn().mockResolvedValue(false) };
 
         // stub view
         const view = {
@@ -129,9 +134,9 @@ describe("GeneratorController startUebung integration", () => {
         const generate = vi.fn();
         const saveUebung = vi.fn().mockResolvedValue(undefined);
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        (controller as any).generationService = { generate };
+        (controller as any).generationService = { generate, ensureUniqueUebungCode: vi.fn().mockResolvedValue(true) };
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        (controller as any).firebaseService = { saveUebung };
+        (controller as any).firebaseService = { saveUebung, isUebungCodeVergeben: vi.fn().mockResolvedValue(false) };
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         (controller as any).renderUebungResult = vi.fn();
 

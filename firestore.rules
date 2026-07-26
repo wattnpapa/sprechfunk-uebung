@@ -1,0 +1,153 @@
+rules_version = '2';
+
+// Sicherheitsregeln für den Sprechfunk-Übungsgenerator.
+//
+// ACHTUNG – bewusst gewähltes Sicherheitsmodell:
+// Die Anwendung kennt keine Authentifizierung. Übungsleitung, Teilnehmer und
+// Admin-Ansicht sind reine Client-Routen ohne Login. Diese Regeln können daher
+// keinen Aufrufer unterscheiden; sie leisten:
+//   * Whitelist der Collection: außerhalb von /uebungen/{id} ist nichts erlaubt.
+//   * Strukturprüfung beim Schreiben: nur bekannte Felder, korrekte Typen,
+//     begrenzte Stringlängen und Listengrößen.
+//   * Schutz der Dokument-ID gegen Umschreiben.
+//
+// Bekannte Restrisiken (nicht durch Regeln abgedeckt):
+//   1. Jeder mit dem öffentlichen API-Key kann Übungen lesen, anlegen und
+//      LÖSCHEN. Der Übungscode ist ein Auffindbarkeits-, kein Zugriffsschutz.
+//   2. Eine unbegrenzte list-Abfrage kann die gesamte Collection abziehen.
+//      Ein `request.query.limit`-Gate ist hier nicht gesetzt, weil die
+//      Aggregations-Queries des Admin-Dashboards (count/sum) ohne Limit laufen.
+// Beides ließe sich nur mit einem Identitätsbegriff schließen — anonyme
+// Firebase-Auth plus Custom Claim für die Admin-Rolle, ergänzt um App Check
+// gegen Fremdclients. Bis dahin gilt: keine personenbezogenen oder sonst
+// schützenswerten Daten in Übungen erfassen.
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Default-Deny. Steht hier zur Dokumentation der Absicht; Firestore
+    // verweigert ohnehin alles, wofür keine allow-Regel greift.
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    match /uebungen/{uebungId} {
+      allow get, list: if true;
+
+      allow create: if istGueltigeUebung(request.resource.data)
+                    && request.resource.data.id == uebungId;
+
+      allow update: if istGueltigeUebung(request.resource.data)
+                    && request.resource.data.id == uebungId
+                    && request.resource.data.id == resource.data.id;
+
+      // Siehe Restrisiko 1: ohne Identität nicht weiter einschränkbar.
+      allow delete: if true;
+
+      // Unterkollektionen nutzt die Anwendung nicht.
+      match /{unterpfad=**} {
+        allow read, write: if false;
+      }
+    }
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Hilfsfunktionen
+// ---------------------------------------------------------------------------
+
+// Feldliste synchron halten mit FunkUebung.toJson() und
+// FirebaseService.buildStatistikFelder(). Der Vertragstest
+// tests/services/FirestoreRules.contract.test.ts schlägt fehl, sobald ein
+// tatsächlich gespeichertes Feld hier nicht aufgeführt ist.
+function erlaubteFelder() {
+  return [
+    'id', 'uebungCode', 'checksumme', 'createDate', 'name', 'datum',
+    'rufgruppe', 'leitung', 'buildVersion', 'teilnehmerListe', 'teilnehmerIds',
+    'teilnehmerStellen', 'nachrichten', 'loesungswoerter', 'loesungsStaerken',
+    'spruecheProTeilnehmer', 'spruecheAnAlle', 'spruecheAnMehrere',
+    'buchstabierenAn', 'anmeldungAktiv', 'verwendeteVorlagen',
+    'istStandardKonfiguration', 'spielModus', 'xZeitIntervallMinuten',
+    'xZeitStartOffsetMinuten', 'seed', 'statTeilnehmerAnzahl', 'statNachrichtenAnzahl',
+    'statBytes', 'statMonat', 'statHatLoesungswoerter',
+    'statHatLoesungsStaerken', 'statHatBuchstabieren'
+  ];
+}
+
+function pflichtFelder() {
+  return [
+    'id', 'uebungCode', 'name', 'datum', 'createDate', 'teilnehmerListe',
+    'teilnehmerIds', 'nachrichten'
+  ];
+}
+
+function istText(wert, maxLaenge) {
+  return wert is string && wert.size() <= maxLaenge;
+}
+
+// Datum liegt je nach Speicherpfad als ISO-String oder als Timestamp vor.
+function istZeitpunkt(wert) {
+  return wert is timestamp || (wert is string && wert.size() <= 40);
+}
+
+function istZahlImBereich(wert, min, max) {
+  return wert is number && wert >= min && wert <= max;
+}
+
+function optionalOk(daten, feld, bedingung) {
+  return !daten.keys().hasAny([feld]) || bedingung;
+}
+
+function istGueltigeUebung(daten) {
+  return daten.keys().hasOnly(erlaubteFelder())
+         && daten.keys().hasAll(pflichtFelder())
+         && istText(daten.id, 64)
+         && daten.uebungCode.matches('^[A-Z0-9]{6}$')
+         && istText(daten.name, 200)
+         && istZeitpunkt(daten.datum)
+         && istZeitpunkt(daten.createDate)
+         && daten.teilnehmerListe is list
+         && daten.teilnehmerListe.size() <= 100
+         && daten.teilnehmerIds is map
+         && daten.teilnehmerIds.size() <= 100
+         && daten.nachrichten is map
+         && daten.nachrichten.size() <= 100
+         && istOptionalesGueltig(daten)
+         && sindStatistikFelderGueltig(daten);
+}
+
+function istOptionalesGueltig(daten) {
+  return optionalOk(daten, 'checksumme', istText(daten.checksumme, 64))
+         && optionalOk(daten, 'rufgruppe', istText(daten.rufgruppe, 100))
+         && optionalOk(daten, 'leitung', istText(daten.leitung, 100))
+         && optionalOk(daten, 'buildVersion', istText(daten.buildVersion, 64))
+         // Seed der Nachrichtenverteilung. Offen lesbar und damit kein Geheimnis
+         // — die Zugangscodes werden bewusst nicht daraus abgeleitet.
+         && optionalOk(daten, 'seed', istText(daten.seed, 64))
+         && optionalOk(daten, 'teilnehmerStellen', daten.teilnehmerStellen is map)
+         && optionalOk(daten, 'loesungswoerter', daten.loesungswoerter is map)
+         && optionalOk(daten, 'loesungsStaerken', daten.loesungsStaerken is map)
+         && optionalOk(daten, 'verwendeteVorlagen', daten.verwendeteVorlagen is list
+                                                    && daten.verwendeteVorlagen.size() <= 50)
+         && optionalOk(daten, 'anmeldungAktiv', daten.anmeldungAktiv is bool)
+         && optionalOk(daten, 'istStandardKonfiguration', daten.istStandardKonfiguration is bool)
+         && optionalOk(daten, 'spielModus', daten.spielModus in ['klassisch', 'xZeit'])
+         && optionalOk(daten, 'spruecheProTeilnehmer', istZahlImBereich(daten.spruecheProTeilnehmer, 0, 1000))
+         && optionalOk(daten, 'spruecheAnAlle', istZahlImBereich(daten.spruecheAnAlle, 0, 1000))
+         && optionalOk(daten, 'spruecheAnMehrere', istZahlImBereich(daten.spruecheAnMehrere, 0, 1000))
+         && optionalOk(daten, 'buchstabierenAn', istZahlImBereich(daten.buchstabierenAn, 0, 1000))
+         && optionalOk(daten, 'xZeitIntervallMinuten', istZahlImBereich(daten.xZeitIntervallMinuten, 0, 1440))
+         && optionalOk(daten, 'xZeitStartOffsetMinuten', istZahlImBereich(daten.xZeitStartOffsetMinuten, 0, 1440));
+}
+
+// Die stat*-Felder speisen die Aggregations-Queries des Admin-Dashboards.
+// Werden sie manipuliert, sind nur die Kennzahlen falsch — trotzdem eng führen.
+function sindStatistikFelderGueltig(daten) {
+  return optionalOk(daten, 'statTeilnehmerAnzahl', istZahlImBereich(daten.statTeilnehmerAnzahl, 0, 100))
+         && optionalOk(daten, 'statNachrichtenAnzahl', istZahlImBereich(daten.statNachrichtenAnzahl, 0, 100000))
+         && optionalOk(daten, 'statBytes', istZahlImBereich(daten.statBytes, 0, 5000000))
+         && optionalOk(daten, 'statMonat', istZahlImBereich(daten.statMonat, 0, 11))
+         && optionalOk(daten, 'statHatLoesungswoerter', daten.statHatLoesungswoerter is bool)
+         && optionalOk(daten, 'statHatLoesungsStaerken', daten.statHatLoesungsStaerken is bool)
+         && optionalOk(daten, 'statHatBuchstabieren', daten.statHatBuchstabieren is bool);
+}

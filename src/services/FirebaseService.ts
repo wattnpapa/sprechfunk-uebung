@@ -11,15 +11,25 @@ import {
     startAfter, 
     where,
     getDocs,
+    getCountFromServer,
+    getAggregateFromServer,
+    count,
+    sum,
     Timestamp,
-    QuerySnapshot,
-    DocumentData
+    type QueryConstraint
 } from "firebase/firestore";
 import { Uebung } from "../types/Uebung";
 import type { Nachricht } from "../types/Nachricht";
 import { FunkUebung } from "../models/FunkUebung";
 
 export class FirebaseService {
+    /**
+     * Übungscodes sind durch `ensureUniqueUebungCode` eindeutig. Sollte durch ein
+     * Wettrennen zweier Generatoren dennoch ein Duplikat entstehen, werden mehrere
+     * Treffer geladen und über den Teilnehmercode entschieden.
+     */
+    private static readonly JOIN_CODE_KANDIDATEN = 5;
+
     constructor(private db: Firestore) {}
 
     private isMissingIndexError(error: unknown): boolean {
@@ -166,14 +176,62 @@ export class FirebaseService {
         cleaned["teilnehmerIds"] = this.cleanupRecordKeys(cleaned["teilnehmerIds"]);
         cleaned["teilnehmerStellen"] = this.cleanupRecordKeys(cleaned["teilnehmerStellen"]);
 
+        Object.assign(cleaned, this.buildStatistikFelder(cleaned));
+
         Object.keys(cleaned).forEach(key => {
             if (cleaned[key] === undefined) {
-                 
+
                 delete cleaned[key];
             }
         });
 
         return cleaned;
+    }
+
+    /**
+     * Denormalisierte Kennzahlen, damit das Admin-Dashboard über
+     * Aggregations-Queries auswerten kann, statt jedes Dokument zu laden.
+     * Werden bei jedem Speichern neu berechnet.
+     */
+    private buildStatistikFelder(cleaned: Record<string, unknown>): Record<string, unknown> {
+        const teilnehmerListe = Array.isArray(cleaned["teilnehmerListe"]) ? cleaned["teilnehmerListe"] : [];
+        const nachrichten = (cleaned["nachrichten"] || {}) as Record<string, unknown>;
+
+        let nachrichtenAnzahl = 0;
+        Object.values(nachrichten).forEach(msgs => {
+            if (Array.isArray(msgs)) {
+                nachrichtenAnzahl += msgs.length;
+            }
+        });
+
+        const monat = this.extractMonat(cleaned["datum"]);
+
+        return {
+            statTeilnehmerAnzahl: teilnehmerListe.length,
+            statNachrichtenAnzahl: nachrichtenAnzahl,
+            // Grobe Schätzung der Dokumentgröße, wie bisher im Admin-Dashboard ausgewiesen.
+            statBytes: JSON.stringify(cleaned).length,
+            statHatLoesungswoerter: this.hasNonEmptyRecord(cleaned["loesungswoerter"]),
+            statHatLoesungsStaerken: this.hasNonEmptyRecord(cleaned["loesungsStaerken"]),
+            statHatBuchstabieren: Number(cleaned["buchstabierenAn"] || 0) > 0,
+            // undefined bei unlesbarem Datum -> Feld wird verworfen, Übung taucht
+            // dann nicht im Monatsdiagramm auf.
+            statMonat: monat
+        };
+    }
+
+    private extractMonat(rohwert: unknown): number | undefined {
+        if (!rohwert) {
+            return undefined;
+        }
+        const maybeTimestamp = rohwert as { toDate?: () => Date };
+        const datum = typeof maybeTimestamp.toDate === "function"
+            ? maybeTimestamp.toDate()
+            : new Date(rohwert as string | number | Date);
+        if (!(datum instanceof Date) || isNaN(datum.getTime())) {
+            return undefined;
+        }
+        return datum.getMonth();
     }
 
     private isLocalMockMode(): boolean {
@@ -404,44 +462,77 @@ export class FirebaseService {
 
         if (this.isLocalMockMode()) {
             const store = this.readMockStore();
-            const found = Object.entries(store).find(([, value]) =>
+            const kandidaten = Object.entries(store).filter(([, value]) =>
                 typeof value?.uebungCode === "string" && value.uebungCode.toUpperCase() === uebungCode
             );
-            if (!found) {
-                return null;
+            for (const [uebungId, data] of kandidaten) {
+                const treffer = this.matchTeilnehmerCode(data?.teilnehmerIds, teilnehmerCode);
+                if (treffer) {
+                    return { uebungId, ...treffer };
+                }
             }
-            const [uebungId, data] = found;
-            const teilnehmerIds = (data?.teilnehmerIds && typeof data.teilnehmerIds === "object")
-                ? data.teilnehmerIds as Record<string, unknown>
-                : {};
-            const matchedEntry = Object.entries(teilnehmerIds).find(([code]) => code.toUpperCase() === teilnehmerCode);
-            if (!matchedEntry || typeof matchedEntry[1] !== "string") {
-                return null;
-            }
-            return { uebungId, teilnehmerId: matchedEntry[0], teilnehmerName: matchedEntry[1] };
+            return null;
         }
 
         const q = query(
             collection(this.db, "uebungen"),
             where("uebungCode", "==", uebungCode),
-            limit(1)
+            limit(FirebaseService.JOIN_CODE_KANDIDATEN)
         );
         const snapshot = await getDocs(q);
-        const docSnap = snapshot.docs[0];
-        if (!docSnap) {
-            return null;
+
+        for (const docSnap of snapshot.docs) {
+            const treffer = this.matchTeilnehmerCode(docSnap.data()["teilnehmerIds"], teilnehmerCode);
+            if (treffer) {
+                return { uebungId: docSnap.id, ...treffer };
+            }
         }
 
-        const data = docSnap.data();
-        const teilnehmerIds = (data["teilnehmerIds"] && typeof data["teilnehmerIds"] === "object")
-            ? data["teilnehmerIds"] as Record<string, unknown>
-            : {};
+        return null;
+    }
+
+    private matchTeilnehmerCode(
+        teilnehmerIdsRoh: unknown,
+        teilnehmerCode: string
+    ): { teilnehmerId: string; teilnehmerName: string } | null {
+        if (!teilnehmerIdsRoh || typeof teilnehmerIdsRoh !== "object") {
+            return null;
+        }
+        const teilnehmerIds = teilnehmerIdsRoh as Record<string, unknown>;
         const matchedEntry = Object.entries(teilnehmerIds).find(([code]) => code.toUpperCase() === teilnehmerCode);
         if (!matchedEntry || typeof matchedEntry[1] !== "string") {
             return null;
         }
+        return { teilnehmerId: matchedEntry[0], teilnehmerName: matchedEntry[1] };
+    }
 
-        return { uebungId: docSnap.id, teilnehmerId: matchedEntry[0], teilnehmerName: matchedEntry[1] };
+    /**
+     * Prüft, ob ein Übungscode bereits im Bestand vergeben ist.
+     * `exceptId` schließt die eigene Übung aus, damit erneutes Speichern
+     * einer bestehenden Übung den Code behält.
+     */
+    async isUebungCodeVergeben(codeRaw: string, exceptId?: string): Promise<boolean> {
+        const code = (codeRaw || "").trim().toUpperCase();
+        if (!code) {
+            return false;
+        }
+
+        if (this.isLocalMockMode()) {
+            const store = this.readMockStore();
+            return Object.entries(store).some(([id, value]) =>
+                id !== exceptId
+                && typeof value?.uebungCode === "string"
+                && value.uebungCode.toUpperCase() === code
+            );
+        }
+
+        const q = query(
+            collection(this.db, "uebungen"),
+            where("uebungCode", "==", code),
+            limit(2)
+        );
+        const snapshot = await getDocs(q);
+        return snapshot.docs.some(docSnap => docSnap.id !== exceptId);
     }
 
     /**
@@ -507,37 +598,66 @@ export class FirebaseService {
         return this.getUebungenPagedRemote(pageSize, lastVisible, direction, onlyTestExercises);
     }
 
-    async getUebungenSnapshot(onlyTestExercises = false): Promise<QuerySnapshot<DocumentData>> {
+    /**
+     * Anzahl der Übungen — als Aggregation, ohne die Dokumente zu laden.
+     */
+    async getUebungenCount(onlyTestExercises = false): Promise<number> {
         if (this.isLocalMockMode()) {
-            const store = this.readMockStore();
-            const entries = Object.entries(store).filter(([, data]) => {
-                if (!onlyTestExercises) {
-                    return true;
+            return this.readMockEntries(onlyTestExercises).length;
+        }
+        const snapshot = await getCountFromServer(this.buildUebungenQuery(onlyTestExercises));
+        return snapshot.data().count;
+    }
+
+    /**
+     * Übungen je Kalendermonat (Index 0 = Januar) für das Admin-Diagramm.
+     * Nutzt zwölf Count-Aggregationen über `statMonat` statt eines Vollscans.
+     * Übungen ohne `statMonat` (Altbestand vor dem Backfill) fehlen im Diagramm.
+     */
+    async getUebungenMonatsCounts(onlyTestExercises = false): Promise<number[]> {
+        if (this.isLocalMockMode()) {
+            const counts = Array.from({ length: 12 }, () => 0);
+            this.readMockEntries(onlyTestExercises).forEach(data => {
+                const monat = this.extractMonat(data["datum"]);
+                if (monat !== undefined) {
+                    counts[monat] = (counts[monat] ?? 0) + 1;
                 }
-                return Boolean((data as Record<string, unknown>)["istStandardKonfiguration"]);
             });
-            const docs = entries.map(([id, data]) => ({
-                id,
-                // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                data: () => data as any
-            }));
-            const snapshot = {
-                size: docs.length,
-                docs,
-                forEach: (cb: (doc: { id: string; data: () => DocumentData }) => void) => {
-                    docs.forEach(cb);
-                }
-            };
-            return snapshot as unknown as QuerySnapshot<DocumentData>;
+            return counts;
         }
-        if (!onlyTestExercises) {
-            return getDocs(collection(this.db, "uebungen"));
+
+        const monate = Array.from({ length: 12 }, (_, monat) => monat);
+        return Promise.all(monate.map(async monat => {
+            const snapshot = await getCountFromServer(
+                this.buildUebungenQuery(onlyTestExercises, where("statMonat", "==", monat))
+            );
+            return snapshot.data().count;
+        }));
+    }
+
+    private buildUebungenQuery(onlyTestExercises: boolean, ...zusatz: QueryConstraint[]) {
+        const constraints = [...zusatz];
+        if (onlyTestExercises) {
+            constraints.push(where("istStandardKonfiguration", "==", true));
         }
-        return getDocs(query(collection(this.db, "uebungen"), where("istStandardKonfiguration", "==", true)));
+        return query(collection(this.db, "uebungen"), ...constraints);
+    }
+
+    private readMockEntries(onlyTestExercises: boolean): Record<string, unknown>[] {
+        const store = this.readMockStore();
+        return (Object.values(store) as Record<string, unknown>[]).filter(data =>
+            !onlyTestExercises || Boolean(data["istStandardKonfiguration"])
+        );
     }
 
     /**
      * Lädt Statistiken für das Admin-Dashboard.
+     *
+     * Im Firestore-Pfad ausschließlich über Aggregations-Queries auf den
+     * denormalisierten `stat*`-Feldern (siehe `buildStatistikFelder`), damit
+     * nicht die komplette Collection heruntergeladen wird. Dokumente, die vor
+     * Einführung dieser Felder gespeichert wurden, fehlen in den Summen, bis
+     * `scripts/backfill-stat-felder.mjs` gelaufen ist.
      */
     async getAdminStats() {
         if (this.isLocalMockMode()) {
@@ -582,47 +702,36 @@ export class FirebaseService {
             };
         }
         const uebungenCol = collection(this.db, "uebungen");
-        const allDocsSnap = await getDocs(uebungenCol);
 
-        let totalTeilnehmer = 0;
-        let totalBytes = 0;
-        let totalSprueche = 0;
-        let loesungsCount = 0;
-        let staerkeCount = 0;
-        let buchstabierCount = 0;
+        const [summen, loesungsCount, staerkeCount, buchstabierCount] = await Promise.all([
+            getAggregateFromServer(uebungenCol, {
+                total: count(),
+                totalTeilnehmer: sum("statTeilnehmerAnzahl"),
+                totalSprueche: sum("statNachrichtenAnzahl"),
+                totalBytes: sum("statBytes")
+            }),
+            this.countWhereFlag("statHatLoesungswoerter"),
+            this.countWhereFlag("statHatLoesungsStaerken"),
+            this.countWhereFlag("statHatBuchstabieren")
+        ]);
 
-        allDocsSnap.forEach(doc => {
-            const data = doc.data();
-            totalTeilnehmer += (data["teilnehmerListe"]?.length || 0);
-            if (this.hasNonEmptyRecord(data["loesungswoerter"])) {
-                loesungsCount++;
-            }
-            if (this.hasNonEmptyRecord(data["loesungsStaerken"])) {
-                staerkeCount++;
-            }
-            if ((data["buchstabierenAn"] || 0) > 0) {
-                buchstabierCount++;
-            }
-            // Grobe Schätzung der Größe
-            totalBytes += JSON.stringify(data).length;
-            // Anzahl Nachrichten zählen
-            const nachrichten = data["nachrichten"] || {};
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            Object.values(nachrichten).forEach((msgs: any) => {
-                if (Array.isArray(msgs)) {
-                    totalSprueche += msgs.length;
-                }
-            });
-        });
+        const werte = summen.data();
 
         return {
-            total: allDocsSnap.size,
-            totalTeilnehmer,
-            totalBytes,
-            totalSprueche,
+            total: werte.total,
+            totalTeilnehmer: werte.totalTeilnehmer,
+            totalBytes: werte.totalBytes,
+            totalSprueche: werte.totalSprueche,
             loesungsCount,
             staerkeCount,
             buchstabierCount
         };
+    }
+
+    private async countWhereFlag(feld: string): Promise<number> {
+        const snapshot = await getCountFromServer(
+            query(collection(this.db, "uebungen"), where(feld, "==", true))
+        );
+        return snapshot.data().count;
     }
 }

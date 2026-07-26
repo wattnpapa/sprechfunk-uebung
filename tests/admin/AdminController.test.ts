@@ -5,7 +5,8 @@ const mocks = vi.hoisted(() => ({
     initializeApp: vi.fn(),
     getAdminStats: vi.fn(),
     getUebungenPaged: vi.fn(),
-    getUebungenSnapshot: vi.fn(),
+    getUebungenCount: vi.fn(),
+    getUebungenMonatsCounts: vi.fn(),
     deleteUebung: vi.fn(),
     renderStatistik: vi.fn(),
     renderUebungsListe: vi.fn(),
@@ -23,7 +24,8 @@ vi.mock("../../src/services/FirebaseService", () => ({
     FirebaseService: class {
         getAdminStats = mocks.getAdminStats;
         getUebungenPaged = mocks.getUebungenPaged;
-        getUebungenSnapshot = mocks.getUebungenSnapshot;
+        getUebungenCount = mocks.getUebungenCount;
+        getUebungenMonatsCounts = mocks.getUebungenMonatsCounts;
         deleteUebung = mocks.deleteUebung;
     }
 }));
@@ -73,7 +75,7 @@ describe("AdminController", () => {
     it("loads paged exercises and updates list", async () => {
         const { AdminController } = await import("../../src/admin/index");
         mocks.getUebungenPaged.mockResolvedValue({ uebungen: [{ buildVersion: "v1" }], lastVisible: null });
-        mocks.getUebungenSnapshot.mockResolvedValue({ size: 5 });
+        mocks.getUebungenCount.mockResolvedValue(5);
         const c = new AdminController();
         c.setDb({ db: true } as never);
         await c.ladeAlleUebungen("initial");
@@ -109,13 +111,10 @@ describe("AdminController", () => {
             total: 1, totalTeilnehmer: 1, totalBytes: 1000, totalSprueche: 10,
             loesungsCount: 0, staerkeCount: 0, buchstabierCount: 0
         });
-        mocks.getUebungenSnapshot.mockResolvedValueOnce({
-            forEach: (cb: (d: { data: () => { datum: string } }) => void) => {
-                cb({ data: () => ({ datum: "2026-01-02T00:00:00Z" }) });
-                cb({ data: () => ({ datum: { toDate: () => new Date("2026-02-03T00:00:00Z") } }) });
-                cb({ data: () => ({ datum: "invalid" }) });
-            }
-        });
+        const monatsCounts = Array.from({ length: 12 }, () => 0);
+        monatsCounts[0] = 1;
+        monatsCounts[1] = 1;
+        mocks.getUebungenMonatsCounts.mockResolvedValueOnce(monatsCounts);
         await c.renderUebungsStatistik();
         expect(mocks.renderChart).toHaveBeenCalled();
     });
@@ -152,7 +151,7 @@ describe("AdminController", () => {
         const c = new AdminController();
         c.setDb({ db: true } as never);
         mocks.getUebungenPaged.mockResolvedValue({ uebungen: [], lastVisible: null });
-        mocks.getUebungenSnapshot.mockResolvedValue({ size: 0 });
+        mocks.getUebungenCount.mockResolvedValue(0);
 
         const bindCall = mocks.bindListEvents.mock.calls[0];
         const onOnlyTestFilterChange = bindCall?.[3] as ((checked: boolean) => void) | undefined;
@@ -163,6 +162,6 @@ describe("AdminController", () => {
         await Promise.resolve();
 
         expect(mocks.getUebungenPaged).toHaveBeenCalledWith(10, null, "initial", true);
-        expect(mocks.getUebungenSnapshot).toHaveBeenCalledWith(true);
+        expect(mocks.getUebungenCount).toHaveBeenCalledWith(true);
     });
 });

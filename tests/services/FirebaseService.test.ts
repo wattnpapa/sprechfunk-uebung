@@ -81,7 +81,7 @@ describe("FirebaseService local mock mode", () => {
         expect(stats.loesungsCount).toBeGreaterThanOrEqual(1);
     });
 
-    it("covers local helper branches and snapshot iteration", async () => {
+    it("covers local helper branches and aggregation in mock mode", async () => {
         const s = new FirebaseService({} as never);
         window.localStorage.setItem("e2eFirestoreSeed", "not-json");
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -90,10 +90,19 @@ describe("FirebaseService local mock mode", () => {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         expect((s as any).readMockStore()).toEqual({ a: 1 });
 
-        const snap = await s.getUebungenSnapshot();
-        let count = 0;
-        snap.forEach(() => { count += 1; });
-        expect(count).toBe(snap.size);
+        window.localStorage.setItem("e2eFirestoreSeed", JSON.stringify({
+            u1: { datum: "2026-01-15T00:00:00.000Z" },
+            u2: { datum: "2026-02-15T00:00:00.000Z" },
+            u3: { datum: "kein-datum" }
+        }));
+        expect(await s.getUebungenCount()).toBe(3);
+
+        const monate = await s.getUebungenMonatsCounts();
+        expect(monate).toHaveLength(12);
+        expect(monate[0]).toBe(1);
+        expect(monate[1]).toBe(1);
+        // Übung ohne lesbares Datum taucht in keinem Monat auf.
+        expect(monate.reduce((a, b) => a + b, 0)).toBe(2);
     });
 
     it("maps invalid/legacy values to safe domain defaults", () => {
@@ -134,7 +143,7 @@ describe("FirebaseService local mock mode", () => {
         expect(await s.getUebung("p1")).toBeNull();
     });
 
-    it("filters paged/snapshot exercises in mock mode by test flag", async () => {
+    it("filters paged exercises and counts in mock mode by test flag", async () => {
         const s = new FirebaseService({} as never);
         const mk = async (id: string, isTest: boolean) => {
             const u = new FunkUebung("dev");
@@ -149,8 +158,8 @@ describe("FirebaseService local mock mode", () => {
         const filtered = await s.getUebungenPaged(10, null, "initial", true);
         expect(filtered.uebungen.every(u => u.istStandardKonfiguration)).toBe(true);
 
-        const filteredSnap = await s.getUebungenSnapshot(true);
-        expect(filteredSnap.size).toBeGreaterThanOrEqual(1);
+        expect(await s.getUebungenCount(true)).toBe(1);
+        expect(await s.getUebungenCount()).toBe(2);
     });
 
     it("maps rich message payload incl staerken/letters and defaults", () => {

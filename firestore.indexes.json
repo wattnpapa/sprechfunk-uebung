@@ -1,0 +1,23 @@
+{
+  "indexes": [
+    {
+      "_kommentar": "getUebungenPagedRemote: Filter auf Testuebungen plus Sortierung nach createDate.",
+      "collectionGroup": "uebungen",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "istStandardKonfiguration", "order": "ASCENDING" },
+        { "fieldPath": "createDate", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "_kommentar": "getUebungenMonatsCounts mit aktiviertem Testuebungs-Filter.",
+      "collectionGroup": "uebungen",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "istStandardKonfiguration", "order": "ASCENDING" },
+        { "fieldPath": "statMonat", "order": "ASCENDING" }
+      ]
+    }
+  ],
+  "fieldOverrides": []
+}

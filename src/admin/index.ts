@@ -1,4 +1,4 @@
-import type { Firestore, QueryDocumentSnapshot, QuerySnapshot, DocumentData } from "firebase/firestore";
+import type { Firestore, QueryDocumentSnapshot } from "firebase/firestore";
 import { FirebaseService } from "../services/FirebaseService";
 import { AdminView } from "./AdminView";
 import { uiFeedback } from "../core/UiFeedback";
@@ -17,7 +17,8 @@ export class AdminController {
     private view: AdminView;
     private onlyTestExercises = false;
     private statsCache: { ts: number; data: Awaited<ReturnType<FirebaseService["getAdminStats"]>> } | null = null;
-    private snapshotCache: Partial<Record<"all" | "test", { ts: number; data: QuerySnapshot<DocumentData> }>> = {};
+    private countCache: Partial<Record<"all" | "test", { ts: number; data: number }>> = {};
+    private monatsCache: Partial<Record<"all" | "test", { ts: number; data: number[] }>> = {};
     private readonly cacheTtlMs = 120000;
 
     constructor() {
@@ -105,9 +106,8 @@ export class AdminController {
         );
 
         if (direction === "initial") {
-            // Keine AggregationQuery (Quota): Count über Snapshotgröße ermitteln
-            const totalSnap = await this.getUebungenSnapshotCached();
-            this.pagination.totalCount = totalSnap.size;
+            // Count-Aggregation statt Vollscan: kostet konstant wenige Reads.
+            this.pagination.totalCount = await this.getUebungenCountCached();
             this.pagination.currentPage = 0;
         } else if (direction === "next") {
             this.pagination.currentPage++;
@@ -158,28 +158,8 @@ export class AdminController {
         if (!this.ensureDbReady()) {
             return Array(12).fill(0);
         }
-        const snapshot = await this.getUebungenSnapshotCached();
-        const countsByMonth = Array(12).fill(0); // Index 0 = Januar, ..., 11 = Dezember
-
-        snapshot.forEach(doc => {
-            const data = doc.data();
-            // Datum parsen
-            let datum = new Date();
-            if (data["datum"]) {
-                if (typeof data["datum"].toDate === "function") {
-                    datum = data["datum"].toDate();
-                } else {
-                    datum = new Date(data["datum"]);
-                }
-            }
-            
-            if (!isNaN(datum.getTime())) {
-                const monat = datum.getMonth(); // 0-basiert: Januar = 0
-                countsByMonth[monat]++;
-            }
-        });
-
-        return countsByMonth;
+        // Index 0 = Januar, ..., 11 = Dezember
+        return this.getUebungenMonatsCountsCached();
     }
 
     async renderUebungsStatistik() {
@@ -201,19 +181,34 @@ export class AdminController {
         return this.statsCache.data;
     }
 
-    private async getUebungenSnapshotCached() {
+    private async getUebungenCountCached(): Promise<number> {
+        const key: "all" | "test" = this.onlyTestExercises ? "test" : "all";
+        const cached = this.countCache[key];
+        if (cached && (Date.now() - cached.ts) <= this.cacheTtlMs) {
+            return cached.data;
+        }
+        const data = await this.requireFirebaseService().getUebungenCount(this.onlyTestExercises);
+        this.countCache[key] = { ts: Date.now(), data };
+        return data;
+    }
+
+    private async getUebungenMonatsCountsCached(): Promise<number[]> {
+        const key: "all" | "test" = this.onlyTestExercises ? "test" : "all";
+        const cached = this.monatsCache[key];
+        if (cached && (Date.now() - cached.ts) <= this.cacheTtlMs) {
+            return cached.data;
+        }
+        const data = await this.requireFirebaseService().getUebungenMonatsCounts(this.onlyTestExercises);
+        this.monatsCache[key] = { ts: Date.now(), data };
+        return data;
+    }
+
+    private requireFirebaseService(): FirebaseService {
         const service = this.getFirebaseService();
         if (!service) {
             throw new Error("AdminController DB is not initialized");
         }
-        const key: "all" | "test" = this.onlyTestExercises ? "test" : "all";
-        const cached = this.snapshotCache[key];
-        if (cached && (Date.now() - cached.ts) <= this.cacheTtlMs) {
-            return cached.data;
-        }
-        const snap = await service.getUebungenSnapshot(this.onlyTestExercises);
-        this.snapshotCache[key] = { ts: Date.now(), data: snap };
-        return snap;
+        return service;
     }
 
     private getFirebaseService(): FirebaseService | null {
@@ -242,7 +237,9 @@ export class AdminController {
     }
 
     private invalidateCaches(): void {
-        this.snapshotCache = {};
+        this.countCache = {};
+        this.monatsCache = {};
+        this.statsCache = null;
     }
 
     private updateFooterInfo(version?: string) {

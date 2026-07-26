@@ -74,6 +74,8 @@ Workflow: `.github/workflows/main.yml`
 
 ## Sicherheit / Dependencies
 
+- Firestore-Zugriffsregeln: `firestore.rules` (Deploy: `firebase deploy --only firestore`)
+- Zugriffsmodell und bekannte Restrisiken: [adr/0005-firestore-sicherheitsregeln.md](adr/0005-firestore-sicherheitsregeln.md)
 - Sicherheitsupdates regelmäßig über Dependabot/NPM Audit
 - `jspdf`/`jspdf-autotable` auf aktuellem Stand
 - Dependabot Konfiguration: `.github/dependabot.yml`

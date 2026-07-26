@@ -126,13 +126,67 @@ export class GenerationService {
         return code;
     }
 
+    /**
+     * Sorgt dafür, dass der Übungscode gegenüber dem Bestand eindeutig ist.
+     * Die Bestandsprüfung wird injiziert, damit dieser Service frei von
+     * Firestore-Abhängigkeiten bleibt.
+     *
+     * @returns true, wenn ein freier Code vergeben werden konnte.
+     */
+    public async ensureUniqueUebungCode(
+        uebung: FunkUebung,
+        istVergeben: (code: string) => Promise<boolean>,
+        maxVersuche = 5
+    ): Promise<boolean> {
+        for (let versuch = 0; versuch < maxVersuche; versuch++) {
+            if (!(await istVergeben(uebung.uebungCode))) {
+                return true;
+            }
+            uebung.uebungCode = this.generateShortCode(GenerationService.UEBUNG_CODE_LENGTH);
+        }
+        return !(await istVergeben(uebung.uebungCode));
+    }
+
+    /**
+     * Zugangscodes stammen bewusst NICHT aus `this.rng`.
+     *
+     * Der Seed einer Übung wird im Übungsdokument gespeichert, und dieses
+     * Dokument ist ohne Authentifizierung lesbar (siehe firestore.rules). Aus
+     * einer seedbaren Quelle erzeugte Codes ließen sich damit von jedem
+     * nachrechnen, der den Seed sieht. Reproduzierbar soll die
+     * Nachrichtenverteilung sein, nicht die Zugangsdaten.
+     */
     private generateShortCode(length: number): string {
         const alphabet = GenerationService.SHORT_CODE_ALPHABET;
         let result = "";
         for (let i = 0; i < length; i++) {
-            result += alphabet[randomInt(alphabet.length, this.rng)];
+            result += alphabet[this.secureRandomIndex(alphabet.length)];
         }
         return result;
+    }
+
+    /**
+     * Gleichverteilter Zufallsindex aus der Web-Crypto-API.
+     * Bytes oberhalb des größten Vielfachen von `obergrenze` werden verworfen,
+     * damit kein Modulo-Bias entsteht (Rejection Sampling).
+     */
+    private secureRandomIndex(obergrenze: number): number {
+        const crypto = globalThis.crypto;
+        if (!crypto || typeof crypto.getRandomValues !== "function") {
+            throw new Error(
+                "Zugangscodes erfordern crypto.getRandomValues; diese Umgebung stellt die Web-Crypto-API nicht bereit."
+            );
+        }
+
+        const maxWert = 256 - (256 % obergrenze);
+        const puffer = new Uint8Array(1);
+        let wert = maxWert;
+        while (wert >= maxWert) {
+            crypto.getRandomValues(puffer);
+            wert = puffer[0] ?? maxWert;
+        }
+
+        return wert % obergrenze;
     }
 
     public updateChecksum(uebung: FunkUebung) {

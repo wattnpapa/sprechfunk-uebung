@@ -18,6 +18,7 @@ vi.mock("../../src/services/FirebaseService", () => ({
         getUebung(_id: any) { return null; }
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         saveUebung(_u: any) { return Promise.resolve(); }
+        isUebungCodeVergeben() { return Promise.resolve(false); }
     }
 }));
 
@@ -25,6 +26,10 @@ vi.mock("../../src/services/GenerationService", () => ({
     GenerationService: class {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         generate(_u: any) {}
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        ensureUniqueUebungCode(_u: any, istVergeben: (code: string) => Promise<boolean>) {
+            return istVergeben("K7M4Q2").then(vergeben => !vergeben);
+        }
     }
 }));
 
@@ -389,8 +394,11 @@ describe("GeneratorController", () => {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         (globalThis as any).fetch = vi.fn().mockResolvedValue({ text: async () => "A\nB\n" });
 
-        const generationService = { generate: vi.fn() };
-        const firebaseService = { saveUebung: vi.fn().mockResolvedValue(undefined) };
+        const generationService = { generate: vi.fn(), ensureUniqueUebungCode: vi.fn().mockResolvedValue(true) };
+        const firebaseService = {
+            saveUebung: vi.fn().mockResolvedValue(undefined),
+            isUebungCodeVergeben: vi.fn().mockResolvedValue(false)
+        };
         const renderUebungResult = vi.fn();
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         (controller as any).generationService = generationService;
@@ -793,8 +801,8 @@ describe("GeneratorController", () => {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         (globalThis as any).confirm = vi.fn(() => true);
         const errorSpy = vi.spyOn(console, "error").mockImplementation(() => {});
-        const generationService = { generate: vi.fn() };
-        const firebaseService = { saveUebung: vi.fn() };
+        const generationService = { generate: vi.fn(), ensureUniqueUebungCode: vi.fn().mockResolvedValue(true) };
+        const firebaseService = { saveUebung: vi.fn(), isUebungCodeVergeben: vi.fn().mockResolvedValue(false) };
         const renderUebungResult = vi.fn();
         const view = {
             getFormData: () => ({
@@ -920,8 +928,8 @@ describe("GeneratorController", () => {
             getUploadedFile: () => undefined,
             getZentralesLoesungswort: () => ""
         };
-        const generationService = { generate: vi.fn() };
-        const firebaseService = { saveUebung: vi.fn() };
+        const generationService = { generate: vi.fn(), ensureUniqueUebungCode: vi.fn().mockResolvedValue(true) };
+        const firebaseService = { saveUebung: vi.fn(), isUebungCodeVergeben: vi.fn().mockResolvedValue(false) };
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         (controller as any).generationService = generationService;
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -953,8 +961,8 @@ describe("GeneratorController", () => {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         (globalThis as any).confirm = vi.fn(() => true);
         const errorSpy = vi.spyOn(console, "error").mockImplementation(() => {});
-        const generationService = { generate: vi.fn() };
-        const firebaseService = { saveUebung: vi.fn() };
+        const generationService = { generate: vi.fn(), ensureUniqueUebungCode: vi.fn().mockResolvedValue(true) };
+        const firebaseService = { saveUebung: vi.fn(), isUebungCodeVergeben: vi.fn().mockResolvedValue(false) };
         let accessCount = 0;
         const flakyTemplates = new Proxy(
             {},

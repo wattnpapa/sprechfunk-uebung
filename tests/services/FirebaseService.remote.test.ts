@@ -12,7 +12,11 @@ const mocks = vi.hoisted(() => ({
     limit: vi.fn(),
     startAfter: vi.fn(),
     where: vi.fn(),
-    getDocs: vi.fn()
+    getDocs: vi.fn(),
+    getCountFromServer: vi.fn(),
+    getAggregateFromServer: vi.fn(),
+    count: vi.fn(),
+    sum: vi.fn()
 }));
 
 vi.mock("firebase/firestore", () => ({
@@ -27,6 +31,10 @@ vi.mock("firebase/firestore", () => ({
     startAfter: mocks.startAfter,
     where: mocks.where,
     getDocs: mocks.getDocs,
+    getCountFromServer: mocks.getCountFromServer,
+    getAggregateFromServer: mocks.getAggregateFromServer,
+    count: mocks.count,
+    sum: mocks.sum,
     Timestamp: class {
         private d: Date;
         constructor(d: Date) {
@@ -49,6 +57,8 @@ describe("FirebaseService firestore path", () => {
         mocks.limit.mockReturnValue("limit");
         mocks.startAfter.mockReturnValue("startAfter");
         mocks.where.mockReturnValue("where");
+        mocks.count.mockReturnValue("count");
+        mocks.sum.mockReturnValue("sum");
     });
 
     it("getUebung returns mapped domain for existing doc and null for missing", async () => {
@@ -107,7 +117,7 @@ describe("FirebaseService firestore path", () => {
         expect(mapped?.verwendeteVorlagen).toEqual(["v1"]);
     });
 
-    it("save/delete/paging/snapshot use firestore functions", async () => {
+    it("save/delete/paging use firestore functions", async () => {
         const { FirebaseService } = await import("../../src/services/FirebaseService");
         const s = new FirebaseService({} as never);
 
@@ -134,9 +144,8 @@ describe("FirebaseService firestore path", () => {
         await s.getUebungenPaged(10, "last", "next");
         expect(mocks.startAfter).toHaveBeenCalled();
 
-        mocks.getDocs.mockResolvedValueOnce({ size: 3, docs: [], forEach: vi.fn() });
-        const snap = await s.getUebungenSnapshot();
-        expect(snap.size).toBe(3);
+        mocks.getCountFromServer.mockResolvedValueOnce({ data: () => ({ count: 3 }) });
+        expect(await s.getUebungenCount()).toBe(3);
     });
 
     it("uses initial paging query for prev direction (contract)", async () => {
@@ -155,43 +164,54 @@ describe("FirebaseService firestore path", () => {
         await s.getUebungenPaged(5, null, "initial", true);
         expect(mocks.where).toHaveBeenCalledWith("istStandardKonfiguration", "==", true);
 
-        await s.getUebungenSnapshot(true);
+        mocks.getCountFromServer.mockResolvedValue({ data: () => ({ count: 0 }) });
+        await s.getUebungenCount(true);
         expect(mocks.where).toHaveBeenCalledWith("istStandardKonfiguration", "==", true);
     });
 
-    it("computes admin stats from firestore snapshot", async () => {
+    it("computes admin stats from aggregation queries without reading documents", async () => {
         const { FirebaseService } = await import("../../src/services/FirebaseService");
         const s = new FirebaseService({} as never);
-        const docs = [
-            {
-                data: () => ({
-                    teilnehmerListe: ["A", "B"],
-                    loesungswoerter: { A: "X" },
-                    loesungsStaerken: { A: "1/1/1/3" },
-                    buchstabierenAn: 1,
-                    nachrichten: { A: [{ id: 1 }] }
-                })
-            },
-            {
-                data: () => ({
-                    teilnehmerListe: [],
-                    loesungswoerter: {},
-                    loesungsStaerken: {},
-                    buchstabierenAn: 0,
-                    nachrichten: {}
-                })
-            }
-        ];
-        mocks.getDocs.mockResolvedValueOnce({
-            size: 2,
-            forEach: (cb: (d: { data: () => unknown }) => void) => docs.forEach(cb)
+
+        mocks.getAggregateFromServer.mockResolvedValueOnce({
+            data: () => ({ total: 2, totalTeilnehmer: 9, totalSprueche: 40, totalBytes: 2048 })
         });
+        mocks.getCountFromServer
+            .mockResolvedValueOnce({ data: () => ({ count: 1 }) })
+            .mockResolvedValueOnce({ data: () => ({ count: 2 }) })
+            .mockResolvedValueOnce({ data: () => ({ count: 3 }) });
+
         const stats = await s.getAdminStats();
-        expect(stats.total).toBe(2);
-        expect(stats.loesungsCount).toBe(1);
-        expect(stats.staerkeCount).toBe(1);
-        expect(stats.buchstabierCount).toBe(1);
-        expect(stats.totalSprueche).toBe(1);
+
+        expect(stats).toEqual({
+            total: 2,
+            totalTeilnehmer: 9,
+            totalSprueche: 40,
+            totalBytes: 2048,
+            loesungsCount: 1,
+            staerkeCount: 2,
+            buchstabierCount: 3
+        });
+        expect(mocks.getDocs).not.toHaveBeenCalled();
+        expect(mocks.sum).toHaveBeenCalledWith("statTeilnehmerAnzahl");
+        expect(mocks.sum).toHaveBeenCalledWith("statNachrichtenAnzahl");
+        expect(mocks.sum).toHaveBeenCalledWith("statBytes");
+        expect(mocks.where).toHaveBeenCalledWith("statHatLoesungswoerter", "==", true);
+    });
+
+    it("counts exercises per month via aggregation", async () => {
+        const { FirebaseService } = await import("../../src/services/FirebaseService");
+        const s = new FirebaseService({} as never);
+        mocks.getCountFromServer.mockImplementation(() =>
+            Promise.resolve({ data: () => ({ count: 1 }) })
+        );
+
+        const monate = await s.getUebungenMonatsCounts();
+
+        expect(monate).toEqual(Array.from({ length: 12 }, () => 1));
+        expect(mocks.getCountFromServer).toHaveBeenCalledTimes(12);
+        expect(mocks.where).toHaveBeenCalledWith("statMonat", "==", 11);
+        expect(mocks.getDocs).not.toHaveBeenCalled();
     });
 
     it("resolves join codes through firestore query", async () => {
@@ -213,5 +233,44 @@ describe("FirebaseService firestore path", () => {
             teilnehmerName: "Alpha"
         });
         expect(mocks.where).toHaveBeenCalledWith("uebungCode", "==", "K7M4Q2");
+    });
+
+    it("picks the exercise that owns the participant code when exercise codes collide", async () => {
+        const { FirebaseService } = await import("../../src/services/FirebaseService");
+        const s = new FirebaseService({} as never);
+        mocks.getDocs.mockResolvedValueOnce({
+            docs: [
+                { id: "kollision", data: () => ({ teilnehmerIds: { ZZZZ: "Fremd" } }) },
+                { id: "u42", data: () => ({ teilnehmerIds: { A1B2: "Alpha" } }) }
+            ]
+        });
+
+        const resolved = await s.resolveTeilnehmerJoinCodes("K7M4Q2", "A1B2");
+
+        expect(resolved).toEqual({
+            uebungId: "u42",
+            teilnehmerId: "A1B2",
+            teilnehmerName: "Alpha"
+        });
+        // limit(1) haette hier das falsche Dokument geliefert.
+        expect(mocks.limit).toHaveBeenCalledWith(5);
+    });
+
+    it("reports whether an exercise code is already taken", async () => {
+        const { FirebaseService } = await import("../../src/services/FirebaseService");
+        const s = new FirebaseService({} as never);
+
+        mocks.getDocs.mockResolvedValueOnce({ docs: [{ id: "fremd" }] });
+        expect(await s.isUebungCodeVergeben("k7m4q2")).toBe(true);
+        expect(mocks.where).toHaveBeenCalledWith("uebungCode", "==", "K7M4Q2");
+
+        // Die eigene Uebung zaehlt beim erneuten Speichern nicht als Kollision.
+        mocks.getDocs.mockResolvedValueOnce({ docs: [{ id: "eigen" }] });
+        expect(await s.isUebungCodeVergeben("K7M4Q2", "eigen")).toBe(false);
+
+        mocks.getDocs.mockResolvedValueOnce({ docs: [] });
+        expect(await s.isUebungCodeVergeben("K7M4Q2")).toBe(false);
+
+        expect(await s.isUebungCodeVergeben("")).toBe(false);
     });
 });

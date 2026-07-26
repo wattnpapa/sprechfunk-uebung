@@ -420,12 +420,12 @@ describe("GenerationService", () => {
             return u;
         };
 
-        // Der Seed selbst und die daraus abgeleiteten Codes sind Teil des
-        // Ergebnisses; verglichen wird alles, was die Übung inhaltlich ausmacht.
+        // Verglichen wird, was die Übung inhaltlich ausmacht. Übungs- und
+        // Teilnehmercodes gehören bewusst nicht dazu: Sie stammen aus
+        // crypto.getRandomValues und sind damit auch bei bekanntem Seed nicht
+        // vorhersagbar (siehe generateShortCode).
         const ergebnis = (u: FunkUebung): string => JSON.stringify({
             nachrichten: u.nachrichten,
-            teilnehmerIds: u.teilnehmerIds,
-            uebungCode: u.uebungCode,
             loesungsStaerken: u.loesungsStaerken
         });
 
@@ -437,7 +437,9 @@ describe("GenerationService", () => {
             new GenerationService().generate(b);
 
             expect(ergebnis(b)).toBe(ergebnis(a));
-            expect(a.checksumme).toBe(b.checksumme);
+            // Die Zugangscodes fließen in die Prüfsumme ein und unterscheiden
+            // sich deshalb bewusst zwischen zwei Läufen.
+            expect(b.uebungCode).not.toBe(a.uebungCode);
         });
 
         it("erzeugt bei unterschiedlichem Seed unterschiedliche Übungen", () => {
@@ -479,6 +481,89 @@ describe("GenerationService", () => {
             service.generate(b);
 
             expect(ergebnis(b)).toBe(ergebnis(a));
+        });
+    });
+
+    describe("Zugangscodes", () => {
+        const ALPHABET = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
+
+        it("zieht die Codes aus crypto.getRandomValues statt aus Math.random", () => {
+            const service = new GenerationService();
+            const u = new FunkUebung("dev");
+            u.teilnehmerListe = [];
+            u.uebungCode = "";
+            // Seed setzen, damit createRandomSeed die Bytefolge nicht anfasst.
+            u.seed = "fest";
+
+            // Deterministischer Zufall: liefert fortlaufende Bytes.
+            let naechstesByte = 0;
+            const getRandomValues = vi.fn((puffer: Uint8Array) => {
+                puffer[0] = naechstesByte++;
+                return puffer;
+            });
+            const mathRandom = vi.spyOn(Math, "random");
+            vi.stubGlobal("crypto", { getRandomValues });
+
+            try {
+                service.generate(u);
+            } finally {
+                vi.unstubAllGlobals();
+                mathRandom.mockRestore();
+            }
+
+            expect(getRandomValues).toHaveBeenCalled();
+            // Bytes 0..5 -> die ersten sechs Alphabetzeichen.
+            expect(u.uebungCode).toBe(ALPHABET.slice(0, 6));
+        });
+
+        it("bricht ab, wenn die Umgebung keine Web-Crypto-API bereitstellt", () => {
+            const service = new GenerationService();
+            const u = new FunkUebung("dev");
+            u.uebungCode = "";
+            vi.stubGlobal("crypto", undefined);
+
+            try {
+                expect(() => service.generate(u)).toThrow(/crypto.getRandomValues/);
+            } finally {
+                vi.unstubAllGlobals();
+            }
+        });
+
+        it("behält einen freien Übungscode unverändert bei", async () => {
+            const service = new GenerationService();
+            const u = new FunkUebung("dev");
+            u.uebungCode = "K7M4Q2";
+            const istVergeben = vi.fn().mockResolvedValue(false);
+
+            await expect(service.ensureUniqueUebungCode(u, istVergeben)).resolves.toBe(true);
+
+            expect(u.uebungCode).toBe("K7M4Q2");
+            expect(istVergeben).toHaveBeenCalledTimes(1);
+        });
+
+        it("würfelt bei einer Kollision einen neuen Code", async () => {
+            const service = new GenerationService();
+            const u = new FunkUebung("dev");
+            u.uebungCode = "K7M4Q2";
+            const istVergeben = vi.fn()
+                .mockResolvedValueOnce(true)
+                .mockResolvedValue(false);
+
+            await expect(service.ensureUniqueUebungCode(u, istVergeben)).resolves.toBe(true);
+
+            expect(u.uebungCode).not.toBe("K7M4Q2");
+            expect(u.uebungCode).toMatch(/^[A-Z2-9]{6}$/);
+        });
+
+        it("meldet Fehlschlag, wenn dauerhaft jeder Code belegt ist", async () => {
+            const service = new GenerationService();
+            const u = new FunkUebung("dev");
+            u.uebungCode = "K7M4Q2";
+            const istVergeben = vi.fn().mockResolvedValue(true);
+
+            await expect(service.ensureUniqueUebungCode(u, istVergeben, 3)).resolves.toBe(false);
+
+            expect(istVergeben).toHaveBeenCalledTimes(4);
         });
     });
 });

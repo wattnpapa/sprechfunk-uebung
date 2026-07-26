@@ -292,9 +292,17 @@ export class GeneratorController {
 
         // 3. Generieren
         this.generationService.generate(this.funkUebung);
-        
-        // 4. Speichern
+
+        // 4. Übungscode gegen den Bestand absichern und speichern
         try {
+            const codeIstFrei = await this.generationService.ensureUniqueUebungCode(
+                this.funkUebung,
+                code => this.firebaseService.isUebungCodeVergeben(code, this.funkUebung.id)
+            );
+            if (!codeIstFrei) {
+                uiFeedback.error("Es konnte kein freier Übungscode vergeben werden. Bitte erneut versuchen.");
+                return;
+            }
             await this.firebaseService.saveUebung(this.funkUebung);
         } catch (error) {
             console.error("Übung konnte nicht gespeichert werden:", error);
