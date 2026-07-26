@@ -17,6 +17,7 @@ export class Teilnehmer extends BasePDFTeilnehmer {
     draw(): void {
         const generierungszeit = formatNatoDate(this.funkUebung.createDate, true);
         const nachrichten = this.funkUebung.nachrichten[this.teilnehmer] || [];
+        const startPage = this.getCurrentPageNumber();
         let y = this.pageMarginTop;
 
         this.pdf.setFont("helvetica", "bold");
@@ -47,7 +48,17 @@ export class Teilnehmer extends BasePDFTeilnehmer {
         this.drawTeilnehmerTable(y);
         y = Math.max((this.pdf as any).lastAutoTable.finalY + 10, 75);
         this.drawNachrichtenTable(nachrichten, y);
-        this.drawPageHeadersAndFooters(generierungszeit);
+        this.drawPageHeadersAndFooters(generierungszeit, startPage);
+    }
+
+    /**
+     * Seite, auf der die Übersicht dieses Teilnehmers beginnt.
+     * Wird die Übersicht an ein bestehendes Dokument angehängt, ist das nicht Seite 1.
+     */
+    private getCurrentPageNumber(): number {
+        const pdf = this.pdf as any;
+        const pageNumber = pdf.getCurrentPageInfo?.()?.pageNumber;
+        return typeof pageNumber === "number" ? pageNumber : pdf.getNumberOfPages();
     }
 
     private drawTeilnehmerTable(startY: number): void {
@@ -129,12 +140,14 @@ export class Teilnehmer extends BasePDFTeilnehmer {
         });
     }
 
-    private drawPageHeadersAndFooters(generierungszeit: string): void {
-        const totalPages = (this.pdf as any).getNumberOfPages();
-        for (let pageNumber = 1; pageNumber <= totalPages; pageNumber++) {
+    private drawPageHeadersAndFooters(generierungszeit: string, startPage: number): void {
+        const lastPage = (this.pdf as any).getNumberOfPages();
+        const seitenGesamt = lastPage - startPage + 1;
+        for (let pageNumber = startPage; pageNumber <= lastPage; pageNumber++) {
             this.pdf.setPage(pageNumber);
+            const seiteImAbschnitt = pageNumber - startPage + 1;
 
-            if (pageNumber > 1) {
+            if (seiteImAbschnitt > 1) {
                 this.pdf.setFont("helvetica", "normal");
                 this.pdf.setFontSize(10);
                 this.pdf.text(`Eigener Funkrufname: ${this.teilnehmer}`, this.pageMarginLeft, 20);
@@ -152,7 +165,7 @@ export class Teilnehmer extends BasePDFTeilnehmer {
             this.pdf.line(this.pageMarginLeft, this.pdfHeight - 15, this.pdfWidth - this.pageMarginRight, this.pdfHeight - 15);
 
             this.pdf.setFontSize(10);
-            const pageNumberText = `Seite ${pageNumber} von ${totalPages}`;
+            const pageNumberText = `Seite ${seiteImAbschnitt} von ${seitenGesamt}`;
             const pageNumberWidth = this.pdf.getTextWidth(pageNumberText);
             this.pdf.text(pageNumberText, this.pdfWidth - this.pageMarginLeft - pageNumberWidth, this.pdfHeight - 10);
 

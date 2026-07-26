@@ -137,6 +137,9 @@ export class GeneratorController {
             onCopyJson: () => this.copyJSONToClipboard(),
             onZipAllPdfs: async () => {
                 await pdfGenerator.generateAllPDFsAsZip(this.funkUebung);
+            },
+            onDownloadUebersichtPdf: async () => {
+                await pdfGenerator.generateAllTeilnehmerUebersichtPrint(this.funkUebung);
             }
         });
         this.view.bindQuickJoin((uebungCode, teilnehmerCode) => {

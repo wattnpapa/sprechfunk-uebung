@@ -59,15 +59,18 @@ describe("UebungsleitungView", () => {
             } as any,
             "<id>"
         );
-        view.bindMetaEvents(onPdf, onReset);
+        const onUebersicht = vi.fn();
+        view.bindMetaEvents(onPdf, onReset, onUebersicht);
 
         expect(document.getElementById("uebungsleitungMeta")?.innerHTML).toContain("&lt;b&gt;XSS&lt;/b&gt;");
         expect(document.getElementById("uebungsleitungMeta")?.textContent).toContain("Übungscode:");
         expect(document.getElementById("uebungsleitungMeta")?.textContent).toContain("AB12CD");
         (document.getElementById("exportUebungsleitungPdf") as HTMLButtonElement).click();
         (document.getElementById("resetUebungsleitungLocalData") as HTMLButtonElement).click();
+        (document.getElementById("exportTeilnehmerUebersichtPdf") as HTMLButtonElement).click();
         expect(onPdf).toHaveBeenCalled();
         expect(onReset).toHaveBeenCalled();
+        expect(onUebersicht).toHaveBeenCalled();
     });
 
     it("renders teilnehmer table and triggers teilnehmer callbacks", () => {

@@ -82,7 +82,8 @@ export class UebungsleitungController {
         // Bind Events
         this.view.bindMetaEvents(
             () => this.exportPdf(),
-            () => this.resetData()
+            () => this.resetData(),
+            () => this.exportTeilnehmerUebersicht()
         );
 
         this.view.bindTeilnehmerEvents({
@@ -516,6 +517,20 @@ export class UebungsleitungController {
             
             const filename = `Uebungsleitung_${this.uebung.name}_${this.uebung.id}.pdf`.replace(/\s+/g, "_");
             pdf.save(filename);
+        } catch (err) {
+            console.error(err);
+            uiFeedback.error("Fehler beim PDF Export");
+        }
+    }
+
+    private async exportTeilnehmerUebersicht() {
+        if (!this.uebung) {
+            return;
+        }
+
+        try {
+            await pdfGenerator.generateAllTeilnehmerUebersichtPrint(this.uebung);
+            uiFeedback.success("PDF mit allen Teilnehmer-Übersichten erstellt.");
         } catch (err) {
             console.error(err);
             uiFeedback.error("Fehler beim PDF Export");

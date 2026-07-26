@@ -67,6 +67,34 @@ class PDFGenerator {
         return blobMap;
     }
 
+    /**
+     * Erstellt eine PDF mit den Übersichten aller Teilnehmer hintereinander,
+     * in der Reihenfolge der Teilnehmerverwaltung.
+     */
+    async generateAllTeilnehmerUebersichtPrintBlob(funkUebung: FunkUebung): Promise<Blob> {
+        const pdf = new jsPDF({ orientation: "landscape", unit: "mm", format: "a4" });
+
+        funkUebung.teilnehmerListe.forEach((teilnehmer: string, index: number) => {
+            if (index > 0) {
+                pdf.addPage();
+            }
+            new Teilnehmer(teilnehmer, funkUebung, pdf).draw();
+        });
+
+        return pdf.output("blob");
+    }
+
+    async generateAllTeilnehmerUebersichtPrint(funkUebung: FunkUebung): Promise<void> {
+        const blob = await this.generateAllTeilnehmerUebersichtPrintBlob(funkUebung);
+        const link = document.createElement("a");
+        link.href = URL.createObjectURL(blob);
+        link.download = `Uebersicht_Alle_Teilnehmer_${this.sanitizeFileName(funkUebung.name)}.pdf`;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        URL.revokeObjectURL(link.href);
+    }
+
     async generateTeilnehmerDebriefPdfBlob(
         funkUebung: FunkUebung,
         storage: UebungsleitungStorage,
@@ -397,6 +425,7 @@ class PDFGenerator {
         const zipBlob = await generateAllPDFsAsZipBlob(funkUebung, {
             sanitizeFileName: this.sanitizeFileName,
             generateTeilnehmerPDFsBlob: this.generateTeilnehmerPDFsBlob.bind(this),
+            generateAllTeilnehmerUebersichtPrintBlob: this.generateAllTeilnehmerUebersichtPrintBlob.bind(this),
             generateInstructorPDFBlob: this.generateInstructorPDFBlob.bind(this),
             generateNachrichtenvordruckPDFsBlob: this.generateNachrichtenvordruckPDFsBlob.bind(this),
             generateNachrichtenvordruckA4PDFsBlob: this.generateNachrichtenvordruckA4PDFsBlob.bind(this),
@@ -425,6 +454,7 @@ class PDFGenerator {
         return generateTeilnehmerPDFsAsZipBlob(funkUebung, teilnehmer, {
             sanitizeFileName: this.sanitizeFileName,
             generateTeilnehmerPDFsBlob: this.generateTeilnehmerPDFsBlob.bind(this),
+            generateAllTeilnehmerUebersichtPrintBlob: this.generateAllTeilnehmerUebersichtPrintBlob.bind(this),
             generateInstructorPDFBlob: this.generateInstructorPDFBlob.bind(this),
             generateNachrichtenvordruckPDFsBlob: this.generateNachrichtenvordruckPDFsBlob.bind(this),
             generateNachrichtenvordruckA4PDFsBlob: this.generateNachrichtenvordruckA4PDFsBlob.bind(this),

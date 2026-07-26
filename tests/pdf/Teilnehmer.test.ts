@@ -70,6 +70,42 @@ describe("pdf/Teilnehmer", () => {
         expect(pdf.textWithLink).toHaveBeenCalled();
     });
 
+    it("numbers only its own pages when appended to an existing document", () => {
+        const pdf = {
+            internal: { pageSize: { getWidth: () => 297, getHeight: () => 210 } },
+            setFont: vi.fn(() => pdf),
+            setFontSize: vi.fn(() => pdf),
+            text: vi.fn(() => pdf),
+            line: vi.fn(() => pdf),
+            setDrawColor: vi.fn(() => pdf),
+            getTextWidth: vi.fn(() => 20),
+            textWithLink: vi.fn(() => pdf),
+            output: vi.fn(() => new Blob(["x"])),
+            setPage: vi.fn(),
+            addPage: vi.fn(),
+            autoTable: vi.fn(function (this: unknown) {
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                (pdf as any).lastAutoTable = { finalY: 60 };
+                return this;
+            }),
+            lastAutoTable: { finalY: 60 },
+            getCurrentPageInfo: vi.fn(() => ({ pageNumber: 3 })),
+            getNumberOfPages: vi.fn(() => 4)
+        };
+
+        const u = new FunkUebung("dev");
+        u.teilnehmerListe = ["A", "B"];
+        u.nachrichten = { A: [{ id: 1, empfaenger: ["B"], nachricht: "Hallo" }], B: [] };
+
+        new Teilnehmer("A", u, pdf as never).draw();
+
+        expect(pdf.setPage.mock.calls.map(call => call[0])).toEqual([3, 4]);
+        const seitenTexte = (pdf.text as ReturnType<typeof vi.fn>).mock.calls
+            .map(call => call[0])
+            .filter((value): value is string => typeof value === "string" && value.startsWith("Seite "));
+        expect(seitenTexte).toEqual(["Seite 1 von 2", "Seite 2 von 2"]);
+    });
+
     it("normalizes escaped newline sequences in message text for table rendering", () => {
         const pdf = {
             internal: { pageSize: { getWidth: () => 297, getHeight: () => 210 } },

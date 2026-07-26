@@ -5,6 +5,7 @@ import { formatNatoDate } from "../utils/date";
 type PdfZipDeps = {
     sanitizeFileName: (name: string) => string;
     generateTeilnehmerPDFsBlob: (funkUebung: FunkUebung) => Promise<Map<string, Blob>>;
+    generateAllTeilnehmerUebersichtPrintBlob: (funkUebung: FunkUebung) => Promise<Blob>;
     generateInstructorPDFBlob: (funkUebung: FunkUebung) => Blob;
     generateNachrichtenvordruckPDFsBlob: (funkUebung: FunkUebung, hideBackground?: boolean, hideFooter?: boolean) => Promise<Map<string, Blob>>;
     generateNachrichtenvordruckA4PDFsBlob: (funkUebung: FunkUebung) => Promise<Map<string, Blob>>;
@@ -30,6 +31,8 @@ export async function generateAllPDFsAsZipBlob(
     teilnehmerBlobs.forEach((blob, teilnehmer) => {
         zip.file(`Teilnehmer/${deps.sanitizeFileName(teilnehmer)}/Übersicht_${deps.sanitizeFileName(teilnehmer)}.pdf`, blob);
     });
+
+    zip.file("Gesamt/Übersicht_Alle_Teilnehmer.pdf", await deps.generateAllTeilnehmerUebersichtPrintBlob(funkUebung));
 
     zip.file("Uebungsleitung.pdf", deps.generateInstructorPDFBlob(funkUebung));
 

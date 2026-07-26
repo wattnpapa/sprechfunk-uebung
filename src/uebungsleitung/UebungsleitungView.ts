@@ -22,9 +22,12 @@ export class UebungsleitungView {
         metaEl.innerHTML = this.buildMetaHtml(uebung, uebungId);
     }
 
-    public bindMetaEvents(onPdfExport: () => void, onReset: () => void): void {
+    public bindMetaEvents(onPdfExport: () => void, onReset: () => void, onUebersichtExport?: () => void): void {
         document.getElementById("exportUebungsleitungPdf")?.addEventListener("click", onPdfExport);
         document.getElementById("resetUebungsleitungLocalData")?.addEventListener("click", onReset);
+        if (onUebersichtExport) {
+            document.getElementById("exportTeilnehmerUebersichtPdf")?.addEventListener("click", onUebersichtExport);
+        }
     }
 
     public renderTeilnehmerListe(
@@ -130,6 +133,13 @@ export class UebungsleitungView {
               id="exportUebungsleitungPdf"
              >
               📄 Übungsleitung als PDF
+            </button>
+
+            <button
+              class="btn btn-outline-secondary me-2"
+              id="exportTeilnehmerUebersichtPdf"
+             >
+              📄 Alle Teilnehmer-Übersichten als PDF
             </button>
 
               <button

@@ -336,6 +336,7 @@ export class GeneratorView {
         onChangePage: (step: number) => void;
         onCopyJson: () => void;
         onZipAllPdfs: () => void;
+        onDownloadUebersichtPdf: () => void;
     }) {
         document.getElementById("addTeilnehmerBtn")?.addEventListener("click", handlers.onAddTeilnehmer, { signal: this.bindingController.signal });
         document.getElementById("startUebungBtn")?.addEventListener("click", handlers.onStartUebung, { signal: this.bindingController.signal });
@@ -344,6 +345,7 @@ export class GeneratorView {
         document.getElementById("copyJsonBtn")?.addEventListener("click", handlers.onCopyJson, { signal: this.bindingController.signal });
         document.getElementById("copyJsonBtnFooter")?.addEventListener("click", handlers.onCopyJson, { signal: this.bindingController.signal });
         document.getElementById("zipAllPdfsBtn")?.addEventListener("click", handlers.onZipAllPdfs, { signal: this.bindingController.signal });
+        document.getElementById("uebersichtAllPdfBtn")?.addEventListener("click", handlers.onDownloadUebersichtPdf, { signal: this.bindingController.signal });
     }
 
     public bindQuickJoin(onSubmit: (uebungCode: string, teilnehmerCode: string) => void): void {
