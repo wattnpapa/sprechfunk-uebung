@@ -83,6 +83,14 @@ export class FunkUebung implements Uebung {
         return `${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 10)}`;
     }
 
+    /**
+     * Prüfsumme über den Inhalt der Übung.
+     *
+     * `teilnehmerIds` und `uebungCode` fließen bewusst nicht ein: Zugangscodes
+     * stammen aus `crypto.getRandomValues` und sind bei jedem Lauf andere.
+     * Bezöge die Prüfsumme sie mit ein, unterschieden sich zwei Läufe mit
+     * demselben Seed trotz inhaltlich identischer Übung.
+     */
     updateChecksum() {
         const data = JSON.stringify({
             datum: this.datum,
@@ -95,7 +103,6 @@ export class FunkUebung implements Uebung {
             buchstabierenAn: this.buchstabierenAn,
             loesungswoerter: this.loesungswoerter,
             teilnehmerListe: this.teilnehmerListe,
-            teilnehmerIds: this.teilnehmerIds,
             nachrichten: this.nachrichten
         });
 

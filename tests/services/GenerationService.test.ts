@@ -423,7 +423,8 @@ describe("GenerationService", () => {
         // Verglichen wird, was die Übung inhaltlich ausmacht. Übungs- und
         // Teilnehmercodes gehören bewusst nicht dazu: Sie stammen aus
         // crypto.getRandomValues und sind damit auch bei bekanntem Seed nicht
-        // vorhersagbar (siehe generateShortCode).
+        // vorhersagbar (siehe generateShortCode). Aus demselben Grund lässt
+        // updateChecksum sie aussen vor — die Prüfsumme bleibt vergleichbar.
         const ergebnis = (u: FunkUebung): string => JSON.stringify({
             nachrichten: u.nachrichten,
             loesungsStaerken: u.loesungsStaerken
@@ -437,8 +438,9 @@ describe("GenerationService", () => {
             new GenerationService().generate(b);
 
             expect(ergebnis(b)).toBe(ergebnis(a));
-            // Die Zugangscodes fließen in die Prüfsumme ein und unterscheiden
-            // sich deshalb bewusst zwischen zwei Läufen.
+            expect(a.checksumme).toBe(b.checksumme);
+            // Die Zugangscodes unterscheiden sich trotzdem: Sie sind nicht
+            // seedabhängig und gehen nicht in die Prüfsumme ein.
             expect(b.uebungCode).not.toBe(a.uebungCode);
         });
 

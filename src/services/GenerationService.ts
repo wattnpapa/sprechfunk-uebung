@@ -5,7 +5,6 @@ import {
     entferneBuchstabierAufgaben,
     erzeugeBuchstabierAufgabe
 } from "../utils/buchstabieren";
-import CryptoJS from "crypto-js";
 import { createRandomSeed, createSeededRng, randomInt, randomIntBetween, shuffle, type Rng } from "../utils/random";
 
 export class GenerationService {
@@ -189,23 +188,12 @@ export class GenerationService {
         return wert % obergrenze;
     }
 
+    /**
+     * Die Formel liegt im Modell, weil `toJson()` vor dem Speichern ohnehin
+     * dort nachrechnet. Zwei Kopien würden früher oder später auseinanderlaufen.
+     */
     public updateChecksum(uebung: FunkUebung) {
-        const data = JSON.stringify({
-            datum: uebung.datum,
-            name: uebung.name,
-            rufgruppe: uebung.rufgruppe,
-            leitung: uebung.leitung,
-            spruecheProTeilnehmer: uebung.spruecheProTeilnehmer,
-            spruecheAnAlle: uebung.spruecheAnAlle,
-            spruecheAnMehrere: uebung.spruecheAnMehrere,
-            buchstabierenAn: uebung.buchstabierenAn,
-            loesungswoerter: uebung.loesungswoerter,
-            teilnehmerListe: uebung.teilnehmerListe,
-            teilnehmerIds: uebung.teilnehmerIds,
-            nachrichten: uebung.nachrichten
-        });
-
-        uebung.checksumme = CryptoJS.MD5(data).toString();
+        uebung.updateChecksum();
     }
 
     private verteileNachrichtenFair(uebung: FunkUebung): Record<string, Nachricht[]> {
