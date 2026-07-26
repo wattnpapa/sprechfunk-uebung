@@ -1,7 +1,23 @@
 {
   "name": "sprechfunk-uebung",
   "version": "1.0.0",
-  "description": "[![GitHub](https://img.shields.io/badge/GitHub-Repository-blue?logo=github)](https://github.com/wattnpapa/sprechfunk-uebung) [![Live Demo](https://img.shields.io/badge/Demo-Online-green)](https://sprechfunk-uebung.de//)",
+  "description": "Kostenloser Open-Source-Übungsgenerator für BOS-Sprechfunkübungen im Katastrophenschutz (THW, Feuerwehr, Rettungsdienst): verteilt Funksprüche, erzeugt Meldevordruck und Nachrichtenvordruck als PDF und begleitet die Übung live.",
+  "keywords": [
+    "sprechfunk",
+    "sprechfunkuebung",
+    "funkuebung",
+    "bos",
+    "bos-funk",
+    "katastrophenschutz",
+    "bevoelkerungsschutz",
+    "thw",
+    "feuerwehr",
+    "rettungsdienst",
+    "sprechfunkausbildung",
+    "meldevordruck",
+    "nachrichtenvordruck",
+    "uebungsgenerator"
+  ],
   "homepage": "https://github.com/wattnpapa/sprechfunk-uebung#readme",
   "bugs": {
     "url": "https://github.com/wattnpapa/sprechfunk-uebung/issues"

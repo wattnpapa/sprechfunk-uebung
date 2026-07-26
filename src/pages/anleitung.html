@@ -1,0 +1,330 @@
+<!DOCTYPE html>
+<html lang="de">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Anleitung: BOS-Sprechfunkübung erstellen | Sprechfunk Übungsgenerator</title>
+    <link rel="icon" type="image/png" href="../assets/favicon.png">
+    <link rel="canonical" href="https://sprechfunk-uebung.de/anleitung/">
+    <meta name="robots" content="index,follow,max-image-preview:large,max-snippet:-1">
+    <meta name="theme-color" content="#0d6efd">
+
+    <meta name="description" content="Schritt-für-Schritt-Anleitung: BOS-Sprechfunkübungen für THW, Feuerwehr und Katastrophenschutz erstellen, Funksprüche verteilen, Meldevordruck und Nachrichtenvordruck als PDF drucken und die Übung live begleiten.">
+    <meta name="author" content="Johannes Rudolph">
+
+    <meta property="og:title" content="Anleitung: BOS-Sprechfunkübung erstellen">
+    <meta property="og:description" content="Schritt-für-Schritt-Anleitung zum Erstellen und Durchführen von Sprechfunkübungen für THW, Feuerwehr und Katastrophenschutz.">
+    <meta property="og:url" content="https://sprechfunk-uebung.de/anleitung/">
+    <meta property="og:type" content="article">
+    <meta property="og:locale" content="de_DE">
+    <meta property="og:site_name" content="Sprechfunk Übungsgenerator">
+    <meta property="og:image" content="https://sprechfunk-uebung.de/assets/favicon.png">
+
+    <link rel="stylesheet" href="../bundle.css">
+    <link rel="stylesheet" href="../style.css">
+
+    <!-- GoatCounter: cookielose, anonyme Reichweitenmessung -->
+    <script data-goatcounter="https://sprechfunk-uebung.goatcounter.com/count"
+            async src="//gc.zgo.at/count.js"></script>
+
+    <script type="application/ld+json">
+        {
+            "@context": "https://schema.org",
+            "@type": "HowTo",
+            "name": "Sprechfunkübung erstellen und durchführen",
+            "description": "Anleitung zum Erstellen einer BOS-Sprechfunkübung: Kopfdaten erfassen, Teilnehmer anlegen, Funksprüche verteilen, Lösungswörter vergeben und Druckunterlagen erzeugen.",
+            "inLanguage": "de",
+            "totalTime": "PT15M",
+            "url": "https://sprechfunk-uebung.de/anleitung/",
+            "tool": {
+                "@type": "HowToTool",
+                "name": "Sprechfunk Übungsgenerator"
+            },
+            "step": [
+                {
+                    "@type": "HowToStep",
+                    "position": 1,
+                    "name": "Kopfdaten ausfüllen",
+                    "text": "Name der Übung, Datum, Rufgruppe und Funkrufname der Übungsleitung eintragen.",
+                    "url": "https://sprechfunk-uebung.de/anleitung/#kopfdaten"
+                },
+                {
+                    "@type": "HowToStep",
+                    "position": 2,
+                    "name": "Teilnehmer eintragen",
+                    "text": "Teilnehmer mit Funkrufnamen anlegen, optional Stellennamen pflegen und nicht benötigte Zeilen entfernen.",
+                    "url": "https://sprechfunk-uebung.de/anleitung/#teilnehmer"
+                },
+                {
+                    "@type": "HowToStep",
+                    "position": 3,
+                    "name": "Nachrichten-Einstellungen festlegen",
+                    "text": "Sprüche pro Teilnehmer sowie die Anteile für An-Alle-, An-Mehrere- und Buchstabieraufgaben einstellen.",
+                    "url": "https://sprechfunk-uebung.de/anleitung/#nachrichten"
+                },
+                {
+                    "@type": "HowToStep",
+                    "position": 4,
+                    "name": "Quelle der Funksprüche wählen",
+                    "text": "Mitgelieferte Vorlagen verwenden oder eine eigene Textdatei mit Funksprüchen hochladen.",
+                    "url": "https://sprechfunk-uebung.de/anleitung/#quellen"
+                },
+                {
+                    "@type": "HowToStep",
+                    "position": 5,
+                    "name": "Lösungswörter vergeben",
+                    "text": "Ohne Lösungswort, mit einem zentralen Lösungswort oder mit individuellen Lösungswörtern je Teilnehmer arbeiten.",
+                    "url": "https://sprechfunk-uebung.de/anleitung/#loesungswoerter"
+                },
+                {
+                    "@type": "HowToStep",
+                    "position": 6,
+                    "name": "Übung generieren und Unterlagen herunterladen",
+                    "text": "Übung generieren, Links für Teilnehmer und Übungsleitung verteilen und die Druckunterlagen als PDF oder ZIP herunterladen.",
+                    "url": "https://sprechfunk-uebung.de/anleitung/#generieren"
+                }
+            ]
+        }
+    </script>
+    <script type="application/ld+json">
+        {
+            "@context": "https://schema.org",
+            "@type": "BreadcrumbList",
+            "itemListElement": [
+                {
+                    "@type": "ListItem",
+                    "position": 1,
+                    "name": "Startseite",
+                    "item": "https://sprechfunk-uebung.de/"
+                },
+                {
+                    "@type": "ListItem",
+                    "position": 2,
+                    "name": "Anleitung",
+                    "item": "https://sprechfunk-uebung.de/anleitung/"
+                }
+            ]
+        }
+    </script>
+    <script>
+        // Gleiche Theme-Auswahl wie in der App anwenden (statische Seiten laden kein Bundle).
+        document.addEventListener("DOMContentLoaded", function () {
+            var stored = localStorage.getItem("theme");
+            if (stored) {
+                document.body.setAttribute("data-theme", stored);
+            }
+        });
+    </script>
+</head>
+
+<body data-theme="light">
+<header class="app-header">
+    <div class="container app-header-grid">
+        <div class="app-header-title">
+            <h1 class="h2 mb-0">
+                <i class="fas fa-broadcast-tower"></i> Sprechfunk Übungsgenerator
+            </h1>
+        </div>
+        <div class="app-header-actions d-none d-md-flex">
+            <a href="../" class="btn btn-primary">
+                <i class="fas fa-arrow-left"></i> Zur Anwendung
+            </a>
+            <a href="../faq/" class="btn btn-info">
+                <i class="fas fa-question-circle"></i> FAQ
+            </a>
+            <a href="https://github.com/wattnpapa/sprechfunk-uebung" class="btn btn-dark">
+                <i class="fab fa-github"></i> GitHub
+            </a>
+        </div>
+    </div>
+</header>
+
+<main class="container my-4 app-view-shell">
+    <nav aria-label="Brotkrumennavigation" class="mb-3">
+        <ol class="breadcrumb mb-0">
+            <li class="breadcrumb-item"><a href="../">Startseite</a></li>
+            <li class="breadcrumb-item active" aria-current="page">Anleitung</li>
+        </ol>
+    </nav>
+
+    <article>
+        <div class="card mb-3">
+            <div class="card-body">
+                <h2 class="h3">Anleitung: Sprechfunkübung erstellen und durchführen</h2>
+                <p>
+                    Der <strong>Sprechfunk Übungsgenerator</strong> erstellt vollständige
+                    <strong>BOS-Sprechfunkübungen</strong> für die Ausbildung im
+                    <strong>Bevölkerungs- und Katastrophenschutz</strong> – etwa im
+                    <strong>THW</strong>, bei der <strong>Feuerwehr</strong>, im Rettungsdienst
+                    oder in Hilfsorganisationen. Die Anwendung verteilt Funksprüche auf die
+                    Teilnehmer, erzeugt fertige Druckunterlagen als PDF und begleitet die Übung live.
+                </p>
+                <p>
+                    Du brauchst dafür <strong>keine Installation und keine Programmierkenntnisse</strong>.
+                    Die Anwendung läuft im Browser und ist kostenlos nutzbar; der Quellcode steht
+                    unter der <a href="https://github.com/wattnpapa/sprechfunk-uebung/blob/main/LICENSE">MIT-Lizenz</a>
+                    auf <a href="https://github.com/wattnpapa/sprechfunk-uebung">GitHub</a>.
+                </p>
+            </div>
+        </div>
+
+        <div class="card mb-3">
+            <div class="card-header"><h2 class="h4 mb-0">Was kann die Anwendung?</h2></div>
+            <div class="card-body">
+                <ul>
+                    <li>eine Sprechfunkübung zusammenstellen und Teilnehmer verwalten,</li>
+                    <li>Funksprüche automatisch und gleichmäßig auf die Teilnehmer verteilen,</li>
+                    <li>Druckunterlagen als PDF oder gebündelt als ZIP herunterladen,</li>
+                    <li>die Übung als Übungsleitung live begleiten und dokumentieren,</li>
+                    <li>als Teilnehmer abgesetzte Nachrichten abhaken.</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="card mb-3">
+            <div class="card-header"><h2 class="h4 mb-0">Übung erstellen (Generator)</h2></div>
+            <div class="card-body">
+                <h3 class="h5" id="kopfdaten">Schritt 1: Kopfdaten ausfüllen</h3>
+                <p>Oben in der Maske trägst du ein:</p>
+                <ul>
+                    <li>Name der Übung</li>
+                    <li>Datum</li>
+                    <li>Rufgruppe</li>
+                    <li>Funkrufname der Übungsleitung</li>
+                </ul>
+
+                <h3 class="h5" id="teilnehmer">Schritt 2: Teilnehmer eintragen</h3>
+                <ul>
+                    <li>Mit „Teilnehmer hinzufügen“ eine neue Zeile anlegen.</li>
+                    <li>Funkrufnamen direkt im Feld ändern.</li>
+                    <li>Mit dem Papierkorb einen Teilnehmer entfernen.</li>
+                    <li>Optional „Stellenname anzeigen“ aktivieren und pflegen.</li>
+                </ul>
+
+                <h3 class="h5" id="nachrichten">Schritt 3: Nachrichten-Einstellungen festlegen</h3>
+                <ul>
+                    <li>Sprüche pro Teilnehmer</li>
+                    <li>Anteil an „An Alle“</li>
+                    <li>Anteil an „An Mehrere“</li>
+                    <li>Anteil für Buchstabieraufgaben</li>
+                    <li>Optional: Anmeldungs-Funkspruch generieren</li>
+                </ul>
+
+                <h3 class="h5" id="quellen">Schritt 4: Quelle der Funksprüche wählen</h3>
+                <ul>
+                    <li><strong>Vorlagen verwenden</strong> (empfohlen)</li>
+                    <li><strong>Eigene Datei hochladen</strong> als <code>.txt</code></li>
+                </ul>
+
+                <h3 class="h5" id="loesungswoerter">Schritt 5: Lösungswörter (optional)</h3>
+                <p>Du kannst wählen zwischen keinen Lösungswörtern, einem zentralen Lösungswort
+                    für alle oder individuellen Lösungswörtern pro Teilnehmer. Über
+                    „Lösungswörter zufällig neu zuweisen“ lässt sich die Zuordnung neu mischen.</p>
+
+                <h3 class="h5" id="generieren">Schritt 6: Übung generieren</h3>
+                <p>Nach dem Klick auf „Übung generieren“ siehst du im Ergebnisbereich:</p>
+                <ul>
+                    <li>Links für Übungsleitung und Teilnehmer</li>
+                    <li>Buttons zum Kopieren und Versenden per E-Mail</li>
+                    <li>Download aller Druckdaten als ZIP</li>
+                    <li>Statistik mit Nachrichtenverteilung und geschätzter Übungsdauer</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="card mb-3">
+            <div class="card-header"><h2 class="h4 mb-0">Teilnehmeransicht verwenden</h2></div>
+            <div class="card-body">
+                <p>Ein Teilnehmer öffnet seinen persönlichen Link – ohne Anmeldung oder Konto.</p>
+
+                <h3 class="h5">Tabellenansicht</h3>
+                <ul>
+                    <li>Zeigt alle eigenen Nachrichten.</li>
+                    <li>Status „offen/übertragen“ kann markiert werden.</li>
+                    <li>Suche nach Nachricht, Empfänger oder Nummer möglich.</li>
+                    <li>Übertragene Nachrichten können ausgeblendet werden.</li>
+                </ul>
+
+                <h3 class="h5">Dokumentansicht (Vordruck)</h3>
+                <ul>
+                    <li>Umschalten auf <strong>Meldevordruck</strong> oder <strong>Nachrichtenvordruck</strong>.</li>
+                    <li>Es ist immer nur eine Seite sichtbar; mit links/rechts wird geblättert.</li>
+                    <li>Die Nachricht kann direkt als „übertragen“ markiert werden.</li>
+                </ul>
+
+                <h3 class="h5">Tastenkürzel</h3>
+                <ul>
+                    <li><kbd>Esc</kbd> – schließen</li>
+                    <li><kbd>←</kbd> / <kbd>→</kbd> – blättern</li>
+                    <li><kbd>Leertaste</kbd> – aktuelle Nachricht als übertragen markieren</li>
+                    <li><kbd>M</kbd> – Meldevordruck</li>
+                    <li><kbd>N</kbd> – Nachrichtenvordruck</li>
+                    <li><kbd>Ü</kbd> – übertragene Nachrichten ein-/ausblenden</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="card mb-3">
+            <div class="card-header"><h2 class="h4 mb-0">Übungsleitung (Live-Begleitung)</h2></div>
+            <div class="card-body">
+                <p>Die Übungsleitung öffnet den Übungsleitungs-Link und kann dort:</p>
+                <ul>
+                    <li>Teilnehmer als „angemeldet“ markieren,</li>
+                    <li>Lösungswort- und Stärkemeldungen dokumentieren,</li>
+                    <li>Notizen erfassen,</li>
+                    <li>Nachrichten als „abgesetzt“ markieren,</li>
+                    <li>mit Filtern nach Sender, Empfänger oder Text gezielt suchen.</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="card mb-3">
+            <div class="card-header"><h2 class="h4 mb-0">Admin-Bereich</h2></div>
+            <div class="card-body">
+                <ul>
+                    <li>Übersicht aller gespeicherten Übungen mit Suche und Seitennavigation,</li>
+                    <li>Kennzahlen und Statistik,</li>
+                    <li>Funktionen zum Öffnen oder Löschen von Übungen.</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="card mb-3">
+            <div class="card-header"><h2 class="h4 mb-0">Druckunterlagen und Download</h2></div>
+            <div class="card-body">
+                <ul>
+                    <li>Komplette Druckdaten als ZIP im Generator,</li>
+                    <li>teilnehmerspezifische ZIP-Datei in der Teilnehmeransicht,</li>
+                    <li>Meldevordruck und Nachrichtenvordruck als PDF je Teilnehmer.</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-body">
+                <h2 class="h4">Weiter zu den häufigen Fragen</h2>
+                <p>Antworten zu Datenschutz, Vorlagen, Lizenz und Einsatzszenarien findest du im
+                    <a href="../faq/">FAQ</a>. Direkt loslegen kannst du in der
+                    <a href="../">Anwendung</a>.</p>
+            </div>
+        </div>
+    </article>
+</main>
+
+<footer class="main-footer">
+    <span class="footer-links">
+        <a href="../">Anwendung</a>
+        <a href="../anleitung/">Anleitung</a>
+        <a href="../faq/">FAQ</a>
+    </span>
+    <span class="footer-links">
+        <a href="mailto:johannes.rudolph@thw-oldenburg.de">Kontakt</a>
+        <a href="https://github.com/wattnpapa/sprechfunk-uebung" target="_blank" rel="noopener noreferrer">GitHub</a>
+        <a href="https://github.com/wattnpapa/sprechfunk-uebung/blob/main/LICENSE" target="_blank" rel="noopener noreferrer">MIT-Lizenz</a>
+    </span>
+</footer>
+
+</body>
+
+</html>

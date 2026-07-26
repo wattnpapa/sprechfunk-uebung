@@ -361,6 +361,51 @@ test("@smoke loads howto markdown into modal content", async ({ page }) => {
     await expect(page.locator("#howtoContent")).toContainText("Sprechfunk");
 });
 
+const readJsonLd = (page: Page) =>
+    page.$$eval("script[type='application/ld+json']", nodes =>
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        nodes.map(node => JSON.parse(node.textContent ?? "{}") as any)
+    );
+
+test("@smoke start page exposes SoftwareApplication schema and links the content pages", async ({ page }) => {
+    await page.goto("/");
+
+    const [software] = await readJsonLd(page);
+    expect(software["@type"]).toContain("SoftwareApplication");
+    expect(software.applicationCategory).toContain("EmergencyApplication");
+    expect(software.license).toContain("MIT");
+    expect(software.softwareHelp.url).toContain("/anleitung/");
+
+    await expect(page.getByTestId("footer-link-anleitung")).toHaveAttribute("href", "anleitung/");
+    await expect(page.getByTestId("footer-link-faq")).toHaveAttribute("href", "faq/");
+});
+
+test("@smoke anleitung page is crawlable without the app bundle", async ({ page }) => {
+    await page.goto("/anleitung/");
+
+    await expect(page).toHaveTitle(/Anleitung/);
+    await expect(page.getByRole("heading", { name: /Sprechfunkübung erstellen und durchführen/ })).toBeVisible();
+    await expect(page.locator("link[rel='canonical']")).toHaveAttribute(
+        "href",
+        "https://sprechfunk-uebung.de/anleitung/"
+    );
+
+    const types = (await readJsonLd(page)).map(entry => entry["@type"]);
+    expect(types).toContain("HowTo");
+    expect(types).toContain("BreadcrumbList");
+});
+
+test("@smoke faq page exposes FAQPage schema matching the visible questions", async ({ page }) => {
+    await page.goto("/faq/");
+
+    await expect(page).toHaveTitle(/FAQ/);
+    await expect(page.getByRole("heading", { name: "Für wen ist die Anwendung gedacht?" })).toBeVisible();
+
+    const faq = (await readJsonLd(page)).find(entry => entry["@type"] === "FAQPage");
+    expect(faq.mainEntity.length).toBeGreaterThan(5);
+    expect(faq.mainEntity.map((q: { name: string }) => q.name)).toContain("Für wen ist die Anwendung gedacht?");
+});
+
 test("@smoke @routing route #/generator keeps generator area visible", async ({ page }) => {
     await page.goto("/#/generator");
 

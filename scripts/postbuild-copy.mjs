@@ -14,6 +14,14 @@ await cp(path.join(root, "src", "firebase-config.js"), path.join(dist, "firebase
 await cp(path.join(root, "src", "robots.txt"), path.join(dist, "robots.txt"));
 await cp(path.join(root, "src", "sitemap.xml"), path.join(dist, "sitemap.xml"));
 
+// Statische, crawlbare Inhaltsseiten als Verzeichnis-Index ablegen (=> /anleitung/, /faq/).
+const staticPages = ["anleitung", "faq"];
+for (const page of staticPages) {
+    const target = path.join(dist, page);
+    await mkdir(target, { recursive: true });
+    await cp(path.join(root, "src", "pages", `${page}.html`), path.join(target, "index.html"));
+}
+
 const bundleCssPath = path.join(dist, "bundle.css");
 try {
     const css = await readFile(bundleCssPath, "utf8");

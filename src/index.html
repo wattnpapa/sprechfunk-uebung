@@ -36,13 +36,48 @@
     <script type="application/ld+json">
         {
             "@context": "https://schema.org",
-            "@type": "WebApplication",
+            "@type": ["SoftwareApplication", "WebApplication"],
+            "@id": "https://sprechfunk-uebung.de/#software",
             "name": "Sprechfunk Übungsgenerator",
-            "applicationCategory": "BusinessApplication",
+            "alternateName": ["BOS-Sprechfunk Übungsgenerator", "Funkübungsgenerator"],
+            "applicationCategory": ["EmergencyApplication", "EducationalApplication", "BusinessApplication"],
+            "applicationSubCategory": "BOS-Sprechfunkausbildung im Bevölkerungs- und Katastrophenschutz",
             "operatingSystem": "Web",
+            "browserRequirements": "Benötigt einen aktuellen Browser mit aktiviertem JavaScript.",
             "url": "https://sprechfunk-uebung.de/",
             "inLanguage": "de",
-            "description": "Web-Anwendung zur Erstellung und Durchführung von BOS-Sprechfunkübungen mit Generator, Teilnehmer-, Übungsleitungs- und Admin-Modul."
+            "description": "Web-Anwendung zur Erstellung und Durchführung von BOS-Sprechfunkübungen für THW, Feuerwehr, Rettungsdienst und Katastrophenschutz: verteilt Funksprüche auf die Teilnehmer, erzeugt Meldevordruck und Nachrichtenvordruck als PDF und begleitet die Übung live über Generator-, Teilnehmer-, Übungsleitungs- und Admin-Modul.",
+            "keywords": "BOS-Sprechfunk, Sprechfunkübung, Funkübung, Katastrophenschutz, Bevölkerungsschutz, THW, Feuerwehr, Rettungsdienst, Hilfsorganisation, Sprechfunkausbildung, Funkspruch, Meldevordruck, Nachrichtenvordruck, Funkrufname, Übungsleitung, Buchstabieraufgabe",
+            "featureList": [
+                "Automatische Verteilung von Funksprüchen auf alle Teilnehmer",
+                "Zentrale oder individuelle Lösungswörter mit Buchstabieraufgaben",
+                "PDF-Erzeugung von Meldevordruck und Nachrichtenvordruck je Teilnehmer",
+                "Sammel-Download aller Druckunterlagen als ZIP",
+                "Live-Übungsleitung mit Status, Filtern und Notizen",
+                "Teilnehmeransicht ohne Anmeldung über persönlichen Link"
+            ],
+            "audience": {
+                "@type": "Audience",
+                "audienceType": "Ausbilder und Übungsleitungen im Bevölkerungs- und Katastrophenschutz (THW, Feuerwehr, Rettungsdienst, Hilfsorganisationen)"
+            },
+            "isAccessibleForFree": true,
+            "offers": {
+                "@type": "Offer",
+                "price": "0",
+                "priceCurrency": "EUR"
+            },
+            "license": "https://opensource.org/licenses/MIT",
+            "codeRepository": "https://github.com/wattnpapa/sprechfunk-uebung",
+            "softwareHelp": {
+                "@type": "CreativeWork",
+                "name": "Anleitung",
+                "url": "https://sprechfunk-uebung.de/anleitung/"
+            },
+            "author": {
+                "@type": "Person",
+                "name": "Johannes Rudolph",
+                "url": "https://github.com/wattnpapa"
+            }
         }
     </script>
 </head>
@@ -246,7 +281,11 @@
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body"><div id="howtoContent">Lädt...</div></div>
-            <div class="modal-footer"><button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Schließen</button></div>
+            <div class="modal-footer">
+                <a href="anleitung/" class="btn btn-outline-primary">Anleitung als eigene Seite</a>
+                <a href="faq/" class="btn btn-outline-primary">FAQ</a>
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Schließen</button>
+            </div>
         </div>
     </div>
 </div>
@@ -383,8 +422,13 @@
         <button class="btn btn-sm btn-outline-secondary" type="button" data-bs-toggle="modal" data-bs-target="#datenschutzModal">Datenschutz</button>
     </span>
     <span class="footer-links">
+        <a href="anleitung/" data-testid="footer-link-anleitung">Anleitung</a>
+        <a href="faq/" data-testid="footer-link-faq">FAQ</a>
+    </span>
+    <span class="footer-links">
         <a href="mailto:johannes.rudolph@thw-oldenburg.de">Kontakt</a>
         <a href="https://github.com/wattnpapa/sprechfunk-uebung" target="_blank" rel="noopener noreferrer">GitHub</a>
+        <a href="https://github.com/wattnpapa/sprechfunk-uebung/blob/main/LICENSE" target="_blank" rel="noopener noreferrer">MIT-Lizenz</a>
     </span>
 </footer>
 

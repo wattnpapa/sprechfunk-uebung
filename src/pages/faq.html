@@ -1,0 +1,338 @@
+<!DOCTYPE html>
+<html lang="de">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FAQ: Häufige Fragen zu BOS-Sprechfunkübungen | Sprechfunk Übungsgenerator</title>
+    <link rel="icon" type="image/png" href="../assets/favicon.png">
+    <link rel="canonical" href="https://sprechfunk-uebung.de/faq/">
+    <meta name="robots" content="index,follow,max-image-preview:large,max-snippet:-1">
+    <meta name="theme-color" content="#0d6efd">
+
+    <meta name="description" content="Häufige Fragen zum Sprechfunk Übungsgenerator: für wen die Anwendung gedacht ist, welche Daten gespeichert werden, wie Vorlagen und Lösungswörter funktionieren und unter welcher Open-Source-Lizenz das Projekt steht.">
+    <meta name="author" content="Johannes Rudolph">
+
+    <meta property="og:title" content="FAQ: Häufige Fragen zu BOS-Sprechfunkübungen">
+    <meta property="og:description" content="Antworten rund um Sprechfunkübungen für THW, Feuerwehr und Katastrophenschutz: Nutzung, Datenschutz, Vorlagen, Lizenz.">
+    <meta property="og:url" content="https://sprechfunk-uebung.de/faq/">
+    <meta property="og:type" content="article">
+    <meta property="og:locale" content="de_DE">
+    <meta property="og:site_name" content="Sprechfunk Übungsgenerator">
+    <meta property="og:image" content="https://sprechfunk-uebung.de/assets/favicon.png">
+
+    <link rel="stylesheet" href="../bundle.css">
+    <link rel="stylesheet" href="../style.css">
+
+    <!-- GoatCounter: cookielose, anonyme Reichweitenmessung -->
+    <script data-goatcounter="https://sprechfunk-uebung.goatcounter.com/count"
+            async src="//gc.zgo.at/count.js"></script>
+
+    <script type="application/ld+json">
+        {
+            "@context": "https://schema.org",
+            "@type": "FAQPage",
+            "inLanguage": "de",
+            "url": "https://sprechfunk-uebung.de/faq/",
+            "mainEntity": [
+                {
+                    "@type": "Question",
+                    "name": "Was ist der Sprechfunk Übungsgenerator?",
+                    "acceptedAnswer": {
+                        "@type": "Answer",
+                        "text": "Eine kostenlose Web-Anwendung, die vollständige BOS-Sprechfunkübungen erzeugt: Sie verteilt Funksprüche auf die Teilnehmer, erstellt Druckunterlagen als PDF und begleitet die Übung live über eine Übungsleitungs- und eine Teilnehmeransicht."
+                    }
+                },
+                {
+                    "@type": "Question",
+                    "name": "Für wen ist die Anwendung gedacht?",
+                    "acceptedAnswer": {
+                        "@type": "Answer",
+                        "text": "Für Ausbilderinnen und Ausbilder sowie Übungsleitungen im Bevölkerungs- und Katastrophenschutz, etwa im THW, bei Feuerwehren, im Rettungsdienst und in Hilfsorganisationen. Vorkenntnisse in IT sind nicht nötig."
+                    }
+                },
+                {
+                    "@type": "Question",
+                    "name": "Kostet die Nutzung etwas?",
+                    "acceptedAnswer": {
+                        "@type": "Answer",
+                        "text": "Nein. Die Anwendung ist kostenlos nutzbar, ohne Konto und ohne Registrierung. Der Quellcode steht als Open Source unter der MIT-Lizenz auf GitHub bereit."
+                    }
+                },
+                {
+                    "@type": "Question",
+                    "name": "Muss ich etwas installieren?",
+                    "acceptedAnswer": {
+                        "@type": "Answer",
+                        "text": "Nein. Die Anwendung läuft direkt im Browser. Teilnehmer und Übungsleitung erhalten jeweils einen eigenen Link und benötigen weder Installation noch Anmeldung."
+                    }
+                },
+                {
+                    "@type": "Question",
+                    "name": "Welche Daten werden gespeichert?",
+                    "acceptedAnswer": {
+                        "@type": "Answer",
+                        "text": "Die Übungsdaten – Kopfdaten, Funkrufnamen, Funksprüche und Status – werden in Google Firebase (Firestore) gespeichert, damit Teilnehmer und Übungsleitung dieselbe Übung sehen. Zusätzlich zählt GoatCounter anonyme Seitenaufrufe; dabei werden keine Cookies gesetzt und keine personenbezogenen Daten gespeichert."
+                    }
+                },
+                {
+                    "@type": "Question",
+                    "name": "Kann ich eigene Funksprüche verwenden?",
+                    "acceptedAnswer": {
+                        "@type": "Answer",
+                        "text": "Ja. Neben den mitgelieferten Vorlagen lässt sich eine eigene Textdatei im Format .txt hochladen, in der je Zeile ein Funkspruch steht."
+                    }
+                },
+                {
+                    "@type": "Question",
+                    "name": "Wie funktionieren Lösungswörter?",
+                    "acceptedAnswer": {
+                        "@type": "Answer",
+                        "text": "Es gibt drei Möglichkeiten: keine Lösungswörter, ein zentrales Lösungswort für alle Teilnehmer oder individuelle Lösungswörter je Teilnehmer. Ist die Option aktiv, werden die Buchstaben über mehrere Funksprüche verteilt und die Zuordnung lässt sich jederzeit neu mischen."
+                    }
+                },
+                {
+                    "@type": "Question",
+                    "name": "Was ist der Unterschied zwischen Meldevordruck und Nachrichtenvordruck?",
+                    "acceptedAnswer": {
+                        "@type": "Answer",
+                        "text": "Beides sind druckbare Vordrucke für den Funkverkehr. Die Anwendung erzeugt beide Varianten als PDF je Teilnehmer; in der Teilnehmeransicht kann zwischen ihnen umgeschaltet werden."
+                    }
+                },
+                {
+                    "@type": "Question",
+                    "name": "Warum steht bei meinen Nachrichten überall „offen“?",
+                    "acceptedAnswer": {
+                        "@type": "Answer",
+                        "text": "Nachrichten müssen aktiv als „übertragen“ markiert werden – per Klick in der Tabelle oder mit der Leertaste in der Vordruckansicht."
+                    }
+                },
+                {
+                    "@type": "Question",
+                    "name": "Die Teilnehmeransicht zeigt eine Fehlermeldung. Was tun?",
+                    "acceptedAnswer": {
+                        "@type": "Answer",
+                        "text": "Meist ist der Link unvollständig oder falsch kopiert. Verwende den Link direkt aus dem Ergebnisbereich des Generators."
+                    }
+                },
+                {
+                    "@type": "Question",
+                    "name": "Kann ich eine erstellte Übung nachträglich ändern?",
+                    "acceptedAnswer": {
+                        "@type": "Answer",
+                        "text": "Ja. Die Übung kann neu generiert werden; Status, Notizen und Meldungen lassen sich jederzeit in der Übungsleitungs- und Teilnehmeransicht anpassen."
+                    }
+                },
+                {
+                    "@type": "Question",
+                    "name": "Unter welcher Lizenz steht das Projekt und wo finde ich den Quellcode?",
+                    "acceptedAnswer": {
+                        "@type": "Answer",
+                        "text": "Das Projekt ist Open Source unter der MIT-Lizenz. Der Quellcode liegt öffentlich auf GitHub unter https://github.com/wattnpapa/sprechfunk-uebung; Fehlerberichte und Pull Requests sind willkommen."
+                    }
+                }
+            ]
+        }
+    </script>
+    <script type="application/ld+json">
+        {
+            "@context": "https://schema.org",
+            "@type": "BreadcrumbList",
+            "itemListElement": [
+                {
+                    "@type": "ListItem",
+                    "position": 1,
+                    "name": "Startseite",
+                    "item": "https://sprechfunk-uebung.de/"
+                },
+                {
+                    "@type": "ListItem",
+                    "position": 2,
+                    "name": "FAQ",
+                    "item": "https://sprechfunk-uebung.de/faq/"
+                }
+            ]
+        }
+    </script>
+    <script>
+        // Gleiche Theme-Auswahl wie in der App anwenden (statische Seiten laden kein Bundle).
+        document.addEventListener("DOMContentLoaded", function () {
+            var stored = localStorage.getItem("theme");
+            if (stored) {
+                document.body.setAttribute("data-theme", stored);
+            }
+        });
+    </script>
+</head>
+
+<body data-theme="light">
+<header class="app-header">
+    <div class="container app-header-grid">
+        <div class="app-header-title">
+            <h1 class="h2 mb-0">
+                <i class="fas fa-broadcast-tower"></i> Sprechfunk Übungsgenerator
+            </h1>
+        </div>
+        <div class="app-header-actions d-none d-md-flex">
+            <a href="../" class="btn btn-primary">
+                <i class="fas fa-arrow-left"></i> Zur Anwendung
+            </a>
+            <a href="../anleitung/" class="btn btn-info">
+                <i class="fas fa-book"></i> Anleitung
+            </a>
+            <a href="https://github.com/wattnpapa/sprechfunk-uebung" class="btn btn-dark">
+                <i class="fab fa-github"></i> GitHub
+            </a>
+        </div>
+    </div>
+</header>
+
+<main class="container my-4 app-view-shell">
+    <nav aria-label="Brotkrumennavigation" class="mb-3">
+        <ol class="breadcrumb mb-0">
+            <li class="breadcrumb-item"><a href="../">Startseite</a></li>
+            <li class="breadcrumb-item active" aria-current="page">FAQ</li>
+        </ol>
+    </nav>
+
+    <article>
+        <div class="card mb-3">
+            <div class="card-body">
+                <h2 class="h3">Häufige Fragen zum Sprechfunk Übungsgenerator</h2>
+                <p>
+                    Antworten rund um <strong>BOS-Sprechfunkübungen</strong> für
+                    <strong>THW</strong>, <strong>Feuerwehr</strong>, Rettungsdienst und
+                    <strong>Katastrophenschutz</strong>: Nutzung, Datenschutz, Vorlagen und Lizenz.
+                    Eine ausführliche Schritt-für-Schritt-Beschreibung findest du in der
+                    <a href="../anleitung/">Anleitung</a>.
+                </p>
+            </div>
+        </div>
+
+        <div class="card mb-3">
+            <div class="card-header"><h2 class="h4 mb-0">Grundlagen</h2></div>
+            <div class="card-body">
+                <h3 class="h5">Was ist der Sprechfunk Übungsgenerator?</h3>
+                <p>
+                    Eine kostenlose Web-Anwendung, die vollständige BOS-Sprechfunkübungen erzeugt:
+                    Sie verteilt Funksprüche auf die Teilnehmer, erstellt Druckunterlagen als PDF
+                    und begleitet die Übung live über eine Übungsleitungs- und eine Teilnehmeransicht.
+                </p>
+
+                <h3 class="h5">Für wen ist die Anwendung gedacht?</h3>
+                <p>
+                    Für Ausbilderinnen und Ausbilder sowie Übungsleitungen im Bevölkerungs- und
+                    Katastrophenschutz, etwa im THW, bei Feuerwehren, im Rettungsdienst und in
+                    Hilfsorganisationen. Vorkenntnisse in IT sind nicht nötig.
+                </p>
+
+                <h3 class="h5">Kostet die Nutzung etwas?</h3>
+                <p>
+                    Nein. Die Anwendung ist kostenlos nutzbar, ohne Konto und ohne Registrierung.
+                    Der Quellcode steht als Open Source unter der
+                    <a href="https://github.com/wattnpapa/sprechfunk-uebung/blob/main/LICENSE">MIT-Lizenz</a>
+                    bereit.
+                </p>
+
+                <h3 class="h5">Muss ich etwas installieren?</h3>
+                <p>
+                    Nein. Die Anwendung läuft direkt im Browser. Teilnehmer und Übungsleitung
+                    erhalten jeweils einen eigenen Link und benötigen weder Installation noch Anmeldung.
+                </p>
+            </div>
+        </div>
+
+        <div class="card mb-3">
+            <div class="card-header"><h2 class="h4 mb-0">Daten und Datenschutz</h2></div>
+            <div class="card-body">
+                <h3 class="h5">Welche Daten werden gespeichert?</h3>
+                <p>
+                    Die Übungsdaten – Kopfdaten, Funkrufnamen, Funksprüche und Status – werden in
+                    Google Firebase (Firestore) gespeichert, damit Teilnehmer und Übungsleitung
+                    dieselbe Übung sehen. Zusätzlich zählt GoatCounter anonyme Seitenaufrufe;
+                    dabei werden keine Cookies gesetzt und keine personenbezogenen Daten gespeichert.
+                </p>
+            </div>
+        </div>
+
+        <div class="card mb-3">
+            <div class="card-header"><h2 class="h4 mb-0">Übungsinhalte</h2></div>
+            <div class="card-body">
+                <h3 class="h5">Kann ich eigene Funksprüche verwenden?</h3>
+                <p>
+                    Ja. Neben den mitgelieferten Vorlagen lässt sich eine eigene Textdatei im Format
+                    <code>.txt</code> hochladen, in der je Zeile ein Funkspruch steht.
+                </p>
+
+                <h3 class="h5">Wie funktionieren Lösungswörter?</h3>
+                <p>
+                    Es gibt drei Möglichkeiten: keine Lösungswörter, ein zentrales Lösungswort für
+                    alle Teilnehmer oder individuelle Lösungswörter je Teilnehmer. Ist die Option
+                    aktiv, werden die Buchstaben über mehrere Funksprüche verteilt und die Zuordnung
+                    lässt sich jederzeit neu mischen.
+                </p>
+
+                <h3 class="h5">Was ist der Unterschied zwischen Meldevordruck und Nachrichtenvordruck?</h3>
+                <p>
+                    Beides sind druckbare Vordrucke für den Funkverkehr. Die Anwendung erzeugt beide
+                    Varianten als PDF je Teilnehmer; in der Teilnehmeransicht kann zwischen ihnen
+                    umgeschaltet werden.
+                </p>
+            </div>
+        </div>
+
+        <div class="card mb-3">
+            <div class="card-header"><h2 class="h4 mb-0">Fehler und Bedienung</h2></div>
+            <div class="card-body">
+                <h3 class="h5">Warum steht bei meinen Nachrichten überall „offen“?</h3>
+                <p>
+                    Nachrichten müssen aktiv als „übertragen“ markiert werden – per Klick in der
+                    Tabelle oder mit der Leertaste in der Vordruckansicht.
+                </p>
+
+                <h3 class="h5">Die Teilnehmeransicht zeigt eine Fehlermeldung. Was tun?</h3>
+                <p>
+                    Meist ist der Link unvollständig oder falsch kopiert. Verwende den Link direkt
+                    aus dem Ergebnisbereich des Generators.
+                </p>
+
+                <h3 class="h5">Kann ich eine erstellte Übung nachträglich ändern?</h3>
+                <p>
+                    Ja. Die Übung kann neu generiert werden; Status, Notizen und Meldungen lassen
+                    sich jederzeit in der Übungsleitungs- und Teilnehmeransicht anpassen.
+                </p>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-header"><h2 class="h4 mb-0">Open Source</h2></div>
+            <div class="card-body">
+                <h3 class="h5">Unter welcher Lizenz steht das Projekt und wo finde ich den Quellcode?</h3>
+                <p>
+                    Das Projekt ist Open Source unter der <strong>MIT-Lizenz</strong>. Der Quellcode
+                    liegt öffentlich auf
+                    <a href="https://github.com/wattnpapa/sprechfunk-uebung">GitHub</a>;
+                    <a href="https://github.com/wattnpapa/sprechfunk-uebung/issues">Fehlerberichte</a>
+                    und Pull Requests sind willkommen.
+                </p>
+            </div>
+        </div>
+    </article>
+</main>
+
+<footer class="main-footer">
+    <span class="footer-links">
+        <a href="../">Anwendung</a>
+        <a href="../anleitung/">Anleitung</a>
+        <a href="../faq/">FAQ</a>
+    </span>
+    <span class="footer-links">
+        <a href="mailto:johannes.rudolph@thw-oldenburg.de">Kontakt</a>
+        <a href="https://github.com/wattnpapa/sprechfunk-uebung" target="_blank" rel="noopener noreferrer">GitHub</a>
+        <a href="https://github.com/wattnpapa/sprechfunk-uebung/blob/main/LICENSE" target="_blank" rel="noopener noreferrer">MIT-Lizenz</a>
+    </span>
+</footer>
+
+</body>
+
+</html>

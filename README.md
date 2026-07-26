@@ -4,6 +4,18 @@
 [![Coverage](https://codecov.io/gh/wattnpapa/sprechfunk-uebung/branch/main/graph/badge.svg)](https://codecov.io/gh/wattnpapa/sprechfunk-uebung)
 [![Coverage Report](https://img.shields.io/badge/Coverage%20Report-HTML-blue)](https://github.com/wattnpapa/sprechfunk-uebung#readme/coverage/)
 
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+
+Kostenloser, quelloffener **Übungsgenerator für BOS-Sprechfunk** — für Ausbildung und Training im
+**Zivil- und Katastrophenschutz**: **THW**, **Feuerwehr**, **Rettungsdienst** und Hilfsorganisationen.
+Die Web-Anwendung verteilt Funksprüche auf die Teilnehmer, erzeugt **Meldevordruck** und
+**Nachrichtenvordruck** als PDF und begleitet die Übung live über Übungsleitungs- und Teilnehmeransicht.
+Keine Installation, keine Anmeldung, keine Kosten.
+
+**Schlagworte:** Sprechfunkübung · Funkübung · BOS-Funk · Katastrophenschutz · Bevölkerungsschutz ·
+THW · Feuerwehr · Rettungsdienst · Sprechfunkausbildung · Funkspruch · Funkrufname · Meldevordruck ·
+Nachrichtenvordruck · Buchstabieraufgabe · Lösungswort · Übungsleitung
+
 Web-Anwendung zur Erstellung von BOS-Sprechfunkübungen mit:
 - Generator für Übungsdaten und Funkspruchverteilung
 - Teilnehmeransicht mit Tabellen- und Vordruckmodus
@@ -13,7 +25,17 @@ Web-Anwendung zur Erstellung von BOS-Sprechfunkübungen mit:
 
 ## Live
 - Demo: https://sprechfunk-uebung.de/
+- Anleitung: https://sprechfunk-uebung.de/anleitung/
+- FAQ: https://sprechfunk-uebung.de/faq/
 - Repository: https://github.com/wattnpapa/sprechfunk-uebung
+- Lizenz: [MIT](LICENSE) – freie Nutzung, Anpassung und Weitergabe
+
+## Für wen ist das gedacht?
+Ausbilderinnen und Ausbilder sowie Übungsleitungen im Bevölkerungs- und Katastrophenschutz,
+die regelmäßig Sprechfunkübungen vorbereiten müssen – im THW (z. B. Bereichsausbildung Sprechfunk),
+bei Feuerwehren, im Rettungsdienst und in Hilfsorganisationen. Statt Funksprüche manuell auf
+Teilnehmer zu verteilen und Vordrucke von Hand zu füllen, entsteht die komplette Übung inklusive
+Druckunterlagen in wenigen Minuten.
 
 ## Kernfunktionen
 - Übungskonfiguration:
