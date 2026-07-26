@@ -204,10 +204,7 @@ export class GenerationService {
         }
         const alleNachrichten: PoolEntry[] = [];
 
-        const anAlle = Math.max(0, uebung.spruecheAnAlle);
-        const anMehrere = Math.max(0, uebung.spruecheAnMehrere);
-        const anmeldungsOffset = uebung.anmeldungAktiv ? 1 : 0;
-        const anEinzeln = Math.max(0, uebung.spruecheProTeilnehmer - anmeldungsOffset - anAlle - anMehrere);
+        const { anAlle, anMehrere, anEinzeln } = this.ermittleVerteilungsMengen(uebung);
         if (uebung.funksprueche.length === 0) {
             return nachrichtenVerteilung;
         }
@@ -217,7 +214,9 @@ export class GenerationService {
             return nachrichtenVerteilung;
         }
 
-        uebung.teilnehmerListe.forEach(teilnehmer => {
+        const einzelEmpfaenger = this.verteileEinzelEmpfaenger(uebung.teilnehmerListe, anEinzeln);
+
+        uebung.teilnehmerListe.forEach((teilnehmer, teilnehmerIndex) => {
             nachrichtenVerteilung[teilnehmer] = [];
             const bereitsVerwendet = new Set<string>();
 
@@ -264,13 +263,15 @@ export class GenerationService {
             }
 
             // Einzel-Nachrichten
+            const eigeneEmpfaenger = einzelEmpfaenger[teilnehmerIndex] ?? [];
             for (let i = 0; i < anEinzeln; i++) {
                 const spruch = dealer.draw(bereitsVerwendet);
                 if (!spruch) {
                     continue;
                 }
                 bereitsVerwendet.add(spruch);
-                const empfaenger = this.getRandomOther(uebung.teilnehmerListe, teilnehmer);
+                const empfaenger = eigeneEmpfaenger[i]
+                    ?? this.getRandomOther(uebung.teilnehmerListe, teilnehmer);
                 alleNachrichten.push({
                     sender: teilnehmer,
                     nachricht: {
@@ -482,7 +483,12 @@ export class GenerationService {
             zufallsGroesse = randomIntBetween(Math.ceil(gesamtTeilnehmer * 0.85), gesamtTeilnehmer, this.rng);
         }
 
-        zufallsGroesse = Math.min(zufallsGroesse, gesamtTeilnehmer);
+        // "An Mehrere" heißt mindestens zwei Empfänger. Ohne diese Untergrenze konnte der
+        // 50-75-%-Zweig bei nur zwei möglichen Empfängern eine Gruppe der Größe 1 liefern –
+        // die Nachricht wäre dann faktisch eine Einzelnachricht gewesen. Nur wenn es
+        // überhaupt weniger als zwei andere Teilnehmer gibt, bleibt die Gruppe kleiner.
+        const untergrenze = Math.min(2, gesamtTeilnehmer);
+        zufallsGroesse = Math.min(Math.max(zufallsGroesse, untergrenze), gesamtTeilnehmer);
         return gemischt.slice(0, zufallsGroesse);
     }
 
@@ -493,6 +499,92 @@ export class GenerationService {
         }
         const randomIndex = randomInt(andere.length, this.rng);
         return andere[randomIndex] ?? aktuellerTeilnehmer;
+    }
+
+    /**
+     * Ermittelt, wie viele Nachrichten pro Teilnehmer an Alle, an Mehrere und einzeln gehen.
+     *
+     * Lösungsbuchstaben lassen sich ausschließlich über einzeln adressierte Nachrichten
+     * zustellen. Lässt die Konfiguration dafür keinen Platz, bekommt die Einzelnachricht
+     * Vorrang vor einem Rundspruch – sonst bliebe das Lösungswort stillschweigend
+     * unzustellbar. Die Gesamtzahl der Nachrichten pro Teilnehmer bleibt unverändert.
+     */
+    private ermittleVerteilungsMengen(
+        uebung: FunkUebung
+    ): { anAlle: number; anMehrere: number; anEinzeln: number } {
+        const anmeldungsOffset = uebung.anmeldungAktiv ? 1 : 0;
+        const budget = uebung.spruecheProTeilnehmer - anmeldungsOffset;
+        let anAlle = Math.max(0, uebung.spruecheAnAlle);
+        let anMehrere = Math.max(0, uebung.spruecheAnMehrere);
+
+        if (budget >= 1 && this.brauchtTraegerNachrichten(uebung)) {
+            let ueberhang = anAlle + anMehrere - (budget - 1);
+            while (ueberhang > 0 && anMehrere > 0) {
+                anMehrere--;
+                ueberhang--;
+            }
+            while (ueberhang > 0 && anAlle > 0) {
+                anAlle--;
+                ueberhang--;
+            }
+        }
+
+        return { anAlle, anMehrere, anEinzeln: Math.max(0, budget - anAlle - anMehrere) };
+    }
+
+    private brauchtTraegerNachrichten(uebung: FunkUebung): boolean {
+        return Object.values(uebung.loesungswoerter || {}).some(wort => !!wort && wort.length > 0);
+    }
+
+    /**
+     * Wählt die Empfänger der Einzelnachrichten so, dass jeder Teilnehmer exakt gleich
+     * viele erhält.
+     *
+     * Zuvor zog `getRandomOther` für jede Nachricht unabhängig einen Empfänger. Die
+     * Empfangszahl war dadurch poissonverteilt: Bei wenigen Einzelnachrichten ging
+     * regelmäßig ein Teilnehmer leer aus – sein Lösungswort blieb dann unzustellbar,
+     * weil `verteileLoesungswoerterMitIndex` keine Trägernachricht findet.
+     *
+     * Deshalb wird die Empfängerliste als Multimenge aufgebaut (jeder Teilnehmer genau
+     * `proTeilnehmer` mal), gemischt und anschließend werden Selbstadressierungen durch
+     * Tausch aufgelöst. Ein Tausch verschiebt nur Positionen, die Mengen – und damit die
+     * exakte Gleichverteilung – bleiben erhalten.
+     */
+    private verteileEinzelEmpfaenger(teilnehmerListe: string[], proTeilnehmer: number): string[][] {
+        if (teilnehmerListe.length === 0 || proTeilnehmer <= 0) {
+            return teilnehmerListe.map(() => []);
+        }
+        if (teilnehmerListe.length === 1) {
+            // Einzelner Teilnehmer: Selbstadressierung ist unvermeidbar.
+            const allein = teilnehmerListe[0] as string;
+            return [Array.from({ length: proTeilnehmer }, () =>
+                this.getRandomOther(teilnehmerListe, allein)
+            )];
+        }
+
+        const senderProSlot = teilnehmerListe.flatMap(t => Array<string>(proTeilnehmer).fill(t));
+        const empfaengerProSlot = this.shuffle(senderProSlot);
+
+        for (let i = 0; i < empfaengerProSlot.length; i++) {
+            const sender = senderProSlot[i] as string;
+            if (empfaengerProSlot[i] !== sender) {
+                continue;
+            }
+            // Ein Slot, der weder an den eigenen Sender adressiert ist noch von ihm stammt.
+            // Bei mindestens zwei Teilnehmern gibt es davon immer einen.
+            const tausch = empfaengerProSlot.findIndex(
+                (empfaenger, k) => k !== i && empfaenger !== sender && senderProSlot[k] !== sender
+            );
+            if (tausch < 0) {
+                continue;
+            }
+            empfaengerProSlot[i] = empfaengerProSlot[tausch] as string;
+            empfaengerProSlot[tausch] = sender;
+        }
+
+        return teilnehmerListe.map((_, index) =>
+            empfaengerProSlot.slice(index * proTeilnehmer, (index + 1) * proTeilnehmer)
+        );
     }
 
     private verteileLoesungswoerterMitIndex(uebung: FunkUebung) {
