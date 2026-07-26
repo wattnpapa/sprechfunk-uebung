@@ -567,3 +567,127 @@ test("@teilnehmer teilnehmer keyboard shortcuts work in modal", async ({ page })
     await page.keyboard.press("Escape");
     await expect(page.locator("#teilnehmerDocModal")).not.toHaveClass(/show/);
 });
+
+// Zaehlt die nicht-weissen Pixel eines Canvas. Damit pruefen die folgenden Tests,
+// dass wirklich gezeichnet wurde - ein leeres Canvas ist sonst nicht von einem
+// erfolgreich gerenderten zu unterscheiden.
+const countPaintedPixels = async (page: Page, selector: string) => {
+    return page.locator(selector).evaluate(el => {
+        const canvas = el as HTMLCanvasElement;
+        const ctx = canvas.getContext("2d");
+        if (!ctx || !canvas.width || !canvas.height) {
+            return 0;
+        }
+        const data = ctx.getImageData(0, 0, canvas.width, canvas.height).data;
+        let painted = 0;
+        for (let i = 0; i < data.length; i += 4) {
+            const isWhite = data[i]! > 240 && data[i + 1]! > 240 && data[i + 2]! > 240;
+            if (data[i + 3]! > 0 && !isWhite) {
+                painted++;
+            }
+        }
+        return painted;
+    });
+};
+
+test("@teilnehmer @pdf doc preview renders pdf content onto the canvas", async ({ page }) => {
+    await page.goto("/#/teilnehmer/u1/A1B2");
+
+    await page.locator("[data-doc-view='meldevordruck']").click();
+    await expect(page.locator("#teilnehmerDocModal")).toHaveClass(/show/);
+
+    const canvas = page.locator("#teilnehmerPdfCanvas");
+    await expect(canvas).toBeVisible();
+
+    // pdf.js rendert asynchron in den Canvas - deshalb pollen statt einmal messen.
+    await expect.poll(
+        () => countPaintedPixels(page, "#teilnehmerPdfCanvas"),
+        { message: "pdf.js hat nichts in den Vorschau-Canvas gezeichnet" }
+    ).toBeGreaterThan(100);
+});
+
+test("@generator select2 dropdown selects and removes templates via mouse", async ({ page }) => {
+    await page.goto("/");
+
+    // Die uebrigen Tests setzen die Vorlagen per selectOption direkt am nativen
+    // <select>. Hier laeuft alles ueber das select2-Widget, damit jQuery- und
+    // Bundling-Regressionen auffallen.
+    const container = page.locator(".select2-container").first();
+    await expect(container).toBeVisible();
+
+    const chips = container.locator(".select2-selection__choice");
+    const selectedValues = () => page.locator("#funkspruchVorlage").evaluate(el =>
+        Array.from((el as HTMLSelectElement).selectedOptions).map(o => o.value)
+    );
+
+    // Standardmaessig sind alle Vorlagen vorausgewaehlt - ohne feste Anzahl
+    // pruefen, damit neue Vorlagen den Test nicht brechen.
+    const before = await chips.count();
+    expect(before).toBeGreaterThan(0);
+    expect(await selectedValues()).toContain("thwleer");
+
+    // Bei Mehrfachauswahl fuellen die Chips die Selection-Flaeche aus; das
+    // Suchfeld ist der verlaessliche Weg, das Dropdown per Maus zu oeffnen.
+    await container.locator(".select2-search__field").click();
+    await expect(page.locator(".select2-dropdown")).toBeVisible();
+
+    // Klick auf eine bereits gewaehlte Option nimmt sie aus der Auswahl.
+    await page.locator(".select2-results__option", { hasText: "Funksprüche THW Leer" }).first().click();
+    await expect(chips).toHaveCount(before - 1);
+    expect(await selectedValues()).not.toContain("thwleer");
+
+    // Chip-Entfernen muss ebenfalls auf das native <select> durchschlagen.
+    const remaining = await selectedValues();
+    await chips.first().locator(".select2-selection__choice__remove").click();
+    await expect(chips).toHaveCount(before - 2);
+    expect((await selectedValues()).length).toBe(remaining.length - 1);
+});
+
+test("@generator @chart statistics tab renders the distribution chart", async ({ page }) => {
+    await page.goto("/");
+
+    await setParticipants(page, ["Heros E2E 11/1", "Heros E2E 11/2"]);
+    await page.locator("#spruecheProTeilnehmer").fill("5");
+    await page.selectOption("#funkspruchVorlage", ["thwleer"]);
+    await page.locator("#startUebungBtn").click();
+
+    await expect(page.locator("#uebung-links")).toBeVisible();
+    await page.locator("#tab-stats-btn").click();
+
+    const chart = page.locator("#distributionChart");
+    await expect(chart).toBeVisible();
+
+    // Chart.js zeichnet animiert - erst nach der Animation stehen alle Pixel.
+    await expect.poll(
+        () => countPaintedPixels(page, "#distributionChart"),
+        { message: "Chart.js hat das Verteilungsdiagramm nicht gezeichnet" }
+    ).toBeGreaterThan(100);
+});
+
+test("@generator @pdf zip download contains generated pdfs", async ({ page }) => {
+    await page.goto("/");
+
+    await setParticipants(page, ["Heros E2E 11/1", "Heros E2E 11/2"]);
+    await page.locator("#spruecheProTeilnehmer").fill("3");
+    await page.selectOption("#funkspruchVorlage", ["thwleer"]);
+    await page.locator("#startUebungBtn").click();
+
+    await expect(page.locator("#uebung-links")).toBeVisible();
+
+    const downloadPromise = page.waitForEvent("download");
+    await page.locator("#zipAllPdfsBtn").click();
+    const download = await downloadPromise;
+
+    expect(download.suggestedFilename()).toMatch(/\.zip$/);
+
+    const stream = await download.createReadStream();
+    const chunks: Buffer[] = [];
+    for await (const chunk of stream) {
+        chunks.push(chunk as Buffer);
+    }
+    const zip = Buffer.concat(chunks);
+
+    // ZIP-Signatur "PK\x03\x04" und mindestens ein enthaltener PDF-Dateiname.
+    expect(zip.subarray(0, 4).toString("latin1")).toBe("PK\x03\x04");
+    expect(zip.toString("latin1")).toContain(".pdf");
+});

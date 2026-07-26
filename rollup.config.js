@@ -13,7 +13,7 @@ export default {
     format: 'es',
     sourcemap: true,
   },
-  treeshake: false,
+  treeshake: true,
   plugins: [
     resolve({
       browser: true,
