@@ -3,35 +3,29 @@ import fc from "fast-check";
 import { GenerationService } from "../../src/services/GenerationService";
 import { FunkUebung } from "../../src/models/FunkUebung";
 import { enthaeltBuchstabierAufgabe } from "../../src/utils/buchstabieren";
+import { createSeededRng } from "../../src/utils/random";
 import type { Nachricht } from "../../src/types/Nachricht";
 
 /**
  * Property-based Tests für die Verteilungslogik.
  *
- * Der Generator entscheidet an sehr vielen Stellen per `Math.random()`. Beispieltests
+ * Der Generator trifft an sehr vielen Stellen Zufallsentscheidungen. Beispieltests
  * treffen davon immer nur einen Pfad, deshalb prüfen diese Tests Invarianten über
  * zufällig erzeugte Konfigurationen hinweg.
  *
- * Damit ein Fehlschlag reproduzierbar bleibt, wird `Math.random` durch einen
- * deterministischen PRNG ersetzt, dessen Seed selbst von fast-check erzeugt wird.
- * Das gemeldete Counterexample enthält den Seed also mit.
+ * Damit ein Fehlschlag reproduzierbar bleibt, wird der Seed der Übung selbst von
+ * fast-check erzeugt (`uebung.seed`); das gemeldete Counterexample enthält ihn also
+ * mit, und `generate` baut daraus dieselbe Zufallsquelle wie im Produktivbetrieb.
+ *
+ * Wird eine private Routine direkt aufgerufen, läuft `generate` nicht – dann greift
+ * die Voreinstellung `Math.random`, die `mitZufall` deterministisch ersetzt.
  */
 
 const LEITUNG = "Leitstelle Wind 10";
 
-function mulberry32(seed: number): () => number {
-    let a = seed >>> 0;
-    return () => {
-        a = (a + 0x6D2B79F5) | 0;
-        let t = Math.imul(a ^ (a >>> 15), 1 | a);
-        t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
-        return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
-    };
-}
-
 /** Führt `fn` mit deterministisch geseedetem `Math.random` aus. */
 function mitZufall<T>(seed: number, fn: () => T): T {
-    const spy = vi.spyOn(Math, "random").mockImplementation(mulberry32(seed));
+    const spy = vi.spyOn(Math, "random").mockImplementation(createSeededRng(seed));
     try {
         return fn();
     } finally {
@@ -158,6 +152,9 @@ const uebungArb: fc.Arbitrary<UebungsFall> = fc
 
 function baueUebung(fall: UebungsFall): FunkUebung {
     const uebung = new FunkUebung("test");
+    // Steuert die Zufallsquelle von `generate` – ohne gesetzten Seed würfelt der
+    // Generator selbst einen aus und der Lauf wäre nicht nachstellbar.
+    uebung.seed = String(fall.seed);
     uebung.leitung = LEITUNG;
     uebung.teilnehmerListe = [...fall.teilnehmerListe];
     uebung.funksprueche = [...fall.funksprueche];
@@ -205,7 +202,7 @@ describe("GenerationService – Invarianten der Verteilung", () => {
         fc.assert(
             fc.property(uebungArb, fall => {
                 const uebung = baueUebung(fall);
-                mitZufall(fall.seed, () => new GenerationService().generate(uebung));
+                new GenerationService().generate(uebung);
 
                 Object.entries(uebung.nachrichten).forEach(([absender, liste]) => {
                     liste.forEach(nachricht => {
@@ -226,7 +223,7 @@ describe("GenerationService – Invarianten der Verteilung", () => {
         fc.assert(
             fc.property(uebungArb, fall => {
                 const uebung = baueUebung(fall);
-                mitZufall(fall.seed, () => new GenerationService().generate(uebung));
+                new GenerationService().generate(uebung);
 
                 const erwartet = erwarteteNachrichtenAnzahl(uebung);
                 expect(Object.keys(uebung.nachrichten).sort()).toEqual(
@@ -248,7 +245,7 @@ describe("GenerationService – Invarianten der Verteilung", () => {
         fc.assert(
             fc.property(uebungArb, fall => {
                 const uebung = baueUebung(fall);
-                mitZufall(fall.seed, () => new GenerationService().generate(uebung));
+                new GenerationService().generate(uebung);
 
                 const start = uebung.anmeldungAktiv ? 1 : 0;
                 uebung.teilnehmerListe.forEach(teilnehmer => {
@@ -272,7 +269,7 @@ describe("GenerationService – Invarianten der Verteilung", () => {
         fc.assert(
             fc.property(uebungArb, fall => {
                 const uebung = baueUebung(fall);
-                mitZufall(fall.seed, () => new GenerationService().generate(uebung));
+                new GenerationService().generate(uebung);
 
                 const budget = uebung.spruecheProTeilnehmer - (uebung.anmeldungAktiv ? 1 : 0);
 
@@ -306,7 +303,7 @@ describe("GenerationService – Invarianten der Verteilung", () => {
             // einzeln adressiert sind also genau die Einzelnachrichten.
             fc.property(uebungArb.filter(fall => fall.teilnehmerListe.length >= 3), fall => {
                 const uebung = baueUebung(fall);
-                mitZufall(fall.seed, () => new GenerationService().generate(uebung));
+                new GenerationService().generate(uebung);
 
                 const anzahlen = uebung.teilnehmerListe.map(
                     teilnehmer => alleinAdressiert(uebung, teilnehmer).length
@@ -335,7 +332,7 @@ describe("GenerationService – Invarianten der Verteilung", () => {
                 ),
                 fall => {
                     const uebung = baueUebung(fall);
-                    mitZufall(fall.seed, () => new GenerationService().generate(uebung));
+                    new GenerationService().generate(uebung);
 
                     // Auch wenn an Alle plus an Mehrere das Budget vollständig belegen würden,
                     // bleibt mindestens eine Einzelnachricht übrig.
@@ -357,7 +354,7 @@ describe("GenerationService – Invarianten der Verteilung", () => {
         fc.assert(
             fc.property(uebungArb, fall => {
                 const uebung = baueUebung(fall);
-                mitZufall(fall.seed, () => new GenerationService().generate(uebung));
+                new GenerationService().generate(uebung);
 
                 Object.entries(uebung.nachrichten).forEach(([absender, liste]) => {
                     liste.forEach(nachricht => {
