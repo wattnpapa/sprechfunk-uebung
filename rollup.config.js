@@ -4,6 +4,7 @@ import resolve from '@rollup/plugin-node-resolve';
 import commonjs from '@rollup/plugin-commonjs';
 import typescript from '@rollup/plugin-typescript';
 import copy from 'rollup-plugin-copy';
+import terser from '@rollup/plugin-terser';
 
 export default {
   input: 'src/app.ts',
@@ -12,6 +13,9 @@ export default {
     entryFileNames: 'bundle.js',
     format: 'es',
     sourcemap: true,
+    // Minifiziert Bundle und Chunks. Die Sourcemap bleibt erhalten, damit
+    // Stacktraces im Error-Monitoring weiter auf die TypeScript-Quellen zeigen.
+    plugins: [terser()],
   },
   treeshake: true,
   plugins: [
