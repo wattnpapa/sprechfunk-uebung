@@ -26,7 +26,7 @@
     "type": "git",
     "url": "git+https://github.com/wattnpapa/sprechfunk-uebung.git"
   },
-  "license": "MIT",
+  "license": "EUPL-1.2",
   "author": {
     "name": "Johannes Rudolph",
     "email": "johannes.rudolph@thw-oldenburg.de"

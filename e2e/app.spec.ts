@@ -373,7 +373,7 @@ test("@smoke start page exposes SoftwareApplication schema and links the content
     const [software] = await readJsonLd(page);
     expect(software["@type"]).toContain("SoftwareApplication");
     expect(software.applicationCategory).toContain("EmergencyApplication");
-    expect(software.license).toContain("MIT");
+    expect(software.license).toContain("EUPL-1.2");
     expect(software.softwareHelp.url).toContain("/anleitung/");
 
     await expect(page.getByTestId("footer-link-anleitung")).toHaveAttribute("href", "anleitung/");

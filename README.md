@@ -4,7 +4,7 @@
 [![Coverage](https://codecov.io/gh/wattnpapa/sprechfunk-uebung/branch/main/graph/badge.svg)](https://codecov.io/gh/wattnpapa/sprechfunk-uebung)
 [![Coverage Report](https://img.shields.io/badge/Coverage%20Report-HTML-blue)](https://github.com/wattnpapa/sprechfunk-uebung#readme/coverage/)
 
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+[![License: EUPL-1.2](https://img.shields.io/badge/License-EUPL--1.2-blue.svg)](LICENSE)
 
 Kostenloser, quelloffener **Übungsgenerator für BOS-Sprechfunk** — für Ausbildung und Training im
 **Zivil- und Katastrophenschutz**: **THW**, **Feuerwehr**, **Rettungsdienst** und Hilfsorganisationen.
@@ -28,7 +28,7 @@ Web-Anwendung zur Erstellung von BOS-Sprechfunkübungen mit:
 - Anleitung: https://sprechfunk-uebung.de/anleitung/
 - FAQ: https://sprechfunk-uebung.de/faq/
 - Repository: https://github.com/wattnpapa/sprechfunk-uebung
-- Lizenz: [MIT](LICENSE) – freie Nutzung, Anpassung und Weitergabe
+- Lizenz: [EUPL-1.2](LICENSE) – freie Nutzung, Anpassung und Weitergabe (Copyleft)
 
 ## Für wen ist das gedacht?
 Ausbilderinnen und Ausbilder sowie Übungsleitungen im Bevölkerungs- und Katastrophenschutz,
@@ -122,7 +122,7 @@ Workflow: `.github/workflows/main.yml`
 - Backup/Restore Playbook: `docs/backup-restore-firestore.md`
 
 ## Lizenz
-MIT
+[EUPL-1.2](LICENSE) (European Union Public Licence v1.2)
 
 # 📖 Anleitung – Sprechfunk Übungsgenerator
 
@@ -259,5 +259,5 @@ _"Technik verstehen, vernetzen und sinnvoll einsetzen – in der IT und im Einsa
 
 ---
 
-📌 **Lizenz:** MIT License  
-📜 Dieses Projekt steht unter der **MIT-Lizenz** – freie Nutzung & Weiterentwicklung erlaubt!  
+📌 **Lizenz:** European Union Public Licence v1.2 (EUPL-1.2)  
+📜 Dieses Projekt steht unter der **EUPL-1.2** – freie Nutzung & Weiterentwicklung erlaubt, abgeleitete Werke stehen unter derselben (oder einer kompatiblen) Lizenz.  
