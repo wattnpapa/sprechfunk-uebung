@@ -581,6 +581,20 @@ test("@admin admin route renders seeded data", async ({ page }) => {
     await expect(page.locator("#infoGesamtUebungen")).toContainText("12");
 });
 
+test("@admin admin statistics offer a year filter for the seeded exercises", async ({ page }) => {
+    await page.goto("/#/admin");
+    const jahr = page.locator("#adminStatistikJahr");
+
+    // Alle Seed-Übungen liegen in 2026 und müssen dort auch gezählt werden.
+    await expect(jahr).toHaveValue("2026");
+    await expect(jahr.locator("option")).toHaveText(["Alle Jahre (12)", "2026 (12)"]);
+    // Vollständig erfasst: kein Hinweis auf fehlende Statistikfelder.
+    await expect(page.locator("#adminStatistikHinweis")).toBeHidden();
+
+    await jahr.selectOption("alle");
+    await expect(jahr).toHaveValue("alle");
+});
+
 test("@admin admin search filters seeded table rows", async ({ page }) => {
     await page.goto("/#/admin");
     const search = page.locator("#adminSearchInput");

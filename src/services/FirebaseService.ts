@@ -30,6 +30,9 @@ export class FirebaseService {
      */
     private static readonly JOIN_CODE_KANDIDATEN = 5;
 
+    /** Obergrenze für den Jahresfilter, damit ein Ausreißer-Datum die Abfragen nicht sprengt. */
+    private static readonly MAX_STATISTIK_JAHRE = 15;
+
     constructor(private db: Firestore) {}
 
     private isMissingIndexError(error: unknown): boolean {
@@ -212,7 +215,7 @@ export class FirebaseService {
             }
         });
 
-        const monat = this.extractMonat(cleaned["datum"]);
+        const datum = this.extractDatum(cleaned["datum"]);
 
         return {
             statTeilnehmerAnzahl: teilnehmerListe.length,
@@ -224,11 +227,12 @@ export class FirebaseService {
             statHatBuchstabieren: Number(cleaned["buchstabierenAn"] || 0) > 0,
             // undefined bei unlesbarem Datum -> Feld wird verworfen, Übung taucht
             // dann nicht im Monatsdiagramm auf.
-            statMonat: monat
+            statMonat: datum?.getMonth(),
+            statJahr: datum?.getFullYear()
         };
     }
 
-    private extractMonat(rohwert: unknown): number | undefined {
+    private extractDatum(rohwert: unknown): Date | undefined {
         if (!rohwert) {
             return undefined;
         }
@@ -239,7 +243,7 @@ export class FirebaseService {
         if (!(datum instanceof Date) || isNaN(datum.getTime())) {
             return undefined;
         }
-        return datum.getMonth();
+        return datum;
     }
 
     private isLocalMockMode(): boolean {
@@ -644,27 +648,86 @@ export class FirebaseService {
     /**
      * Übungen je Kalendermonat (Index 0 = Januar) für das Admin-Diagramm.
      * Nutzt zwölf Count-Aggregationen über `statMonat` statt eines Vollscans.
+     * Ohne `jahr` werden alle Jahrgänge im selben Monat zusammengezählt.
      * Übungen ohne `statMonat` (Altbestand vor dem Backfill) fehlen im Diagramm.
      */
-    async getUebungenMonatsCounts(onlyTestExercises = false): Promise<number[]> {
+    async getUebungenMonatsCounts(onlyTestExercises = false, jahr?: number): Promise<number[]> {
         if (this.isLocalMockMode()) {
             const counts = Array.from({ length: 12 }, () => 0);
             this.readMockEntries(onlyTestExercises).forEach(data => {
-                const monat = this.extractMonat(data["datum"]);
-                if (monat !== undefined) {
+                const datum = this.extractDatum(data["datum"]);
+                if (datum && (jahr === undefined || datum.getFullYear() === jahr)) {
+                    const monat = datum.getMonth();
                     counts[monat] = (counts[monat] ?? 0) + 1;
                 }
             });
             return counts;
         }
 
+        const jahresFilter = jahr === undefined ? [] : [where("statJahr", "==", jahr)];
         const monate = Array.from({ length: 12 }, (_, monat) => monat);
         return Promise.all(monate.map(async monat => {
             const snapshot = await getCountFromServer(
-                this.buildUebungenQuery(onlyTestExercises, where("statMonat", "==", monat))
+                this.buildUebungenQuery(onlyTestExercises, where("statMonat", "==", monat), ...jahresFilter)
             );
             return snapshot.data().count;
         }));
+    }
+
+    /**
+     * Jahre mit gespeicherten Übungen samt Anzahl — Datengrundlage für den
+     * Jahresfilter des Admin-Diagramms. Das früheste Jahr kostet einen einzelnen
+     * Dokument-Read, danach zählt je Jahr eine Aggregation.
+     */
+    async getUebungenJahresCounts(onlyTestExercises = false): Promise<{ jahr: number; anzahl: number }[]> {
+        if (this.isLocalMockMode()) {
+            const counts = new Map<number, number>();
+            this.readMockEntries(onlyTestExercises).forEach(data => {
+                const jahr = this.extractDatum(data["datum"])?.getFullYear();
+                if (jahr !== undefined) {
+                    counts.set(jahr, (counts.get(jahr) ?? 0) + 1);
+                }
+            });
+            return [...counts.entries()]
+                .map(([jahr, anzahl]) => ({ jahr, anzahl }))
+                .sort((a, b) => a.jahr - b.jahr);
+        }
+
+        const aktuellesJahr = new Date().getFullYear();
+        const fruehestes = await this.getFruehestesUebungsJahr();
+        if (fruehestes === undefined) {
+            return [];
+        }
+        // Ein verrutschtes Datum (etwa 1970) darf keine hundert Abfragen auslösen.
+        const von = Math.max(fruehestes, aktuellesJahr - (FirebaseService.MAX_STATISTIK_JAHRE - 1));
+        const bis = Math.max(von, aktuellesJahr);
+        const jahre = Array.from({ length: bis - von + 1 }, (_, i) => von + i);
+
+        const counts = await Promise.all(jahre.map(async jahr => {
+            const snapshot = await getCountFromServer(
+                this.buildUebungenQuery(onlyTestExercises, where("statJahr", "==", jahr))
+            );
+            return { jahr, anzahl: snapshot.data().count };
+        }));
+        return counts.filter(eintrag => eintrag.anzahl > 0);
+    }
+
+    /**
+     * Älteste Übung mit `statJahr`. Dokumente ohne das Feld stehen nicht im
+     * Index und bleiben deshalb unberücksichtigt; fehlt der Index ganz, liefert
+     * die Methode `undefined` und der Jahresfilter bleibt leer.
+     */
+    private async getFruehestesUebungsJahr(): Promise<number | undefined> {
+        try {
+            const snapshot = await getDocs(
+                query(collection(this.db, "uebungen"), orderBy("statJahr", "asc"), limit(1))
+            );
+            const jahr = snapshot.docs[0]?.data()["statJahr"];
+            return typeof jahr === "number" ? jahr : undefined;
+        } catch (error) {
+            console.warn("Frühestes Übungsjahr konnte nicht ermittelt werden:", error);
+            return undefined;
+        }
     }
 
     private buildUebungenQuery(onlyTestExercises: boolean, ...zusatz: QueryConstraint[]) {

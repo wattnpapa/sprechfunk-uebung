@@ -377,8 +377,15 @@
         </div>
         <div id="collapseAdminStats" class="collapse show">
             <div class="card-body">
+                <div class="d-flex justify-content-end align-items-center gap-2 mb-3">
+                    <label class="form-label mb-0 small" for="adminStatistikJahr">Jahr</label>
+                    <select id="adminStatistikJahr" class="form-select form-select-sm w-auto">
+                        <option value="alle">Alle Jahre</option>
+                    </select>
+                </div>
                 <canvas id="chartUebungenProTag"></canvas>
-                <small class="text-muted">Anzahl gespeicherter Übungen nach Tag, Woche oder Monat</small>
+                <small class="text-muted">Anzahl gespeicherter Übungen je Monat</small>
+                <div id="adminStatistikHinweis" class="small text-warning d-none"></div>
             </div>
         </div>
     </div>

@@ -20,7 +20,7 @@ import { firebaseConfig } from "../src/firebase-config.js";
 
 const apply = process.argv.includes("--apply");
 
-function extractMonat(rohwert) {
+function extractDatum(rohwert) {
     if (!rohwert) {
         return undefined;
     }
@@ -28,7 +28,7 @@ function extractMonat(rohwert) {
     if (!(datum instanceof Date) || isNaN(datum.getTime())) {
         return undefined;
     }
-    return datum.getMonth();
+    return datum;
 }
 
 function hatEintraege(wert) {
@@ -56,9 +56,10 @@ function buildStatistikFelder(data) {
         statHatBuchstabieren: Number(data.buchstabierenAn || 0) > 0
     };
 
-    const monat = extractMonat(data.datum);
-    if (monat !== undefined) {
-        felder.statMonat = monat;
+    const datum = extractDatum(data.datum);
+    if (datum !== undefined) {
+        felder.statMonat = datum.getMonth();
+        felder.statJahr = datum.getFullYear();
     }
     return felder;
 }

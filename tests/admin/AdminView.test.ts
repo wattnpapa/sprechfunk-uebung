@@ -36,6 +36,8 @@ describe("AdminView", () => {
           <button id="adminPrevPage"></button>
           <button id="adminNextPage"></button>
           <canvas id="chartUebungenProTag"></canvas>
+          <select id="adminStatistikJahr"></select>
+          <div id="adminStatistikHinweis" class="d-none"></div>
         `);
         vi.stubGlobal("window", dom.window);
         vi.stubGlobal("document", dom.window.document);
@@ -119,6 +121,48 @@ describe("AdminView", () => {
         expect(chartCtor).toHaveBeenCalled();
     });
 
+    it("fills the year filter and reports the active selection", () => {
+        const view = new AdminView();
+        const onJahrChange = vi.fn();
+        view.bindListEvents({ onView: vi.fn(), onMonitor: vi.fn(), onDelete: vi.fn(), onJahrChange });
+        view.renderJahresFilter([{ jahr: 2025, anzahl: 2 }, { jahr: 2026, anzahl: 3 }], 2026);
+
+        const select = document.getElementById("adminStatistikJahr") as HTMLSelectElement;
+        expect(select.options).toHaveLength(3);
+        expect(select.options[0]?.textContent).toBe("Alle Jahre (5)");
+        expect(select.value).toBe("2026");
+
+        select.value = "2025";
+        select.dispatchEvent(new window.Event("change"));
+        expect(onJahrChange).toHaveBeenCalledWith(2025);
+
+        select.value = "alle";
+        select.dispatchEvent(new window.Event("change"));
+        expect(onJahrChange).toHaveBeenLastCalledWith("alle");
+    });
+
+    it("shows and hides the hint about exercises without statistics fields", () => {
+        const view = new AdminView();
+        const hinweis = document.getElementById("adminStatistikHinweis") as HTMLElement;
+
+        view.renderStatistikHinweis(7);
+        expect(hinweis.classList.contains("d-none")).toBe(false);
+        expect(hinweis.textContent).toContain("7 Übung(en)");
+
+        view.renderStatistikHinweis(0);
+        expect(hinweis.classList.contains("d-none")).toBe(true);
+        expect(hinweis.textContent).toBe("");
+    });
+
+    it("labels the chart dataset with the selected year", () => {
+        const view = new AdminView();
+        view.renderChart([1], ["Jan"], "Übungen pro Monat 2025");
+
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const config = chartCtor.mock.calls[0]?.[1] as any;
+        expect(config.data.datasets[0].label).toBe("Übungen pro Monat 2025");
+    });
+
     it("takes chart colours from the active theme tokens", () => {
         document.body.style.setProperty("--akzent", "#ff9c00");
         document.body.style.setProperty("--akzent-hell", "#ffcc66");
@@ -156,6 +200,11 @@ describe("AdminView", () => {
 
         document.getElementById("chartUebungenProTag")?.remove();
         view.renderChart([1], ["Jan"]);
+
+        document.getElementById("adminStatistikJahr")?.remove();
+        document.getElementById("adminStatistikHinweis")?.remove();
+        view.renderJahresFilter([{ jahr: 2026, anzahl: 1 }], "alle");
+        view.renderStatistikHinweis(3);
 
         document.getElementById("adminUebungslisteInfo")?.remove();
         view.renderPaginationInfo(0, 10, 0, 0);

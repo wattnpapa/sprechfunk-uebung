@@ -8,8 +8,11 @@ const mocks = vi.hoisted(() => ({
     getAlleUebungen: vi.fn(),
     getUebungenCount: vi.fn(),
     getUebungenMonatsCounts: vi.fn(),
+    getUebungenJahresCounts: vi.fn(() => Promise.resolve([])),
     deleteUebung: vi.fn(),
     renderStatistik: vi.fn(),
+    renderJahresFilter: vi.fn(),
+    renderStatistikHinweis: vi.fn(),
     renderUebungsListe: vi.fn(),
     renderPaginationInfo: vi.fn(),
     setPaginationButtons: vi.fn(),
@@ -29,12 +32,15 @@ vi.mock("../../src/services/FirebaseService", () => ({
         getAlleUebungen = mocks.getAlleUebungen;
         getUebungenCount = mocks.getUebungenCount;
         getUebungenMonatsCounts = mocks.getUebungenMonatsCounts;
+        getUebungenJahresCounts = mocks.getUebungenJahresCounts;
         deleteUebung = mocks.deleteUebung;
     }
 }));
 vi.mock("../../src/admin/AdminView", () => ({
     AdminView: class {
         renderStatistik = mocks.renderStatistik;
+        renderJahresFilter = mocks.renderJahresFilter;
+        renderStatistikHinweis = mocks.renderStatistikHinweis;
         renderUebungsListe = mocks.renderUebungsListe;
         renderPaginationInfo = mocks.renderPaginationInfo;
         setPaginationButtons = mocks.setPaginationButtons;
@@ -191,6 +197,81 @@ describe("AdminController", () => {
         mocks.getUebungenMonatsCounts.mockResolvedValueOnce(monatsCounts);
         await c.renderUebungsStatistik();
         expect(mocks.renderChart).toHaveBeenCalled();
+    });
+
+    it("starts the chart on the most recent year and follows the filter", async () => {
+        const { AdminController } = await import("../../src/admin/index");
+        const c = new AdminController();
+        c.setDb({ db: true } as never);
+        mocks.getAdminStats.mockResolvedValue({
+            total: 3, totalTeilnehmer: 3, totalBytes: 100, totalSprueche: 10,
+            loesungsCount: 0, staerkeCount: 0, buchstabierCount: 0
+        });
+        mocks.getUebungenJahresCounts.mockResolvedValue([
+            { jahr: 2025, anzahl: 2 },
+            { jahr: 2026, anzahl: 1 }
+        ]);
+        mocks.getUebungenMonatsCounts.mockResolvedValue(Array.from({ length: 12 }, () => 0));
+        mocks.getUebungenCount.mockResolvedValue(3);
+
+        await c.renderUebungsStatistik();
+
+        // Ohne Jahreswahl legte das Diagramm mehrere Jahrgänge übereinander.
+        expect(mocks.getUebungenMonatsCounts).toHaveBeenLastCalledWith(false, 2026);
+        expect(mocks.renderJahresFilter).toHaveBeenLastCalledWith(
+            [{ jahr: 2025, anzahl: 2 }, { jahr: 2026, anzahl: 1 }],
+            2026
+        );
+        expect(mocks.renderChart.mock.lastCall?.[2]).toBe("Übungen pro Monat 2026");
+        // Alle Übungen tragen Statistikfelder: kein Hinweis.
+        expect(mocks.renderStatistikHinweis).toHaveBeenLastCalledWith(0);
+
+        const onJahrChange = mocks.bindListEvents.mock.calls[0]?.[0]?.onJahrChange as
+            ((jahr: number | "alle") => void) | undefined;
+        onJahrChange?.(2025);
+        await vi.waitFor(() => expect(mocks.getUebungenMonatsCounts).toHaveBeenLastCalledWith(false, 2025));
+
+        onJahrChange?.("alle");
+        await vi.waitFor(() =>
+            expect(mocks.renderChart.mock.lastCall?.[2]).toBe("Übungen pro Monat (alle Jahre)")
+        );
+        expect(mocks.getUebungenMonatsCounts).toHaveBeenLastCalledWith(false, undefined);
+    });
+
+    it("still draws the chart when the year list cannot be loaded", async () => {
+        const { AdminController } = await import("../../src/admin/index");
+        const c = new AdminController();
+        c.setDb({ db: true } as never);
+        mocks.getAdminStats.mockResolvedValue({
+            total: 1, totalTeilnehmer: 1, totalBytes: 100, totalSprueche: 1,
+            loesungsCount: 0, staerkeCount: 0, buchstabierCount: 0
+        });
+        mocks.getUebungenJahresCounts.mockRejectedValue(new Error("quota"));
+        mocks.getUebungenMonatsCounts.mockResolvedValue(Array.from({ length: 12 }, () => 0));
+        mocks.getUebungenCount.mockResolvedValue(1);
+
+        await c.renderUebungsStatistik();
+
+        expect(mocks.renderJahresFilter).toHaveBeenLastCalledWith([], "alle");
+        expect(mocks.renderChart.mock.lastCall?.[2]).toBe("Übungen pro Monat (alle Jahre)");
+    });
+
+    it("reports exercises that are missing the statistics fields", async () => {
+        const { AdminController } = await import("../../src/admin/index");
+        const c = new AdminController();
+        c.setDb({ db: true } as never);
+        mocks.getAdminStats.mockResolvedValue({
+            total: 10, totalTeilnehmer: 10, totalBytes: 100, totalSprueche: 10,
+            loesungsCount: 0, staerkeCount: 0, buchstabierCount: 0
+        });
+        mocks.getUebungenJahresCounts.mockResolvedValue([{ jahr: 2026, anzahl: 1 }]);
+        mocks.getUebungenMonatsCounts.mockResolvedValue(Array.from({ length: 12 }, () => 0));
+        mocks.getUebungenCount.mockResolvedValue(10);
+
+        await c.renderUebungsStatistik();
+
+        // 9 Altbestands-Übungen ohne stat*-Felder fehlen im Diagramm.
+        expect(mocks.renderStatistikHinweis).toHaveBeenLastCalledWith(9);
     });
 
     it("handles open handlers, deletion cancel/error and setDb", async () => {

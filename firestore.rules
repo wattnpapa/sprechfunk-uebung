@@ -83,7 +83,7 @@ function erlaubteFelder() {
     'buchstabierenAn', 'anmeldungAktiv', 'verwendeteVorlagen',
     'istStandardKonfiguration', 'spielModus', 'xZeitIntervallMinuten',
     'xZeitStartOffsetMinuten', 'seed', 'statTeilnehmerAnzahl', 'statNachrichtenAnzahl',
-    'statBytes', 'statMonat', 'statHatLoesungswoerter',
+    'statBytes', 'statMonat', 'statJahr', 'statHatLoesungswoerter',
     'statHatLoesungsStaerken', 'statHatBuchstabieren'
   ];
 }
@@ -161,6 +161,7 @@ function sindStatistikFelderGueltig(daten) {
          && optionalOk(daten, 'statNachrichtenAnzahl', istZahlImBereich(daten.statNachrichtenAnzahl, 0, 100000))
          && optionalOk(daten, 'statBytes', istZahlImBereich(daten.statBytes, 0, 5000000))
          && optionalOk(daten, 'statMonat', istZahlImBereich(daten.statMonat, 0, 11))
+         && optionalOk(daten, 'statJahr', istZahlImBereich(daten.statJahr, 1970, 2200))
          && optionalOk(daten, 'statHatLoesungswoerter', daten.statHatLoesungswoerter is bool)
          && optionalOk(daten, 'statHatLoesungsStaerken', daten.statHatLoesungsStaerken is bool)
          && optionalOk(daten, 'statHatBuchstabieren', daten.statHatBuchstabieren is bool);

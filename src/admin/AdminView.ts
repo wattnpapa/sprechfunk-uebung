@@ -7,6 +7,13 @@ export interface AdminListHandlers {
     onDelete: (id: string) => void;
     onOnlyTestFilterChange?: (checked: boolean) => void;
     onSearchChange?: (term: string) => void;
+    onJahrChange?: (jahr: number | "alle") => void;
+}
+
+/** Ein Jahr mit Übungen als Auswahl für den Statistik-Filter. */
+export interface JahresEintrag {
+    jahr: number;
+    anzahl: number;
 }
 
 export class AdminView {
@@ -94,7 +101,44 @@ export class AdminView {
         }
     }
 
-    public renderChart(data: number[], labels: string[]) {
+    /**
+     * Füllt die Jahresauswahl über dem Diagramm. Jahre ohne Übungen tauchen
+     * nicht auf, damit die Auswahl den tatsächlichen Bestand zeigt.
+     */
+    public renderJahresFilter(jahre: JahresEintrag[], aktiv: number | "alle") {
+        const select = document.getElementById("adminStatistikJahr") as HTMLSelectElement | null;
+        if (!select) {
+            return;
+        }
+
+        const gesamt = jahre.reduce((summe, eintrag) => summe + eintrag.anzahl, 0);
+        select.innerHTML = [
+            `<option value="alle">Alle Jahre (${gesamt})</option>`,
+            ...jahre.map(eintrag => `<option value="${eintrag.jahr}">${eintrag.jahr} (${eintrag.anzahl})</option>`)
+        ].join("");
+        select.value = String(aktiv);
+    }
+
+    /**
+     * Übungen ohne die denormalisierten `stat*`-Felder fehlen im Diagramm. Ohne
+     * diesen Hinweis wirkt das Diagramm schlicht leer statt unvollständig.
+     */
+    public renderStatistikHinweis(fehlendeUebungen: number) {
+        const hinweis = document.getElementById("adminStatistikHinweis");
+        if (!hinweis) {
+            return;
+        }
+        if (fehlendeUebungen <= 0) {
+            hinweis.textContent = "";
+            hinweis.classList.add("d-none");
+            return;
+        }
+        hinweis.textContent = `${fehlendeUebungen} Übung(en) ohne Statistikfelder — sie erscheinen im Diagramm, `
+            + "sobald scripts/backfill-stat-felder.mjs gelaufen ist.";
+        hinweis.classList.remove("d-none");
+    }
+
+    public renderChart(data: number[], labels: string[], datensatzLabel = "Übungen pro Monat") {
         const canvas = document.getElementById("chartUebungenProTag") as HTMLCanvasElement | null;
         if (!canvas) {
             return;
@@ -112,7 +156,7 @@ export class AdminView {
             data: {
                 labels: labels,
                 datasets: [{
-                    label: "Übungen pro Monat",
+                    label: datensatzLabel,
                     data: data,
                     backgroundColor: farben.akzent,
                     borderColor: farben.akzentHell,
@@ -139,7 +183,7 @@ export class AdminView {
             }
         });
 
-        this.beobachteThemeWechsel(() => this.renderChart(data, labels));
+        this.beobachteThemeWechsel(() => this.renderChart(data, labels, datensatzLabel));
     }
 
     /**
@@ -171,7 +215,15 @@ export class AdminView {
     }
 
     public bindListEvents(handlers: AdminListHandlers) {
-        const { onView, onMonitor, onDelete, onOnlyTestFilterChange, onSearchChange } = handlers;
+        const { onView, onMonitor, onDelete, onOnlyTestFilterChange, onSearchChange, onJahrChange } = handlers;
+
+        // Die Jahresauswahl steht außerhalb der Tabelle und darf nicht an der
+        // Tabellenprüfung unten scheitern.
+        document.getElementById("adminStatistikJahr")?.addEventListener("change", e => {
+            const wert = (e.target as HTMLSelectElement).value;
+            onJahrChange?.(wert === "alle" ? "alle" : Number(wert));
+        });
+
         const tbody = document.getElementById("adminUebungslisteBody");
         if (!tbody) {
             return;

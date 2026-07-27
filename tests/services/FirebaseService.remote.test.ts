@@ -227,7 +227,48 @@ describe("FirebaseService firestore path", () => {
         expect(monate).toEqual(Array.from({ length: 12 }, () => 1));
         expect(mocks.getCountFromServer).toHaveBeenCalledTimes(12);
         expect(mocks.where).toHaveBeenCalledWith("statMonat", "==", 11);
+        expect(mocks.where).not.toHaveBeenCalledWith("statJahr", "==", expect.anything());
         expect(mocks.getDocs).not.toHaveBeenCalled();
+    });
+
+    it("restricts the monthly aggregation to one year when asked", async () => {
+        const { FirebaseService } = await import("../../src/services/FirebaseService");
+        const s = new FirebaseService({} as never);
+        mocks.getCountFromServer.mockImplementation(() =>
+            Promise.resolve({ data: () => ({ count: 2 }) })
+        );
+
+        const monate = await s.getUebungenMonatsCounts(false, 2025);
+
+        expect(monate).toEqual(Array.from({ length: 12 }, () => 2));
+        expect(mocks.where).toHaveBeenCalledWith("statJahr", "==", 2025);
+    });
+
+    it("lists years with exercises starting at the earliest stored year", async () => {
+        const { FirebaseService } = await import("../../src/services/FirebaseService");
+        const s = new FirebaseService({} as never);
+        const aktuellesJahr = new Date().getFullYear();
+        mocks.getDocs.mockResolvedValueOnce({
+            docs: [{ data: () => ({ statJahr: aktuellesJahr - 1 }) }]
+        });
+        // Vorjahr hat Übungen, das laufende Jahr nicht.
+        mocks.getCountFromServer
+            .mockResolvedValueOnce({ data: () => ({ count: 4 }) })
+            .mockResolvedValueOnce({ data: () => ({ count: 0 }) });
+
+        const jahre = await s.getUebungenJahresCounts();
+
+        expect(jahre).toEqual([{ jahr: aktuellesJahr - 1, anzahl: 4 }]);
+        expect(mocks.orderBy).toHaveBeenCalledWith("statJahr", "asc");
+    });
+
+    it("keeps the year filter empty when the earliest year cannot be read", async () => {
+        const { FirebaseService } = await import("../../src/services/FirebaseService");
+        const s = new FirebaseService({} as never);
+        mocks.getDocs.mockRejectedValueOnce(new Error("missing index"));
+
+        expect(await s.getUebungenJahresCounts()).toEqual([]);
+        expect(mocks.getCountFromServer).not.toHaveBeenCalled();
     });
 
     it("resolves join codes through firestore query", async () => {

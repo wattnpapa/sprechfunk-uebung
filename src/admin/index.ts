@@ -1,6 +1,6 @@
 import type { Firestore, QueryDocumentSnapshot } from "firebase/firestore";
 import { FirebaseService } from "../services/FirebaseService";
-import { AdminView } from "./AdminView";
+import { AdminView, type JahresEintrag } from "./AdminView";
 import { uiFeedback } from "../core/UiFeedback";
 
 type ListenCursor = QueryDocumentSnapshot | { __mockIndex: number } | { __fallbackIndex: number } | null;
@@ -26,7 +26,10 @@ export class AdminController {
     private hasNextPage = false;
     private statsCache: { ts: number; data: Awaited<ReturnType<FirebaseService["getAdminStats"]>> } | null = null;
     private countCache: Partial<Record<"all" | "test", { ts: number; data: number }>> = {};
-    private monatsCache: Partial<Record<"all" | "test", { ts: number; data: number[] }>> = {};
+    private monatsCache: Record<string, { ts: number; data: number[] }> = {};
+    private jahresCache: Partial<Record<"all" | "test", { ts: number; data: JahresEintrag[] }>> = {};
+    /** `null` = noch nicht gewählt, `"alle"` = Jahrgänge zusammengefasst. */
+    private jahrFilter: number | "alle" | null = null;
     private alleUebungenCache: Partial<Record<"all" | "test", { ts: number; data: UebungsListe }>> = {};
     private readonly cacheTtlMs = 120000;
 
@@ -46,7 +49,8 @@ export class AdminController {
             onMonitor: id => this.offeneUebungsleitung(id),
             onDelete: id => this.loescheUebung(id),
             onOnlyTestFilterChange: checked => this.setOnlyTestFilter(checked),
-            onSearchChange: term => this.setSearchTerm(term)
+            onSearchChange: term => this.setSearchTerm(term),
+            onJahrChange: jahr => this.setJahrFilter(jahr)
         });
     }
 
@@ -186,10 +190,87 @@ export class AdminController {
 
     async renderUebungsStatistik() {
         await this.ladeAdminStatistik();
+        if (!this.ensureDbReady()) {
+            return;
+        }
+
+        const jahre = await this.ladeJahreOhneAbbruch();
+        this.jahrFilter = this.waehleJahr(jahre);
+        this.view.renderJahresFilter(jahre, this.jahrFilter);
+
+        try {
+            await this.zeichneMonatsDiagramm();
+        } catch (error) {
+            console.error("Monatsdiagramm konnte nicht geladen werden:", error);
+            uiFeedback.error("Das Übungsdiagramm konnte aktuell nicht geladen werden.");
+            return;
+        }
+        await this.zeigeFehlendeStatistikFelder(jahre);
+    }
+
+    /**
+     * Ohne Jahresliste (etwa bei erschöpftem Firestore-Kontingent) bleibt das
+     * Diagramm über alle Jahrgänge stehen, statt ganz zu verschwinden.
+     */
+    private async ladeJahreOhneAbbruch(): Promise<JahresEintrag[]> {
+        try {
+            return await this.getJahresCountsCached();
+        } catch (error) {
+            console.warn("Jahresfilter konnte nicht geladen werden:", error);
+            return [];
+        }
+    }
+
+    /**
+     * Nur das Diagramm neu zeichnen — die Kennzahlen darüber hängen nicht am
+     * Jahresfilter und müssten sonst unnötig erneut abgefragt werden.
+     */
+    private async zeichneMonatsDiagramm() {
         const data = await this.ladeUebungsStatistik();
         const labels = ["Jan", "Feb", "Mär", "Apr", "Mai", "Jun", "Jul", "Aug", "Sep", "Okt", "Nov", "Dez"];
-        
-        this.view.renderChart(data, labels);
+        const titel = this.jahrFilter === "alle" || this.jahrFilter === null
+            ? "Übungen pro Monat (alle Jahre)"
+            : `Übungen pro Monat ${this.jahrFilter}`;
+
+        this.view.renderChart(data, labels, titel);
+    }
+
+    /**
+     * Das Diagramm liest die denormalisierten `stat*`-Felder. Übungen aus der
+     * Zeit davor besitzen sie nicht und fehlen still — die Differenz zum
+     * Gesamtbestand macht genau das sichtbar.
+     */
+    private async zeigeFehlendeStatistikFelder(jahre: JahresEintrag[]) {
+        try {
+            const gesamt = await this.getUebungenCountCached();
+            const erfasst = jahre.reduce((summe, eintrag) => summe + eintrag.anzahl, 0);
+            this.view.renderStatistikHinweis(Math.max(0, gesamt - erfasst));
+        } catch (error) {
+            console.warn("Abgleich der Statistikfelder nicht möglich:", error);
+        }
+    }
+
+    /**
+     * Zuletzt gewählte Auswahl beibehalten, solange es sie noch gibt; beim
+     * ersten Aufruf auf das jüngste Jahr mit Übungen springen, damit das
+     * Diagramm nicht mehrere Jahrgänge im selben Monat übereinanderlegt.
+     */
+    private waehleJahr(jahre: JahresEintrag[]): number | "alle" {
+        if (this.jahrFilter === "alle") {
+            return "alle";
+        }
+        if (this.jahrFilter !== null && jahre.some(eintrag => eintrag.jahr === this.jahrFilter)) {
+            return this.jahrFilter;
+        }
+        return jahre[jahre.length - 1]?.jahr ?? "alle";
+    }
+
+    private setJahrFilter(jahr: number | "alle"): void {
+        if (this.jahrFilter === jahr) {
+            return;
+        }
+        this.jahrFilter = jahr;
+        void this.zeichneMonatsDiagramm();
     }
 
     private getCachedStats() {
@@ -215,13 +296,25 @@ export class AdminController {
     }
 
     private async getUebungenMonatsCountsCached(): Promise<number[]> {
-        const key: "all" | "test" = this.onlyTestExercises ? "test" : "all";
+        const jahr = typeof this.jahrFilter === "number" ? this.jahrFilter : undefined;
+        const key = `${this.onlyTestExercises ? "test" : "all"}:${jahr ?? "alle"}`;
         const cached = this.monatsCache[key];
         if (cached && (Date.now() - cached.ts) <= this.cacheTtlMs) {
             return cached.data;
         }
-        const data = await this.requireFirebaseService().getUebungenMonatsCounts(this.onlyTestExercises);
+        const data = await this.requireFirebaseService().getUebungenMonatsCounts(this.onlyTestExercises, jahr);
         this.monatsCache[key] = { ts: Date.now(), data };
+        return data;
+    }
+
+    private async getJahresCountsCached(): Promise<JahresEintrag[]> {
+        const key: "all" | "test" = this.onlyTestExercises ? "test" : "all";
+        const cached = this.jahresCache[key];
+        if (cached && (Date.now() - cached.ts) <= this.cacheTtlMs) {
+            return cached.data;
+        }
+        const data = await this.requireFirebaseService().getUebungenJahresCounts(this.onlyTestExercises);
+        this.jahresCache[key] = { ts: Date.now(), data };
         return data;
     }
 
@@ -346,6 +439,7 @@ export class AdminController {
     private invalidateCaches(): void {
         this.countCache = {};
         this.monatsCache = {};
+        this.jahresCache = {};
         this.alleUebungenCache = {};
         this.statsCache = null;
     }

@@ -93,16 +93,27 @@ describe("FirebaseService local mock mode", () => {
         window.localStorage.setItem("e2eFirestoreSeed", JSON.stringify({
             u1: { datum: "2026-01-15T00:00:00.000Z" },
             u2: { datum: "2026-02-15T00:00:00.000Z" },
-            u3: { datum: "kein-datum" }
+            u3: { datum: "kein-datum" },
+            u4: { datum: "2025-01-20T00:00:00.000Z" }
         }));
-        expect(await s.getUebungenCount()).toBe(3);
+        expect(await s.getUebungenCount()).toBe(4);
 
         const monate = await s.getUebungenMonatsCounts();
         expect(monate).toHaveLength(12);
-        expect(monate[0]).toBe(1);
+        expect(monate[0]).toBe(2);
         expect(monate[1]).toBe(1);
         // Übung ohne lesbares Datum taucht in keinem Monat auf.
-        expect(monate.reduce((a, b) => a + b, 0)).toBe(2);
+        expect(monate.reduce((a, b) => a + b, 0)).toBe(3);
+
+        // Mit Jahresfilter zählt nur der gewählte Jahrgang.
+        const monate2026 = await s.getUebungenMonatsCounts(false, 2026);
+        expect(monate2026[0]).toBe(1);
+        expect(monate2026.reduce((a, b) => a + b, 0)).toBe(2);
+
+        expect(await s.getUebungenJahresCounts()).toEqual([
+            { jahr: 2025, anzahl: 1 },
+            { jahr: 2026, anzahl: 2 }
+        ]);
     });
 
     it("maps invalid/legacy values to safe domain defaults", () => {

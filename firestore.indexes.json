@@ -17,6 +17,34 @@
         { "fieldPath": "istStandardKonfiguration", "order": "ASCENDING" },
         { "fieldPath": "statMonat", "order": "ASCENDING" }
       ]
+    },
+    {
+      "_kommentar": "getUebungenMonatsCounts mit gewaehltem Jahr.",
+      "collectionGroup": "uebungen",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "statJahr", "order": "ASCENDING" },
+        { "fieldPath": "statMonat", "order": "ASCENDING" }
+      ]
+    },
+    {
+      "_kommentar": "getUebungenMonatsCounts mit gewaehltem Jahr und Testuebungs-Filter.",
+      "collectionGroup": "uebungen",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "istStandardKonfiguration", "order": "ASCENDING" },
+        { "fieldPath": "statJahr", "order": "ASCENDING" },
+        { "fieldPath": "statMonat", "order": "ASCENDING" }
+      ]
+    },
+    {
+      "_kommentar": "getUebungenJahresCounts mit aktiviertem Testuebungs-Filter.",
+      "collectionGroup": "uebungen",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "istStandardKonfiguration", "order": "ASCENDING" },
+        { "fieldPath": "statJahr", "order": "ASCENDING" }
+      ]
     }
   ],
   "fieldOverrides": []
