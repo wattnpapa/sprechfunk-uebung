@@ -393,7 +393,7 @@ test("@smoke start page exposes SoftwareApplication schema and links the content
 test("@smoke start page shows the intro text only in generator mode", async ({ page }) => {
     await page.goto("/");
     await expect(page.getByTestId("seo-intro")).toBeVisible();
-    await expect(page.getByRole("heading", { name: /Sprechfunkübungen erstellen/ })).toBeVisible();
+    await expect(page.getByRole("heading", { name: /Sprechfunkübung online erstellen/ })).toBeVisible();
 
     await page.goto("/#/admin");
     await expect(page.getByTestId("seo-intro")).toBeHidden();
