@@ -103,7 +103,7 @@ export class AdminController {
         this.view.renderStatistik(viewStats);
     }
 
-    async ladeAlleUebungen(direction: "next" | "prev" | "initial" = "initial") {
+    async ladeAlleUebungen(direction: "next" | "prev" | "initial" | "refresh" = "initial") {
         const service = this.getFirebaseService();
         if (!service) {
             return;
@@ -126,9 +126,16 @@ export class AdminController {
             this.onlyTestExercises
         );
 
-        if (direction === "initial") {
+        if (direction === "initial" || direction === "refresh") {
             // Count-Aggregation statt Vollscan: kostet konstant wenige Reads.
             this.pagination.totalCount = await this.getUebungenCountCached();
+        }
+
+        if (result.uebungen.length === 0 && zielSeite > 0) {
+            // Letzter Eintrag der Seite gelöscht: eine Seite zurück statt leerer Tabelle.
+            this.pagination.currentPage = zielSeite;
+            await this.ladeAlleUebungen("prev");
+            return;
         }
 
         this.pagination.currentPage = zielSeite;
@@ -152,7 +159,8 @@ export class AdminController {
             await service.deleteUebung(uebungId);
             // console.log("✅ Übung gelöscht:", uebungId); // Removed console.log
             this.invalidateCaches();
-            this.ladeAlleUebungen(); // Ansicht aktualisieren
+            // Auf der aktuellen Seite bleiben statt zurück auf Seite 1 zu springen.
+            this.ladeAlleUebungen("refresh");
         } catch (error) {
             console.error("❌ Fehler beim Löschen der Übung:", error);
             uiFeedback.error("Fehler beim Löschen der Übung.");
@@ -263,12 +271,15 @@ export class AdminController {
      * hinter dem Ende auf einer leeren oder — mangels Cursor — wieder auf der
      * ersten Seite.
      */
-    private ermittleZielSeite(direction: "next" | "prev" | "initial"): number | null {
+    private ermittleZielSeite(direction: "next" | "prev" | "initial" | "refresh"): number | null {
         if (direction === "initial") {
             this.pagination.lastVisible = null;
             this.pageCursors = [null];
             this.hasNextPage = false;
             return 0;
+        }
+        if (direction === "refresh") {
+            return this.pagination.currentPage;
         }
         if (direction === "next") {
             return this.hasNextPage ? this.pagination.currentPage + 1 : null;

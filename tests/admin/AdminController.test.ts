@@ -95,7 +95,61 @@ describe("AdminController", () => {
         const reload = vi.spyOn(c, "ladeAlleUebungen").mockResolvedValue();
         await c.loescheUebung("u1");
         expect(mocks.deleteUebung).toHaveBeenCalledWith("u1");
-        expect(reload).toHaveBeenCalled();
+        expect(reload).toHaveBeenCalledWith("refresh");
+    });
+
+    it("stays on the current page after deleting an entry", async () => {
+        const { AdminController } = await import("../../src/admin/index");
+        const c = new AdminController();
+        c.setDb({ db: true } as never);
+
+        const seite1 = Array.from({ length: 10 }, (_, i) => ({ id: `u${i}` }));
+        mocks.getUebungenPaged.mockResolvedValueOnce({ uebungen: seite1, lastVisible: { __mockIndex: 9 } });
+        mocks.getUebungenCount.mockResolvedValue(15);
+        await c.ladeAlleUebungen("initial");
+
+        mocks.getUebungenPaged.mockResolvedValueOnce({
+            uebungen: Array.from({ length: 5 }, (_, i) => ({ id: `u${10 + i}` })),
+            lastVisible: { __mockIndex: 14 }
+        });
+        await c.ladeAlleUebungen("next");
+        expect(c.pagination.currentPage).toBe(1);
+
+        mocks.getUebungenCount.mockResolvedValue(14);
+        mocks.getUebungenPaged.mockResolvedValueOnce({
+            uebungen: Array.from({ length: 4 }, (_, i) => ({ id: `u${11 + i}` })),
+            lastVisible: { __mockIndex: 13 }
+        });
+        await c.loescheUebung("u10");
+
+        await vi.waitFor(() => expect(mocks.renderPaginationInfo).toHaveBeenLastCalledWith(1, 10, 4, 14));
+        expect(mocks.getUebungenPaged).toHaveBeenCalledTimes(3);
+        expect(mocks.getUebungenPaged).toHaveBeenLastCalledWith(10, { __mockIndex: 9 }, false);
+        expect(c.pagination.currentPage).toBe(1);
+    });
+
+    it("falls back one page when the last entry of a page is deleted", async () => {
+        const { AdminController } = await import("../../src/admin/index");
+        const c = new AdminController();
+        c.setDb({ db: true } as never);
+
+        const seite1 = Array.from({ length: 10 }, (_, i) => ({ id: `u${i}` }));
+        mocks.getUebungenPaged.mockResolvedValueOnce({ uebungen: seite1, lastVisible: { __mockIndex: 9 } });
+        mocks.getUebungenCount.mockResolvedValue(11);
+        await c.ladeAlleUebungen("initial");
+
+        mocks.getUebungenPaged.mockResolvedValueOnce({ uebungen: [{ id: "u10" }], lastVisible: { __mockIndex: 10 } });
+        await c.ladeAlleUebungen("next");
+        expect(c.pagination.currentPage).toBe(1);
+
+        mocks.getUebungenCount.mockResolvedValue(10);
+        mocks.getUebungenPaged.mockResolvedValueOnce({ uebungen: [], lastVisible: null });
+        mocks.getUebungenPaged.mockResolvedValueOnce({ uebungen: seite1, lastVisible: { __mockIndex: 9 } });
+        await c.loescheUebung("u10");
+
+        await vi.waitFor(() => expect(c.pagination.currentPage).toBe(0));
+        expect(mocks.renderUebungsListe.mock.lastCall?.[0]).toHaveLength(10);
+        expect(mocks.setPaginationButtons).toHaveBeenLastCalledWith(false, false);
     });
 
     it("supports pagination next and renders statistik chart", async () => {

@@ -617,6 +617,39 @@ test("@admin admin delete removes seeded exercise row", async ({ page }) => {
     await expect(page.locator("#adminUebungslisteBody")).not.toContainText("Mock Übung");
 });
 
+test("@admin admin delete keeps the current page", async ({ page }) => {
+    await page.goto("/#/admin");
+
+    await page.getByRole("button", { name: "Nächste →" }).click();
+    await expect(page.locator("#adminUebungslisteInfo")).toHaveText("Zeige 11 - 12 von 12");
+
+    page.once("dialog", dialog => dialog.accept());
+    const targetRow = page.locator("#adminUebungslisteBody tr", { hasText: "Seed Übung 11" }).first();
+    await targetRow.locator("button[data-action='delete']").click();
+
+    await expect(page.locator("#adminUebungslisteInfo")).toHaveText("Zeige 11 - 11 von 11");
+    await expect(page.locator("#adminUebungslisteBody")).toContainText("Seed Übung 12");
+    await expect(page.locator("#adminUebungslisteBody")).not.toContainText("Seed Übung 11");
+});
+
+test("@admin admin delete falls back to the previous page when the page empties", async ({ page }) => {
+    await page.goto("/#/admin");
+
+    await page.getByRole("button", { name: "Nächste →" }).click();
+    await expect(page.locator("#adminUebungslisteInfo")).toHaveText("Zeige 11 - 12 von 12");
+
+    for (const name of ["Seed Übung 11", "Seed Übung 12"]) {
+        page.once("dialog", dialog => dialog.accept());
+        await page.locator("#adminUebungslisteBody tr", { hasText: name }).first()
+            .locator("button[data-action='delete']").click();
+        await expect(page.locator("#adminUebungslisteBody")).not.toContainText(name);
+    }
+
+    await expect(page.locator("#adminUebungslisteInfo")).toHaveText("Zeige 1 - 10 von 10");
+    await expect(page.getByRole("button", { name: "← Vorherige" })).toBeDisabled();
+    await expect(page.getByRole("button", { name: "Nächste →" })).toBeDisabled();
+});
+
 test("@uebungsleitung uebungsleitung route renders seeded data and can mark anmelden", async ({ page }) => {
     await page.goto("/#/uebungsleitung/u1");
 
