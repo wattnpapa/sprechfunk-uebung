@@ -25,6 +25,7 @@ const makeDocument = () => {
     elements.set("uebungsleitungArea", makeArea());
     elements.set("teilnehmerArea", makeArea());
     elements.set("seoIntroArea", makeArea());
+    elements.set("appHeaderClaim", makeArea());
 
     const doc = {
         addEventListener: (event: string, cb: (event: { target: unknown }) => void) => {
@@ -145,6 +146,27 @@ describe("AppView", () => {
 
         view.applyAppMode("admin");
         expect(elements.get("seoIntroArea")?.style.display).toBe("none");
+    });
+
+    // Das Nutzenversprechen im <h1> ist Werbung fuer Erstbesucher. Teilnehmer einer
+    // laufenden Uebung sollen es nicht sehen. In der Generator-Ansicht muss der
+    // Inline-Stil leer bleiben, sonst ueberschreibt er die Mobil-Regel aus dem CSS.
+    it("shows the header claim only in generator mode and keeps the stylesheet in charge", () => {
+        const view = new AppView();
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const { elements } = (globalThis as any)._test;
+
+        view.applyAppMode("generator");
+        expect(elements.get("appHeaderClaim")?.style.display).toBe("");
+
+        view.applyAppMode("teilnehmer");
+        expect(elements.get("appHeaderClaim")?.style.display).toBe("none");
+
+        view.applyAppMode("uebungsleitung");
+        expect(elements.get("appHeaderClaim")?.style.display).toBe("none");
+
+        view.applyAppMode("admin");
+        expect(elements.get("appHeaderClaim")?.style.display).toBe("none");
     });
 
     it("handles missing app mode containers safely", () => {

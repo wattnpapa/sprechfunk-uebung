@@ -547,8 +547,10 @@ test("@routing hash navigation switches between generator and admin mode", async
 });
 
 test("@routing sets html title per module route", async ({ page }) => {
+    // Die Generator-Ansicht ist die indexierbare Startseite und behaelt den
+    // Titel aus index.html; nur die noindex-Ansichten bekommen einen Arbeitstitel.
     await page.goto("/#/generator");
-    await expect(page).toHaveTitle("Sprechfunkuebung - Generator");
+    await expect(page).toHaveTitle(/^Sprechfunkübung online erstellen .* \| Sprechfunk Übungsgenerator$/);
 
     await page.goto("/#/admin");
     await expect(page).toHaveTitle("Sprechfunkuebung - Admin");

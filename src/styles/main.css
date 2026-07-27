@@ -371,6 +371,27 @@ code {
     margin-right: 0.35rem;
 }
 
+/* Nutzenversprechen als Zweitzeile im <h1>: fuer Suchmaschinen Teil der
+   Hauptueberschrift, fuer Menschen eine ruhige Unterzeile. Die Breite ist
+   begrenzt, damit die Kopfleiste die Schaltflaechen nicht verdraengt. */
+.app-header-claim {
+    display: block;
+    max-width: 44ch;
+    margin-top: 0.15rem;
+    font-size: var(--t-s);
+    font-weight: 400;
+    letter-spacing: 0;
+    color: var(--kopf-auf-2);
+    white-space: normal;
+}
+
+/* Auf schmalen Geraeten hat der Kopfbalken fuer die Zweitzeile keinen Platz. */
+@media (max-width: 767.98px) {
+    .app-header-claim {
+        display: none;
+    }
+}
+
 .app-header-actions {
     display: flex;
     align-items: center;

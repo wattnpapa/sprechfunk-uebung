@@ -18,8 +18,11 @@ export class App {
     private natoClock: NatoClock;
     private themeManager: ThemeManager;
     private db: Firestore | null = null;
+    /** Titel aus index.html – traegt die Suchbegriffe der Startseite. */
+    private readonly startseitenTitel: string;
 
     constructor() {
+        this.startseitenTitel = typeof document === "undefined" ? "" : document.title;
         this.appView = new AppView();
         this.natoClock = new NatoClock();
         this.themeManager = new ThemeManager();
@@ -110,7 +113,10 @@ export class App {
                 return "Sprechfunkuebung - Teilnehmer";
             case "generator":
             default:
-                return "Sprechfunkuebung - Generator";
+                // Die Generator-Ansicht ist die indexierbare Startseite: Ihr
+                // Titel darf beim Routing nicht durch einen Arbeitstitel ersetzt
+                // werden, sonst geht das Text-Matching der Suchmaschinen verloren.
+                return this.startseitenTitel || "Sprechfunkuebung - Generator";
         }
     }
 

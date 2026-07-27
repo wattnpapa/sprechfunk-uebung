@@ -55,5 +55,14 @@ export class AppView {
         if (intro) {
             intro.style.display = mode === "generator" ? "block" : "none";
         }
+
+        // Gleiches gilt fuer das Nutzenversprechen im Kopfbalken: Es richtet sich
+        // an Erstbesucher, nicht an Teilnehmer einer laufenden Uebung. Der leere
+        // Wert stellt die Darstellung aus dem Stylesheet wieder her, damit die
+        // Zweitzeile auf schmalen Geraeten ausgeblendet bleibt.
+        const claim = document.getElementById("appHeaderClaim");
+        if (claim) {
+            claim.style.display = mode === "generator" ? "" : "none";
+        }
     }
 }

@@ -48,6 +48,12 @@ const themeManager = new ThemeManager();
 const footerView = new FooterView();
 let appBuildVersion = "dev";
 
+// Der Titel aus index.html traegt die Suchbegriffe der Startseite. Er wird vor
+// dem ersten Routing gesichert, damit die Generator-Ansicht ihn behaelt; die
+// uebrigen Ansichten stehen ohnehin auf noindex und brauchen nur einen kurzen
+// Arbeitstitel im Browser-Tab.
+const startseitenTitel = typeof document === "undefined" ? "" : document.title;
+
 function getPageTitle(mode: string): string {
     switch (mode) {
         case "admin":
@@ -58,7 +64,7 @@ function getPageTitle(mode: string): string {
             return "Sprechfunkuebung - Teilnehmer";
         case "generator":
         default:
-            return "Sprechfunkuebung - Generator";
+            return startseitenTitel || "Sprechfunkuebung - Generator";
     }
 }
 

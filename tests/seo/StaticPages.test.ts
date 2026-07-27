@@ -72,6 +72,57 @@ describe("Statische Seiten: SEO-Pflichtangaben", () => {
         }
     );
 
+    /**
+     * Suchmaschinen und Sprachmodelle gleichen die Suchanfrage gegen Titel und
+     * Hauptueberschrift ab. Der Produktname allein beantwortet "Sprechfunkuebung
+     * online kostenlos" nicht – die Startseite muss den Nutzen ausschreiben.
+     */
+    it("nennt Nutzen und Zugangshuerde in Titel, Beschreibung und Hauptueberschrift", () => {
+        const html = leseSeite("index.html");
+
+        const titel = attribut(html, /<title>([^<]*)<\/title>/i)!;
+        expect(titel).toMatch(/kostenlos/i);
+        expect(titel).toMatch(/ohne Anmeldung/i);
+        expect(titel).toContain("Sprechfunk Übungsgenerator");
+
+        const beschreibung = metaInhalt(html, "description")!;
+        expect(beschreibung).toMatch(/kostenlos/i);
+        expect(beschreibung).toMatch(/ohne Anmeldung/i);
+        expect(beschreibung).toMatch(/ohne Installation/i);
+
+        const h1 = /<h1[^>]*>([\s\S]*?)<\/h1>/i.exec(html)?.[1];
+        expect(h1).toBeTruthy();
+        const h1Text = h1!.replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").trim();
+        expect(h1Text).toContain("Sprechfunk Übungsgenerator");
+        expect(h1Text).toMatch(/kostenlos/i);
+        expect(h1Text).toMatch(/ohne Anmeldung/i);
+        expect(h1Text).toMatch(/ohne Installation/i);
+    });
+
+    /**
+     * FAQ-Markup darf nur Fragen enthalten, die auch sichtbar auf der Seite stehen –
+     * sonst gilt es als irrefuehrend und wird abgewertet. Das Schema und die
+     * Ueberschriften stehen in derselben Datei und laufen beim Pflegen leicht auseinander.
+     */
+    it("bildet im FAQ-Schema nur sichtbar beantwortete Fragen ab", () => {
+        const html = leseSeite("pages/faq.html");
+
+        const schema = [...html.matchAll(/<script type="application\/ld\+json">([\s\S]*?)<\/script>/g)]
+            .map(treffer => JSON.parse(treffer[1]))
+            .find(daten => daten["@type"] === "FAQPage");
+        expect(schema, "Die FAQ-Seite braucht ein FAQPage-Schema").toBeTruthy();
+
+        const ueberschriften = [...html.matchAll(/<h3[^>]*>([\s\S]*?)<\/h3>/g)]
+            .map(treffer => treffer[1].replace(/<[^>]+>/g, "").replace(/\s+/g, " ").trim());
+
+        expect(schema.mainEntity.length).toBeGreaterThan(0);
+        for (const frage of schema.mainEntity) {
+            expect(ueberschriften, `"${frage.name}" steht im Schema, aber in keiner <h3>`)
+                .toContain(frage.name);
+            expect(frage.acceptedAnswer?.text?.length ?? 0).toBeGreaterThan(40);
+        }
+    });
+
     it("verlinkt jede Unterseite von der Startseite aus", () => {
         const start = leseSeite("index.html");
 
