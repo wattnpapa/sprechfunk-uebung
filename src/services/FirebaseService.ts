@@ -69,14 +69,13 @@ export class FirebaseService {
     private paginateEntries(
         entries: FunkUebung[],
         pageSize: number,
-        direction: "next" | "prev" | "initial",
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        lastVisible: any,
+        startAfterCursor: any,
         cursorKey: "__mockIndex" | "__fallbackIndex"
     ) {
         let start = 0;
-        if (direction === "next" && lastVisible && typeof lastVisible[cursorKey] === "number") {
-            start = lastVisible[cursorKey] + 1;
+        if (startAfterCursor && typeof startAfterCursor[cursorKey] === "number") {
+            start = startAfterCursor[cursorKey] + 1;
         }
         const page = entries.slice(start, start + pageSize);
         const lastIndex = start + page.length - 1;
@@ -96,27 +95,31 @@ export class FirebaseService {
         };
     }
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    private getUebungenPagedLocal(pageSize: number, lastVisible: any, direction: "next" | "prev" | "initial", onlyTestExercises: boolean) {
+    private readAlleUebungenLocal(onlyTestExercises: boolean): FunkUebung[] {
         const store = this.readMockStore();
         let allEntries = Object.entries(store).map(([id, data]) => this.mapToDomain(id, data));
         if (onlyTestExercises) {
             allEntries = allEntries.filter(entry => entry.istStandardKonfiguration === true);
         }
-        this.sortByCreateDateDesc(allEntries);
-        return this.paginateEntries(allEntries, pageSize, direction, lastVisible, "__mockIndex");
+        return this.sortByCreateDateDesc(allEntries);
     }
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    private async getUebungenPagedRemote(pageSize: number, lastVisible: any, direction: "next" | "prev" | "initial", onlyTestExercises: boolean) {
+    private getUebungenPagedLocal(pageSize: number, startAfterCursor: any, onlyTestExercises: boolean) {
+        const allEntries = this.readAlleUebungenLocal(onlyTestExercises);
+        return this.paginateEntries(allEntries, pageSize, startAfterCursor, "__mockIndex");
+    }
+
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    private async getUebungenPagedRemote(pageSize: number, startAfterCursor: any, onlyTestExercises: boolean) {
         const uebungCol = collection(this.db, "uebungen");
         const constraints = [];
         if (onlyTestExercises) {
             constraints.push(where("istStandardKonfiguration", "==", true));
         }
         constraints.push(orderBy("createDate", "desc"));
-        if (direction === "next" && lastVisible) {
-            constraints.push(startAfter(lastVisible));
+        if (startAfterCursor) {
+            constraints.push(startAfter(startAfterCursor));
         }
         constraints.push(limit(pageSize));
         const q = query(uebungCol, ...constraints);
@@ -132,14 +135,19 @@ export class FirebaseService {
             if (!(onlyTestExercises && this.isMissingIndexError(error))) {
                 throw error;
             }
-            const allSnap = await getDocs(collection(this.db, "uebungen"));
-            const all = this.sortByCreateDateDesc(
-                allSnap.docs
-                    .map(doc => this.mapToDomain(doc.id, doc.data()))
-                    .filter(entry => entry.istStandardKonfiguration === true)
-            );
-            return this.paginateEntries(all, pageSize, direction, lastVisible, "__fallbackIndex");
+            const all = this.sortByCreateDateDesc(await this.readAlleUebungenRemoteUnfiltered(true));
+            return this.paginateEntries(all, pageSize, startAfterCursor, "__fallbackIndex");
         }
+    }
+
+    /**
+     * Vollscan der Collection — nur als Fallback bzw. für die Textsuche gedacht,
+     * weil er im Gegensatz zur Seiten-Query alle Dokumente liest.
+     */
+    private async readAlleUebungenRemoteUnfiltered(onlyTestExercises: boolean): Promise<FunkUebung[]> {
+        const allSnap = await getDocs(collection(this.db, "uebungen"));
+        const all = allSnap.docs.map(doc => this.mapToDomain(doc.id, doc.data()));
+        return onlyTestExercises ? all.filter(entry => entry.istStandardKonfiguration === true) : all;
     }
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -583,19 +591,43 @@ export class FirebaseService {
     }
 
     /**
-     * Lädt Übungen für die Admin-Ansicht mit Paginierung.
+     * Lädt eine Seite der Admin-Übungsliste. Der Cursor zeigt auf das letzte
+     * Dokument der vorhergehenden Seite; `null` liefert die erste Seite. Die
+     * aufrufende Seite hält die Cursor je Seitenindex, damit auch "Vorherige"
+     * ohne Vollscan funktioniert.
      */
     async getUebungenPaged(
         pageSize: number,
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        lastVisible: any = null,
-        direction: "next" | "prev" | "initial" = "initial",
+        startAfterCursor: any = null,
         onlyTestExercises = false
     ) {
         if (this.isLocalMockMode()) {
-            return this.getUebungenPagedLocal(pageSize, lastVisible, direction, onlyTestExercises);
+            return this.getUebungenPagedLocal(pageSize, startAfterCursor, onlyTestExercises);
         }
-        return this.getUebungenPagedRemote(pageSize, lastVisible, direction, onlyTestExercises);
+        return this.getUebungenPagedRemote(pageSize, startAfterCursor, onlyTestExercises);
+    }
+
+    /**
+     * Lädt alle Übungen (nach `createDate` absteigend). Firestore kann keine
+     * Teilstring-Suche, deshalb braucht die Volltextsuche der Admin-Ansicht den
+     * kompletten Bestand; der Aufrufer cached das Ergebnis.
+     */
+    async getAlleUebungen(onlyTestExercises = false): Promise<FunkUebung[]> {
+        if (this.isLocalMockMode()) {
+            return this.readAlleUebungenLocal(onlyTestExercises);
+        }
+        try {
+            const snapshot = await getDocs(
+                this.buildUebungenQuery(onlyTestExercises, orderBy("createDate", "desc"))
+            );
+            return snapshot.docs.map(doc => this.mapToDomain(doc.id, doc.data()));
+        } catch (error) {
+            if (!(onlyTestExercises && this.isMissingIndexError(error))) {
+                throw error;
+            }
+            return this.sortByCreateDateDesc(await this.readAlleUebungenRemoteUnfiltered(true));
+        }
     }
 
     /**

@@ -1,9 +1,21 @@
 import { Uebung } from "../types/Uebung";
 import { Chart } from "../core/chart";
 
+export interface AdminListHandlers {
+    onView: (id: string) => void;
+    onMonitor: (id: string) => void;
+    onDelete: (id: string) => void;
+    onOnlyTestFilterChange?: (checked: boolean) => void;
+    onSearchChange?: (term: string) => void;
+}
+
 export class AdminView {
 
+    /** Wartezeit, bis eine Sucheingabe eine neue Abfrage auslöst. */
+    private static readonly SUCHE_ENTPRELLUNG_MS = 250;
+
     private themeObserver: MutationObserver | null = null;
+    private sucheTimer: ReturnType<typeof setTimeout> | null = null;
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     public renderStatistik(stats: any) {
@@ -27,7 +39,6 @@ export class AdminView {
 
         uebungen.forEach(uebung => {
             const tr = document.createElement("tr");
-            tr.setAttribute("data-search", `${uebung.id} ${uebung.name} ${uebung.rufgruppe} ${uebung.leitung}`.toLowerCase());
             if (uebung.istStandardKonfiguration) {
                 tr.classList.add("admin-standard-uebung-row");
             }
@@ -38,7 +49,7 @@ export class AdminView {
                 <td>${uebung.rufgruppe}</td>
                 <td>${uebung.leitung}</td>
                 <td title="${(uebung.teilnehmerListe || []).join("\n")}">${uebung.teilnehmerListe?.length ?? 0}</td>
-                <td>
+                <td class="text-end text-nowrap">
                      <button class="btn btn-sm btn-outline-secondary" data-action="view" title="Übung öffnen" data-id="${uebung.id}">
                         <i class="fa-solid fa-magnifying-glass"></i>
                     </button>
@@ -52,16 +63,34 @@ export class AdminView {
             `;
             tbody.appendChild(tr);
         });
-
-        this.applySearchFilter();
     }
 
     public renderPaginationInfo(currentPage: number, pageSize: number, currentCount: number, totalCount: number) {
         const info = document.getElementById("adminUebungslisteInfo");
-        if (info) {
-            const from = currentPage * pageSize + 1;
-            const to = from + currentCount - 1;
-            info.innerText = `Zeige ${from} - ${to} von ${totalCount}`;
+        if (!info) {
+            return;
+        }
+        if (currentCount === 0) {
+            info.innerText = "Keine Übungen gefunden";
+            return;
+        }
+        const from = currentPage * pageSize + 1;
+        const to = from + currentCount - 1;
+        info.innerText = `Zeige ${from} - ${to} von ${totalCount}`;
+    }
+
+    /**
+     * Blättern nur dort anbieten, wo es auch eine Seite gibt — sonst landet man
+     * auf leeren Seiten hinter dem Ende der (gefilterten) Liste.
+     */
+    public setPaginationButtons(hasPrev: boolean, hasNext: boolean) {
+        const prev = document.getElementById("adminPrevPage") as HTMLButtonElement | null;
+        const next = document.getElementById("adminNextPage") as HTMLButtonElement | null;
+        if (prev) {
+            prev.disabled = !hasPrev;
+        }
+        if (next) {
+            next.disabled = !hasNext;
         }
     }
 
@@ -141,12 +170,8 @@ export class AdminView {
         this.themeObserver.observe(document.body, { attributeFilter: ["data-theme"] });
     }
 
-    public bindListEvents(
-        onView: (id: string) => void,
-        onMonitor: (id: string) => void,
-        onDelete: (id: string) => void,
-        onOnlyTestFilterChange?: (checked: boolean) => void
-    ) {
+    public bindListEvents(handlers: AdminListHandlers) {
+        const { onView, onMonitor, onDelete, onOnlyTestFilterChange, onSearchChange } = handlers;
         const tbody = document.getElementById("adminUebungslisteBody");
         if (!tbody) {
             return;
@@ -175,8 +200,9 @@ export class AdminView {
             }
         });
 
-        document.getElementById("adminSearchInput")?.addEventListener("input", () => {
-            this.applySearchFilter();
+        document.getElementById("adminSearchInput")?.addEventListener("input", e => {
+            const term = (e.target as HTMLInputElement).value;
+            this.entprelleSuche(() => onSearchChange?.(term));
         });
         document.getElementById("adminOnlyTestFilter")?.addEventListener("change", e => {
             const checked = (e.target as HTMLInputElement).checked;
@@ -184,13 +210,18 @@ export class AdminView {
         });
     }
 
-    private applySearchFilter() {
-        const q = (document.getElementById("adminSearchInput") as HTMLInputElement | null)?.value?.trim().toLowerCase() ?? "";
-        const rows = document.querySelectorAll<HTMLTableRowElement>("#adminUebungslisteBody tr");
-        rows.forEach(row => {
-            const haystack = row.getAttribute("data-search") || "";
-            row.style.display = !q || haystack.includes(q) ? "" : "none";
-        });
+    /**
+     * Jede Sucheingabe stößt eine neue Abfrage über den Gesamtbestand an; ohne
+     * Entprellung liefe das pro Tastendruck.
+     */
+    private entprelleSuche(ausfuehren: () => void) {
+        if (this.sucheTimer !== null) {
+            clearTimeout(this.sucheTimer);
+        }
+        this.sucheTimer = setTimeout(() => {
+            this.sucheTimer = null;
+            ausfuehren();
+        }, AdminView.SUCHE_ENTPRELLUNG_MS);
     }
 
     private setText(id: string, text: string) {

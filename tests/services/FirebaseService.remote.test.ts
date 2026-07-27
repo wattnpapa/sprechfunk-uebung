@@ -134,26 +134,42 @@ describe("FirebaseService firestore path", () => {
             docs: [{ id: "u1", data: () => ({}) }],
             size: 1
         });
-        const page1 = await s.getUebungenPaged(10, null, "initial");
+        const page1 = await s.getUebungenPaged(10, null);
         expect(page1.size).toBe(1);
 
         mocks.getDocs.mockResolvedValueOnce({
             docs: [{ id: "u2", data: () => ({}) }],
             size: 1
         });
-        await s.getUebungenPaged(10, "last", "next");
-        expect(mocks.startAfter).toHaveBeenCalled();
+        await s.getUebungenPaged(10, "last");
+        expect(mocks.startAfter).toHaveBeenCalledWith("last");
 
         mocks.getCountFromServer.mockResolvedValueOnce({ data: () => ({ count: 3 }) });
         expect(await s.getUebungenCount()).toBe(3);
     });
 
-    it("uses initial paging query for prev direction (contract)", async () => {
+    it("queries the first page without a cursor (contract)", async () => {
         const { FirebaseService } = await import("../../src/services/FirebaseService");
         const s = new FirebaseService({} as never);
         mocks.getDocs.mockResolvedValueOnce({ docs: [], size: 0 });
-        await s.getUebungenPaged(5, "last", "prev");
+        await s.getUebungenPaged(5, null);
         expect(mocks.startAfter).not.toHaveBeenCalled();
+    });
+
+    it("loads the full list for the admin text search", async () => {
+        const { FirebaseService } = await import("../../src/services/FirebaseService");
+        const s = new FirebaseService({} as never);
+        mocks.getDocs.mockResolvedValueOnce({
+            docs: [
+                { id: "u1", data: () => ({ name: "Alpha" }) },
+                { id: "u2", data: () => ({ name: "Beta" }) }
+            ],
+            size: 2
+        });
+
+        const alle = await s.getAlleUebungen();
+        expect(alle.map(u => u.id)).toEqual(["u1", "u2"]);
+        expect(mocks.limit).not.toHaveBeenCalled();
     });
 
     it("uses where filter in firestore queries for only-test flag", async () => {
@@ -161,7 +177,7 @@ describe("FirebaseService firestore path", () => {
         const s = new FirebaseService({} as never);
         mocks.getDocs.mockResolvedValue({ docs: [], size: 0, forEach: vi.fn() });
 
-        await s.getUebungenPaged(5, null, "initial", true);
+        await s.getUebungenPaged(5, null, true);
         expect(mocks.where).toHaveBeenCalledWith("istStandardKonfiguration", "==", true);
 
         mocks.getCountFromServer.mockResolvedValue({ data: () => ({ count: 0 }) });

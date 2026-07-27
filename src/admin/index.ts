@@ -3,6 +3,10 @@ import { FirebaseService } from "../services/FirebaseService";
 import { AdminView } from "./AdminView";
 import { uiFeedback } from "../core/UiFeedback";
 
+type ListenCursor = QueryDocumentSnapshot | { __mockIndex: number } | { __fallbackIndex: number } | null;
+
+type UebungsListe = Awaited<ReturnType<FirebaseService["getAlleUebungen"]>>;
+
 export class AdminController {
     // Firestore database reference
     db: Firestore | null = null;
@@ -11,19 +15,24 @@ export class AdminController {
         totalCount: number;
         pageSize: number;
         currentPage: number;
-        lastVisible: QueryDocumentSnapshot | { __mockIndex: number } | { __fallbackIndex: number } | null;
+        lastVisible: ListenCursor;
     };
     private firebaseService: FirebaseService | null = null;
     private view: AdminView;
     private onlyTestExercises = false;
+    private searchTerm = "";
+    /** Cursor je Seitenindex: `pageCursors[n]` startet Seite n (Seite 0 = null). */
+    private pageCursors: ListenCursor[] = [null];
+    private hasNextPage = false;
     private statsCache: { ts: number; data: Awaited<ReturnType<FirebaseService["getAdminStats"]>> } | null = null;
     private countCache: Partial<Record<"all" | "test", { ts: number; data: number }>> = {};
     private monatsCache: Partial<Record<"all" | "test", { ts: number; data: number[] }>> = {};
+    private alleUebungenCache: Partial<Record<"all" | "test", { ts: number; data: UebungsListe }>> = {};
     private readonly cacheTtlMs = 120000;
 
     constructor() {
         this.view = new AdminView();
-        
+
         this.pagination = {
             totalCount: 0,
             pageSize: 10,
@@ -32,12 +41,13 @@ export class AdminController {
         };
 
         // Bind events once
-        this.view.bindListEvents(
-            id => this.uebungAnschauen(id),
-            id => this.offeneUebungsleitung(id),
-            id => this.loescheUebung(id),
-            checked => this.setOnlyTestFilter(checked)
-        );
+        this.view.bindListEvents({
+            onView: id => this.uebungAnschauen(id),
+            onMonitor: id => this.offeneUebungsleitung(id),
+            onDelete: id => this.loescheUebung(id),
+            onOnlyTestFilterChange: checked => this.setOnlyTestFilter(checked),
+            onSearchChange: term => this.setSearchTerm(term)
+        });
     }
 
     public setDb(db: Firestore): void {
@@ -98,31 +108,35 @@ export class AdminController {
         if (!service) {
             return;
         }
+
+        const zielSeite = this.ermittleZielSeite(direction);
+        if (zielSeite === null) {
+            // Es gibt keine solche Seite — Zustand bleibt unverändert.
+            return;
+        }
+
+        if (this.searchTerm) {
+            await this.zeigeGefilterteSeite(service, zielSeite);
+            return;
+        }
+
         const result = await service.getUebungenPaged(
-            this.pagination.pageSize, 
-            this.pagination.lastVisible, 
-            direction,
+            this.pagination.pageSize,
+            this.pageCursors[zielSeite] ?? null,
             this.onlyTestExercises
         );
 
         if (direction === "initial") {
             // Count-Aggregation statt Vollscan: kostet konstant wenige Reads.
             this.pagination.totalCount = await this.getUebungenCountCached();
-            this.pagination.currentPage = 0;
-        } else if (direction === "next") {
-            this.pagination.currentPage++;
         }
 
+        this.pagination.currentPage = zielSeite;
         this.pagination.lastVisible = result.lastVisible;
+        this.pageCursors[zielSeite + 1] = result.lastVisible;
+        this.hasNextPage = this.berechneHatNaechsteSeite(zielSeite, result.uebungen.length, this.pagination.totalCount);
 
-        this.view.renderUebungsListe(result.uebungen);
-        this.view.renderPaginationInfo(
-            this.pagination.currentPage, 
-            this.pagination.pageSize, 
-            result.uebungen.length, 
-            this.pagination.totalCount
-        );
-        this.updateFooterInfo(result.uebungen[0]?.buildVersion);
+        this.zeigeSeite(result.uebungen);
     }
 
     async loescheUebung(uebungId: string) {
@@ -231,14 +245,97 @@ export class AdminController {
             return;
         }
         this.onlyTestExercises = checked;
-        this.pagination.lastVisible = null;
-        this.pagination.currentPage = 0;
         void this.ladeAlleUebungen("initial");
+    }
+
+    private setSearchTerm(term: string): void {
+        const normalisiert = term.trim().toLowerCase();
+        if (this.searchTerm === normalisiert) {
+            return;
+        }
+        this.searchTerm = normalisiert;
+        void this.ladeAlleUebungen("initial");
+    }
+
+    /**
+     * Liefert den Index der anzuzeigenden Seite oder `null`, wenn es in die
+     * gewünschte Richtung keine Seite gibt. Ohne diese Prüfung landete "Nächste"
+     * hinter dem Ende auf einer leeren oder — mangels Cursor — wieder auf der
+     * ersten Seite.
+     */
+    private ermittleZielSeite(direction: "next" | "prev" | "initial"): number | null {
+        if (direction === "initial") {
+            this.pagination.lastVisible = null;
+            this.pageCursors = [null];
+            this.hasNextPage = false;
+            return 0;
+        }
+        if (direction === "next") {
+            return this.hasNextPage ? this.pagination.currentPage + 1 : null;
+        }
+        return this.pagination.currentPage > 0 ? this.pagination.currentPage - 1 : null;
+    }
+
+    /**
+     * Textsuche über den kompletten Bestand: Firestore kann keine Teilstring-
+     * Suche, also wird einmal alles geladen (gecacht) und im Speicher gefiltert
+     * und paginiert — so bleiben auch gefilterte Seiten voll.
+     */
+    private async zeigeGefilterteSeite(service: FirebaseService, zielSeite: number): Promise<void> {
+        const alle = await this.getAlleUebungenCached(service);
+        const treffer = alle.filter(uebung => this.passtZurSuche(uebung));
+        const seitenGroesse = this.pagination.pageSize;
+        const letzteSeite = Math.max(0, Math.ceil(treffer.length / seitenGroesse) - 1);
+        const seite = Math.min(zielSeite, letzteSeite);
+        const start = seite * seitenGroesse;
+
+        this.pagination.currentPage = seite;
+        this.pagination.totalCount = treffer.length;
+        this.pagination.lastVisible = null;
+        this.hasNextPage = start + seitenGroesse < treffer.length;
+
+        this.zeigeSeite(treffer.slice(start, start + seitenGroesse));
+    }
+
+    private zeigeSeite(uebungen: UebungsListe): void {
+        this.view.renderUebungsListe(uebungen);
+        this.view.renderPaginationInfo(
+            this.pagination.currentPage,
+            this.pagination.pageSize,
+            uebungen.length,
+            this.pagination.totalCount
+        );
+        this.view.setPaginationButtons(this.pagination.currentPage > 0, this.hasNextPage);
+        this.updateFooterInfo(uebungen[0]?.buildVersion);
+    }
+
+    private berechneHatNaechsteSeite(seite: number, geladen: number, gesamt: number): boolean {
+        if (gesamt > 0) {
+            return (seite + 1) * this.pagination.pageSize < gesamt;
+        }
+        return geladen === this.pagination.pageSize;
+    }
+
+    private passtZurSuche(uebung: UebungsListe[number]): boolean {
+        const heuhaufen = `${uebung.id} ${uebung.name} ${uebung.rufgruppe} ${uebung.leitung}`.toLowerCase();
+        return heuhaufen.includes(this.searchTerm);
+    }
+
+    private async getAlleUebungenCached(service: FirebaseService): Promise<UebungsListe> {
+        const key: "all" | "test" = this.onlyTestExercises ? "test" : "all";
+        const cached = this.alleUebungenCache[key];
+        if (cached && (Date.now() - cached.ts) <= this.cacheTtlMs) {
+            return cached.data;
+        }
+        const data = await service.getAlleUebungen(this.onlyTestExercises);
+        this.alleUebungenCache[key] = { ts: Date.now(), data };
+        return data;
     }
 
     private invalidateCaches(): void {
         this.countCache = {};
         this.monatsCache = {};
+        this.alleUebungenCache = {};
         this.statsCache = null;
     }
 

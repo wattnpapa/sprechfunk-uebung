@@ -33,6 +33,8 @@ describe("AdminView", () => {
           <input id="adminOnlyTestFilter" type="checkbox" />
           <table><tbody id="adminUebungslisteBody"></tbody></table>
           <div id="adminUebungslisteInfo"></div>
+          <button id="adminPrevPage"></button>
+          <button id="adminNextPage"></button>
           <canvas id="chartUebungenProTag"></canvas>
         `);
         vi.stubGlobal("window", dom.window);
@@ -58,17 +60,32 @@ describe("AdminView", () => {
         expect((document.getElementById("adminUebungslisteInfo") as HTMLElement).innerText).toContain("Zeige 11 - 15 von 30");
     });
 
-    it("renders list, filters and emits row actions", () => {
+    it("reports an empty result and disables paging buttons", () => {
+        const view = new AdminView();
+        view.renderPaginationInfo(0, 10, 0, 0);
+        view.setPaginationButtons(false, false);
+
+        expect((document.getElementById("adminUebungslisteInfo") as HTMLElement).innerText).toBe("Keine Übungen gefunden");
+        expect((document.getElementById("adminPrevPage") as HTMLButtonElement).disabled).toBe(true);
+        expect((document.getElementById("adminNextPage") as HTMLButtonElement).disabled).toBe(true);
+
+        view.setPaginationButtons(true, true);
+        expect((document.getElementById("adminPrevPage") as HTMLButtonElement).disabled).toBe(false);
+        expect((document.getElementById("adminNextPage") as HTMLButtonElement).disabled).toBe(false);
+    });
+
+    it("renders list, forwards search input and emits row actions", async () => {
         const view = new AdminView();
         const onView = vi.fn();
         const onMonitor = vi.fn();
         const onDelete = vi.fn();
         const onOnlyTestChange = vi.fn();
+        const onSearchChange = vi.fn();
         view.renderUebungsListe([
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             { id: "u1", name: "Alpha", rufgruppe: "R", leitung: "L", teilnehmerListe: ["A"], datum: new Date(), createDate: new Date(), istStandardKonfiguration: true } as any
         ]);
-        view.bindListEvents(onView, onMonitor, onDelete, onOnlyTestChange);
+        view.bindListEvents({ onView, onMonitor, onDelete, onOnlyTestFilterChange: onOnlyTestChange, onSearchChange });
         const tbody = document.getElementById("adminUebungslisteBody") as HTMLElement;
         expect(tbody.innerHTML).toContain("admin-standard-uebung-row");
 
@@ -80,12 +97,14 @@ describe("AdminView", () => {
         expect(onDelete).toHaveBeenCalledWith("u1");
 
         const search = document.getElementById("adminSearchInput") as HTMLInputElement;
+        search.value = "zz";
+        search.dispatchEvent(new window.Event("input"));
         search.value = "zzz";
         search.dispatchEvent(new window.Event("input"));
-        expect((tbody.querySelector("tr") as HTMLTableRowElement).style.display).toBe("none");
+        // Entprellt: nur der letzte Stand der Eingabe löst eine Abfrage aus.
+        await vi.waitFor(() => expect(onSearchChange).toHaveBeenCalledTimes(1));
+        expect(onSearchChange).toHaveBeenCalledWith("zzz");
 
-        search.value = "";
-        search.dispatchEvent(new window.Event("input"));
         const onlyTest = document.getElementById("adminOnlyTestFilter") as HTMLInputElement;
         onlyTest.checked = true;
         onlyTest.dispatchEvent(new window.Event("change"));
@@ -133,13 +152,17 @@ describe("AdminView", () => {
         const view = new AdminView();
         document.getElementById("adminUebungslisteBody")?.remove();
         view.renderUebungsListe([]);
-        view.bindListEvents(vi.fn(), vi.fn(), vi.fn());
+        view.bindListEvents({ onView: vi.fn(), onMonitor: vi.fn(), onDelete: vi.fn() });
 
         document.getElementById("chartUebungenProTag")?.remove();
         view.renderChart([1], ["Jan"]);
 
         document.getElementById("adminUebungslisteInfo")?.remove();
         view.renderPaginationInfo(0, 10, 0, 0);
+
+        document.getElementById("adminPrevPage")?.remove();
+        document.getElementById("adminNextPage")?.remove();
+        view.setPaginationButtons(true, true);
 
         // setText guard path through renderStatistik with missing ids
         [
@@ -159,7 +182,7 @@ describe("AdminView", () => {
         expect(true).toBe(true);
     });
 
-    it("covers row action ignore branches and positive search match", () => {
+    it("covers row action ignore branches and search without listener", async () => {
         const view = new AdminView();
         const onView = vi.fn();
         const onMonitor = vi.fn();
@@ -175,15 +198,17 @@ describe("AdminView", () => {
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             { id: "u2", name: "Beta", rufgruppe: "R", leitung: "L", teilnehmerListe: ["A"], datum: null, createDate: null, istStandardKonfiguration: false } as any
         ]);
-        view.bindListEvents(onView, onMonitor, onDelete, onOnlyTestChange);
+        view.bindListEvents({ onView, onMonitor, onDelete, onOnlyTestFilterChange: onOnlyTestChange });
         const tbody = document.getElementById("adminUebungslisteBody") as HTMLElement;
         tbody.dispatchEvent(new window.Event("click", { bubbles: true }));
         expect(onView).not.toHaveBeenCalled();
 
+        // Ohne registrierten Such-Callback darf die Eingabe nichts auslösen.
         const search = document.getElementById("adminSearchInput") as HTMLInputElement;
         search.value = "alpha";
         search.dispatchEvent(new window.Event("input"));
-        expect((tbody.querySelector("tr") as HTMLTableRowElement).style.display).toBe("");
+        await new Promise(resolve => setTimeout(resolve, 300));
+        expect(tbody.querySelectorAll("tr")).toHaveLength(2);
 
         const onlyTest = document.getElementById("adminOnlyTestFilter") as HTMLInputElement;
         onlyTest.checked = true;

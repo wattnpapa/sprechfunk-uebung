@@ -74,7 +74,7 @@ describe("FirebaseService local mock mode", () => {
         };
         await mk("u3", 3);
         await mk("u4", 4);
-        const page = await s.getUebungenPaged(1, null, "initial");
+        const page = await s.getUebungenPaged(1, null);
         expect(page.uebungen).toHaveLength(1);
         const stats = await s.getAdminStats();
         expect(stats.total).toBeGreaterThanOrEqual(2);
@@ -135,10 +135,13 @@ describe("FirebaseService local mock mode", () => {
             u.createDate = new Date(1000 + i);
             await s.saveUebung(u);
         }
-        const first = await s.getUebungenPaged(2, null, "initial");
-        const next = await s.getUebungenPaged(2, first.lastVisible, "next");
+        const first = await s.getUebungenPaged(2, null);
+        const next = await s.getUebungenPaged(2, first.lastVisible);
         expect(first.uebungen.length).toBe(2);
         expect(next.uebungen.length).toBeGreaterThanOrEqual(0);
+        // Derselbe Cursor liefert reproduzierbar dieselbe Seite — Basis für "Vorherige".
+        const nochmal = await s.getUebungenPaged(2, first.lastVisible);
+        expect(nochmal.uebungen.map(u => u.id)).toEqual(next.uebungen.map(u => u.id));
         await s.deleteUebung("p1");
         expect(await s.getUebung("p1")).toBeNull();
     });
@@ -155,11 +158,14 @@ describe("FirebaseService local mock mode", () => {
         await mk("t1", true);
         await mk("p1", false);
 
-        const filtered = await s.getUebungenPaged(10, null, "initial", true);
+        const filtered = await s.getUebungenPaged(10, null, true);
         expect(filtered.uebungen.every(u => u.istStandardKonfiguration)).toBe(true);
 
         expect(await s.getUebungenCount(true)).toBe(1);
         expect(await s.getUebungenCount()).toBe(2);
+
+        expect((await s.getAlleUebungen()).map(u => u.id).sort()).toEqual(["p1", "t1"]);
+        expect((await s.getAlleUebungen(true)).map(u => u.id)).toEqual(["t1"]);
     });
 
     it("maps rich message payload incl staerken/letters and defaults", () => {
