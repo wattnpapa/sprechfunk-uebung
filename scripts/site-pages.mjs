@@ -14,6 +14,13 @@ export const SITE_PAGES = [
     { slug: "buchstabiertafel", source: "pages/buchstabiertafel.html", changefreq: "yearly", priority: "0.8" },
     { slug: "meldevordruck", source: "pages/meldevordruck.html", changefreq: "yearly", priority: "0.8" },
     { slug: "funksprueche", source: "pages/funksprueche.html", changefreq: "monthly", priority: "0.8" },
+    { slug: "funkuebung-feuerwehr", source: "pages/funkuebung-feuerwehr.html", changefreq: "monthly", priority: "0.8" },
+    { slug: "funkuebung-thw", source: "pages/funkuebung-thw.html", changefreq: "monthly", priority: "0.8" },
+    { slug: "funkuebung-katastrophenschutz", source: "pages/funkuebung-katastrophenschutz.html", changefreq: "monthly", priority: "0.8" },
+    { slug: "funkuebung-dienstabend", source: "pages/funkuebung-dienstabend.html", changefreq: "monthly", priority: "0.8" },
+    { slug: "funkuebung-vorlage", source: "pages/funkuebung-vorlage.html", changefreq: "monthly", priority: "0.8" },
+    { slug: "digitale-funkuebung", source: "pages/digitale-funkuebung.html", changefreq: "monthly", priority: "0.7" },
+    { slug: "regiebuch-funkuebung", source: "pages/regiebuch-funkuebung.html", changefreq: "monthly", priority: "0.7" },
     { slug: "faq", source: "pages/faq.html", changefreq: "monthly", priority: "0.7" },
     { slug: "impressum", source: "pages/impressum.html", changefreq: "yearly", priority: "0.2" },
     { slug: "datenschutz", source: "pages/datenschutz.html", changefreq: "yearly", priority: "0.2" }
