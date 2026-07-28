@@ -770,7 +770,9 @@ describe("GeneratorController", () => {
         actions?.onStartUebung();
         actions?.onChangePage(1);
         actions?.onCopyJson();
-        actions?.onZipAllPdfs();
+        // Der Handler lädt pdfGenerator seit dem Code-Splitting dynamisch nach,
+        // deshalb muss der Test auf das Promise warten.
+        await actions?.onZipAllPdfs();
         expect(addTeilnehmer).toHaveBeenCalled();
         expect(startUebung).toHaveBeenCalled();
         expect(changePage).toHaveBeenCalledWith(1);
@@ -843,8 +845,18 @@ describe("GeneratorController", () => {
             json: async () => ({ buildDate: "2026-01-01", runNumber: 7, commit: "abc123" })
         });
 
+        // fetchBuildInfo lädt nur außerhalb von localhost – Produktions-Host
+        // vortäuschen und danach wiederherstellen.
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        await (controller as any).fetchBuildInfo();
+        const win = (globalThis as any).window ?? ((globalThis as any).window = {});
+        const prevLocation = win.location;
+        win.location = { hostname: "sprechfunk-uebung.de" };
+        try {
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            await (controller as any).fetchBuildInfo();
+        } finally {
+            win.location = prevLocation;
+        }
 
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         expect((controller as any).buildInfo).toBe("2026-01-01-7-abc123");

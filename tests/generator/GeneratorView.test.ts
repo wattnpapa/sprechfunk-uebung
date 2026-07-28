@@ -106,8 +106,9 @@ describe("GeneratorView", () => {
         const downloadButton = Array.from(document.querySelectorAll(".generator-link-actions button"))
             .find(btn => btn.textContent?.includes("Druckdaten")) as HTMLButtonElement;
         downloadButton.click();
-        await Promise.resolve();
-        expect(mocks.zip).toHaveBeenCalled();
+        // pdfGenerator kommt seit dem Code-Splitting per dynamischem Import,
+        // ein einzelner Microtask reicht daher nicht mehr.
+        await vi.waitFor(() => expect(mocks.zip).toHaveBeenCalled());
     });
 
     it("binds participant events and primary actions", () => {

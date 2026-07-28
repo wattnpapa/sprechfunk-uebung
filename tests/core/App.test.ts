@@ -52,8 +52,6 @@ describe("App", () => {
         expect(initModals).toHaveBeenCalled();
         expect(initGlobalListeners).toHaveBeenCalled();
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        expect((globalThis as any).window.pdfGenerator).toBeDefined();
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         expect((globalThis as any).window.admin).toBeDefined();
     });
 

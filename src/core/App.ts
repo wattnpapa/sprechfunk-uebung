@@ -9,7 +9,6 @@ import type { Firestore } from "firebase/firestore";
 import { NatoClock } from "./NatoClock";
 import { ThemeManager } from "./ThemeManager";
 import { AppView } from "./AppView";
-import pdfGenerator from "../services/pdfGenerator";
 import { AppMode } from "./appModes";
 import { initFirebaseClient } from "../services/firebaseClient";
 
@@ -97,8 +96,6 @@ export class App {
     }
 
     private exposeGlobals(): void {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        (window as any).pdfGenerator = pdfGenerator;
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         (window as any).admin = admin;
     }

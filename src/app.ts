@@ -18,7 +18,6 @@ import "@fontsource-variable/archivo";
 // Okuda-Beschriftung der Sternenflotten-Konsolen.
 import "@fontsource-variable/antonio";
 import "bootstrap/dist/js/bootstrap.bundle.min.js";
-import pdfGenerator from "./services/pdfGenerator";
 import { NatoClock } from "./core/NatoClock";
 import { ThemeManager } from "./core/ThemeManager";
 import { AppView } from "./core/AppView";
@@ -35,8 +34,7 @@ declare global {
     interface Window {
         chart: Chart;
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        app: any; 
-        pdfGenerator: typeof pdfGenerator;
+        app: any;
         admin: typeof admin;
     }
 }
@@ -162,14 +160,15 @@ window.addEventListener("DOMContentLoaded", () => {
     themeManager.init();
     appView.initModals();
     appView.initGlobalListeners();
-    loadBuildVersion().finally(() => {
-        // Start Routing
-        handleRoute();
-    });
+    // Routing sofort starten: Die Ansicht darf nicht auf den build.json-Fetch
+    // warten, sonst springt der Einstiegstext nach dem ersten Paint (CLS) und
+    // die Startseite rendert einen Netzwerk-Roundtrip später als nötig. Die
+    // Versionsanzeige im Footer läuft parallel hinterher.
+    handleRoute();
+    void loadBuildVersion();
 });
 
 router.subscribe(() => handleRoute());
 
 // Expose globals for legacy/inline usage
-window.pdfGenerator = pdfGenerator;
 window.admin = admin;

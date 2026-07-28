@@ -6,7 +6,7 @@ import {store} from "../state/store";
 import {router} from "../core/router";
 import {Uebung} from "../types/Uebung";
 import {TeilnehmerStorage} from "../types/Storage";
-import pdfGenerator from "../services/pdfGenerator";
+import { ladePdfGenerator } from "../services/pdfGeneratorLazy";
 import { FunkUebung } from "../models/FunkUebung";
 import { Nachricht } from "../types/Nachricht";
 import { uiFeedback } from "../core/UiFeedback";
@@ -512,6 +512,7 @@ export class TeilnehmerController {
         }
 
         try {
+            const pdfGenerator = await ladePdfGenerator();
             const zipBlob = await pdfGenerator.generateTeilnehmerPDFsAsZip(this.uebung as FunkUebung, this.teilnehmerName);
             const link = document.createElement("a");
             link.href = URL.createObjectURL(zipBlob);
@@ -605,6 +606,7 @@ export class TeilnehmerController {
         if (cached) {
             return cached;
         }
+        const pdfGenerator = await ladePdfGenerator();
         const blob = mode === "meldevordruck"
             ? await pdfGenerator.generateMeldevordruckPageBlob({
                 funkUebung: previewUebung,

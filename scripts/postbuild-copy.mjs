@@ -12,10 +12,32 @@ const dist = path.join(root, "dist");
 await mkdir(dist, { recursive: true });
 
 await cp(path.join(root, "assets"), path.join(dist, "assets"), { recursive: true });
-await cp(path.join(root, "src", "index.html"), path.join(dist, "index.html"));
+// Generator-Markup statisch in die Startseite einbetten: Ohne Vorbefüllung ist
+// #mainAppArea beim ersten Paint leer, und der Einstiegstext springt nach der
+// JS-Injection um die volle Generator-Höhe nach unten (CLS ≈ 0.6).
+// GeneratorView.render() setzt beim Start dasselbe Markup erneut per innerHTML
+// – identische Maße, kein Shift. Quelle bleibt allein viewMarkup.ts.
+const viewMarkupTs = await readFile(path.join(root, "src", "generator", "viewMarkup.ts"), "utf8");
+const markupMatch = viewMarkupTs.match(/GENERATOR_VIEW_MARKUP = '([\s\S]*)';/);
+if (!markupMatch) {
+    throw new Error("GENERATOR_VIEW_MARKUP nicht in src/generator/viewMarkup.ts gefunden");
+}
+const indexHtml = await readFile(path.join(root, "src", "index.html"), "utf8");
+const generatorPlaceholder = "<!-- Wird von GeneratorView.ts befüllt -->";
+if (!indexHtml.includes(generatorPlaceholder)) {
+    throw new Error("Generator-Platzhalter nicht in src/index.html gefunden");
+}
+await writeFile(path.join(dist, "index.html"), indexHtml.replace(generatorPlaceholder, markupMatch[1]), "utf8");
 await cp(path.join(root, "src", "404.html"), path.join(dist, "404.html"));
 await cp(path.join(root, "howto.md"), path.join(dist, "howto.md"));
-await cp(path.join(root, "src", "styles", "main.css"), path.join(dist, "style.css"));
+// style.css minifiziert ausliefern: Die Datei geht nicht durch den
+// Rollup-Graph, weil auch die statischen Inhaltsseiten sie referenzieren.
+// cssnano steht als Abhängigkeit von rollup-plugin-postcss bereit.
+const mainCss = await readFile(path.join(root, "src", "styles", "main.css"), "utf8");
+const { default: postcssLib } = await import("postcss");
+const { default: cssnano } = await import("cssnano");
+const minifiedCss = await postcssLib([cssnano()]).process(mainCss, { from: undefined });
+await writeFile(path.join(dist, "style.css"), minifiedCss.css, "utf8");
 await cp(path.join(root, "src", "firebase-config.js"), path.join(dist, "firebase-config.js"));
 await cp(path.join(root, "src", "robots.txt"), path.join(dist, "robots.txt"));
 

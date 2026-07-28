@@ -67,19 +67,19 @@ export class GeneratorTeilnehmerTableRenderer {
         const { teilnehmer, index, stellenname, loesungswort, showStellenname, isIndividuell } = options;
         const stellenInput = showStellenname
             ? `<td>
-                    <input type="text" class="form-control stellenname-input" data-index="${index}" value="${stellenname}" placeholder="Name der Stelle">
+                    <input type="text" class="form-control stellenname-input" data-index="${index}" value="${stellenname}" placeholder="Name der Stelle" aria-label="Name der Stelle für Teilnehmer ${index + 1}">
                </td>`
             : "";
         const loesungswortInput = isIndividuell
-            ? `<td><input type="text" class="form-control loesungswort-input" id="loesungswort-${index}" value="${loesungswort}" placeholder="Lösungswort"></td>`
+            ? `<td><input type="text" class="form-control loesungswort-input" id="loesungswort-${index}" value="${loesungswort}" placeholder="Lösungswort" aria-label="Lösungswort für Teilnehmer ${index + 1}"></td>`
             : "";
         return `
             <td>
-                <input type="text" class="form-control teilnehmer-input" data-index="${index}" value="${teilnehmer}">
+                <input type="text" class="form-control teilnehmer-input" data-index="${index}" value="${teilnehmer}" aria-label="Funkrufname Teilnehmer ${index + 1}">
             </td>
             ${stellenInput}
             ${loesungswortInput}
-            <td><button class="btn btn-danger btn-sm delete-teilnehmer" data-index="${index}"><i class="fas fa-trash"></i></button></td>
+            <td><button class="btn btn-danger btn-sm delete-teilnehmer" data-index="${index}" aria-label="Teilnehmer ${index + 1} entfernen"><i class="fas fa-trash" aria-hidden="true"></i></button></td>
         `;
     }
 }

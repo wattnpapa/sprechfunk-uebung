@@ -9,6 +9,12 @@
     <link rel="canonical" href="https://sprechfunk-uebung.de/">
     <meta name="robots" content="index,follow,max-image-preview:large,max-snippet:-1,max-video-preview:-1">
     <meta name="theme-color" content="#0d6efd">
+    <!-- Schriften vorladen: verhindert den Layout-Shift beim späten Font-Swap
+         (größter CLS-Verursacher laut Lighthouse). crossorigin ist bei Fonts
+         auch same-origin Pflicht, sonst verwirft der Browser den Preload. -->
+    <link rel="preload" href="files/archivo-latin-wght-normal.woff2" as="font" type="font/woff2" crossorigin>
+    <link rel="preload" href="webfonts/fa-solid-900.woff2" as="font" type="font/woff2" crossorigin>
+    <link rel="preload" href="webfonts/fa-brands-400.woff2" as="font" type="font/woff2" crossorigin>
     <script type="module" src="bundle.js"></script>
 
     <meta name="description" content="Die einfachste Online-Plattform für kostenlose Sprechfunkübungen – ohne Anmeldung, ohne Installation. BOS-Funkübungen für THW und Feuerwehr mit fertigen PDF-Vordrucken.">
@@ -193,21 +199,23 @@
     </div>
 </header>
 
-<!-- Container für die verschiedenen Views -->
+<!-- Container für die verschiedenen Views. Das <main>-Landmark umfasst alle
+     Routen-Bereiche inkl. Einstiegstext (Accessibility: landmark-one-main). -->
+<main id="appMain">
 <div id="uebungsleitungArea" data-testid="route-uebungsleitung" style="display:none;">
     <div class="container my-4 app-view-shell">
         <div class="card mb-3">
-            <div class="card-header"><h4 class="mb-0"><i class="fas fa-eye"></i> Übungsüberwachung – Übungsleitung</h4></div>
+            <div class="card-header"><h2 class="h4 mb-0"><i class="fas fa-eye"></i> Übungsüberwachung – Übungsleitung</h2></div>
             <div class="card-body" id="uebungsleitungMeta"></div>
         </div>
         <div class="card mb-3">
-            <div class="card-header"><h4 class="mb-0"><i class="fas fa-users"></i> Teilnehmer</h4></div>
+            <div class="card-header"><h2 class="h4 mb-0"><i class="fas fa-users"></i> Teilnehmer</h2></div>
             <div class="card-body" id="uebungsleitungTeilnehmer"></div>
         </div>
         <div class="card">
             <div class="card-header">
                 <div class="d-flex justify-content-between align-items-center">
-                    <h4 class="mb-0"><i class="fas fa-list"></i> Nachrichtenplan</h4>
+                    <h2 class="h4 mb-0"><i class="fas fa-list"></i> Nachrichtenplan</h2>
                     <div class="d-flex align-items-center gap-2" style="min-width:340px;">
                         <small class="text-body-secondary text-nowrap mb-0" id="nachrichtenProgressLabel" aria-live="polite">0 / 0</small>
                         <div class="progress flex-grow-1" style="height: 10px;">
@@ -323,12 +331,12 @@
     <div class="container my-4 app-view-shell">
     <div class="card mt-4" id="adminUebungsliste">
         <div class="card-header">
-            <h5 class="d-flex justify-content-between align-items-center">
+            <h2 class="h5 d-flex justify-content-between align-items-center">
                 <span><i class="fas fa-database"></i> Gespeicherte Übungen</span>
                 <button class="btn btn-sm btn-outline-secondary" data-bs-toggle="collapse" data-bs-target="#collapseAdminUebungen">
                     <i class="fas fa-chevron-down"></i>
                 </button>
-            </h5>
+            </h2>
         </div>
         <div id="collapseAdminUebungen" class="collapse show">
             <div class="card-body">
@@ -368,12 +376,12 @@
 
     <div class="card mt-4" id="adminDashboardStats">
         <div class="card-header">
-            <h5 class="d-flex justify-content-between align-items-center">
+            <h2 class="h5 d-flex justify-content-between align-items-center">
                 <span><i class="fas fa-chart-line"></i> Statistik: Übungen pro Zeit</span>
                 <button class="btn btn-sm btn-outline-secondary" data-bs-toggle="collapse" data-bs-target="#collapseAdminStats">
                     <i class="fas fa-chevron-down"></i>
                 </button>
-            </h5>
+            </h2>
         </div>
         <div id="collapseAdminStats" class="collapse show">
             <div class="card-body">
@@ -392,12 +400,12 @@
 
     <div class="card mt-4" id="adminSummary">
         <div class="card-header">
-            <h5 class="d-flex justify-content-between align-items-center">
+            <h2 class="h5 d-flex justify-content-between align-items-center">
                 <span><i class="fas fa-chart-pie"></i> Übersicht: Kennzahlen</span>
                 <button class="btn btn-sm btn-outline-secondary" data-bs-toggle="collapse" data-bs-target="#collapseAdminSummary">
                     <i class="fas fa-chevron-down"></i>
                 </button>
-            </h5>
+            </h2>
         </div>
         <div id="collapseAdminSummary" class="collapse show">
             <div class="card-body">
@@ -416,6 +424,7 @@
     </div>
     </div>
 </div>
+</main>
 
 <!-- Modals -->
 <div class="modal fade" id="howtoModal" tabindex="-1" aria-labelledby="howtoModalLabel" aria-hidden="true">
@@ -443,7 +452,7 @@
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Schließen"></button>
             </div>
             <div class="modal-body text-center">
-                <img src="https://www.gravatar.com/avatar/b4d8c8a87a392586b9caee287180163b?s=200" alt="Johannes Rudolph" class="rounded-circle mb-3" width="150" height="150">
+                <img src="https://www.gravatar.com/avatar/b4d8c8a87a392586b9caee287180163b?s=200" alt="Johannes Rudolph" class="rounded-circle mb-3" width="150" height="150" loading="lazy">
                 <h4>👋 Moin! Ich bin Johannes.</h4>
                 <p>Technik-Enthusiast, Problemlöser und immer auf der Suche nach smarten Lösungen – sei es in der IT, im Ehrenamt oder im Alltag.</p>
                 <h5>💼 Beruflich</h5>

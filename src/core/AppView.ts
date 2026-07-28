@@ -38,31 +38,29 @@ export class AppView {
             teilnehmer: document.getElementById("teilnehmerArea")
         };
 
-        Object.values(areas).forEach(el => {
-            if (el) {
-                el.style.display = "none";
+        // Style-Writes nur bei tatsaechlicher Aenderung: Beim ersten Aufruf nach
+        // dem Laden steht die Generator-Ansicht bereits richtig (statisches
+        // HTML). Ein wirkungsloses Neusetzen von style.display wuerde den
+        // Elementen trotzdem einen spaeten Repaint verpassen, der als neuer
+        // LCP-Kandidat zaehlt und den Lighthouse-LCP nach hinten schiebt.
+        const setDisplay = (el: HTMLElement | null, display: string) => {
+            if (el && el.style.display !== display) {
+                el.style.display = display;
             }
-        });
+        };
 
-        const active = areas[mode];
-        if (active) {
-            active.style.display = "block";
-        }
+        Object.entries(areas).forEach(([areaMode, el]) => {
+            setDisplay(el, areaMode === mode ? "block" : "none");
+        });
 
         // Der Einstiegstext der Startseite gehoert nur zur Generator-Ansicht;
         // in Teilnehmer-, Uebungsleitungs- und Admin-Ansicht wuerde er stoeren.
-        const intro = document.getElementById("seoIntroArea");
-        if (intro) {
-            intro.style.display = mode === "generator" ? "block" : "none";
-        }
+        setDisplay(document.getElementById("seoIntroArea"), mode === "generator" ? "block" : "none");
 
         // Gleiches gilt fuer das Nutzenversprechen im Kopfbalken: Es richtet sich
         // an Erstbesucher, nicht an Teilnehmer einer laufenden Uebung. Der leere
         // Wert stellt die Darstellung aus dem Stylesheet wieder her, damit die
         // Zweitzeile auf schmalen Geraeten ausgeblendet bleibt.
-        const claim = document.getElementById("appHeaderClaim");
-        if (claim) {
-            claim.style.display = mode === "generator" ? "" : "none";
-        }
+        setDisplay(document.getElementById("appHeaderClaim"), mode === "generator" ? "" : "none");
     }
 }

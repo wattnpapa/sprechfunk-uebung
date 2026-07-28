@@ -9,7 +9,7 @@ import {FunkUebung} from "../models/FunkUebung";
 import { uiFeedback } from "../core/UiFeedback";
 import { debounce } from "../utils/debounce";
 import { formatNatoDate } from "../utils/date";
-import pdfGenerator from "../services/pdfGenerator";
+import { ladePdfGenerator } from "../services/pdfGeneratorLazy";
 import { LiveStatusService } from "../services/LiveStatusService";
 import {
     buildEffektiveNachrichtenStatus,
@@ -594,6 +594,7 @@ export class UebungsleitungController {
             return;
         }
         try {
+            const pdfGenerator = await ladePdfGenerator();
             const blob = await pdfGenerator.generateTeilnehmerDebriefPdfBlob(this.uebung, this.storage, name);
             const link = document.createElement("a");
             link.href = URL.createObjectURL(blob);
@@ -680,6 +681,7 @@ export class UebungsleitungController {
         }
 
         try {
+            const pdfGenerator = await ladePdfGenerator();
             await pdfGenerator.generateAllTeilnehmerUebersichtPrint(this.uebung);
             uiFeedback.success("PDF mit allen Teilnehmer-Übersichten erstellt.");
         } catch (err) {

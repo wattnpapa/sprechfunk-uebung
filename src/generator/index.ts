@@ -6,7 +6,7 @@ import { GeneratorView } from "./GeneratorView";
 import { GeneratorStateService, type LoesungswortOption } from "./GeneratorStateService";
 import { GeneratorStatsService } from "./GeneratorStatsService";
 import { GeneratorPreviewService } from "./GeneratorPreviewService";
-import pdfGenerator from "../services/pdfGenerator";
+import { ladePdfGenerator } from "../services/pdfGeneratorLazy";
 import { uiFeedback } from "../core/UiFeedback";
 
 export class GeneratorController {
@@ -71,6 +71,13 @@ export class GeneratorController {
     }
 
     private async fetchBuildInfo() {
+        // Lokal existiert kein build.json (schreibt erst die CI-Pipeline). Der
+        // Fetch würde nur einen 404-Konsolenfehler erzeugen, den Lighthouse als
+        // Best-Practices-Verstoß wertet.
+        const hostname = typeof window !== "undefined" ? window.location?.hostname : undefined;
+        if (!hostname || ["localhost", "127.0.0.1", "0.0.0.0"].includes(hostname)) {
+            return;
+        }
         try {
             const res = await fetch("build.json");
             const data = await res.json();
@@ -133,9 +140,11 @@ export class GeneratorController {
             onChangePage: (step: number) => this.changePage(step),
             onCopyJson: () => this.copyJSONToClipboard(),
             onZipAllPdfs: async () => {
+                const pdfGenerator = await ladePdfGenerator();
                 await pdfGenerator.generateAllPDFsAsZip(this.funkUebung);
             },
             onDownloadUebersichtPdf: async () => {
+                const pdfGenerator = await ladePdfGenerator();
                 await pdfGenerator.generateAllTeilnehmerUebersichtPrint(this.funkUebung);
             }
         });

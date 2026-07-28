@@ -1,5 +1,5 @@
 import { FunkUebung } from "../models/FunkUebung";
-import pdfGenerator from "../services/pdfGenerator";
+import { ladePdfGenerator } from "../services/pdfGeneratorLazy";
 
 interface LinkRowOptions {
     typ: string;
@@ -296,6 +296,7 @@ export class GeneratorLinksRenderer {
     }
 
     private async downloadTeilnehmerZip(uebung: FunkUebung, teilnehmer: string): Promise<void> {
+        const pdfGenerator = await ladePdfGenerator();
         const zipBlob = await pdfGenerator.generateTeilnehmerPDFsAsZip(uebung, teilnehmer);
         const link = document.createElement("a");
         link.href = URL.createObjectURL(zipBlob);
