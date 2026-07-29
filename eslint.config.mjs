@@ -7,6 +7,7 @@ import sonarjs from "eslint-plugin-sonarjs";
 export default tseslint.config(
     {
         ignores: [
+            ".claude/worktrees/**",
             "dist/**",
             "node_modules/**",
             "coverage/**",
