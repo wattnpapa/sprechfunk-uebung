@@ -243,6 +243,39 @@
             <div class="card-header"><h2 class="h4 mb-0"><i class="fas fa-eye"></i> Übungsüberwachung – Übungsleitung</h2></div>
             <div class="card-body" id="uebungsleitungMeta"></div>
         </div>
+        <div class="card mb-3 d-none" id="uebungsleitungCockpit" data-testid="uebungsleitung-cockpit">
+            <div class="card-body py-3">
+                <div class="row g-3 align-items-center">
+                    <div class="col-6 col-lg-2">
+                        <div class="small text-body-secondary">Uhrzeit</div>
+                        <div class="fs-4 fw-semibold font-monospace" id="cockpitUhrzeit">–</div>
+                    </div>
+                    <div class="col-6 col-lg-2">
+                        <div class="small text-body-secondary">Laufzeit</div>
+                        <div class="fs-4 fw-semibold font-monospace" id="cockpitLaufzeit">–</div>
+                    </div>
+                    <div class="col-6 col-lg-2">
+                        <div class="small text-body-secondary">X-Zeit</div>
+                        <div class="fs-4 fw-semibold font-monospace" id="cockpitXZeit">–</div>
+                    </div>
+                    <div class="col-6 col-lg-2">
+                        <div class="small text-body-secondary">Fortschritt</div>
+                        <div class="d-flex align-items-center gap-2">
+                            <span class="fs-4 fw-semibold font-monospace" id="cockpitFortschritt">–</span>
+                            <span class="badge bg-secondary" id="cockpitPlanBadge" title="Vergleich mit dem X-Zeit-Zeitplan">–</span>
+                        </div>
+                    </div>
+                    <div class="col-12 col-lg-4">
+                        <label class="small text-body-secondary" for="cockpitXZeitBasisInput">X-Zeit-Basis (Übungsbeginn)</label>
+                        <div class="d-flex align-items-center gap-2">
+                            <input type="time" class="form-control form-control-sm" id="cockpitXZeitBasisInput" style="width:130px;">
+                            <button class="btn btn-sm btn-outline-primary text-nowrap" id="btn-cockpit-xzeit-jetzt" type="button">Jetzt starten</button>
+                        </div>
+                        <small class="text-body-secondary" id="cockpitBasisHinweis"></small>
+                    </div>
+                </div>
+            </div>
+        </div>
         <div class="card mb-3">
             <div class="card-header"><h2 class="h4 mb-0"><i class="fas fa-users"></i> Teilnehmer</h2></div>
             <div class="card-body" id="uebungsleitungTeilnehmer"></div>
@@ -368,20 +401,26 @@
                     </li>
                 </ul>
                 <p>
-                    Für die Planung: der Ablauf einer
+                    Für die Planung: die Schritt-für-Schritt-Anleitung
+                    <a href="funkuebung-planen/">Funkübung planen</a>,
+                    <a href="funkuebung-szenarien/">12 Szenarien für die Funkübung</a>,
+                    der Ablauf einer
                     <a href="funkuebung-dienstabend/">Funkübung am Dienstabend</a> und die
                     <a href="funkuebung-vorlage/">Übungs-Vorlagen</a> mit fertigen PDFs. Für
                     die Durchführung: die
-                    <a href="digitale-funkuebung/">digitale Funkübung per Smartphone</a> und
+                    <a href="digitale-funkuebung/">digitale Funkübung per Smartphone</a>,
                     das automatische
-                    <a href="regiebuch-funkuebung/">Regiebuch mit Live-Übungsleitung</a>.
+                    <a href="regiebuch-funkuebung/">Regiebuch mit Live-Übungsleitung</a> und
+                    die <a href="sprechfunk-regeln/">Sprechfunk-Regeln</a> zum Auffrischen.
                 </p>
 
                 <h2 class="h4">Ohne Installation, ohne Konto, quelloffen</h2>
                 <p class="mb-0">
                     Die Anwendung läuft im Browser – es ist keine Installation und kein
                     Benutzerkonto nötig, weder für die Übungsleitung noch für die Teilnehmer.
-                    Der Quellcode steht unter der EUPL-1.2-Lizenz offen auf
+                    Es gibt keine Tarife und keine Teilnehmergrenzen: Der komplette
+                    Funktionsumfang ist <a href="open-source/">kostenlos, quelloffen
+                    (EUPL-1.2) und datensparsam</a>, der Quellcode steht offen auf
                     <a href="https://github.com/wattnpapa/sprechfunk-uebung" target="_blank" rel="noopener noreferrer">GitHub</a>.
                     Einen Überblick über den Ablauf gibt die
                     <a href="anleitung/">Anleitung</a>, Antworten auf typische Fragen das

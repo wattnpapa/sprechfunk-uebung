@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html lang="de">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kostenlos, Open Source, datensparsam: warum der Sprechfunk Übungsgenerator frei bleibt</title>
+    <link rel="icon" type="image/png" href="../assets/favicon.png">
+    <link rel="canonical" href="https://sprechfunk-uebung.de/open-source/">
+    <meta name="robots" content="index,follow,max-image-preview:large,max-snippet:-1">
+    <meta name="theme-color" content="#0d6efd">
+
+    <meta name="description" content="Der Sprechfunk Übungsgenerator ist vollständig kostenlos und quelloffen (EUPL-1.2): keine Tarife, keine Teilnehmergrenzen, kein Benutzerkonto, keine Werbe-Cookies. Was das für Feuerwehr, THW und Hilfsorganisationen bedeutet – und warum es so bleibt.">
+    <meta name="author" content="Johannes Rudolph">
+
+    <meta property="og:title" content="Kostenlos, Open Source, datensparsam: warum der Sprechfunk Übungsgenerator frei bleibt">
+    <meta property="og:description" content="Keine Tarife, keine Teilnehmergrenzen, kein Benutzerkonto, keine Werbe-Cookies – als Open-Source-Projekt aus dem Ehrenamt für die BOS-Community.">
+    <meta property="og:url" content="https://sprechfunk-uebung.de/open-source/">
+    <meta property="og:type" content="article">
+    <meta property="og:locale" content="de_DE">
+    <meta property="og:site_name" content="Sprechfunk Übungsgenerator">
+    <meta property="og:image" content="https://sprechfunk-uebung.de/assets/og-image.png">
+    <meta property="og:image:width" content="1200">
+    <meta property="og:image:height" content="630">
+    <meta property="og:image:alt" content="Sprechfunk Übungsgenerator – Übungen für den BOS-Sprechfunk erstellen">
+
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="Kostenlos, Open Source, datensparsam: warum der Sprechfunk Übungsgenerator frei bleibt">
+    <meta name="twitter:description" content="Keine Tarife, keine Teilnehmergrenzen, kein Benutzerkonto, keine Werbe-Cookies – Open Source für die BOS-Community.">
+    <meta name="twitter:image" content="https://sprechfunk-uebung.de/assets/og-image.png">
+
+    <link rel="stylesheet" href="../bundle.css">
+    <link rel="stylesheet" href="../style.css">
+
+    <!-- GoatCounter: cookielose, anonyme Reichweitenmessung -->
+    <script data-goatcounter="https://sprechfunk-uebung.goatcounter.com/count"
+            async src="//gc.zgo.at/count.js"></script>
+
+    <script type="application/ld+json">
+        {
+            "@context": "https://schema.org",
+            "@type": "Article",
+            "headline": "Kostenlos, Open Source, datensparsam: warum der Sprechfunk Übungsgenerator frei bleibt",
+            "description": "Der Sprechfunk Übungsgenerator ist vollständig kostenlos und quelloffen (EUPL-1.2): keine Tarife, keine Teilnehmergrenzen, kein Benutzerkonto, keine Werbe-Cookies – als Community-Projekt aus dem Ehrenamt.",
+            "inLanguage": "de",
+            "url": "https://sprechfunk-uebung.de/open-source/",
+            "image": "https://sprechfunk-uebung.de/assets/og-image.png",
+            "author": {
+                "@type": "Person",
+                "name": "Johannes Rudolph",
+                "url": "https://github.com/wattnpapa"
+            },
+            "publisher": {
+                "@type": "Person",
+                "name": "Johannes Rudolph"
+            },
+            "isPartOf": {
+                "@type": "WebSite",
+                "name": "Sprechfunk Übungsgenerator",
+                "url": "https://sprechfunk-uebung.de/"
+            },
+            "about": [
+                { "@type": "Thing", "name": "Open Source" },
+                { "@type": "Thing", "name": "EUPL" },
+                { "@type": "Thing", "name": "Datenschutz" }
+            ]
+        }
+    </script>
+    <script type="application/ld+json">
+        {
+            "@context": "https://schema.org",
+            "@type": "BreadcrumbList",
+            "itemListElement": [
+                {
+                    "@type": "ListItem",
+                    "position": 1,
+                    "name": "Startseite",
+                    "item": "https://sprechfunk-uebung.de/"
+                },
+                {
+                    "@type": "ListItem",
+                    "position": 2,
+                    "name": "Kostenlos und Open Source",
+                    "item": "https://sprechfunk-uebung.de/open-source/"
+                }
+            ]
+        }
+    </script>
+    <script>
+        // Gleiche Theme-Auswahl wie in der App anwenden (statische Seiten laden kein Bundle).
+        document.addEventListener("DOMContentLoaded", function () {
+            var stored = localStorage.getItem("theme");
+            if (stored) {
+                document.body.setAttribute("data-theme", stored);
+            }
+        });
+    </script>
+</head>
+
+<body data-theme="light">
+<header class="app-header">
+    <div class="container app-header-grid">
+        <div class="app-header-title">
+            <h1 class="h2 mb-0">
+                <i class="fas fa-broadcast-tower"></i> Sprechfunk Übungsgenerator
+            </h1>
+        </div>
+        <div class="app-header-actions d-none d-md-flex">
+            <a href="../" class="btn btn-primary">
+                <i class="fas fa-arrow-left"></i> Zur Anwendung
+            </a>
+            <a href="../anleitung/" class="btn btn-info">
+                <i class="fas fa-book"></i> Anleitung
+            </a>
+            <a href="https://github.com/wattnpapa/sprechfunk-uebung" class="btn btn-dark">
+                <i class="fab fa-github"></i> GitHub
+            </a>
+        </div>
+    </div>
+</header>
+
+<main class="container my-4 app-view-shell">
+    <nav aria-label="Brotkrumennavigation" class="mb-3">
+        <ol class="breadcrumb mb-0">
+            <li class="breadcrumb-item"><a href="../">Startseite</a></li>
+            <li class="breadcrumb-item active" aria-current="page">Kostenlos und Open Source</li>
+        </ol>
+    </nav>
+
+    <article>
+        <div class="card mb-3">
+            <div class="card-body">
+                <h2 class="h3">Kostenlos ohne Sternchen – und warum das so bleibt</h2>
+                <p>
+                    Der <strong>Sprechfunk Übungsgenerator</strong> ist aus dem Ehrenamt
+                    heraus entstanden: als Werkzeug, um die eigene Sprechfunkausbildung
+                    ohne stundenlange Handarbeit vorzubereiten. Daraus ist ein
+                    <strong>freies Community-Projekt für die gesamte BOS-Familie</strong>
+                    geworden – Feuerwehr, THW, Rettungsdienst und Hilfsorganisationen.
+                    Drei Versprechen gelten dabei ohne Kleingedrucktes:
+                    <strong>kostenlos, quelloffen, datensparsam</strong>.
+                </p>
+            </div>
+        </div>
+
+        <div class="card mb-3">
+            <div class="card-header"><h2 class="h4 mb-0" id="kostenlos">Keine Tarife, keine Limits, keine Testphase</h2></div>
+            <div class="card-body">
+                <p>
+                    Es gibt <strong>keine Preisstufen und keine Premium-Funktionen</strong>:
+                    Jede Wehr, jeder Ortsverband und jede Bereitschaft nutzt denselben
+                    vollen Funktionsumfang –
+                    <a href="../funksprueche/">über 1.800 Funksprüche</a>, PDF-Vordrucke,
+                    Teilnehmer-Links und die
+                    <a href="../regiebuch-funkuebung/">Live-Übungsleitung</a>.
+                </p>
+                <ul class="mb-0">
+                    <li>keine Begrenzung der Teilnehmerzahl oder der Übungen pro Monat,</li>
+                    <li>keine ablaufende Testphase, kein „Upgrade für mehr Funktionen“,</li>
+                    <li>keine Werbung und kein Verkauf von Nutzerdaten – das Projekt muss
+                        niemanden refinanzieren.</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="card mb-3">
+            <div class="card-header"><h2 class="h4 mb-0" id="quelloffen">Quelloffen unter EUPL-1.2 – nachprüfbar statt versprochen</h2></div>
+            <div class="card-body">
+                <p>
+                    Der komplette Quellcode steht auf
+                    <a href="https://github.com/wattnpapa/sprechfunk-uebung" target="_blank" rel="noopener noreferrer">GitHub</a>
+                    unter der <strong>EUPL-1.2</strong> – der Open-Source-Lizenz der
+                    Europäischen Union, die auch in deutschen Behörden anerkannt ist.
+                    Für Organisationen heißt das:
+                </p>
+                <ul>
+                    <li>
+                        <strong>Nachprüfbarkeit:</strong> Wer wissen will, was die Anwendung
+                        mit Eingaben macht, kann es im Code nachlesen – niemand muss einem
+                        Werbeversprechen vertrauen.
+                    </li>
+                    <li>
+                        <strong>Unabhängigkeit:</strong> Das Projekt kann nicht „eingestellt
+                        und abgeschaltet“ werden, ohne dass die Community es weiterführen
+                        könnte. Wer will, betreibt eine eigene Instanz.
+                    </li>
+                    <li>
+                        <strong>Mitgestaltung:</strong> Fehlermeldungen, Funkspruch-Spenden
+                        und Verbesserungsvorschläge laufen offen über GitHub-Issues – viele
+                        Funktionen sind aus Wünschen von Ausbildern entstanden.
+                    </li>
+                </ul>
+                <p class="mb-0">
+                    Die Übungstexte selbst stammen aus echten Übungen und werden
+                    <strong>von Praktikern kuratiert</strong> statt maschinell erzeugt –
+                    fachlich geprüfte Funksprüche nach BOS-Sprechfunkregeln, keine
+                    plausibel klingenden Zufallstexte.
+                </p>
+            </div>
+        </div>
+
+        <div class="card mb-3">
+            <div class="card-header"><h2 class="h4 mb-0" id="datensparsam">Datensparsam: kein Konto, keine Werbe-Cookies</h2></div>
+            <div class="card-body">
+                <p>
+                    Übungen anlegen, teilnehmen, leiten – alles funktioniert
+                    <strong>ohne Benutzerkonto, ohne E-Mail-Adresse und ohne
+                    App-Installation</strong>. Eine Übung enthält nur die Daten, die die
+                    Übungsleitung selbst einträgt; üblich sind Funkrufnamen statt
+                    Klarnamen. Der Zugriff läuft über Links und Übungscodes, die nur die
+                    eigene Gruppe kennt.
+                </p>
+                <p class="mb-0">
+                    Die Reichweitenmessung erfolgt <strong>cookielos und anonym</strong>
+                    (GoatCounter) – es gibt keine Werbe- oder Tracking-Cookies und
+                    entsprechend auch kein Cookie-Banner. Details stehen in der
+                    <a href="../datenschutz/">Datenschutzerklärung</a>.
+                </p>
+            </div>
+        </div>
+
+        <div class="card mb-3">
+            <div class="card-header"><h2 class="h4 mb-0" id="mitmachen">Mitmachen: so hilft die Community dem Projekt</h2></div>
+            <div class="card-body">
+                <ul class="mb-0">
+                    <li>
+                        <strong>Funksprüche beisteuern:</strong> Gute Übungstexte aus der
+                        eigenen Organisation erweitern den Pool für alle.
+                    </li>
+                    <li>
+                        <strong>Fehler melden:</strong> Ein kurzes
+                        <a href="https://github.com/wattnpapa/sprechfunk-uebung/issues" target="_blank" rel="noopener noreferrer">GitHub-Issue</a>
+                        genügt – auch ohne Programmierkenntnisse.
+                    </li>
+                    <li>
+                        <strong>Weitersagen:</strong> Die beste Unterstützung ist eine
+                        Empfehlung an die Nachbarwehr oder den nächsten Ortsverband.
+                    </li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-body">
+                <h2 class="h4">Einfach ausprobieren – mehr braucht es nicht</h2>
+                <p>
+                    Keine Registrierung, keine Freischaltung, kein IT-Projekt: Übung
+                    erstellen, Links verteilen, funken. Wie das geht, zeigt die
+                    <a href="../funkuebung-planen/">Schritt-für-Schritt-Planung</a>.
+                </p>
+                <p class="mb-0">
+                    <a href="../" class="btn btn-primary">Übung erstellen</a>
+                    <a href="https://github.com/wattnpapa/sprechfunk-uebung" class="btn btn-dark" target="_blank" rel="noopener noreferrer">Quellcode auf GitHub</a>
+                    <a href="../faq/" class="btn btn-outline-primary">Häufige Fragen</a>
+                </p>
+            </div>
+        </div>
+    </article>
+</main>
+
+<footer class="main-footer">
+    <span class="footer-links">
+        <a href="../">Anwendung</a>
+        <a href="../anleitung/">Anleitung</a>
+        <a href="../buchstabiertafel/">Buchstabiertafel</a>
+        <a href="../meldevordruck/">Meldevordruck</a>
+        <a href="../funksprueche/">Funksprüche</a>
+        <a href="../faq/">FAQ</a>
+    </span>
+    <span class="footer-links">
+        <a href="../impressum/">Impressum</a>
+        <a href="../datenschutz/">Datenschutz</a>
+        <a href="mailto:johannes.rudolph@thw-oldenburg.de">Kontakt</a>
+        <a href="https://github.com/wattnpapa/sprechfunk-uebung" target="_blank" rel="noopener noreferrer">GitHub</a>
+        <a href="https://github.com/wattnpapa/sprechfunk-uebung/blob/main/LICENSE" target="_blank" rel="noopener noreferrer">EUPL-1.2-Lizenz</a>
+    </span>
+</footer>
+
+</body>
+
+</html>
