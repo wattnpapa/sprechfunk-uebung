@@ -1,0 +1,297 @@
+<!DOCTYPE html>
+<html lang="de">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Funktionen im Überblick: Funksprüche verteilen, PDF-Vordrucke, Live-Übungsleitung | Sprechfunk Übungsgenerator</title>
+    <link rel="icon" type="image/png" href="../assets/favicon.png">
+    <link rel="canonical" href="https://sprechfunk-uebung.de/funktionen/">
+    <meta name="robots" content="index,follow,max-image-preview:large,max-snippet:-1">
+    <meta name="theme-color" content="#0d6efd">
+
+    <meta name="description" content="So funktioniert der Sprechfunk Übungsgenerator: Funksprüche automatisch auf alle Teilnehmer verteilen, Meldevordruck und Nachrichtenvordruck als PDF erzeugen, Buchstabieraufgaben und Lösungswörter einbauen und die Übung live begleiten – kostenlos, ohne Anmeldung, ohne Installation.">
+    <meta name="author" content="Johannes Rudolph">
+
+    <meta property="og:title" content="Funktionen im Überblick: Funksprüche verteilen, PDF-Vordrucke, Live-Übungsleitung">
+    <meta property="og:description" content="Funksprüche automatisch verteilen, Druckunterlagen als PDF, Buchstabieraufgaben, Lösungswörter und Live-Übungsleitung – der komplette Funktionsumfang des Sprechfunk Übungsgenerators.">
+    <meta property="og:url" content="https://sprechfunk-uebung.de/funktionen/">
+    <meta property="og:type" content="article">
+    <meta property="og:locale" content="de_DE">
+    <meta property="og:site_name" content="Sprechfunk Übungsgenerator">
+    <meta property="og:image" content="https://sprechfunk-uebung.de/assets/og-image.png">
+    <meta property="og:image:width" content="1200">
+    <meta property="og:image:height" content="630">
+    <meta property="og:image:alt" content="Sprechfunk Übungsgenerator – Übungen für den BOS-Sprechfunk erstellen">
+
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="Funktionen im Überblick: Funksprüche verteilen, PDF-Vordrucke, Live-Übungsleitung">
+    <meta name="twitter:description" content="Der komplette Funktionsumfang des Sprechfunk Übungsgenerators – kostenlos, ohne Anmeldung, ohne Installation.">
+    <meta name="twitter:image" content="https://sprechfunk-uebung.de/assets/og-image.png">
+
+    <link rel="stylesheet" href="../bundle.css">
+    <link rel="stylesheet" href="../style.css">
+
+    <!-- GoatCounter: cookielose, anonyme Reichweitenmessung -->
+    <script data-goatcounter="https://sprechfunk-uebung.goatcounter.com/count"
+            async src="//gc.zgo.at/count.js"></script>
+
+    <script type="application/ld+json">
+        {
+            "@context": "https://schema.org",
+            "@type": "Article",
+            "headline": "Funktionen im Überblick: Funksprüche verteilen, PDF-Vordrucke, Live-Übungsleitung",
+            "description": "Der komplette Funktionsumfang des Sprechfunk Übungsgenerators: automatische Verteilung der Funksprüche, Meldevordruck und Nachrichtenvordruck als PDF, Buchstabieraufgaben, Lösungswörter und Live-Übungsleitung – kostenlos, ohne Anmeldung, ohne Installation.",
+            "inLanguage": "de",
+            "url": "https://sprechfunk-uebung.de/funktionen/",
+            "image": "https://sprechfunk-uebung.de/assets/og-image.png",
+            "author": {
+                "@type": "Person",
+                "name": "Johannes Rudolph",
+                "url": "https://github.com/wattnpapa"
+            },
+            "publisher": {
+                "@type": "Person",
+                "name": "Johannes Rudolph"
+            },
+            "isPartOf": {
+                "@type": "WebSite",
+                "name": "Sprechfunk Übungsgenerator",
+                "url": "https://sprechfunk-uebung.de/"
+            },
+            "about": [
+                { "@type": "Thing", "name": "Sprechfunkübung" },
+                { "@type": "Thing", "name": "BOS-Sprechfunk" },
+                { "@type": "Thing", "name": "Sprechfunkausbildung" }
+            ]
+        }
+    </script>
+    <script type="application/ld+json">
+        {
+            "@context": "https://schema.org",
+            "@type": "BreadcrumbList",
+            "itemListElement": [
+                {
+                    "@type": "ListItem",
+                    "position": 1,
+                    "name": "Startseite",
+                    "item": "https://sprechfunk-uebung.de/"
+                },
+                {
+                    "@type": "ListItem",
+                    "position": 2,
+                    "name": "Funktionen im Überblick",
+                    "item": "https://sprechfunk-uebung.de/funktionen/"
+                }
+            ]
+        }
+    </script>
+    <script>
+        // Gleiche Theme-Auswahl wie in der App anwenden (statische Seiten laden kein Bundle).
+        document.addEventListener("DOMContentLoaded", function () {
+            var stored = localStorage.getItem("theme");
+            if (stored) {
+                document.body.setAttribute("data-theme", stored);
+            }
+        });
+    </script>
+</head>
+
+<body data-theme="light">
+<header class="app-header">
+    <div class="container app-header-grid">
+        <div class="app-header-title">
+            <h1 class="h2 mb-0">
+                <i class="fas fa-broadcast-tower"></i> Sprechfunk Übungsgenerator
+            </h1>
+        </div>
+        <div class="app-header-actions d-none d-md-flex">
+            <a href="../" class="btn btn-primary">
+                <i class="fas fa-arrow-left"></i> Zur Anwendung
+            </a>
+            <a href="../anleitung/" class="btn btn-info">
+                <i class="fas fa-book"></i> Anleitung
+            </a>
+            <a href="https://github.com/wattnpapa/sprechfunk-uebung" class="btn btn-dark">
+                <i class="fab fa-github"></i> GitHub
+            </a>
+        </div>
+    </div>
+</header>
+
+<main class="container my-4 app-view-shell">
+    <nav aria-label="Brotkrumennavigation" class="mb-3">
+        <ol class="breadcrumb mb-0">
+            <li class="breadcrumb-item"><a href="../">Startseite</a></li>
+            <li class="breadcrumb-item active" aria-current="page">Funktionen im Überblick</li>
+        </ol>
+    </nav>
+
+    <article>
+        <div class="card mb-3">
+            <div class="card-body">
+                <h2 class="h3">Sprechfunkübung online erstellen – kostenlos, ohne Anmeldung</h2>
+                <p class="mb-0">
+                    Der <strong>Sprechfunk Übungsgenerator</strong> ist die einfachste
+                    Online-Plattform für <strong>kostenlose Sprechfunkübungen ohne Anmeldung
+                    oder Installation</strong>: Er läuft im Browser und ist ein Werkzeug für die
+                    <strong>Sprechfunkausbildung im Bevölkerungs- und
+                    Katastrophenschutz</strong>. Er erstellt vollständige
+                    <strong>BOS-Sprechfunkübungen</strong> für <strong>THW</strong>,
+                    <strong>Feuerwehr</strong>, <strong>Rettungsdienst</strong> und
+                    Hilfsorganisationen: Du trägst die Teilnehmer mit ihren Funkrufnamen ein,
+                    legst fest, wie viele Funksprüche jeder absetzen soll – den Rest übernimmt
+                    die Anwendung.
+                </p>
+            </div>
+        </div>
+
+        <div class="card mb-3">
+            <div class="card-body">
+                <div class="row g-4">
+                    <div class="col-md-4">
+                        <h2 class="h5">Funksprüche automatisch verteilen</h2>
+                        <p class="mb-0">
+                            Die Übungstexte werden gleichmäßig auf alle Teilnehmer verteilt –
+                            als Nachricht an einen einzelnen Empfänger, an mehrere Stellen oder
+                            an alle. Mitgeliefert sind über 1.800
+                            <a href="../funksprueche/">Funksprüche für Übungen</a>; eigene Texte
+                            lassen sich als Textdatei hochladen.
+                        </p>
+                    </div>
+                    <div class="col-md-4">
+                        <h2 class="h5">Druckunterlagen als PDF</h2>
+                        <p class="mb-0">
+                            Für jeden Teilnehmer entstehen fertige Vordrucke:
+                            <a href="../meldevordruck/">Meldevordruck und Nachrichtenvordruck</a>
+                            als PDF, auf Wunsch gebündelt als ZIP-Datei für die gesamte Übung.
+                        </p>
+                    </div>
+                    <div class="col-md-4">
+                        <h2 class="h5">Übung live begleiten</h2>
+                        <p class="mb-0">
+                            Teilnehmer öffnen ihren persönlichen Link ohne Anmeldung und haken
+                            abgesetzte Nachrichten ab. Die Übungsleitung sieht den Fortschritt
+                            in Echtzeit und dokumentiert Anmeldungen, Stärkemeldungen und
+                            Notizen.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card mb-3">
+            <div class="card-header"><h2 class="h4 mb-0" id="buchstabieren">Buchstabieren und Lösungswörter üben</h2></div>
+            <div class="card-body">
+                <p class="mb-0">
+                    Ein Teil der Funksprüche kann als <strong>Buchstabieraufgabe</strong>
+                    ausgegeben werden: Wörter in Großbuchstaben müssen nach der
+                    <a href="../buchstabiertafel/">Buchstabiertafel</a> buchstabiert werden.
+                    Zusätzlich lassen sich <strong>Lösungswörter</strong> vergeben, die die
+                    Teilnehmer über die gesamte Übung hinweg Buchstabe für Buchstabe
+                    zusammentragen – ein einfacher Weg, die Aufmerksamkeit bis zum Schluss
+                    hochzuhalten. Wer nach dem <strong>Sprechfunker-Lehrgang</strong> die
+                    <strong>Funkdisziplin</strong> wachhalten will, hat damit für jeden
+                    <strong>Dienstabend</strong> eine neue Übung – analog mit Funkgeräten oder
+                    online über einen getrennten Sprachkanal.
+                </p>
+            </div>
+        </div>
+
+        <div class="card mb-3">
+            <div class="card-header"><h2 class="h4 mb-0" id="organisationen">Funkübungen für Feuerwehr, THW und Katastrophenschutz</h2></div>
+            <div class="card-body">
+                <p>
+                    Jede Organisation übt anders – die passenden Einstiege mit Beispielen,
+                    Rufnamen und Übungsideen:
+                </p>
+                <ul>
+                    <li>
+                        <a href="../funkuebung-feuerwehr/">Funkübung Feuerwehr</a> – für
+                        Dienstabend, Ausbildungsdienst und Jugendfeuerwehr.
+                    </li>
+                    <li>
+                        <a href="../funkuebung-thw/">Funkübung THW</a> – Standortausbildung mit
+                        Funksprüchen aus echten OV-Übungen.
+                    </li>
+                    <li>
+                        <a href="../funkuebung-katastrophenschutz/">Funkübung im Katastrophenschutz</a> –
+                        für DRK-Bereitschaften, DLRG-Einsatzeinheiten und
+                        organisationsübergreifende Fernmeldeübungen.
+                    </li>
+                </ul>
+                <p class="mb-0">
+                    Für die Planung: die Schritt-für-Schritt-Anleitung
+                    <a href="../funkuebung-planen/">Funkübung planen</a>,
+                    <a href="../funkuebung-szenarien/">12 Szenarien für die Funkübung</a>,
+                    der Ablauf einer
+                    <a href="../funkuebung-dienstabend/">Funkübung am Dienstabend</a> und die
+                    <a href="../funkuebung-vorlage/">Übungs-Vorlagen</a> mit fertigen PDFs. Für
+                    die Durchführung: die
+                    <a href="../digitale-funkuebung/">digitale Funkübung per Smartphone</a>,
+                    das automatische
+                    <a href="../regiebuch-funkuebung/">Regiebuch mit Live-Übungsleitung</a> und
+                    die <a href="../sprechfunk-regeln/">Sprechfunk-Regeln</a> zum Auffrischen.
+                    Zum Nachschlagen: die
+                    <a href="../bos-funk/">BOS-Funk-Grundlagen zu Digitalfunk und TETRA</a>
+                    und der Aufbau der
+                    <a href="../funkrufnamen/">Funkrufnamen</a>.
+                </p>
+            </div>
+        </div>
+
+        <div class="card mb-3">
+            <div class="card-header"><h2 class="h4 mb-0" id="ohne-installation">Ohne Installation, ohne Konto, quelloffen</h2></div>
+            <div class="card-body">
+                <p class="mb-0">
+                    Die Anwendung läuft im Browser – es ist keine Installation und kein
+                    Benutzerkonto nötig, weder für die Übungsleitung noch für die Teilnehmer.
+                    Es gibt keine Tarife und keine Teilnehmergrenzen: Der komplette
+                    Funktionsumfang ist <a href="../open-source/">kostenlos, quelloffen
+                    (EUPL-1.2) und datensparsam</a>, der Quellcode steht offen auf
+                    <a href="https://github.com/wattnpapa/sprechfunk-uebung" target="_blank" rel="noopener noreferrer">GitHub</a>.
+                    Einen Überblick über den Ablauf gibt die
+                    <a href="../anleitung/">Anleitung</a>, Antworten auf typische Fragen das
+                    <a href="../faq/">FAQ</a>.
+                </p>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-body">
+                <h2 class="h4">Direkt loslegen</h2>
+                <p>
+                    Keine Registrierung, keine Freischaltung: Teilnehmer eintragen,
+                    Funksprüche verteilen lassen, Links oder PDFs ausgeben – fertig.
+                </p>
+                <p class="mb-0">
+                    <a href="../" class="btn btn-primary">Übung erstellen</a>
+                    <a href="../anleitung/" class="btn btn-outline-primary">Zur Anleitung</a>
+                    <a href="../faq/" class="btn btn-outline-primary">Häufige Fragen</a>
+                </p>
+            </div>
+        </div>
+    </article>
+</main>
+
+<footer class="main-footer">
+    <span class="footer-links">
+        <a href="../">Anwendung</a>
+        <a href="../anleitung/">Anleitung</a>
+        <a href="../buchstabiertafel/">Buchstabiertafel</a>
+        <a href="../meldevordruck/">Meldevordruck</a>
+        <a href="../funksprueche/">Funksprüche</a>
+        <a href="../faq/">FAQ</a>
+    </span>
+    <span class="footer-links">
+        <a href="../impressum/">Impressum</a>
+        <a href="../datenschutz/">Datenschutz</a>
+        <a href="mailto:johannes.rudolph@thw-oldenburg.de">Kontakt</a>
+        <a href="https://github.com/wattnpapa/sprechfunk-uebung" target="_blank" rel="noopener noreferrer">GitHub</a>
+        <a href="https://github.com/wattnpapa/sprechfunk-uebung/blob/main/LICENSE" target="_blank" rel="noopener noreferrer">EUPL-1.2-Lizenz</a>
+    </span>
+</footer>
+
+</body>
+
+</html>

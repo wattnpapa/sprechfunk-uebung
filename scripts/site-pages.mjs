@@ -11,6 +11,7 @@ export const SITE_URL = "https://sprechfunk-uebung.de";
 export const SITE_PAGES = [
     { slug: "", source: "index.html", changefreq: "weekly", priority: "1.0" },
     { slug: "anleitung", source: "pages/anleitung.html", changefreq: "monthly", priority: "0.9" },
+    { slug: "funktionen", source: "pages/funktionen.html", changefreq: "monthly", priority: "0.8" },
     { slug: "buchstabiertafel", source: "pages/buchstabiertafel.html", changefreq: "yearly", priority: "0.8" },
     { slug: "meldevordruck", source: "pages/meldevordruck.html", changefreq: "yearly", priority: "0.8" },
     { slug: "funksprueche", source: "pages/funksprueche.html", changefreq: "monthly", priority: "0.8" },

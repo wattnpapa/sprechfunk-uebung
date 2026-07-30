@@ -56,11 +56,5 @@ export class AppView {
         // Der Einstiegstext der Startseite gehoert nur zur Generator-Ansicht;
         // in Teilnehmer-, Uebungsleitungs- und Admin-Ansicht wuerde er stoeren.
         setDisplay(document.getElementById("seoIntroArea"), mode === "generator" ? "block" : "none");
-
-        // Gleiches gilt fuer das Nutzenversprechen im Kopfbalken: Es richtet sich
-        // an Erstbesucher, nicht an Teilnehmer einer laufenden Uebung. Der leere
-        // Wert stellt die Darstellung aus dem Stylesheet wieder her, damit die
-        // Zweitzeile auf schmalen Geraeten ausgeblendet bleibt.
-        setDisplay(document.getElementById("appHeaderClaim"), mode === "generator" ? "" : "none");
     }
 }

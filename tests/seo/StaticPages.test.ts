@@ -74,10 +74,12 @@ describe("Statische Seiten: SEO-Pflichtangaben", () => {
 
     /**
      * Suchmaschinen und Sprachmodelle gleichen die Suchanfrage gegen Titel und
-     * Hauptueberschrift ab. Der Produktname allein beantwortet "Sprechfunkuebung
-     * online kostenlos" nicht – die Startseite muss den Nutzen ausschreiben.
+     * sichtbaren Seitentext ab. Der Produktname allein beantwortet "Sprechfunkuebung
+     * online kostenlos" nicht – die Startseite muss den Nutzen ausschreiben. Der
+     * Kopfbalken bleibt bewusst schlank (nur Produktname); Nutzen und Zugangshuerde
+     * stehen im Einstiegstext (#seoIntroArea), der fuer Crawler im statischen HTML liegt.
      */
-    it("nennt Nutzen und Zugangshuerde in Titel, Beschreibung und Hauptueberschrift", () => {
+    it("nennt Nutzen und Zugangshuerde in Titel, Beschreibung und Einstiegstext", () => {
         const html = leseSeite("index.html");
 
         const titel = attribut(html, /<title>([^<]*)<\/title>/i)!;
@@ -94,9 +96,19 @@ describe("Statische Seiten: SEO-Pflichtangaben", () => {
         expect(h1).toBeTruthy();
         const h1Text = h1!.replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").trim();
         expect(h1Text).toContain("Sprechfunk Übungsgenerator");
-        expect(h1Text).toMatch(/kostenlos/i);
-        expect(h1Text).toMatch(/ohne Anmeldung/i);
-        expect(h1Text).toMatch(/ohne Installation/i);
+
+        const introStart = html.indexOf("id=\"seoIntroArea\"");
+        expect(introStart, "Die Startseite braucht den Einstiegstext #seoIntroArea").toBeGreaterThan(-1);
+        const intro = html.slice(introStart, html.indexOf("id=\"adminArea\""));
+
+        const introUeberschrift = /<h2[^>]*>([\s\S]*?)<\/h2>/i.exec(intro)?.[1];
+        expect(introUeberschrift).toBeTruthy();
+        const introUeberschriftText = introUeberschrift!.replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").trim();
+        expect(introUeberschriftText).toMatch(/Sprechfunkübung online erstellen/);
+        expect(introUeberschriftText).toMatch(/kostenlos/i);
+        expect(introUeberschriftText).toMatch(/ohne Anmeldung/i);
+
+        expect(intro).toMatch(/ohne Installation/i);
     });
 
     /**
