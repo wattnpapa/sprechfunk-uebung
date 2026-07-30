@@ -22,6 +22,8 @@ export const SITE_PAGES = [
     { slug: "funkuebung-planen", source: "pages/funkuebung-planen.html", changefreq: "monthly", priority: "0.8" },
     { slug: "funkuebung-szenarien", source: "pages/funkuebung-szenarien.html", changefreq: "monthly", priority: "0.8" },
     { slug: "sprechfunk-regeln", source: "pages/sprechfunk-regeln.html", changefreq: "monthly", priority: "0.7" },
+    { slug: "bos-funk", source: "pages/bos-funk.html", changefreq: "yearly", priority: "0.7" },
+    { slug: "funkrufnamen", source: "pages/funkrufnamen.html", changefreq: "yearly", priority: "0.7" },
     { slug: "open-source", source: "pages/open-source.html", changefreq: "yearly", priority: "0.6" },
     { slug: "digitale-funkuebung", source: "pages/digitale-funkuebung.html", changefreq: "monthly", priority: "0.7" },
     { slug: "regiebuch-funkuebung", source: "pages/regiebuch-funkuebung.html", changefreq: "monthly", priority: "0.7" },

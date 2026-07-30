@@ -1,0 +1,327 @@
+<!DOCTYPE html>
+<html lang="de">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BOS-Funk Grundlagen: Digitalfunk, TETRA, Rufgruppen und Betriebsmodi | Sprechfunk Übungsgenerator</title>
+    <link rel="icon" type="image/png" href="../assets/favicon.png">
+    <link rel="canonical" href="https://sprechfunk-uebung.de/bos-funk/">
+    <meta name="robots" content="index,follow,max-image-preview:large,max-snippet:-1">
+    <meta name="theme-color" content="#0d6efd">
+
+    <meta name="description" content="BOS-Funk verständlich erklärt: Was hinter dem Digitalfunk BOS steckt – TETRA-Netz, Rufgruppen statt Kanäle, die Betriebsmodi TMO und DMO, Endgeräte (HRT, MRT, FRT) und was der Digitalfunk besser kann als der Analogfunk. Grundlagen für die Sprechfunkausbildung.">
+    <meta name="author" content="Johannes Rudolph">
+
+    <meta property="og:title" content="BOS-Funk Grundlagen: Digitalfunk, TETRA, Rufgruppen und Betriebsmodi">
+    <meta property="og:description" content="TETRA-Netz, Rufgruppen, TMO und DMO, Endgeräte und die Unterschiede zum Analogfunk – die Grundlagen des Digitalfunks BOS für die Sprechfunkausbildung.">
+    <meta property="og:url" content="https://sprechfunk-uebung.de/bos-funk/">
+    <meta property="og:type" content="article">
+    <meta property="og:locale" content="de_DE">
+    <meta property="og:site_name" content="Sprechfunk Übungsgenerator">
+    <meta property="og:image" content="https://sprechfunk-uebung.de/assets/og-image.png">
+    <meta property="og:image:width" content="1200">
+    <meta property="og:image:height" content="630">
+    <meta property="og:image:alt" content="Sprechfunk Übungsgenerator – Übungen für den BOS-Sprechfunk erstellen">
+
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="BOS-Funk Grundlagen: Digitalfunk, TETRA, Rufgruppen und Betriebsmodi">
+    <meta name="twitter:description" content="TETRA-Netz, Rufgruppen, TMO und DMO, Endgeräte und die Unterschiede zum Analogfunk – kompakt erklärt.">
+    <meta name="twitter:image" content="https://sprechfunk-uebung.de/assets/og-image.png">
+
+    <link rel="stylesheet" href="../bundle.css">
+    <link rel="stylesheet" href="../style.css">
+
+    <!-- GoatCounter: cookielose, anonyme Reichweitenmessung -->
+    <script data-goatcounter="https://sprechfunk-uebung.goatcounter.com/count"
+            async src="//gc.zgo.at/count.js"></script>
+
+    <script type="application/ld+json">
+        {
+            "@context": "https://schema.org",
+            "@type": "Article",
+            "headline": "BOS-Funk Grundlagen: Digitalfunk, TETRA, Rufgruppen und Betriebsmodi",
+            "description": "Die Grundlagen des Digitalfunks BOS verständlich erklärt: TETRA-Netz, Rufgruppen statt Kanäle, die Betriebsmodi TMO und DMO, Endgeräte und die Unterschiede zum Analogfunk.",
+            "inLanguage": "de",
+            "url": "https://sprechfunk-uebung.de/bos-funk/",
+            "image": "https://sprechfunk-uebung.de/assets/og-image.png",
+            "author": {
+                "@type": "Person",
+                "name": "Johannes Rudolph",
+                "url": "https://github.com/wattnpapa"
+            },
+            "publisher": {
+                "@type": "Person",
+                "name": "Johannes Rudolph"
+            },
+            "isPartOf": {
+                "@type": "WebSite",
+                "name": "Sprechfunk Übungsgenerator",
+                "url": "https://sprechfunk-uebung.de/"
+            },
+            "about": [
+                { "@type": "Thing", "name": "BOS-Funk" },
+                { "@type": "Thing", "name": "Digitalfunk" },
+                { "@type": "Thing", "name": "TETRA" }
+            ]
+        }
+    </script>
+    <script type="application/ld+json">
+        {
+            "@context": "https://schema.org",
+            "@type": "BreadcrumbList",
+            "itemListElement": [
+                {
+                    "@type": "ListItem",
+                    "position": 1,
+                    "name": "Startseite",
+                    "item": "https://sprechfunk-uebung.de/"
+                },
+                {
+                    "@type": "ListItem",
+                    "position": 2,
+                    "name": "BOS-Funk Grundlagen",
+                    "item": "https://sprechfunk-uebung.de/bos-funk/"
+                }
+            ]
+        }
+    </script>
+    <script>
+        // Gleiche Theme-Auswahl wie in der App anwenden (statische Seiten laden kein Bundle).
+        document.addEventListener("DOMContentLoaded", function () {
+            var stored = localStorage.getItem("theme");
+            if (stored) {
+                document.body.setAttribute("data-theme", stored);
+            }
+        });
+    </script>
+</head>
+
+<body data-theme="light">
+<header class="app-header">
+    <div class="container app-header-grid">
+        <div class="app-header-title">
+            <h1 class="h2 mb-0">
+                <i class="fas fa-broadcast-tower"></i> Sprechfunk Übungsgenerator
+            </h1>
+        </div>
+        <div class="app-header-actions d-none d-md-flex">
+            <a href="../" class="btn btn-primary">
+                <i class="fas fa-arrow-left"></i> Zur Anwendung
+            </a>
+            <a href="../anleitung/" class="btn btn-info">
+                <i class="fas fa-book"></i> Anleitung
+            </a>
+            <a href="https://github.com/wattnpapa/sprechfunk-uebung" class="btn btn-dark">
+                <i class="fab fa-github"></i> GitHub
+            </a>
+        </div>
+    </div>
+</header>
+
+<main class="container my-4 app-view-shell">
+    <nav aria-label="Brotkrumennavigation" class="mb-3">
+        <ol class="breadcrumb mb-0">
+            <li class="breadcrumb-item"><a href="../">Startseite</a></li>
+            <li class="breadcrumb-item active" aria-current="page">BOS-Funk Grundlagen</li>
+        </ol>
+    </nav>
+
+    <article>
+        <div class="card mb-3">
+            <div class="card-body">
+                <h2 class="h3">BOS-Funk – die Grundlagen des Digitalfunks verständlich erklärt</h2>
+                <p>
+                    <strong>BOS</strong> steht für <strong>Behörden und Organisationen mit
+                    Sicherheitsaufgaben</strong>: Polizei, Feuerwehr, THW, Rettungsdienst,
+                    Zoll und die Einheiten des Katastrophenschutzes. Sie alle kommunizieren
+                    über ein gemeinsames, nicht öffentliches Funknetz – den
+                    <strong>Digitalfunk BOS</strong>. Wer neu in der Sprechfunkausbildung
+                    ist, bekommt hier die technischen Grundlagen kompakt erklärt: das Netz,
+                    die Rufgruppen, die Betriebsmodi und die Endgeräte. Die
+                    Betriebsabwicklung – Anruf, Betriebsworte, Buchstabieren – steht
+                    gesondert unter <a href="../sprechfunk-regeln/">Sprechfunk-Regeln</a>.
+                </p>
+            </div>
+        </div>
+
+        <div class="card mb-3">
+            <div class="card-header"><h2 class="h4 mb-0" id="tetra">Das Netz: TETRA, bundesweit und verschlüsselt</h2></div>
+            <div class="card-body">
+                <p>
+                    Der Digitalfunk BOS basiert auf dem europäischen Standard
+                    <strong>TETRA</strong> (Terrestrial Trunked Radio) und wird von der
+                    <strong>BDBOS</strong> (Bundesanstalt für den Digitalfunk der Behörden
+                    und Organisationen mit Sicherheitsaufgaben) gemeinsam mit den Ländern
+                    betrieben. Mit tausenden Basisstationen ist es eines der größten
+                    TETRA-Netze der Welt und deckt Deutschland nahezu flächendeckend ab.
+                </p>
+                <p class="mb-0">
+                    Anders als beim alten Analogfunk ist die Kommunikation
+                    <strong>verschlüsselt</strong> – einfaches Mithören mit einem Scanner,
+                    wie es im Analogfunk möglich war, scheidet aus. Trotzdem gilt im
+                    Sprechfunk weiterhin Zurückhaltung bei Namen und personenbezogenen
+                    Daten: Was gesendet wird, hören alle Funkstellen der Rufgruppe.
+                </p>
+            </div>
+        </div>
+
+        <div class="card mb-3">
+            <div class="card-header"><h2 class="h4 mb-0" id="rufgruppen">Rufgruppen statt Kanäle</h2></div>
+            <div class="card-body">
+                <p>
+                    Im Analogfunk wählte man einen <em>Kanal</em> – eine Frequenz, auf der
+                    alle in Reichweite mithörten. Der Digitalfunk arbeitet stattdessen mit
+                    <strong>Rufgruppen</strong>: logischen Gesprächskreisen, die unabhängig
+                    von Frequenzen funktionieren. Wer dieselbe Rufgruppe geschaltet hat,
+                    gehört zum selben Gesprächskreis – egal ob die Teilnehmer nebeneinander
+                    stehen oder hundert Kilometer auseinander sind.
+                </p>
+                <ul class="mb-0">
+                    <li>
+                        <strong>Gruppenruf</strong> ist der Regelfall: Eine Durchsage
+                        erreicht alle Funkstellen der Rufgruppe gleichzeitig.
+                    </li>
+                    <li>
+                        Rufgruppen sind <strong>taktisch gegliedert</strong> – etwa nach
+                        Organisation, Landkreis oder Einsatzabschnitt – und werden von der
+                        Führung zugewiesen.
+                    </li>
+                    <li>
+                        Für Ausbildung und Übung gibt es eigene Rufgruppen, damit der
+                        Übungsfunkverkehr den Einsatzbetrieb nicht stört – die Grundlage
+                        jeder <a href="../funkuebung-planen/">geplanten Funkübung</a>.
+                    </li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="card mb-3">
+            <div class="card-header"><h2 class="h4 mb-0" id="tmo-dmo">TMO und DMO: die zwei Betriebsmodi</h2></div>
+            <div class="card-body">
+                <p>
+                    TETRA-Geräte kennen zwei grundsätzlich verschiedene Betriebsarten:
+                </p>
+                <ul>
+                    <li>
+                        <strong>TMO (Trunked Mode Operation)</strong> – der Netzbetrieb:
+                        Das Funkgerät bucht sich wie ein Mobiltelefon in die nächste
+                        Basisstation ein. Reichweite spielt zwischen den Teilnehmern keine
+                        Rolle, solange beide Netzabdeckung haben. TMO ist der Regelfall für
+                        den Funkverkehr mit der Leitstelle und zwischen Einheiten.
+                    </li>
+                    <li>
+                        <strong>DMO (Direct Mode Operation)</strong> – der Direktbetrieb:
+                        Die Geräte funken unmittelbar von Gerät zu Gerät, ohne Netz –
+                        vergleichbar dem alten 2-m-Einsatzstellenfunk. Die Reichweite ist
+                        begrenzt, dafür funktioniert DMO auch im Keller, im Tunnel oder
+                        bei Netzausfall. Typischer Einsatz: der Funkverkehr an der
+                        Einsatzstelle.
+                    </li>
+                </ul>
+                <p class="mb-0">
+                    Für Übungen ist DMO praktisch: Eine DMO-Übungsgruppe funktioniert
+                    überall – auch im Unterrichtsraum, ganz ohne Netzinfrastruktur.
+                </p>
+            </div>
+        </div>
+
+        <div class="card mb-3">
+            <div class="card-header"><h2 class="h4 mb-0" id="endgeraete">Endgeräte: HRT, MRT, FRT – und die OPTA</h2></div>
+            <div class="card-body">
+                <p>
+                    Je nach Einbauort unterscheidet man drei Gerätetypen:
+                    <strong>HRT</strong> (Handheld Radio Terminal, das Handfunkgerät),
+                    <strong>MRT</strong> (Mobile Radio Terminal, fest im Fahrzeug verbaut)
+                    und <strong>FRT</strong> (Fixed Radio Terminal, die Feststation etwa in
+                    der Unterkunft oder Leitstelle).
+                </p>
+                <p class="mb-0">
+                    Jedes Gerät sendet seine <strong>OPTA</strong> mit – die
+                    <em>operativ-taktische Adresse</em>, die im Display der Gegenstelle
+                    erscheint und Organisation, Standort und Funktion codiert. Gesprochen
+                    wird trotzdem mit dem <a href="../funkrufnamen/">Funkrufnamen</a>:
+                    Er bleibt die Adresse im Sprechfunkverkehr.
+                </p>
+            </div>
+        </div>
+
+        <div class="card mb-3">
+            <div class="card-header"><h2 class="h4 mb-0" id="vorteile">Was der Digitalfunk besser kann – und wo Analogfunk bleibt</h2></div>
+            <div class="card-body">
+                <p>
+                    Gegenüber dem Analogfunk bringt der Digitalfunk BOS deutlich mehr als
+                    nur bessere Sprachqualität:
+                </p>
+                <ul>
+                    <li><strong>Verschlüsselung</strong> der gesamten Kommunikation,</li>
+                    <li><strong>Notruftaste</strong> mit priorisiertem Ruf zur Leitstelle,</li>
+                    <li><strong>Statusmeldungen</strong> (etwa „Einsatz übernommen“, „am Einsatzort“) auf Knopfdruck statt per Sprache,</li>
+                    <li><strong>SDS-Kurznachrichten</strong> und Einzelrufe zwischen zwei Geräten,</li>
+                    <li>gleichbleibende Sprachqualität bis an den Rand der Netzabdeckung.</li>
+                </ul>
+                <p class="mb-0">
+                    Der analoge BOS-Funk im 4-m- und 2-m-Band ist damit weitgehend
+                    abgelöst, lebt aber mancherorts weiter – etwa als Objektfunk in
+                    Gebäuden, als Rückfallebene oder in der Ausbildung. Die gute
+                    Nachricht: Die <a href="../sprechfunk-regeln/">Sprechfunkregeln</a>
+                    sind in beiden Welten dieselben – wer sauber funkt, funkt sauber auf
+                    jedem Gerät.
+                </p>
+            </div>
+        </div>
+
+        <div class="card mb-3">
+            <div class="card-header"><h2 class="h4 mb-0" id="ueben">Technik verstanden – jetzt Funkdisziplin trainieren</h2></div>
+            <div class="card-body">
+                <p class="mb-0">
+                    Rufgruppe schalten kann jeder nach fünf Minuten Einweisung – sicheres,
+                    diszipliniertes Funken kommt nur durch Übung. Der Sprechfunk
+                    Übungsgenerator erstellt dafür komplette Übungen mit
+                    <a href="../funksprueche/">über 1.800 Funksprüchen</a>,
+                    PDF-Vordrucken und <a href="../regiebuch-funkuebung/">Live-Übungsleitung</a> –
+                    passende Übungsideen liefern die
+                    <a href="../funkuebung-szenarien/">12 Szenarien für die Funkübung</a>.
+                </p>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-body">
+                <h2 class="h4">Die nächste Funkübung auf der Übungsrufgruppe starten</h2>
+                <p>
+                    Teilnehmer eintragen, Funksprüche wählen – Vordrucke, Nachrichtenplan
+                    und Live-Übungsleitung erzeugt der Generator.
+                    <a href="../open-source/">Kostenlos, ohne Anmeldung, quelloffen</a>.
+                </p>
+                <p class="mb-0">
+                    <a href="../" class="btn btn-primary">Übung erstellen</a>
+                    <a href="../funkrufnamen/" class="btn btn-outline-primary">Funkrufnamen verstehen</a>
+                    <a href="../sprechfunk-regeln/" class="btn btn-outline-primary">Sprechfunk-Regeln</a>
+                </p>
+            </div>
+        </div>
+    </article>
+</main>
+
+<footer class="main-footer">
+    <span class="footer-links">
+        <a href="../">Anwendung</a>
+        <a href="../anleitung/">Anleitung</a>
+        <a href="../buchstabiertafel/">Buchstabiertafel</a>
+        <a href="../meldevordruck/">Meldevordruck</a>
+        <a href="../funksprueche/">Funksprüche</a>
+        <a href="../faq/">FAQ</a>
+    </span>
+    <span class="footer-links">
+        <a href="../impressum/">Impressum</a>
+        <a href="../datenschutz/">Datenschutz</a>
+        <a href="mailto:johannes.rudolph@thw-oldenburg.de">Kontakt</a>
+        <a href="https://github.com/wattnpapa/sprechfunk-uebung" target="_blank" rel="noopener noreferrer">GitHub</a>
+        <a href="https://github.com/wattnpapa/sprechfunk-uebung/blob/main/LICENSE" target="_blank" rel="noopener noreferrer">EUPL-1.2-Lizenz</a>
+    </span>
+</footer>
+
+</body>
+
+</html>
