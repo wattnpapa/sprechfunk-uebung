@@ -22,6 +22,7 @@ import {
     type TeilnehmerFortschritt
 } from "../services/liveStatusMerge";
 import type { TeilnehmerLiveDoc } from "../types/LiveStatus";
+import { berechneSollFortschritt, fruehesteBasis, parseHHMMtoMs } from "../utils/xzeit";
 
 interface FlattenedNachricht {
     nr: number;
@@ -65,6 +66,7 @@ export class UebungsleitungController {
     /** Zuletzt empfangene Selbstmeldungen der Teilnehmer. */
     private teilnehmerLiveDocs: TeilnehmerLiveDoc[] = [];
     private disposeListener: (() => void) | null = null;
+    private cockpitInterval: ReturnType<typeof setInterval> | null = null;
 
     constructor(db: Firestore) {
         this.view = new UebungsleitungView();
@@ -132,6 +134,111 @@ export class UebungsleitungController {
         });
 
         this.startLiveSync();
+        this.initCockpit();
+    }
+
+    /**
+     * Cockpit-Kacheln (Uhrzeit, Laufzeit, X-Zeit, Plan-Status) – nur im
+     * X-Zeit-Modus, weil nur dort ein Zeitplan über die Slots existiert.
+     */
+    private initCockpit(): void {
+        if (this.uebung?.spielModus !== "xZeit") {
+            return;
+        }
+        this.view.setCockpitVisible(true);
+        if (this.storage?.xZeitBasis) {
+            this.view.setCockpitBasisInputValue(this.storage.xZeitBasis);
+        }
+        this.view.bindCockpitEvents(
+            value => this.setCockpitBasis(value),
+            () => {
+                const now = new Date();
+                const hh = String(now.getHours()).padStart(2, "0");
+                const mm = String(now.getMinutes()).padStart(2, "0");
+                const value = `${hh}:${mm}`;
+                this.view.setCockpitBasisInputValue(value);
+                this.setCockpitBasis(value);
+            }
+        );
+        this.updateCockpit();
+        this.cockpitInterval = setInterval(() => this.updateCockpit(), 1000);
+        // Eigener Aufräum-Hook: der Listener aus startLiveSync fehlt, wenn der
+        // Live-Sync deaktiviert ist – der Ticker darf trotzdem nicht weiterlaufen.
+        window.addEventListener("hashchange", () => {
+            if (this.cockpitInterval !== null) {
+                clearInterval(this.cockpitInterval);
+                this.cockpitInterval = null;
+            }
+        }, { once: true });
+    }
+
+    private setCockpitBasis(value: string): void {
+        if (!this.storage) {
+            return;
+        }
+        if (value) {
+            this.storage.xZeitBasis = value;
+        } else {
+            delete this.storage.xZeitBasis;
+        }
+        this.save();
+        this.updateCockpit();
+    }
+
+    /**
+     * Eigene Basis der Leitung; ohne sie die früheste Basis, die ein
+     * Teilnehmer per Live-Meldung gesetzt hat.
+     */
+    private effektiveXZeitBasis(): { basis: string; quelle: "leitung" | "teilnehmer" } | null {
+        if (this.storage?.xZeitBasis) {
+            return { basis: this.storage.xZeitBasis, quelle: "leitung" };
+        }
+        const abgeleitet = fruehesteBasis(this.teilnehmerLiveDocs.map(doc => doc.xZeitBasis));
+        return abgeleitet ? { basis: abgeleitet, quelle: "teilnehmer" } : null;
+    }
+
+    private updateCockpit(): void {
+        if (!this.uebung) {
+            return;
+        }
+        const now = new Date();
+        const uhrzeit = [now.getHours(), now.getMinutes(), now.getSeconds()]
+            .map(v => String(v).padStart(2, "0"))
+            .join(":");
+
+        const alleNachrichten = Object.values(this.uebung.nachrichten ?? {}).flat();
+        const effektiv = this.buildEffektivenStatus();
+        let ist = 0;
+        Object.entries(this.uebung.nachrichten ?? {}).forEach(([sender, msgs]) => {
+            msgs.forEach(msg => {
+                if (effektiv[`${sender}__${msg.id}`]?.erledigtUm) {
+                    ist++;
+                }
+            });
+        });
+
+        const basisInfo = this.effektiveXZeitBasis();
+        const basisMs = basisInfo ? parseHHMMtoMs(basisInfo.basis, now) : null;
+        const laufzeitMs = basisMs !== null ? now.getTime() - basisMs : null;
+        const soll = basisMs !== null
+            ? berechneSollFortschritt(alleNachrichten, basisMs, now.getTime())
+            : null;
+
+        let basisHinweis = "Noch keine X-Zeit-Basis – „Jetzt starten“ oder auf Teilnehmer warten.";
+        if (basisInfo?.quelle === "leitung") {
+            basisHinweis = `Basis ${basisInfo.basis} von der Übungsleitung gesetzt.`;
+        } else if (basisInfo?.quelle === "teilnehmer") {
+            basisHinweis = `Basis ${basisInfo.basis} aus Teilnehmer-Meldung übernommen.`;
+        }
+
+        this.view.updateCockpit({
+            uhrzeit,
+            laufzeitMs,
+            ist,
+            gesamt: alleNachrichten.length,
+            soll,
+            basisHinweis
+        });
     }
 
     /**
@@ -201,6 +308,10 @@ export class UebungsleitungController {
     }
 
     public dispose(): void {
+        if (this.cockpitInterval !== null) {
+            clearInterval(this.cockpitInterval);
+            this.cockpitInterval = null;
+        }
         void this.liveStatus?.flush();
         this.liveStatus?.dispose();
         this.liveStatus = null;

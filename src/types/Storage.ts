@@ -26,6 +26,12 @@ export interface UebungsleitungStorage {
     lastUpdated: string;
     teilnehmer: Record<string, TeilnehmerStatus>;
     nachrichten: Record<string, NachrichtenStatus>;
+    /**
+     * HH:MM – von der Übungsleitung im Cockpit gesetzter Übungsbeginn.
+     * Bewusst gerätelokal; ohne eigenen Wert greift das Cockpit auf die
+     * früheste Teilnehmer-Basis aus den Live-Meldungen zurück.
+     */
+    xZeitBasis?: string;
 }
 
 export interface TeilnehmerStatus {

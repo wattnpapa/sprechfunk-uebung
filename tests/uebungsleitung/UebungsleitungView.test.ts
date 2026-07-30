@@ -29,6 +29,16 @@ const setDom = () => {
       <div id="nachrichtenLoadLabel"></div>
       <div id="nachrichtenHeatmapLabel"></div>
       <span id="uebungsleitungLiveSyncBadge"></span>
+      <div id="uebungsleitungCockpit" class="d-none">
+        <div id="cockpitUhrzeit"></div>
+        <div id="cockpitLaufzeit"></div>
+        <div id="cockpitXZeit"></div>
+        <span id="cockpitFortschritt"></span>
+        <span id="cockpitPlanBadge"></span>
+        <input id="cockpitXZeitBasisInput">
+        <button id="btn-cockpit-xzeit-jetzt"></button>
+        <small id="cockpitBasisHinweis"></small>
+      </div>
     `);
     vi.stubGlobal("window", dom.window);
     vi.stubGlobal("document", dom.window.document);
@@ -632,4 +642,95 @@ describe("UebungsleitungView – Live-Status", () => {
             expect(html).toContain("Teilnehmer:");
         });
     }
+});
+
+describe("UebungsleitungView – Cockpit", () => {
+    beforeEach(() => {
+        vi.clearAllMocks();
+        setDom();
+    });
+
+    it("blendet das Cockpit ein und aus", () => {
+        const view = new UebungsleitungView();
+        const cockpit = document.getElementById("uebungsleitungCockpit");
+
+        view.setCockpitVisible(true);
+        expect(cockpit?.classList.contains("d-none")).toBe(false);
+
+        view.setCockpitVisible(false);
+        expect(cockpit?.classList.contains("d-none")).toBe(true);
+    });
+
+    it("füllt die Kacheln inklusive Plan-Badge", () => {
+        const view = new UebungsleitungView();
+        view.updateCockpit({
+            uhrzeit: "12:00:00",
+            laufzeitMs: 83_000,
+            ist: 3,
+            gesamt: 20,
+            soll: 5,
+            basisHinweis: "Basis 11:58 von der Übungsleitung gesetzt."
+        });
+
+        expect(document.getElementById("cockpitUhrzeit")?.textContent).toBe("12:00:00");
+        expect(document.getElementById("cockpitLaufzeit")?.textContent).toBe("01:23");
+        expect(document.getElementById("cockpitXZeit")?.textContent).toBe("X + 1 min");
+        expect(document.getElementById("cockpitFortschritt")?.textContent).toBe("3/20");
+        const badge = document.getElementById("cockpitPlanBadge");
+        expect(badge?.textContent).toBe("2 hinter Plan");
+        expect(badge?.className).toContain("bg-warning");
+        expect(document.getElementById("cockpitBasisHinweis")?.textContent).toContain("11:58");
+    });
+
+    it("zeigt ohne Basis Striche und ein neutrales Badge", () => {
+        const view = new UebungsleitungView();
+        view.updateCockpit({
+            uhrzeit: "12:00:00",
+            laufzeitMs: null,
+            ist: 0,
+            gesamt: 20,
+            soll: null,
+            basisHinweis: ""
+        });
+
+        expect(document.getElementById("cockpitLaufzeit")?.textContent).toBe("–");
+        expect(document.getElementById("cockpitXZeit")?.textContent).toBe("–");
+        const badge = document.getElementById("cockpitPlanBadge");
+        expect(badge?.textContent).toBe("–");
+        expect(badge?.className).toContain("bg-secondary");
+    });
+
+    it("meldet „im Plan“ bei erfülltem Soll", () => {
+        const view = new UebungsleitungView();
+        view.updateCockpit({
+            uhrzeit: "12:00:00",
+            laufzeitMs: 60_000,
+            ist: 5,
+            gesamt: 20,
+            soll: 5,
+            basisHinweis: ""
+        });
+
+        const badge = document.getElementById("cockpitPlanBadge");
+        expect(badge?.textContent).toBe("im Plan");
+        expect(badge?.className).toContain("bg-success");
+    });
+
+    it("bindet Basis-Eingabe und „Jetzt starten“", () => {
+        const view = new UebungsleitungView();
+        const onBasisChange = vi.fn();
+        const onJetzt = vi.fn();
+        view.bindCockpitEvents(onBasisChange, onJetzt);
+
+        const input = document.getElementById("cockpitXZeitBasisInput") as HTMLInputElement;
+        input.value = "14:30";
+        input.dispatchEvent(new window.Event("change"));
+        expect(onBasisChange).toHaveBeenCalledWith("14:30");
+
+        (document.getElementById("btn-cockpit-xzeit-jetzt") as HTMLButtonElement).click();
+        expect(onJetzt).toHaveBeenCalled();
+
+        view.setCockpitBasisInputValue("15:00");
+        expect(input.value).toBe("15:00");
+    });
 });

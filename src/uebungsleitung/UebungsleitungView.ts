@@ -11,6 +11,20 @@ import {
 import { UebungsleitungTeilnehmerView } from "./UebungsleitungTeilnehmerView";
 import type { LiveSyncState } from "../types/LiveStatus";
 import type { EffektiverNachrichtenStatus, TeilnehmerFortschritt } from "../services/liveStatusMerge";
+import { berechnePlanStatus, formatLaufzeit, formatXZeit } from "../utils/xzeit";
+
+export interface CockpitAnzeige {
+    /** Formatierte Uhrzeit, z. B. "14:03:27". */
+    uhrzeit: string;
+    /** Millisekunden seit X-Zeit-Basis – `null`, solange keine Basis bekannt ist. */
+    laufzeitMs: number | null;
+    /** Erledigte Nachrichten (Teilnehmer-Meldung oder Bestätigung der Leitung). */
+    ist: number;
+    gesamt: number;
+    /** Laut Zeitplan fällige Nachrichten – `null` ohne Basis. */
+    soll: number | null;
+    basisHinweis: string;
+}
 
 export class UebungsleitungView {
     private teilnehmerView = new UebungsleitungTeilnehmerView();
@@ -35,6 +49,52 @@ export class UebungsleitungView {
     /** Reicht den Live-Sync-Status an die Nachrichten-Ansicht durch. */
     public updateLiveSyncState(state: LiveSyncState): void {
         this.nachrichtenView.updateLiveSyncState(state);
+    }
+
+    /** Cockpit-Kacheln nur im X-Zeit-Modus einblenden. */
+    public setCockpitVisible(visible: boolean): void {
+        document.getElementById("uebungsleitungCockpit")?.classList.toggle("d-none", !visible);
+    }
+
+    public updateCockpit(anzeige: CockpitAnzeige): void {
+        this.setText("cockpitUhrzeit", anzeige.uhrzeit);
+        this.setText("cockpitLaufzeit", anzeige.laufzeitMs !== null ? formatLaufzeit(anzeige.laufzeitMs) : "–");
+        this.setText("cockpitXZeit", anzeige.laufzeitMs !== null ? formatXZeit(anzeige.laufzeitMs) : "–");
+        this.setText("cockpitFortschritt", `${anzeige.ist}/${anzeige.gesamt}`);
+        this.setText("cockpitBasisHinweis", anzeige.basisHinweis);
+
+        const badge = document.getElementById("cockpitPlanBadge");
+        if (badge) {
+            if (anzeige.soll === null) {
+                badge.className = "badge bg-secondary";
+                badge.textContent = "–";
+            } else {
+                const status = berechnePlanStatus(anzeige.ist, anzeige.soll);
+                badge.className = `badge ${status.css}`;
+                badge.textContent = status.label;
+            }
+        }
+    }
+
+    public setCockpitBasisInputValue(value: string): void {
+        const input = document.getElementById("cockpitXZeitBasisInput") as HTMLInputElement | null;
+        if (input) {
+            input.value = value;
+        }
+    }
+
+    public bindCockpitEvents(onBasisChange: (value: string) => void, onJetzt: () => void): void {
+        document.getElementById("cockpitXZeitBasisInput")?.addEventListener("change", e => {
+            onBasisChange((e.target as HTMLInputElement).value);
+        });
+        document.getElementById("btn-cockpit-xzeit-jetzt")?.addEventListener("click", onJetzt);
+    }
+
+    private setText(id: string, text: string): void {
+        const el = document.getElementById(id);
+        if (el) {
+            el.textContent = text;
+        }
     }
 
     public renderTeilnehmerListe(
