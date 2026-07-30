@@ -5,6 +5,11 @@ export interface TeilnehmerStorage {
     lastUpdated: string;
     nachrichten: Record<string, NachrichtenStatusTeilnehmer>;
     hideTransmitted: boolean;
+    /**
+     * Fokus-Modus (nur X-Zeit): zeigt statt der Tabelle nur die aktuell
+     * fällige Meldung mit Countdown. Reine Ansichtseinstellung, gerätelokal.
+     */
+    fokusModus?: boolean;
     xZeitBasis?: string; // HH:MM – vom Teilnehmer selbst gesetzt
     /** Zeitpunkt der letzten Änderung an xZeitBasis (Basis für Live-Sync-Merge). */
     xZeitBasisGeaendertUm?: string;

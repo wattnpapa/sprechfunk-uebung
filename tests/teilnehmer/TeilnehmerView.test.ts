@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { JSDOM } from "jsdom";
 import { TeilnehmerView } from "../../src/teilnehmer/TeilnehmerView";
 
@@ -360,5 +360,119 @@ describe("TeilnehmerView", () => {
         document.getElementById("teilnehmerDocModal")?.remove();
         full.setDocMode("meldevordruck");
         expect(true).toBe(true);
+    });
+});
+
+describe("TeilnehmerView – Fokus-Modus", () => {
+    beforeEach(() => {
+        setupDom();
+        vi.useFakeTimers();
+        vi.setSystemTime(new Date(2026, 6, 30, 12, 0, 0));
+    });
+
+    afterEach(() => {
+        vi.useRealTimers();
+    });
+
+    const renderXZeit = () => {
+        const view = new TeilnehmerView();
+        view.renderHeader(
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            { name: "Ü", datum: new Date(), rufgruppe: "RG", leitung: "L", spielModus: "xZeit" } as any,
+            "Alpha"
+        );
+        return view;
+    };
+
+    const nachrichten = [
+        { id: 1, empfaenger: ["Bravo"], nachricht: "Erste <b>Meldung</b>", xZeitSlot: 0 },
+        { id: 2, empfaenger: ["Charlie"], nachricht: "Zweite", xZeitSlot: 30 }
+    ];
+
+    const renderMitStorage = (view: TeilnehmerView, storageNachrichten: Record<string, { uebertragen: boolean }>, basis?: string) => {
+        view.renderNachrichten(
+            nachrichten,
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            { hideTransmitted: false, fokusModus: true, nachrichten: storageNachrichten } as any,
+            { showXZeit: true, ...(basis ? { xZeitBasis: basis } : {}) }
+        );
+    };
+
+    it("zeigt die fällige Meldung groß an und blendet die Tabelle aus", () => {
+        const view = renderXZeit();
+        renderMitStorage(view, {}, "11:55");
+
+        const card = document.getElementById("teilnehmerFokusCard");
+        expect(card?.classList.contains("d-none")).toBe(false);
+        expect(card?.innerHTML).toContain("Meldung 1 fällig · X+0");
+        expect(card?.innerHTML).toContain("Erste &lt;b&gt;Meldung&lt;/b&gt;");
+        expect(card?.innerHTML).toContain("an: Bravo");
+        expect((document.getElementById("teilnehmerTableView") as HTMLElement).style.display).toBe("none");
+    });
+
+    it("zeigt einen Countdown, solange keine Meldung fällig ist", () => {
+        const view = renderXZeit();
+        renderMitStorage(view, { 1: { uebertragen: true } }, "11:55");
+
+        // Slot 30 ab Basis 11:55 → fällig 12:25, jetzt 12:00 → 25 Minuten.
+        expect(document.getElementById("fokusCountdown")?.textContent).toBe("25:00");
+        const card = document.getElementById("teilnehmerFokusCard");
+        expect(card?.innerHTML).toContain("Nächste Meldung in");
+        expect(card?.innerHTML).not.toContain("Zweite");
+    });
+
+    it("meldet Vollzug, wenn alles übertragen ist", () => {
+        const view = renderXZeit();
+        renderMitStorage(view, { 1: { uebertragen: true }, 2: { uebertragen: true } }, "11:55");
+
+        expect(document.getElementById("teilnehmerFokusCard")?.textContent).toContain("Alle Meldungen übertragen");
+    });
+
+    it("bittet ohne Basis um den X-Zeit-Start", () => {
+        const view = renderXZeit();
+        renderMitStorage(view, {});
+
+        expect(document.getElementById("teilnehmerFokusCard")?.textContent).toContain("Starte oben die X-Zeit");
+    });
+
+    it("lässt die Tabelle sichtbar, wenn der Fokus-Modus aus ist", () => {
+        const view = renderXZeit();
+        view.renderNachrichten(
+            nachrichten,
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            { hideTransmitted: false, fokusModus: false, nachrichten: {} } as any,
+            { showXZeit: true, xZeitBasis: "11:55" }
+        );
+
+        expect(document.getElementById("teilnehmerFokusCard")?.classList.contains("d-none")).toBe(true);
+        expect((document.getElementById("teilnehmerTableView") as HTMLElement).style.display).toBe("");
+    });
+
+    it("meldet Schalter und Übertragen-Button an den Controller", () => {
+        const view = renderXZeit();
+        const onToggle = vi.fn();
+        const onUebertragen = vi.fn();
+        view.bindFokusEvents(onToggle, onUebertragen);
+        renderMitStorage(view, {}, "11:55");
+
+        const toggle = document.getElementById("toggle-fokus-modus") as HTMLInputElement;
+        toggle.checked = false;
+        toggle.dispatchEvent(new window.Event("change"));
+        expect(onToggle).toHaveBeenCalledWith(false);
+
+        (document.querySelector("[data-fokus-uebertragen=\"1\"]") as HTMLButtonElement).click();
+        expect(onUebertragen).toHaveBeenCalledWith(1);
+    });
+
+    it("aktualisiert die Fokus-Karte über den X-Zeit-Ticker", () => {
+        const view = renderXZeit();
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const storage = { hideTransmitted: false, fokusModus: true, nachrichten: { 1: { uebertragen: true } } } as any;
+        view.renderNachrichten(nachrichten, storage, { showXZeit: true, xZeitBasis: "11:55" });
+        expect(document.getElementById("fokusCountdown")?.textContent).toBe("25:00");
+
+        vi.setSystemTime(new Date(2026, 6, 30, 12, 10, 0));
+        view.updateXZeitCountdown(nachrichten, storage, "11:55");
+        expect(document.getElementById("fokusCountdown")?.textContent).toBe("15:00");
     });
 });

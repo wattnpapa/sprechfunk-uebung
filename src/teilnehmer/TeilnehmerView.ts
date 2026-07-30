@@ -4,6 +4,7 @@ import { escapeHtml } from "../utils/html";
 import { TeilnehmerStorage } from "../types/Storage";
 import { Nachricht } from "../types/Nachricht";
 import type { LeitungBestaetigung, LiveSyncState } from "../types/LiveStatus";
+import { formatCountdown, parseHHMMtoMs } from "../utils/xzeit";
 
 interface PdfPage {
     getViewport: (options: { scale: number; rotation?: number }) => { width: number; height: number };
@@ -36,7 +37,19 @@ const NON_TEXT_INPUT_TYPES = new Set([
     "checkbox", "radio", "button", "submit", "reset", "file", "range", "color", "image"
 ]);
 
+/** Anzeigezustand der Fokus-Karte im getakteten Modus. */
+interface FokusZustand {
+    kind: "keineBasis" | "fertig" | "faellig" | "warten";
+    aktuelle?: Nachricht & { xZeitSlot: number };
+    weitereFaellig: number;
+    offen: number;
+    countdownMs: number;
+}
+
 export class TeilnehmerView {
+    /** Merker, um die Fokus-Karte nur bei Zustandswechseln neu zu rendern. */
+    private lastFokusSignature = "";
+
     private isTypingTarget(target: HTMLElement | null): boolean {
         if (!target) {
             return false;
@@ -190,9 +203,14 @@ export class TeilnehmerView {
                         <input type="time" class="form-control form-control-sm" id="xZeitBasisInput" style="width:130px;">
                         <button class="btn btn-sm btn-outline-primary" id="btn-xzeit-jetzt" type="button">Jetzt starten</button>
                         <span id="xZeitCountdown" class="text-muted small ms-2"></span>
+                        <div class="form-check form-switch ms-auto" title="Zeigt nur die aktuell fällige Meldung mit Countdown – künftige Meldungen bleiben verborgen.">
+                            <input class="form-check-input" type="checkbox" id="toggle-fokus-modus">
+                            <label class="form-check-label" for="toggle-fokus-modus">Fokus-Modus</label>
+                        </div>
                     </div>
                 </div>
-            </div>` : ""}
+            </div>
+            <div id="teilnehmerFokusCard" class="d-none" data-testid="teilnehmer-fokus-card"></div>` : ""}
 
             <div id="teilnehmerTableView" class="table-responsive">
                 <table class="table table-striped table-hover align-middle">
@@ -354,6 +372,183 @@ export class TeilnehmerView {
         const colspan = showXZeit ? "6" : "5";
         tbody.innerHTML = rows || `<tr><td colspan="${colspan}" class="text-center text-muted">Keine Nachrichten vorhanden.</td></tr>`;
 
+        this.renderFokusBereich(nachrichten, storage, showXZeit, xZeitBasis);
+    }
+
+    /**
+     * Fokus-Modus: blendet die Tabelle aus und zeigt nur die aktuell fällige
+     * Meldung bzw. den Countdown bis zur nächsten. Künftige Meldungstexte
+     * bleiben so bis zur Fälligkeit verborgen.
+     */
+    private renderFokusBereich(
+        nachrichten: Nachricht[],
+        storage: TeilnehmerStorage,
+        showXZeit: boolean,
+        xZeitBasis: string | undefined
+    ): void {
+        const card = document.getElementById("teilnehmerFokusCard");
+        if (!card) {
+            return;
+        }
+        const aktiv = showXZeit && !!storage.fokusModus;
+
+        const toggle = document.getElementById("toggle-fokus-modus") as HTMLInputElement | null;
+        if (toggle) {
+            toggle.checked = !!storage.fokusModus;
+        }
+
+        card.classList.toggle("d-none", !aktiv);
+        const table = document.getElementById("teilnehmerTableView");
+        if (table) {
+            table.style.display = aktiv ? "none" : "";
+        }
+        const search = document.getElementById("teilnehmerSearchInput");
+        if (search) {
+            search.style.display = aktiv ? "none" : "";
+        }
+
+        this.lastFokusSignature = "";
+        if (aktiv) {
+            this.updateFokusCard(nachrichten, storage, xZeitBasis);
+        }
+    }
+
+    /** Aktualisiert die Fokus-Karte; rendert nur bei Zustandswechsel neu. */
+    public updateFokusCard(
+        nachrichten: Nachricht[],
+        storage: TeilnehmerStorage,
+        xZeitBasis: string | undefined
+    ): void {
+        const card = document.getElementById("teilnehmerFokusCard");
+        if (!card || card.classList.contains("d-none")) {
+            return;
+        }
+        const zustand = this.buildFokusZustand(nachrichten, storage, xZeitBasis);
+        const signature = [zustand.kind, zustand.aktuelle?.id ?? "", zustand.weitereFaellig, zustand.offen].join("|");
+        if (signature !== this.lastFokusSignature) {
+            card.innerHTML = this.renderFokusHtml(zustand);
+            this.lastFokusSignature = signature;
+        }
+        if (zustand.kind === "warten") {
+            const countdown = document.getElementById("fokusCountdown");
+            if (countdown) {
+                countdown.textContent = formatCountdown(zustand.countdownMs);
+            }
+        }
+    }
+
+    private buildFokusZustand(
+        nachrichten: Nachricht[],
+        storage: TeilnehmerStorage,
+        xZeitBasis: string | undefined
+    ): FokusZustand {
+        const offen = nachrichten
+            .filter((n): n is Nachricht & { xZeitSlot: number } =>
+                n.xZeitSlot !== undefined && !storage.nachrichten[n.id]?.uebertragen)
+            .sort((a, b) => a.xZeitSlot - b.xZeitSlot);
+
+        if (!offen.length) {
+            return { kind: "fertig", weitereFaellig: 0, offen: 0, countdownMs: 0 };
+        }
+
+        const basisMs = xZeitBasis ? parseHHMMtoMs(xZeitBasis) : null;
+        if (basisMs === null) {
+            return { kind: "keineBasis", weitereFaellig: 0, offen: offen.length, countdownMs: 0 };
+        }
+
+        const now = Date.now();
+        const faellig = offen.filter(n => basisMs + n.xZeitSlot * 60000 <= now);
+        if (faellig.length && faellig[0]) {
+            return {
+                kind: "faellig",
+                aktuelle: faellig[0],
+                weitereFaellig: faellig.length - 1,
+                offen: offen.length,
+                countdownMs: 0
+            };
+        }
+
+        const naechste = offen[0];
+        if (!naechste) {
+            return { kind: "fertig", weitereFaellig: 0, offen: 0, countdownMs: 0 };
+        }
+        return {
+            kind: "warten",
+            aktuelle: naechste,
+            weitereFaellig: 0,
+            offen: offen.length,
+            countdownMs: basisMs + naechste.xZeitSlot * 60000 - now
+        };
+    }
+
+    private renderFokusHtml(zustand: FokusZustand): string {
+        if (zustand.kind === "keineBasis") {
+            return `
+                <div class="card mb-3">
+                    <div class="card-body text-center text-muted py-4">
+                        Starte oben die X-Zeit („Jetzt starten“), um den Fokus-Modus zu nutzen.
+                    </div>
+                </div>`;
+        }
+        if (zustand.kind === "fertig") {
+            return `
+                <div class="card border-success mb-3">
+                    <div class="card-body text-center py-4">
+                        <span class="fs-5">✅ Alle Meldungen übertragen.</span>
+                    </div>
+                </div>`;
+        }
+        if (zustand.kind === "warten" && zustand.aktuelle) {
+            return `
+                <div class="card mb-3">
+                    <div class="card-body text-center py-4">
+                        <div class="text-muted">Nächste Meldung in</div>
+                        <div class="display-5 font-monospace" id="fokusCountdown">${formatCountdown(zustand.countdownMs)}</div>
+                        <div class="text-muted small mt-1">X+${zustand.aktuelle.xZeitSlot} · noch ${zustand.offen} offen</div>
+                    </div>
+                </div>`;
+        }
+        if (zustand.kind === "faellig" && zustand.aktuelle) {
+            const n = zustand.aktuelle;
+            const weitere = zustand.weitereFaellig > 0
+                ? `<div class="text-warning small mt-2">+${zustand.weitereFaellig} weitere Meldung(en) fällig</div>`
+                : "";
+            return `
+                <div class="card border-primary mb-3">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
+                            <span class="badge bg-primary">Meldung ${n.id} fällig · X+${n.xZeitSlot}</span>
+                            <span class="text-muted small">noch ${zustand.offen} offen</span>
+                        </div>
+                        <div class="text-muted small mt-2">an: ${escapeHtml(n.empfaenger.join(", "))}</div>
+                        <p class="fs-5 mt-1 mb-3">${escapeHtml(n.nachricht).replace(/\\n/g, "<br>").replace(/\n/g, "<br>")}</p>
+                        <button class="btn btn-success btn-lg w-100" data-fokus-uebertragen="${n.id}">
+                            ✓ Als übertragen markieren
+                        </button>
+                        ${weitere}
+                    </div>
+                </div>`;
+        }
+        return "";
+    }
+
+    public bindFokusEvents(
+        onToggleFokus: (checked: boolean) => void,
+        onUebertragen: (id: number) => void
+    ): void {
+        document.getElementById("toggle-fokus-modus")?.addEventListener("change", e => {
+            onToggleFokus((e.target as HTMLInputElement).checked);
+        });
+        document.getElementById("teilnehmerFokusCard")?.addEventListener("click", e => {
+            const btn = (e.target as HTMLElement).closest("[data-fokus-uebertragen]") as HTMLElement | null;
+            if (!btn) {
+                return;
+            }
+            const id = Number(btn.dataset["fokusUebertragen"]);
+            if (Number.isFinite(id)) {
+                onUebertragen(id);
+            }
+        });
     }
 
     /** Zeigt an, ob die Übungsleitung den Spruch bereits als abgesetzt bestätigt hat. */
@@ -582,13 +777,13 @@ export class TeilnehmerView {
         if (countdown) {
             const next = this.getNextDueMessage(nachrichten, storage, xZeitBasis);
             if (next !== null) {
-                const mins = Math.floor(next / 60000);
-                const secs = Math.floor((next % 60000) / 1000);
-                countdown.textContent = `Nächste in ${mins}:${String(secs).padStart(2, "0")}`;
+                countdown.textContent = `Nächste in ${formatCountdown(next)}`;
             } else {
                 countdown.textContent = "Keine ausstehenden Nachrichten";
             }
         }
+
+        this.updateFokusCard(nachrichten, storage, xZeitBasis);
 
         document.querySelectorAll<HTMLElement>("[data-xzeit-slot]").forEach(el => {
             const slot = Number(el.dataset["xzeitSlot"]);
@@ -600,7 +795,7 @@ export class TeilnehmerView {
     }
 
     private getNextDueMessage(nachrichten: Nachricht[], storage: TeilnehmerStorage, xZeitBasis: string): number | null {
-        const basisMs = this.parseHHMMtoMs(xZeitBasis);
+        const basisMs = parseHHMMtoMs(xZeitBasis);
         if (basisMs === null) {
             return null;
         }
@@ -626,7 +821,7 @@ export class TeilnehmerView {
         if (transmitted || !xZeitBasis) {
             return "badge bg-secondary";
         }
-        const basisMs = this.parseHHMMtoMs(xZeitBasis);
+        const basisMs = parseHHMMtoMs(xZeitBasis);
         if (basisMs === null) {
             return "badge bg-secondary";
         }
@@ -644,7 +839,7 @@ export class TeilnehmerView {
         if (transmitted || !xZeitBasis) {
             return `X+${slot}`;
         }
-        const basisMs = this.parseHHMMtoMs(xZeitBasis);
+        const basisMs = parseHHMMtoMs(xZeitBasis);
         if (basisMs === null) {
             return `X+${slot}`;
         }
@@ -658,20 +853,6 @@ export class TeilnehmerView {
             return `X+${slot} ${mins}:${String(secs).padStart(2, "0")}`;
         }
         return `X+${slot}`;
-    }
-
-    private parseHHMMtoMs(value: string): number | null {
-        const m = value.match(/^(\d{1,2}):(\d{2})$/);
-        if (!m || !m[1] || !m[2]) {
-            return null;
-        }
-        const h = parseInt(m[1], 10);
-        const min = parseInt(m[2], 10);
-        if (h < 0 || h > 23 || min < 0 || min > 59) {
-            return null;
-        }
-        const now = new Date();
-        return new Date(now.getFullYear(), now.getMonth(), now.getDate(), h, min, 0, 0).getTime();
     }
 
     private togglePdfModal(show: boolean) {

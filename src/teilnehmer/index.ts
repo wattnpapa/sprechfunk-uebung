@@ -114,6 +114,10 @@ export class TeilnehmerController {
             if (this.storage.xZeitBasis) {
                 this.startXZeitTicker();
             }
+            this.view.bindFokusEvents(
+                checked => this.setFokusModus(checked),
+                id => this.toggleUebertragen(id, true)
+            );
         }
 
         // Bind Events
@@ -238,6 +242,16 @@ export class TeilnehmerController {
         this.publishStatus();
         this.renderNachrichten();
         this.startXZeitTicker();
+    }
+
+    /** Fokus-Modus ist eine reine Ansichtseinstellung dieses Geräts. */
+    private setFokusModus(aktiv: boolean): void {
+        if (!this.storage) {
+            return;
+        }
+        this.storage.fokusModus = aktiv;
+        saveTeilnehmerStorage(this.storage);
+        this.renderNachrichten();
     }
 
     private renderNachrichten() {
