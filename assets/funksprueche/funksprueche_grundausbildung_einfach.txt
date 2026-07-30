@@ -1,0 +1,462 @@
+Kommen Sie zur Unterkunft.
+Wir haben die Unterkunft verlassen.
+Sind einsatzbereit.
+Sind abgerückt und auf dem Weg zu Ihnen.
+Haben den Treffpunkt erreicht.
+Warten am vereinbarten Treffpunkt auf weitere Anweisungen.
+Melden uns einsatzbereit im Bereitstellungsraum.
+Rücken jetzt zur Übung aus.
+Übung beginnt in 10 Minuten.
+Übung ist beendet, kehren Sie zur Unterkunft zurück.
+Frage: Wie ist Ihr Standort?
+Unser Standort ist der Parkplatz am Rathaus.
+Unser Standort ist die BAHNHOFSTRASSE Ecke GARTENWEG.
+Befinden uns auf der HAUPTSTRASSE in Höhe der Kirche.
+Befinden uns am Ortseingang von WESTERSTEDE.
+Haben soeben den MARKTPLATZ erreicht.
+Stehen vor der Grundschule in der SCHULSTRASSE.
+Befinden uns an der Bushaltestelle LINDENPLATZ.
+Standort ist die Brücke über den MÜHLBACH.
+Sind noch etwa 5 Kilometer vom Zielort entfernt.
+Erreichen den Einsatzort in etwa 15 Minuten.
+Haben den Einsatzort erreicht.
+Verlassen jetzt den Einsatzort.
+Sind auf dem Rückmarsch zur Unterkunft.
+Haben die Unterkunft wieder erreicht.
+Frage: Wie ist Ihre Stärke?
+Unsere Stärke ist 0/1/5//6.
+Unsere Stärke ist 1/2/9//12.
+Unsere Stärke ist 0/2/7//9.
+Unsere Stärke ist 1/1/4//6.
+Rücken mit Stärke 0/1/8//9 aus.
+Sind mit zwei Fahrzeugen und Stärke 1/3/14//18 unterwegs.
+Ein Helfer musste die Übung verlassen, neue Stärke 0/1/4//5.
+Zwei weitere Helfer sind eingetroffen, neue Stärke 0/2/9//11.
+Melden Sie Ihre Stärke bis 16:00 Uhr an die Übungsleitung.
+Frage: Mit wie vielen Fahrzeugen sind Sie unterwegs?
+Wir sind mit drei Fahrzeugen unterwegs.
+Fahren Sie zum Feuerwehrgerätehaus in der WIESENSTRASSE.
+Fahren Sie zur Schule in der GARTENSTRASSE und warten Sie dort.
+Fahren Sie zum Sportplatz am EICHENKAMP.
+Fahren Sie zum Bahnhof APENSEN und melden Sie sich dort bei der Einsatzleitung.
+Fahren Sie über die Bundesstraße zum Krankenhaus in FRIESOYTHE.
+Kommen Sie zum MARKTPLATZ, dort erhalten Sie weitere Anweisungen.
+Kommen Sie mit Ihrem Fahrzeug zur Tankstelle an der HAUPTSTRASSE.
+Bringen Sie Ihr Fahrzeug zum Parkplatz hinter dem Rathaus.
+Folgen Sie dem Fahrzeug der Einsatzleitung.
+Halten Sie an der nächsten Kreuzung an und warten Sie.
+Fahren Sie langsam durch die Ortschaft, spielende Kinder auf der Straße.
+Nehmen Sie die Umleitung über die BERGSTRASSE, die HAUPTSTRASSE ist gesperrt.
+Wenden Sie und fahren Sie zurück zum Ausgangspunkt.
+Fahren Sie zur Kreuzung LINDENSTRASSE Ecke AHORNWEG.
+Erkunden Sie den Parkplatz am Freibad MOORWIESE und melden Sie das Ergebnis.
+Erkunden Sie den Weg zum Sportplatz, Frage: Ist er für LKW befahrbar?
+Sperren Sie die Einmündung zur FELDSTRASSE für den Verkehr.
+Sichern Sie die Einsatzstelle gegen fließenden Verkehr ab.
+Weisen Sie die nachrückenden Fahrzeuge in den Bereitstellungsraum ein.
+Stellen Sie einen Lotsen an die Ortseinfahrt von GRISTEDE.
+Der Lotse steht an der Einmündung zur INDUSTRIESTRASSE.
+Schicken Sie einen Melder zur Einsatzleitung.
+Ziehen Sie Ihre Kräfte am Sammelpunkt zusammen.
+Frage: Wann sind Sie am Treffpunkt?
+Wir sind um 14:30 Uhr am Treffpunkt.
+Treffen um 09:15 Uhr am Gerätehaus in DÖTLINGEN.
+Die Besprechung beginnt um 18:00 Uhr im Schulungsraum.
+Die Lagebesprechung wird auf 19:30 Uhr verschoben.
+Melden Sie sich um 12:00 Uhr bei der Übungsleitung.
+Die Ablösung kommt um 22:00 Uhr.
+Ihre Ablösung verschiebt sich um 30 Minuten.
+Das Mittagessen gibt es um 12:30 Uhr an der Unterkunft.
+Rückkehr zur Unterkunft ist für 17:45 Uhr geplant.
+Frage: Wie lange benötigen Sie noch?
+Wir benötigen noch etwa 20 Minuten.
+Wir benötigen noch etwa eine Stunde.
+Der Auftrag ist in etwa 45 Minuten erledigt.
+Frage: Um wie viel Uhr wurde die Einsatzstelle verlassen?
+Die Einsatzstelle wurde um 16:20 Uhr verlassen.
+Notieren Sie: Übungsbeginn 08:00 Uhr, Übungsende 13:00 Uhr.
+Frage: Ist Ihr Auftrag erledigt?
+Auftrag ist erledigt.
+Auftrag ist noch nicht erledigt, wir benötigen noch 15 Minuten.
+Wir beginnen jetzt mit dem Auftrag.
+Können den Auftrag nicht ausführen, die Zufahrt ist gesperrt.
+Auftrag verstanden, wir rücken sofort ab.
+Warten Sie mit dem Beginn des Auftrags auf mein Zeichen.
+Brechen Sie den aktuellen Auftrag ab und kehren Sie zurück.
+Übernehmen Sie den Auftrag von der Gruppe Nord.
+Übergeben Sie Ihren Auftrag an die nachrückende Gruppe.
+Melden Sie, sobald Sie den Auftrag abgeschlossen haben.
+Ein Baum liegt auf der Fahrbahn der WALDSTRASSE.
+Der Baum auf der WALDSTRASSE ist beseitigt, die Straße ist wieder frei.
+Ein Ast ist auf einen geparkten PKW gestürzt, keine Personen verletzt.
+Die Kellerräume der Schule stehen etwa 20 Zentimeter unter Wasser.
+Der Keller ist leergepumpt, wir packen unser Gerät zusammen.
+Die WESTERAUE führt Hochwasser, der Uferweg ist überflutet.
+Der Pegel ist in der letzten Stunde um 10 Zentimeter gestiegen.
+Der Pegel fällt langsam, die Lage entspannt sich.
+Die Straße ist durch einen umgestürzten Anhänger blockiert.
+Die Fahrbahn ist wieder frei befahrbar.
+An der Bushaltestelle ist eine Scheibe zerbrochen, keine Verletzten.
+Ein Gullydeckel in der BERGSTRASSE ist beschädigt, Gefahrenstelle abgesichert.
+Eine Straßenlaterne in der GARTENSTRASSE ist umgeknickt.
+Der Zaun am Sportplatz ist auf 5 Meter Länge beschädigt.
+Im STADTPARK ist ein großer Ast abgebrochen und hängt in der Baumkrone.
+Die Feldscheune am Ortsrand von HOLTROP ist unbeschädigt.
+Am Bahnübergang ist die Schranke außer Betrieb.
+Die Ampelanlage an der Hauptkreuzung ist ausgefallen.
+Die Ampelanlage ist wieder in Betrieb.
+Im Bereich MÜHLENWEG ist der Strom ausgefallen.
+Die Stromversorgung im MÜHLENWEG ist wiederhergestellt.
+Wir haben eine vermisste Katze im Garten der Familie Winter gefunden.
+Keine besonderen Vorkommnisse in unserem Abschnitt.
+Lage in unserem Abschnitt unverändert.
+Lage hat sich beruhigt, keine weiteren Maßnahmen erforderlich.
+Frage: Benötigen Sie Unterstützung?
+Wir benötigen keine Unterstützung.
+Wir benötigen Unterstützung durch eine weitere Gruppe.
+Schicken Sie uns zwei zusätzliche Helfer zum Sandsackfüllen.
+Die Unterstützung ist eingetroffen, vielen Dank.
+Frage: Wie viele Sandsäcke haben Sie noch vorrätig?
+Wir haben noch etwa 200 Sandsäcke vorrätig.
+Benötigen 150 weitere Sandsäcke an der BACHBRÜCKE.
+Die Sandsäcke sind verladen und auf dem Weg zu Ihnen.
+Benötigen eine Kettensäge mit Bediener an der WALDSTRASSE.
+Die Kettensäge ist eingetroffen, die Arbeiten laufen.
+Benötigen zwei zusätzliche Tauchpumpen an der Schule.
+Die Tauchpumpe ist ausgefallen, wir benötigen Ersatz.
+Die Ersatzpumpe läuft, das Wasser fällt.
+Benötigen 50 Meter Verlängerungskabel und eine Kabeltrommel.
+Benötigen einen Stromerzeuger für die Beleuchtung der Einsatzstelle.
+Der Stromerzeuger läuft, die Einsatzstelle ist ausgeleuchtet.
+Bringen Sie vier Absperrbaken und zwei Warnleuchten mit.
+Das Absperrmaterial reicht aus.
+Frage: Haben Sie noch Leergut zum Tauschen?
+Bringen Sie beim nächsten Mal zehn leere Kanister mit.
+Benötigen 40 Liter Kraftstoff für den Stromerzeuger.
+Der Kraftstoff ist eingetroffen, alle Geräte laufen wieder.
+Unser Fahrzeug muss betankt werden, Frage: Wo ist die nächste Tankmöglichkeit?
+Tankmöglichkeit besteht an der Tankstelle in der INDUSTRIESTRASSE.
+Frage: Wie ist der Kraftstoffvorrat bei Ihnen?
+Kraftstoffvorrat reicht noch für etwa 4 Stunden.
+Benötigen Verpflegung für 12 Einsatzkräfte.
+Die Verpflegung ist unterwegs zu Ihnen.
+Verpflegung ist eingetroffen, vielen Dank.
+Benötigen 20 Flaschen Mineralwasser an der Einsatzstelle.
+Getränke sind verteilt, alle Einsatzkräfte sind versorgt.
+Warmes Essen gibt es ab 13:00 Uhr am Verpflegungspunkt.
+Der Verpflegungspunkt befindet sich am Feuerwehrgerätehaus in HOLTGAST.
+Frage: Wie viele Personen sind zum Abendessen zu erwarten?
+Zum Abendessen sind 25 Personen zu erwarten.
+Zwei Helfer benötigen vegetarisches Essen.
+Kaffee und Kuchen stehen an der Unterkunft bereit.
+Bringen Sie bitte drei Thermoskannen mit Kaffee zur Wache.
+Frage: Können Sie eine Kiste Werkzeug zum Sammelplatz bringen?
+Das Werkzeug wurde am Sammelplatz übergeben.
+Auf dem Rückweg bitte das Stromaggregat bei der Wache abholen.
+Die Leiter ist zurück im Gerätehaus.
+Bitte notieren Sie: Der Ansprechpartner heißt Herr Wagner.
+Bitte notieren Sie: Die Ansprechpartnerin heißt Frau Bergmann.
+Der Hausmeister der Schule heißt Herr Kaminski, ich buchstabiere: Kaufmann, Anton, Martha, Ida, Nordpol, Samuel, Kaufmann, Ida.
+Die Einweisung erfolgt durch Frau Sommer vom Ordnungsamt.
+Melden Sie sich beim Ortsbrandmeister Herrn Albrecht.
+Der Verantwortliche vor Ort heißt Herr Neumann, ich buchstabiere: Nordpol, Emil, Ulrich, Martha, Anton, Nordpol, Nordpol.
+Die Straße heißt Drosselgasse, ich buchstabiere: Dora, Richard, Otto, Samuel, Samuel, Emil, Ludwig, Gustav, Anton, Samuel, Samuel, Emil.
+Der Ort heißt Quakenbrück, ich buchstabiere: Quelle, Ulrich, Anton, Kaufmann, Emil, Nordpol, Berta, Richard, Übermut, Cäsar, Kaufmann.
+Der Hof gehört Familie Jägermann, ich buchstabiere: Julius, Ärger, Gustav, Emil, Richard, Martha, Anton, Nordpol, Nordpol.
+Die Zufahrt liegt am Xantener Weg, ich buchstabiere: Xanthippe, Anton, Nordpol, Theodor, Emil, Nordpol, Emil, Richard.
+Notieren Sie den Namen Yilmaz, ich buchstabiere: Ypsilon, Ida, Ludwig, Martha, Anton, Zacharias.
+Der Ansprechpartner beim Bauhof heißt Herr Pietsch, ich buchstabiere: Paula, Ida, Emil, Theodor, Schule.
+Die Apotheke gehört Frau Dr. Vogel, ich buchstabiere: Viktor, Otto, Gustav, Emil, Ludwig.
+Frage: Wie schreibt sich der Name des Ansprechpartners?
+Der Name schreibt sich Czerny, ich buchstabiere: Cäsar, Zacharias, Emil, Richard, Nordpol, Ypsilon.
+Das Kennzeichen des gesuchten PKW lautet OL-AB 1234.
+Das Kennzeichen des Anhängers lautet WHV-TH 567.
+Notieren Sie das Kennzeichen: CLP-XY 890.
+Der LKW hat das Kennzeichen EL-KR 2468.
+Frage: Wie lautet das Kennzeichen Ihres Fahrzeugs?
+Unser Kennzeichen lautet NI-FW 1357.
+Die Telefonnummer der Einsatzleitung lautet 0441 123456.
+Die Telefonnummer des Hausmeisters lautet 0171 9876543.
+Notieren Sie die Rufnummer der Leitstelle: 04461 555777.
+Die Rechnungsnummer lautet 2024-0815.
+Notieren Sie die Auftragsnummer 47110815.
+Das Tor hat die Nummer 3, der Schlüssel die Nummer 12.
+Der Container hat die Nummer 208.
+Der Hydrant hat die Nummer H-4712.
+Das Postfach hat die Nummer 1909.
+Der Zählerstand beträgt 45678 Kilowattstunden.
+Frage: Wie lautet die Hausnummer des Objekts?
+Das Objekt hat die Hausnummer 27a.
+Das Objekt befindet sich in der FINKENSTRASSE 14.
+Das Paket wird in der MEISENSTRASSE 8 erwartet.
+Notieren Sie die Postleitzahl 26123.
+Notieren Sie die Postleitzahl 49661.
+Es regnet stark, die Sicht ist eingeschränkt.
+Der Regen hat nachgelassen.
+Es hat aufgehört zu regnen, die Straßen trocknen ab.
+Starker Wind aus West, sichern Sie loses Material.
+Der Wind hat auf Sturmstärke zugenommen, Arbeiten im Freien einstellen.
+Der Sturm hat nachgelassen, Arbeiten können fortgesetzt werden.
+Bei uns zieht Nebel auf, Sichtweite unter 100 Meter.
+Der Nebel hat sich aufgelöst.
+Die Temperatur ist auf 2 Grad gefallen, Glättegefahr auf den Straßen.
+Achtung, auf der Brücke besteht Glatteisgefahr.
+Die Straßen sind gestreut, die Glättegefahr ist gebannt.
+Es beginnt zu schneien, die Fahrbahnen werden glatt.
+Der Schneefall hat aufgehört, die Räumfahrzeuge sind unterwegs.
+Bei uns scheint die Sonne, keine Wettergefahren.
+Es ist mit einem Gewitter in den nächsten 30 Minuten zu rechnen.
+Das Gewitter ist durchgezogen, Entwarnung.
+Frage: Wie ist das Wetter an Ihrem Standort?
+An unserem Standort ist es trocken und windstill.
+Frage: Ist die Zufahrt zum Sportplatz frei?
+Die Zufahrt zum Sportplatz ist frei.
+Die Zufahrt ist durch parkende Autos versperrt.
+Die parkenden Autos wurden umgesetzt, die Zufahrt ist wieder frei.
+Frage: Ist die Brücke für Fahrzeuge über 7,5 Tonnen freigegeben?
+Die Brücke ist nur für Fahrzeuge bis 3,5 Tonnen freigegeben.
+Nutzen Sie die Behelfsbrücke 500 Meter flussabwärts.
+Frage: Wie ist der Zustand des Feldwegs zur Scheune?
+Der Feldweg ist aufgeweicht, nur für geländegängige Fahrzeuge geeignet.
+Der Waldweg ist mit LKW befahrbar.
+Die Durchfahrtshöhe der Unterführung beträgt 3,20 Meter.
+Achtung, die Baustelle in der HAUPTSTRASSE ist nur einspurig befahrbar.
+Die Baustellenampel ist ausgefallen, es kommt zu Rückstau.
+Umfahren Sie den Stau über die RINGSTRASSE.
+Frage: Wo können wir unsere Fahrzeuge abstellen?
+Stellen Sie Ihre Fahrzeuge auf dem Lehrerparkplatz ab.
+Der Parkplatz am Schwimmbad ist für Einsatzfahrzeuge reserviert.
+Unser Fahrzeug hat eine Panne, wir stehen an der Landstraße Richtung BOCKHORN.
+Die Panne ist behoben, wir setzen die Fahrt fort.
+Unser Fahrzeug hat einen Platten, wir wechseln das Rad.
+Der Radwechsel ist abgeschlossen, wir sind wieder fahrbereit.
+Der Motor unseres Fahrzeugs wird zu heiß, wir legen eine Pause ein.
+Das Fahrzeug ist wieder einsatzbereit.
+Das Fahrzeug muss in die Werkstatt, der Auspuff ist beschädigt.
+Wir übernehmen das Ersatzfahrzeug am Gerätehaus.
+Frage: Ist Ihr Fahrzeug voll besetzt?
+Unser Fahrzeug ist voll besetzt.
+Wir haben noch drei freie Plätze im Fahrzeug.
+Nehmen Sie zwei Helfer der Gruppe Süd in Ihrem Fahrzeug mit.
+Die Helfer wurden übernommen, wir setzen die Fahrt fort.
+Achten Sie auf dem Rückweg auf den Anhänger, die Ladung ist nicht gesichert.
+Die Ladung ist gesichert, wir können abfahren.
+Laden Sie das Material am Lager ab.
+Das Material ist abgeladen und eingelagert.
+Frage: Wer ist Ihr Gruppenführer?
+Unser Gruppenführer ist Herr Lehmann.
+Der Zugführer kommt in 10 Minuten zu Ihrer Einsatzstelle.
+Der Zugführer hat die Einsatzstelle besichtigt und ist wieder abgerückt.
+Melden Sie sich persönlich bei der Übungsleitung.
+Die Übungsleitung wünscht eine Lagemeldung von allen Gruppen.
+Geben Sie Ihre Lagemeldung in 5 Minuten ab.
+Ihre letzte Meldung war unvollständig, wiederholen Sie die Stärke.
+Ich wiederhole: Unsere Stärke ist 0/1/5//6.
+Sprechen Sie langsamer, wir kommen mit dem Mitschreiben nicht nach.
+Ich wiederhole die Nachricht langsamer.
+Sie waren unverständlich, wiederholen Sie Ihre Nachricht.
+Verstanden, die Nachricht wird ausgeführt.
+Die Nachricht wurde an alle Gruppen weitergeleitet.
+Geben Sie diese Nachricht an Ihre Nachbargruppe weiter.
+Die Nachbargruppe wurde informiert.
+Frage: Haben Sie meine letzte Nachricht erhalten?
+Ihre letzte Nachricht ist vollständig angekommen.
+Wechseln Sie mit Ihrem Funkgerät zum Sammelplatz und bleiben Sie erreichbar.
+Wir sind weiterhin über Funk erreichbar.
+Unser zweites Funkgerät fällt aus, wir sind nur noch über dieses Gerät erreichbar.
+Das Ersatzfunkgerät ist im Fahrzeug im Handschuhfach.
+Der Akku unseres Funkgeräts ist fast leer, wir wechseln auf das Fahrzeuggerät.
+Der Akku wurde getauscht, wir sind wieder auf dem Handgerät erreichbar.
+Machen Sie eine Pause von 30 Minuten.
+Wir machen jetzt 15 Minuten Pause.
+Pause beendet, wir nehmen die Arbeit wieder auf.
+Lösen Sie die Gruppe am Pegel OSTERBURG ab.
+Die Ablösung am Pegel ist erfolgt.
+Schicken Sie zwei Helfer zum Füllplatz.
+Die zwei Helfer sind auf dem Weg zum Füllplatz.
+Ein Helfer hat sich leicht am Finger verletzt und wird vor Ort versorgt.
+Der verletzte Helfer ist versorgt und wieder einsatzfähig.
+Ein Helfer klagt über Kreislaufprobleme und wird zur Unterkunft gebracht.
+Der Helfer wurde an der Unterkunft dem Sanitäter übergeben.
+Frage: Benötigen Sie einen Sanitäter an der Einsatzstelle?
+Wir benötigen keinen Sanitäter, alle sind wohlauf.
+Der Sanitätsdienst befindet sich am Verpflegungspunkt.
+Denken Sie an ausreichend Trinkpausen für Ihre Helfer.
+Alle Helfer tragen die persönliche Schutzausrüstung.
+Ein Helfer hat seinen Helm vergessen, bringen Sie einen Ersatzhelm mit.
+Der Ersatzhelm wurde übergeben.
+Frage: Wie viele Warnwesten benötigen Sie?
+Wir benötigen sechs Warnwesten.
+Die Warnwesten liegen im Fahrzeug der Übungsleitung bereit.
+Prüfen Sie Ihre Ausrüstung auf Vollständigkeit und melden Sie das Ergebnis.
+Die Ausrüstung ist vollständig.
+An unserer Ausrüstung fehlt eine Handlampe.
+Die fehlende Handlampe wurde im Gerätehaus gefunden.
+Bringen Sie die Schlüssel für die Turnhalle zur Einsatzleitung.
+Die Schlüssel wurden an die Einsatzleitung übergeben.
+Der Schlüssel für das Tor hängt im Schlüsselkasten am Eingang.
+Das Tor zur Sporthalle ist verschlossen, Frage: Wer hat den Schlüssel?
+Den Schlüssel hat der Hausmeister, er ist in 10 Minuten vor Ort.
+Das Tor ist jetzt geöffnet.
+Schließen Sie das Tor nach der Durchfahrt wieder ab.
+Das Tor wurde wieder abgeschlossen.
+Öffnen Sie den Besprechungsraum für die Lagebesprechung.
+Der Besprechungsraum ist vorbereitet.
+Richten Sie den Sammelplatz auf dem Schulhof ein.
+Der Sammelplatz auf dem Schulhof ist eingerichtet.
+Bauen Sie das Zelt neben dem Gerätehaus auf.
+Das Zelt steht und ist beleuchtet.
+Bauen Sie das Zelt wieder ab und verladen Sie es.
+Das Zelt ist abgebaut und verladen.
+Stellen Sie zwei Bierzeltgarnituren im Zelt auf.
+Die Sitzgelegenheiten stehen bereit.
+Richten Sie eine Ladestation für Funkgeräte im Zelt ein.
+Die Ladestation ist in Betrieb.
+Hängen Sie die Lagekarte im Besprechungsraum auf.
+Die Lagekarte hängt und ist auf dem aktuellen Stand.
+Tragen Sie Ihren Standort in die Lagekarte ein.
+Der Standort ist in der Lagekarte eingetragen.
+Frage: Bis wann können Sie den Zwischenbericht liefern?
+Der Zwischenbericht liegt bis 15:00 Uhr vor.
+Schreiben Sie nach der Übung einen kurzen Bericht.
+Der Bericht wird morgen früh nachgereicht.
+Fotografieren Sie die Schadensstelle für die Dokumentation.
+Die Fotos sind gemacht und werden nach der Übung übergeben.
+Zählen Sie die eingesetzten Sandsäcke für den Bericht.
+Es wurden insgesamt 320 Sandsäcke verbaut.
+Frage: Wie viele Meter Schlauch wurden verlegt?
+Es wurden 120 Meter Schlauch verlegt.
+Rollen Sie die Schläuche ein und verladen Sie sie.
+Alle Schläuche sind eingerollt und verladen.
+Die Pumpe kann abgebaut werden, der Keller ist trocken.
+Die Pumpe ist abgebaut und verladen.
+Spülen Sie die Pumpe vor dem Verladen mit klarem Wasser.
+Die Pumpe wurde gespült und ist wieder einsatzbereit.
+Melden Sie defektes Gerät bis Übungsende an die Übungsleitung.
+Eine Handlampe ist defekt und wird zur Reparatur gegeben.
+Alle Geräte sind geprüft und funktionsfähig.
+Frage: Wo befindet sich der Wasseranschluss am Sportplatz?
+Der Wasseranschluss befindet sich hinter dem Vereinsheim.
+Der Hydrant vor der Schule ist zugeparkt.
+Der Hydrant ist wieder frei zugänglich.
+Entnehmen Sie Wasser aus dem Teich am STADTPARK.
+Die Wasserentnahmestelle am Teich ist eingerichtet.
+Die Wasserentnahme wurde beendet.
+Frage: Wie tief ist das Wasser an der Furt?
+Das Wasser an der Furt ist etwa 40 Zentimeter tief.
+Betreten Sie den überfluteten Bereich nicht ohne Sicherung.
+Der Bereich wurde weiträumig abgesperrt.
+Die Absperrung kann aufgehoben werden.
+Die Absperrung ist aufgehoben, der Verkehr läuft wieder.
+Eine Person fragt nach Auskunft, verweisen Sie an die Pressestelle.
+Die Person wurde an die Pressestelle verwiesen.
+Ein Anwohner bietet Kaffee für die Helfer an.
+Bedanken Sie sich beim Anwohner, wir kommen nach Auftragsende darauf zurück.
+Ein Anwohner beschwert sich über die Lautstärke, bleiben Sie freundlich.
+Der Anwohner wurde beruhigt und zeigt Verständnis.
+Der Bürgermeister besucht um 11:00 Uhr die Einsatzstelle.
+Der Besuch des Bürgermeisters ist beendet.
+Die Presse macht Fotos an der Einsatzstelle, verweisen Sie auf den Pressesprecher.
+Der Pressesprecher ist vor Ort und übernimmt.
+Frage: Dürfen Übungsbeobachter die Einsatzstelle betreten?
+Übungsbeobachter dürfen die Einsatzstelle mit Warnweste betreten.
+Zwei Übungsbeobachter sind auf dem Weg zu Ihnen.
+Die Übungsbeobachter haben die Einsatzstelle wieder verlassen.
+Notieren Sie folgendes Stichwort für die nächste Lagemeldung: Sonnenblume.
+Das Stichwort für den Übungsabschnitt zwei lautet: Leuchtturm.
+Melden Sie das Kennwort bei der nächsten Meldung mit.
+Das Kennwort lautet Nordlicht.
+Die Übung wird um 30 Minuten verlängert.
+Die Übung endet früher als geplant, Übungsende ist um 16:00 Uhr.
+Alle Gruppen melden sich nach Übungsende bei der Übungsleitung ab.
+Wir melden uns von der Übung ab.
+Die Auswertung der Übung findet nächste Woche Dienstag statt.
+Denken Sie daran, die Funkgeräte nach der Übung zu laden.
+Alle Funkgeräte sind geladen und einsatzbereit.
+Geben Sie die ausgeliehenen Funkgeräte am Gerätehaus zurück.
+Die Funkgeräte wurden vollständig zurückgegeben.
+Prüfen Sie die Betriebsbereitschaft Ihres Funkgeräts und melden Sie sich anschließend.
+Funkgerät geprüft, wir sind betriebsbereit.
+Kommen Sie mit einem zweiten Helfer zur Materialausgabe.
+Wir sind auf dem Weg zur Materialausgabe.
+Die Materialausgabe ist ab sofort geöffnet.
+Die Materialausgabe schließt um 17:00 Uhr.
+Holen Sie zwei Kisten Leuchtmittel an der Materialausgabe ab.
+Die Leuchtmittel wurden abgeholt.
+Bringen Sie das restliche Material zurück ins Lager.
+Das Material ist zurück im Lager, das Lager ist abgeschlossen.
+Frage: Wie viele Feldbetten sind noch im Lager?
+Im Lager sind noch 18 Feldbetten.
+Bringen Sie sechs Feldbetten zur Turnhalle.
+Die Feldbetten sind in der Turnhalle aufgebaut.
+Bauen Sie die Feldbetten ab und verladen Sie sie.
+Die Feldbetten sind verladen.
+In der Turnhalle werden 30 Decken benötigt.
+Die Decken sind eingetroffen und verteilt.
+Frage: Gibt es an Ihrer Einsatzstelle eine Toilette für die Helfer?
+Die Helfer können die Toiletten im Vereinsheim nutzen.
+Der Schlüssel für die Toiletten liegt an der Theke im Vereinsheim.
+Eine mobile Toilette wird an der Einsatzstelle aufgestellt.
+Die mobile Toilette ist aufgestellt.
+Frage: Bis wann wird der Strom an der Einsatzstelle benötigt?
+Der Strom wird noch bis etwa 20:00 Uhr benötigt.
+Schalten Sie die Beleuchtung erst nach Abzug aller Kräfte ab.
+Die Beleuchtung ist abgeschaltet, alle Kräfte sind abgezogen.
+Die Batterie der Warnleuchte ist leer, tauschen Sie sie aus.
+Die Batterie wurde getauscht, die Warnleuchte blinkt wieder.
+Kontrollieren Sie stündlich die Absperrung an der BACHBRÜCKE.
+Die Kontrolle der Absperrung ist erfolgt, alles in Ordnung.
+Die nächste Kontrolle ist um 15:00 Uhr fällig.
+Kontrollgang abgeschlossen, keine Auffälligkeiten.
+Erhöhen Sie die Kontrollgänge auf alle 30 Minuten.
+Frage: Wann wurde der Pegel zuletzt abgelesen?
+Der Pegel wurde um 14:45 Uhr abgelesen.
+Der Pegelstand beträgt 2,35 Meter.
+Der Pegelstand beträgt 1,80 Meter und ist damit unter der Meldegrenze.
+Lesen Sie den Pegel alle 15 Minuten ab und melden Sie die Werte.
+Nächste Pegelmeldung: 2,41 Meter, steigend.
+Nächste Pegelmeldung: 2,38 Meter, fallend.
+Frage: Auf welchem Weg sind Sie zur Einsatzstelle gefahren?
+Wir sind über die Landstraße und den KIRCHWEG gefahren.
+Meiden Sie den KIRCHWEG, dort findet ein Umzug statt.
+Der Umzug ist beendet, der KIRCHWEG ist wieder frei.
+Zwischen Rathaus und MARKTPLATZ findet ein Wochenmarkt statt.
+Der Wochenmarkt ist beendet, der MARKTPLATZ kann genutzt werden.
+Auf dem Schulhof findet Pausenbetrieb statt, warten Sie mit der Anfahrt bis 10:00 Uhr.
+Der Schulhof ist jetzt frei, Sie können anfahren.
+Ein Linienbus hat Vorrang an der Engstelle, lassen Sie ihn passieren.
+Der Linienbus hat die Engstelle passiert.
+Frage: Können Sie unsere Gruppe zum Bahnhof mitnehmen?
+Wir nehmen Ihre Gruppe zum Bahnhof mit, Abfahrt in 5 Minuten.
+Die Gruppe wurde am Bahnhof abgesetzt.
+Der Zug der angeforderten Kräfte hat 20 Minuten Verspätung.
+Die angeforderten Kräfte sind am Bahnhof eingetroffen.
+Holen Sie die Kräfte am Bahnhof ab und bringen Sie sie zur Unterkunft.
+Die Kräfte sind an der Unterkunft eingetroffen.
+Richten Sie für die neuen Kräfte eine Einweisung aus.
+Die Einweisung der neuen Kräfte ist abgeschlossen.
+Teilen Sie die neuen Kräfte den Gruppen Nord und Süd zu.
+Die Zuteilung ist erfolgt, alle Gruppen sind vollzählig.
+Nutzen Sie ab sofort nur noch die zugewiesenen Funkrufnamen.
+Ihr Sprechwunsch wurde notiert, Sie sind als Nächste an der Reihe.
+Halten Sie den Funkkanal für eine wichtige Durchsage frei.
+Die wichtige Durchsage ist beendet, der Funkverkehr kann fortgesetzt werden.
+Fassen Sie sich kurz, der Funkkanal wird stark genutzt.
+Achten Sie auf Funkdisziplin und warten Sie Sprechpausen ab.
+Ihre Nachricht kam verzerrt an, sprechen Sie näher am Mikrofon.
+Jetzt sind Sie klar und deutlich zu verstehen.
+Prüfen Sie den Sitz Ihrer Antenne, Ihr Signal ist schwach.
+Die Antenne war lose, Frage: Wie ist die Verständigung jetzt?
+Die Verständigung ist jetzt einwandfrei.
+Wechseln Sie Ihren Standort, in der Senke ist der Empfang schlecht.
+Neuer Standort auf der Anhöhe, der Empfang ist deutlich besser.
+Bleiben Sie auf Empfang, weitere Anweisungen folgen in Kürze.
+Wir bleiben auf Empfang.
+Melden Sie sich in 10 Minuten erneut.
+Wir melden uns wie vereinbart zurück.
+Machen Sie eine Probemeldung zur Funkprüfung.
+Die Probemeldung ist angekommen, die Verbindung steht.
+Zählen Sie zur Funkprobe langsam von eins bis zehn.
+Die Funkprobe war erfolgreich.
+Notieren Sie: Morgen findet der Dienst bereits um 18:30 Uhr statt.
+Der morgige Dienst fällt aus und wird nächste Woche nachgeholt.

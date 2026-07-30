@@ -57,6 +57,7 @@ export class GeneratorController {
         ].map(word => word.toUpperCase());
 
         this.templatesFunksprueche = {
+            grundausbildung: { text: "Einfache Funksprüche für die Grundausbildung", filename: "assets/funksprueche/funksprueche_grundausbildung_einfach.txt" },
             thwleer: { text: "Funksprüche THW Leer", filename: "assets/funksprueche/nachrichten_thw_leer.txt" },
             thwmelle: { text: "Funksprüche THW Melle", filename: "assets/funksprueche/nachrichten_thw_melle.txt" },
             thwessen: { text: "Funksprüche THW Essen", filename: "assets/funksprueche/nachrichten_thw_essen.txt" },
