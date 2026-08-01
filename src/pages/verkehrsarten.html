@@ -1,0 +1,389 @@
+<!DOCTYPE html>
+<html lang="de">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Verkehrsarten im Sprechfunk: Richtungs-, Wechsel-, Gegen- und Relaisverkehr | Sprechfunk Übungsgenerator</title>
+    <link rel="icon" type="image/png" href="../assets/favicon.png">
+    <link rel="canonical" href="https://sprechfunk-uebung.de/verkehrsarten/">
+    <meta name="robots" content="index,follow,max-image-preview:large,max-snippet:-1">
+    <meta name="theme-color" content="#0d6efd">
+
+    <meta name="description" content="Die Verkehrsarten des BOS-Sprechfunks erklärt: Richtungsverkehr, Wechselverkehr, Gegenverkehr und bedingter Gegenverkehr, Relaisverkehr mit den Schaltungen RS-1 bis RS-4, Ober- und Unterband, Kehrlage sowie der Unterschied zu den Verkehrsformen.">
+    <meta name="author" content="Johannes Rudolph">
+
+    <meta property="og:title" content="Verkehrsarten im Sprechfunk: Richtungs-, Wechsel-, Gegen- und Relaisverkehr">
+    <meta property="og:description" content="Richtungs-, Wechsel- und Gegenverkehr, bedingter Gegenverkehr und Relaisbetrieb mit RS-1 bis RS-4 – mit Ober-/Unterband und Kehrlage verständlich erklärt.">
+    <meta property="og:url" content="https://sprechfunk-uebung.de/verkehrsarten/">
+    <meta property="og:type" content="article">
+    <meta property="og:locale" content="de_DE">
+    <meta property="og:site_name" content="Sprechfunk Übungsgenerator">
+    <meta property="og:image" content="https://sprechfunk-uebung.de/assets/og-image.png">
+    <meta property="og:image:width" content="1200">
+    <meta property="og:image:height" content="630">
+    <meta property="og:image:alt" content="Sprechfunk Übungsgenerator – Übungen für den BOS-Sprechfunk erstellen">
+
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="Verkehrsarten im Sprechfunk: Richtungs-, Wechsel-, Gegen- und Relaisverkehr">
+    <meta name="twitter:description" content="Die Verkehrsarten des BOS-Sprechfunks mit Ober-/Unterband, Kehrlage und den Relaisschaltungen RS-1 bis RS-4.">
+    <meta name="twitter:image" content="https://sprechfunk-uebung.de/assets/og-image.png">
+
+    <link rel="stylesheet" href="../bundle.css">
+    <link rel="stylesheet" href="../style.css">
+
+    <!-- GoatCounter: cookielose, anonyme Reichweitenmessung -->
+    <script data-goatcounter="https://sprechfunk-uebung.goatcounter.com/count"
+            async src="//gc.zgo.at/count.js"></script>
+
+    <script type="application/ld+json">
+        {
+            "@context": "https://schema.org",
+            "@type": "Article",
+            "headline": "Verkehrsarten im Sprechfunk: Richtungs-, Wechsel-, Gegen- und Relaisverkehr",
+            "description": "Die von der technischen Ausstattung abhängigen Verkehrsarten des BOS-Sprechfunks: Richtungsverkehr, Wechselverkehr, Gegenverkehr, bedingter Gegenverkehr und Relaisverkehr mit den Schaltungen RS-1 bis RS-4.",
+            "inLanguage": "de",
+            "url": "https://sprechfunk-uebung.de/verkehrsarten/",
+            "image": "https://sprechfunk-uebung.de/assets/og-image.png",
+            "author": {
+                "@type": "Person",
+                "name": "Johannes Rudolph",
+                "url": "https://github.com/wattnpapa"
+            },
+            "publisher": {
+                "@type": "Person",
+                "name": "Johannes Rudolph"
+            },
+            "isPartOf": {
+                "@type": "WebSite",
+                "name": "Sprechfunk Übungsgenerator",
+                "url": "https://sprechfunk-uebung.de/"
+            },
+            "about": [
+                { "@type": "Thing", "name": "Verkehrsarten" },
+                { "@type": "Thing", "name": "Relaisfunkstelle" },
+                { "@type": "Thing", "name": "BOS-Funk" }
+            ]
+        }
+    </script>
+    <script type="application/ld+json">
+        {
+            "@context": "https://schema.org",
+            "@type": "BreadcrumbList",
+            "itemListElement": [
+                {
+                    "@type": "ListItem",
+                    "position": 1,
+                    "name": "Startseite",
+                    "item": "https://sprechfunk-uebung.de/"
+                },
+                {
+                    "@type": "ListItem",
+                    "position": 2,
+                    "name": "Verkehrsarten",
+                    "item": "https://sprechfunk-uebung.de/verkehrsarten/"
+                }
+            ]
+        }
+    </script>
+    <script>
+        // Gleiche Theme-Auswahl wie in der App anwenden (statische Seiten laden kein Bundle).
+        document.addEventListener("DOMContentLoaded", function () {
+            var stored = localStorage.getItem("theme");
+            if (stored) {
+                document.body.setAttribute("data-theme", stored);
+            }
+        });
+    </script>
+</head>
+
+<body data-theme="light">
+<header class="app-header">
+    <div class="container app-header-grid">
+        <div class="app-header-title">
+            <h1 class="h2 mb-0">
+                <i class="fas fa-broadcast-tower"></i> Sprechfunk Übungsgenerator
+            </h1>
+        </div>
+        <div class="app-header-actions d-none d-md-flex">
+            <a href="../" class="btn btn-primary">
+                <i class="fas fa-arrow-left"></i> Zur Anwendung
+            </a>
+            <a href="../anleitung/" class="btn btn-info">
+                <i class="fas fa-book"></i> Anleitung
+            </a>
+            <a href="https://github.com/wattnpapa/sprechfunk-uebung" class="btn btn-dark">
+                <i class="fab fa-github"></i> GitHub
+            </a>
+        </div>
+    </div>
+</header>
+
+<main class="container my-4 app-view-shell">
+    <nav aria-label="Brotkrumennavigation" class="mb-3">
+        <ol class="breadcrumb mb-0">
+            <li class="breadcrumb-item"><a href="../">Startseite</a></li>
+            <li class="breadcrumb-item active" aria-current="page">Verkehrsarten</li>
+        </ol>
+    </nav>
+
+    <article>
+        <div class="card mb-3">
+            <div class="card-body">
+                <h2 class="h3">Verkehrsarten im Sprechfunk – was das Gerät technisch hergibt</h2>
+                <p>
+                    Die <strong>Verkehrsarten</strong> sind in der
+                    <strong>DV 810.3</strong> definiert als die von den technischen
+                    Möglichkeiten der Geräte abhängigen <strong>Verfahren des
+                    Nachrichtenaustauschs</strong>. Anders gesagt: Sie beschreiben, ob ein
+                    Funkgerät nur senden, nur empfangen, abwechselnd oder gleichzeitig beides
+                    kann – und über wie viele Frequenzen das läuft.
+                </p>
+                <div class="alert alert-info" role="note">
+                    <strong>Nicht verwechseln:</strong> Verkehrs<em>arten</em> hängen von der
+                    <strong>Technik</strong> ab (Richtungs-, Wechsel-, Gegen-, Relaisverkehr).
+                    Verkehrs<em>formen</em> beschreiben dagegen das
+                    <strong>organisatorische</strong> Zusammenwirken der Funkstellen
+                    (Linien-, Stern-, Kreis-, Querverkehr) – die stehen unter
+                    <a href="../uebungsfunkverkehr/#verkehrsformen">Übungsfunkverkehr</a>.
+                </div>
+                <p class="mb-0">
+                    Diese Seite folgt dem THW-Handbuch <em>Sprechfunk im THW</em>
+                    (Kapitel 3.1.2). Die Systematik stammt aus dem Analogfunk, ist aber für
+                    das Verständnis von Relais- und Gateway-Schaltungen im
+                    <a href="../bos-funk/">Digitalfunk</a> weiterhin die Grundlage.
+                </p>
+            </div>
+        </div>
+
+        <div class="card mb-3">
+            <div class="card-header"><h2 class="h4 mb-0" id="richtungsverkehr">Richtungsverkehr</h2></div>
+            <div class="card-body">
+                <p>
+                    Beim <strong>Richtungsverkehr</strong> wird nur gesendet
+                    <em>oder</em> nur empfangen – der Nachrichtenaustausch erfolgt
+                    <strong>nur in eine Richtung</strong>. Eine Antwort ist technisch nicht
+                    vorgesehen.
+                </p>
+                <p class="mb-0">
+                    <strong>Anwendungsbeispiele:</strong> die Funkalarmierung (der
+                    Meldeempfänger kann nicht zurücksprechen) und der Radioempfang.
+                </p>
+            </div>
+        </div>
+
+        <div class="card mb-3">
+            <div class="card-header"><h2 class="h4 mb-0" id="wechselverkehr">Wechselverkehr (W)</h2></div>
+            <div class="card-body">
+                <p>
+                    Beim <strong>Wechselverkehr</strong> kann nur <strong>abwechselnd</strong>
+                    gesendet oder empfangen beziehungsweise gesprochen werden. Ein laufender
+                    Beitrag kann daher <strong>nur in Sendepausen unterbrochen</strong>
+                    werden – wer die Sendetaste hält, hat das Wort.
+                </p>
+                <p class="mb-0">
+                    Technisch arbeiten Sender und Empfänger aller Funkstellen
+                    <strong>auf derselben Frequenz</strong> und nutzen daher entweder nur das
+                    <strong>Oberband</strong> oder nur das <strong>Unterband</strong>. Das ist
+                    die Verkehrsart, die dem Sprechfunk sein charakteristisches
+                    „<a href="../betriebsworte/">kommen</a>“ überhaupt erst nötig macht: Ohne
+                    das Signal, dass man aufgehört hat zu senden, weiß die Gegenstelle nicht,
+                    wann sie drücken darf.
+                </p>
+            </div>
+        </div>
+
+        <div class="card mb-3">
+            <div class="card-header"><h2 class="h4 mb-0" id="gegenverkehr">Gegenverkehr (G) und bedingter Gegenverkehr (bG)</h2></div>
+            <div class="card-body">
+                <p>
+                    Beim <strong>Gegenverkehr</strong> wird <strong>gleichzeitig gesendet und
+                    empfangen</strong> – wie beim Telefon. Die Gesprächsteilnehmer können sich
+                    dabei während des Sprechfunks gegenseitig unterbrechen. Dafür nutzen die
+                    Funkstellen ein <strong>Frequenzpaar</strong>: Ober- und Unterband
+                    gleichzeitig.
+                </p>
+                <p>
+                    Vom <strong>bedingten Gegenverkehr (bG)</strong> spricht man, wenn nur
+                    abwechselnd gesendet und empfangen werden kann. Die verwendeten Frequenzen
+                    beziehungsweise geschalteten Bandlagen unterscheiden sich dabei
+                    <strong>nicht</strong> vom Gegenverkehr – sie werden nur abwechselnd
+                    statt gleichzeitig genutzt.
+                </p>
+                <p class="mb-0">
+                    Ob mit einem Gerät Gegenverkehr oder nur bedingter Gegenverkehr möglich
+                    ist, hängt allein von der <strong>technischen Ausstattung des
+                    Gerätes</strong> ab.
+                </p>
+            </div>
+        </div>
+
+        <div class="card mb-3">
+            <div class="card-header"><h2 class="h4 mb-0" id="relaisverkehr">Relaisverkehr</h2></div>
+            <div class="card-body">
+                <p>
+                    <strong>Relaisverkehr</strong> bedeutet, dass über eine
+                    <strong>Relaisfunkstelle</strong> gearbeitet wird. Das ist eine Funkanlage,
+                    deren <strong>Empfängerausgang ständig auf den Sendereingang
+                    durchgeschaltet</strong> ist – sie arbeitet dadurch im
+                    <strong>„Wieder-Aussende-Betrieb“</strong>: Was sie hört, sendet sie sofort
+                    weiter.
+                </p>
+                <p>
+                    Relaisfunkstellen stehen meistens auf <strong>hochgelegenen
+                    Standorten</strong>, um Funkschattenbereiche zu verkleinern. Sie dienen
+                </p>
+                <ul>
+                    <li>
+                        der <strong>Vergrößerung der <a href="../funkreichweite/">Reichweite</a></strong>
+                        beziehungsweise der Verringerung des Funkschattens
+                        (RS-1-, RS-3-, RS-4-Schaltung) oder
+                    </li>
+                    <li>
+                        der <strong>Überleitung in einen anderen Sprechfunkverkehrskreis
+                        oder -bereich</strong> (RS-2-Schaltung, „Kanalumsetzer“).
+                    </li>
+                </ul>
+
+                <h3 class="h5" id="kehrlage">Kehrlage: warum Teilnehmer im Unterband senden</h3>
+                <p>
+                    Zur Verwendung als Relaisfunkstelle sind nur
+                    <strong>gegenverkehrsfähige Geräte</strong> geeignet, weil mit ihnen
+                    gleichzeitig gesendet und empfangen werden kann. Beim als Relaisstelle
+                    verwendeten Gerät muss <strong>stets die Rauschsperre eingeschaltet</strong>
+                    sein – sonst würde der Sender ständig das empfangene Rauschen aussenden.
+                </p>
+                <p>
+                    Das Relaisstellengerät arbeitet grundsätzlich in <strong>„Kehrlage“</strong>:
+                    Sender im <strong>Oberband</strong>, Empfänger im <strong>Unterband</strong>
+                    (G/O). Am Relaisstellengerät steht der Bandlagenschalter daher auf
+                    <strong>„O“</strong>.
+                </p>
+                <p>
+                    Die über eine Relaisfunkstelle verkehrenden Funkstellen senden folglich
+                    <strong>im Unterband</strong> – am Sprechfunkgerät sichtbar geschaltet –
+                    und <strong>empfangen im Oberband</strong>. Die Verkehrsart lautet also
+                    <strong>G/U</strong> oder <strong>bG/U</strong>.
+                </p>
+                <div class="alert alert-success" role="note">
+                    <strong>Praktische Kontrolle:</strong> Ist die Verkehrsart G/U geschaltet,
+                    kann die <strong>eigene Sprache in der Regel im Handapparat mitgehört
+                    werden</strong> – man hört sich selbst über die Relaisstelle zurück. Das
+                    ist die schnellste Probe, ob das Relais tatsächlich arbeitet.
+                </div>
+
+                <h3 class="h5" id="rs-schaltungen">Die Relaisschaltungen RS-1 bis RS-4</h3>
+                <div class="table-responsive">
+                    <table class="table table-striped align-middle mb-3">
+                        <caption>Relaisschaltungen im analogen BOS-Sprechfunk</caption>
+                        <thead>
+                            <tr>
+                                <th scope="col">Schaltung</th>
+                                <th scope="col">Funktion</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <th scope="row">RS-1</th>
+                                <td>Schaltung für <strong>Trägersteuerung</strong> – die <em>kleine Relaisfunkstelle</em>. Sie vergrößert die Reichweite innerhalb eines Sprechfunkverkehrskreises.</td>
+                            </tr>
+                            <tr>
+                                <th scope="row">RS-2</th>
+                                <td>Schaltung für die <strong>Zusammenschaltung von zwei Funkgeräten</strong> – die <em>große Relaisfunkstelle</em>, auch „Kanalumsetzer“. Damit lassen sich zwei Sprechfunkverkehrskreise miteinander verbinden.</td>
+                            </tr>
+                            <tr>
+                                <th scope="row">RS-3</th>
+                                <td>Schaltung für <strong>zeitgestaffelten Eintonruf</strong>.</td>
+                            </tr>
+                            <tr>
+                                <th scope="row">RS-4</th>
+                                <td>Schaltung für <strong>Mehrtonrufsystem</strong>, gegebenenfalls mit Zeitschaltung.</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <p class="mb-0">
+                    Zu beachten: Beim RS-1-Betrieb wird das Relais aktiv, sobald irgendein
+                    Funkgerät im Empfangsbereich die Sendetaste drückt – die Belegung des
+                    Relais ist damit eine gemeinsame Ressource aller Teilnehmer. Umso wichtiger
+                    ist die <a href="../sprechfunk-regeln/">Funkdisziplin</a>.
+                </p>
+            </div>
+        </div>
+
+        <div class="card mb-3">
+            <div class="card-header"><h2 class="h4 mb-0" id="digitalfunk">Und im Digitalfunk?</h2></div>
+            <div class="card-body">
+                <p>
+                    Im <a href="../bos-funk/">Digitalfunk BOS</a> entfallen Bandlagen und
+                    Kanalschaltungen: Der Netzbetrieb <strong>TMO</strong> übernimmt die
+                    Reichweitenfunktion der Relaisstelle über die Basisstationen, im
+                    Direktbetrieb <strong>DMO</strong> funken die Geräte unmittelbar
+                    miteinander. Die Aufgaben der alten Relaisschaltungen erfüllen dort
+                </p>
+                <ul>
+                    <li>
+                        der <strong>DMO-Repeater</strong> – vergrößert die Reichweite im
+                        Direktbetrieb, funktional das Gegenstück zur RS-1-Schaltung,
+                    </li>
+                    <li>
+                        das <strong>DMO-TMO-Gateway</strong> – verbindet Direktbetrieb und
+                        Netzbetrieb, funktional das Gegenstück zur RS-2-Schaltung.
+                    </li>
+                </ul>
+                <div class="alert alert-warning" role="note">
+                    <strong>Nicht einfach einschalten:</strong> Repeater- und
+                    Gatewayschaltungen sind vorab mit der zuständigen Einsatzleitung
+                    abzustimmen und der Taktisch-Technischen Betriebsstelle THW (TTB-THW) auf
+                    der betreffenden Rufgruppe anzuzeigen beziehungsweise dort zu beantragen.
+                    Details unter <a href="../bos-funk/#rufgruppen-thw">Rufgruppen im THW</a>.
+                </div>
+                <p class="mb-0">
+                    Für die Ausbildung bleibt die alte Systematik trotzdem wertvoll: Wer
+                    Kehrlage und Trägersteuerung einmal verstanden hat, begreift auch, warum
+                    ein DMO-Repeater eine eigene Rufgruppe belegt und nicht beliebig gestapelt
+                    werden kann.
+                </p>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-body">
+                <h2 class="h4">Verkehrsarten in der Funkübung anwenden</h2>
+                <p>
+                    Teilnehmer eintragen, Funksprüche wählen – Vordrucke, Nachrichtenplan
+                    und Live-Übungsleitung erzeugt der Generator.
+                    <a href="../open-source/">Kostenlos, ohne Anmeldung, quelloffen</a>.
+                </p>
+                <p class="mb-0">
+                    <a href="../" class="btn btn-primary">Übung erstellen</a>
+                    <a href="../funkreichweite/" class="btn btn-outline-primary">Reichweite</a>
+                    <a href="../antennen/" class="btn btn-outline-primary">Antennen</a>
+                    <a href="../uebungsfunkverkehr/" class="btn btn-outline-primary">Übungsfunkverkehr</a>
+                </p>
+            </div>
+        </div>
+    </article>
+</main>
+
+<footer class="main-footer">
+    <span class="footer-links">
+        <a href="../">Anwendung</a>
+        <a href="../anleitung/">Anleitung</a>
+        <a href="../buchstabiertafel/">Buchstabiertafel</a>
+        <a href="../meldevordruck/">Meldevordruck</a>
+        <a href="../funksprueche/">Funksprüche</a>
+        <a href="../faq/">FAQ</a>
+    </span>
+    <span class="footer-links">
+        <a href="../impressum/">Impressum</a>
+        <a href="../datenschutz/">Datenschutz</a>
+        <a href="mailto:johannes.rudolph@thw-oldenburg.de">Kontakt</a>
+        <a href="https://github.com/wattnpapa/sprechfunk-uebung" target="_blank" rel="noopener noreferrer">GitHub</a>
+        <a href="https://github.com/wattnpapa/sprechfunk-uebung/blob/main/LICENSE" target="_blank" rel="noopener noreferrer">EUPL-1.2-Lizenz</a>
+    </span>
+</footer>
+
+</body>
+
+</html>

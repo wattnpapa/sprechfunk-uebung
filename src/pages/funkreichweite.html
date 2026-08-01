@@ -1,0 +1,437 @@
+<!DOCTYPE html>
+<html lang="de">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Reichweite von Funkwellen: Ausbreitung, Funkschatten und Standortwahl | Sprechfunk Übungsgenerator</title>
+    <link rel="icon" type="image/png" href="../assets/favicon.png">
+    <link rel="canonical" href="https://sprechfunk-uebung.de/funkreichweite/">
+    <meta name="robots" content="index,follow,max-image-preview:large,max-snippet:-1">
+    <meta name="theme-color" content="#0d6efd">
+
+    <meta name="description" content="Warum Funkwellen enden, wo die Sicht endet: Ausbreitung der Meterwellen, Funkschatten und Funkloch, Reflexion und Beugung, die Reichweitengrenze im Digitalfunk, Wahl des Aufbauplatzes und Merkregeln zur Störungsbeseitigung im BOS-Sprechfunk.">
+    <meta name="author" content="Johannes Rudolph">
+
+    <meta property="og:title" content="Reichweite von Funkwellen: Ausbreitung, Funkschatten und Standortwahl">
+    <meta property="og:description" content="Ausbreitung der Meterwellen, Funkschatten, Reflexion und Beugung, Reichweitengrenzen im Digitalfunk und die richtige Wahl des Aufbauplatzes.">
+    <meta property="og:url" content="https://sprechfunk-uebung.de/funkreichweite/">
+    <meta property="og:type" content="article">
+    <meta property="og:locale" content="de_DE">
+    <meta property="og:site_name" content="Sprechfunk Übungsgenerator">
+    <meta property="og:image" content="https://sprechfunk-uebung.de/assets/og-image.png">
+    <meta property="og:image:width" content="1200">
+    <meta property="og:image:height" content="630">
+    <meta property="og:image:alt" content="Sprechfunk Übungsgenerator – Übungen für den BOS-Sprechfunk erstellen">
+
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="Reichweite von Funkwellen: Ausbreitung, Funkschatten und Standortwahl">
+    <meta name="twitter:description" content="Warum Funkwellen enden, wo die Sicht endet – und was man dagegen tun kann. Die physikalischen Grundlagen des BOS-Sprechfunks.">
+    <meta name="twitter:image" content="https://sprechfunk-uebung.de/assets/og-image.png">
+
+    <link rel="stylesheet" href="../bundle.css">
+    <link rel="stylesheet" href="../style.css">
+
+    <!-- GoatCounter: cookielose, anonyme Reichweitenmessung -->
+    <script data-goatcounter="https://sprechfunk-uebung.goatcounter.com/count"
+            async src="//gc.zgo.at/count.js"></script>
+
+    <script type="application/ld+json">
+        {
+            "@context": "https://schema.org",
+            "@type": "Article",
+            "headline": "Reichweite von Funkwellen: Ausbreitung, Funkschatten und Standortwahl",
+            "description": "Die physikalischen Grundlagen des BOS-Sprechfunks: Ausbreitung der Meterwellen, Funkschatten, Reflexion und Beugung, Reichweitengrenzen im Digitalfunk sowie Wahl des Aufbauplatzes und Störungsbeseitigung.",
+            "inLanguage": "de",
+            "url": "https://sprechfunk-uebung.de/funkreichweite/",
+            "image": "https://sprechfunk-uebung.de/assets/og-image.png",
+            "author": {
+                "@type": "Person",
+                "name": "Johannes Rudolph",
+                "url": "https://github.com/wattnpapa"
+            },
+            "publisher": {
+                "@type": "Person",
+                "name": "Johannes Rudolph"
+            },
+            "isPartOf": {
+                "@type": "WebSite",
+                "name": "Sprechfunk Übungsgenerator",
+                "url": "https://sprechfunk-uebung.de/"
+            },
+            "about": [
+                { "@type": "Thing", "name": "Funkwellen" },
+                { "@type": "Thing", "name": "Reichweite" },
+                { "@type": "Thing", "name": "BOS-Funk" }
+            ]
+        }
+    </script>
+    <script type="application/ld+json">
+        {
+            "@context": "https://schema.org",
+            "@type": "BreadcrumbList",
+            "itemListElement": [
+                {
+                    "@type": "ListItem",
+                    "position": 1,
+                    "name": "Startseite",
+                    "item": "https://sprechfunk-uebung.de/"
+                },
+                {
+                    "@type": "ListItem",
+                    "position": 2,
+                    "name": "Reichweite von Funkwellen",
+                    "item": "https://sprechfunk-uebung.de/funkreichweite/"
+                }
+            ]
+        }
+    </script>
+    <script>
+        // Gleiche Theme-Auswahl wie in der App anwenden (statische Seiten laden kein Bundle).
+        document.addEventListener("DOMContentLoaded", function () {
+            var stored = localStorage.getItem("theme");
+            if (stored) {
+                document.body.setAttribute("data-theme", stored);
+            }
+        });
+    </script>
+</head>
+
+<body data-theme="light">
+<header class="app-header">
+    <div class="container app-header-grid">
+        <div class="app-header-title">
+            <h1 class="h2 mb-0">
+                <i class="fas fa-broadcast-tower"></i> Sprechfunk Übungsgenerator
+            </h1>
+        </div>
+        <div class="app-header-actions d-none d-md-flex">
+            <a href="../" class="btn btn-primary">
+                <i class="fas fa-arrow-left"></i> Zur Anwendung
+            </a>
+            <a href="../anleitung/" class="btn btn-info">
+                <i class="fas fa-book"></i> Anleitung
+            </a>
+            <a href="https://github.com/wattnpapa/sprechfunk-uebung" class="btn btn-dark">
+                <i class="fab fa-github"></i> GitHub
+            </a>
+        </div>
+    </div>
+</header>
+
+<main class="container my-4 app-view-shell">
+    <nav aria-label="Brotkrumennavigation" class="mb-3">
+        <ol class="breadcrumb mb-0">
+            <li class="breadcrumb-item"><a href="../">Startseite</a></li>
+            <li class="breadcrumb-item active" aria-current="page">Reichweite von Funkwellen</li>
+        </ol>
+    </nav>
+
+    <article>
+        <div class="card mb-3">
+            <div class="card-body">
+                <h2 class="h3">Reichweite von Funkwellen – warum der Funk dort endet, wo die Sicht endet</h2>
+                <p>
+                    „Wir haben kein Netz“ ist im Sprechfunk selten eine Frage des Geräts und
+                    fast immer eine Frage der <strong>Physik</strong>. Wer versteht, wie sich
+                    Funkwellen ausbreiten, kann eine schlechte Verbindung gezielt verbessern –
+                    statt lauter zu sprechen oder das Funkgerät zu schütteln.
+                </p>
+                <p class="mb-0">
+                    Diese Seite fasst die physikalischen und technischen Grundlagen aus dem
+                    THW-Handbuch <em>Sprechfunk im THW</em> (Kapitel 2) zusammen: Wie weit
+                    kommt ein Funksignal, was bremst es, und wo stellt man eine Funkstelle
+                    sinnvollerweise auf? Die Betriebsabwicklung steht separat unter
+                    <a href="../sprechfunk-regeln/">Sprechfunk-Regeln</a>.
+                </p>
+            </div>
+        </div>
+
+        <div class="card mb-3">
+            <div class="card-header"><h2 class="h4 mb-0" id="wellen">Wellenlänge, Frequenz und die „Meter“ im Bandnamen</h2></div>
+            <div class="card-body">
+                <p>
+                    Bei der Übertragung von Nachrichten über Funk wird die Verbindung zwischen
+                    Sende- und Empfangsstation durch <strong>elektromagnetische Wellen</strong>
+                    hergestellt. Beschrieben werden sie durch die <strong>Amplitude</strong>
+                    (wie „groß“ die Welle ist) und die <strong>Wellenlänge λ</strong> – die
+                    Strecke, in die ein Wellenberg und ein Wellental hineinpassen.
+                </p>
+                <p>
+                    Elektromagnetische Wellen breiten sich mit Lichtgeschwindigkeit <em>c</em>
+                    aus, also mit rund <strong>300.000 km pro Sekunde</strong>. Frequenz und
+                    Wellenlänge hängen darüber zusammen:
+                </p>
+                <p class="text-center mb-3"><strong><em>f</em> = <em>c</em> / λ</strong></p>
+                <p>
+                    Frequenz und Wellenlänge verhalten sich also <strong>umgekehrt
+                    proportional</strong>: Wird die Wellenlänge kleiner, steigt die Frequenz.
+                    Niedrige Frequenzen haben eine große Wellenlänge. Genau daher kommen die
+                    Bandnamen im BOS-Funk:
+                </p>
+                <div class="table-responsive">
+                    <table class="table table-sm table-striped align-middle mb-0">
+                        <caption>Frequenzbereiche im BOS-Funk und ihre Wellenlänge</caption>
+                        <thead>
+                            <tr>
+                                <th scope="col">Band</th>
+                                <th scope="col">Frequenz (ungefähr)</th>
+                                <th scope="col">Wellenlänge</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr><td>2-Meter-Band (analog)</td><td>etwa 150 MHz</td><td>rund 2 m</td></tr>
+                            <tr><td>4-Meter-Band (analog)</td><td>etwa 75 MHz</td><td>rund 4 m</td></tr>
+                            <tr><td>TETRA-Digitalfunk BOS</td><td>etwa 400 MHz</td><td>rund 75 cm</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <div class="card mb-3">
+            <div class="card-header"><h2 class="h4 mb-0" id="kanaele">Kanäle, Ober- und Unterband im Analogfunk</h2></div>
+            <div class="card-body">
+                <p>
+                    Die Frequenzen innerhalb der analogen Bänder sind zur besseren
+                    Übersichtlichkeit in <strong>Kanäle</strong> unterteilt:
+                </p>
+                <ul>
+                    <li>Das <strong>2-Meter-Band</strong> enthält die Kanäle <strong>01–92</strong>.</li>
+                    <li>Das <strong>4-Meter-Band</strong> enthält die Kanäle <strong>347–510</strong>.</li>
+                </ul>
+                <p>
+                    Die Besonderheit: Einem Kanal sind <strong>immer zwei Frequenzen</strong>
+                    zugeordnet – das <strong>Unterband (U)</strong> und das
+                    <strong>Oberband (O)</strong>. Geschrieben wird das als „500/U“ oder
+                    „500/O“. Der Abstand zwischen den beiden zu einem Kanal gehörenden
+                    Frequenzen ist für alle Kanäle gleich groß und beträgt im 4-Meter-Band
+                    <strong>9,8 MHz</strong>.
+                </p>
+                <p>
+                    Erst diese Paarbildung ermöglicht den Bau von <strong>Relaisstellen</strong>
+                    und Gleichwellennetzen: Eine Frequenz zum Senden zur Relaisfunkstelle hin
+                    im Unterband, eine Frequenz im Oberband, auf der die Relaisfunkstelle das
+                    Signal wieder aussendet. Der geschaltete Kanal bleibt derselbe. Mehr dazu
+                    unter <a href="../verkehrsarten/">Verkehrsarten</a>.
+                </p>
+                <div class="alert alert-info" role="note">
+                    <strong>Gesperrter Bereich:</strong> Auf der Frequenz 75 MHz liegt ein
+                    Navigationsfunkdienst für die allgemeine Luftfahrt (Marker-Beacon). Die
+                    Kanäle <strong>376 bis 396 sind daher im Unterband des 4-m-Bandes
+                    gesperrt</strong>.
+                </div>
+                <p class="mb-0">
+                    Im <a href="../bos-funk/">Digitalfunk BOS</a> bei rund 400 MHz entfällt die
+                    Einteilung in Kanäle: Das Netz wird per IT gesteuert, der Nutzer stellt
+                    stattdessen eine <strong>Rufgruppe</strong> ein.
+                </p>
+            </div>
+        </div>
+
+        <div class="card mb-3">
+            <div class="card-header"><h2 class="h4 mb-0" id="ausbreitung">Ausbreitung: Meterwellen laufen geradeaus</h2></div>
+            <div class="card-body">
+                <p>
+                    Die im BOS-Sprechfunk verwendeten Wellenbereiche – die sogenannten
+                    <strong>Meterwellen</strong> – breiten sich <strong>geradlinig</strong>
+                    aus. Daraus folgt die wichtigste Faustregel überhaupt:
+                </p>
+                <p class="mb-3">
+                    <strong>Die Reichweite ist etwa auf die optische Sichtweite
+                    beschränkt.</strong>
+                </p>
+                <p>
+                    Hindernisse begrenzen die Reichweite. Hinter einem Berg oder einem großen
+                    Gebäude entsteht ein <strong>Funkschattenbereich</strong> – wer sich darin
+                    befindet, steckt in einem <strong>Funkloch</strong>.
+                </p>
+                <h3 class="h5" id="reflexion">Reflexion und Beugung</h3>
+                <p>
+                    Meterwellen können, ähnlich wie Licht, <strong>reflektiert</strong> oder
+                    <strong>gebeugt</strong> werden. Das hat zwei praktische Konsequenzen, die
+                    sich zunächst widersprechen:
+                </p>
+                <ul>
+                    <li>
+                        Man hat <strong>Empfang ohne Sichtverbindung</strong> – etwa weil die
+                        Welle an einer glatten, leitfähigen Fläche reflektiert oder am Kamm
+                        eines Berges gebeugt wurde. Solche Verbindungen reichen weiter als die
+                        optische Sicht, bieten aber meist <strong>keine gesicherte
+                        Funkverbindung</strong>.
+                    </li>
+                    <li>
+                        Man hat <strong>keinen Empfang trotz Sichtverbindung</strong>. In
+                        diesen eher seltenen Fällen kommt es zur <strong>vollständigen
+                        Auslöschung</strong> des Funksignals durch Überlagerung von direkter
+                        und reflektierter Welle am Empfänger.
+                    </li>
+                </ul>
+                <div class="alert alert-success" role="note">
+                    <strong>Die Abhilfe im zweiten Fall ist verblüffend klein:</strong> eine
+                    geringfügige Standortänderung von etwa einer <strong>halben
+                    Wellenlänge</strong>. Im 2-m-Band ist das ein Schritt zur Seite, im
+                    4-m-Band rund zwei Meter.
+                </div>
+                <p class="mb-0">
+                    Deshalb gilt für analoge Sprechfunkgeräte: Die Reichweite ist umso größer,
+                    <strong>je höher eine Funkstelle aufgebaut ist</strong>.
+                </p>
+            </div>
+        </div>
+
+        <div class="card mb-3">
+            <div class="card-header"><h2 class="h4 mb-0" id="einflussgroessen">Was die Reichweite sonst noch bestimmt</h2></div>
+            <div class="card-body">
+                <p>Weitere Einflussgrößen auf die Reichweite sind:</p>
+                <ul>
+                    <li>die <strong>Sendeleistung</strong>,</li>
+                    <li>die <strong><a href="../antennen/">Art der Antenne</a></strong>,</li>
+                    <li>das <strong>Antennenkabel</strong> und</li>
+                    <li>
+                        die <strong>lokalen Gegebenheiten</strong> in unmittelbarer Nähe der
+                        Funkstelle, etwa Bebauung und Bewuchs.
+                    </li>
+                </ul>
+                <div class="alert alert-warning" role="note">
+                    <strong>Reichweitengrenze im Digitalfunk:</strong> Bei digitalen
+                    Sprechfunkgeräten ist die Reichweite aus systemtechnischen Gründen auf
+                    <strong>maximal 58 km</strong> beschränkt – unabhängig davon, wie frei die
+                    Sicht ist.
+                </div>
+                <h3 class="h5" id="ungeuenstig">Besonders ungünstige Standorte</h3>
+                <p class="mb-0">
+                    Innerhalb von <strong>Fabriken</strong> und <strong>Bahnhofshallen</strong>,
+                    in <strong>Bunkern</strong> sowie in der Nähe <strong>eiserner
+                    Brücken</strong> und von <strong>Wäldern</strong> werden die vom Sender
+                    abgestrahlten Wellen abgeschirmt. Für den Empfang gilt dasselbe. Weitere
+                    typische Problemzonen sind Hochhäuser und Tiefgaragen; als Hindernisse
+                    wirken außerdem Berge, Hügel, Ortschaften und große Eisenkonstruktionen wie
+                    Hochspannungsleitungen und Brücken.
+                </p>
+            </div>
+        </div>
+
+        <div class="card mb-3">
+            <div class="card-header"><h2 class="h4 mb-0" id="aufbauplatz">Wahl des Aufbauplatzes</h2></div>
+            <div class="card-body">
+                <p>
+                    Wegen der Ausbreitungseigenschaften der Meterwellen gilt für die Wahl des
+                    Aufbauplatzes einer Sprechfunkbetriebsstelle:
+                </p>
+                <ul>
+                    <li><strong>möglichst freie Sicht zu den Empfangsstellen</strong>,</li>
+                    <li>
+                        <strong>keine Metallmasten, Bäume oder Häuser in unmittelbarer
+                        Nähe</strong>.
+                    </li>
+                </ul>
+                <p>
+                    Selbstverständlich kommen weitere Kriterien hinzu – Infrastruktur und
+                    funktaktische Gegebenheiten. Im Digitalfunk können die Empfangsstellen
+                    dabei sowohl die <strong>Basisstationen des Funknetzes</strong> als auch
+                    <strong>andere Sprechfunkstellen</strong> sein; im Direktbetrieb (DMO)
+                    zählt wieder die Sicht zur Gegenstelle.
+                </p>
+                <p class="mb-0">
+                    Zu Aufbau, Schutzabständen zu Freileitungen und dem Verhalten bei Gewitter
+                    siehe die Seite <a href="../antennen/">Antennen und Antennenleitungen</a>.
+                </p>
+            </div>
+        </div>
+
+        <div class="card mb-3">
+            <div class="card-header"><h2 class="h4 mb-0" id="stoerungen">Merkregeln zur Störungsbeseitigung</h2></div>
+            <div class="card-body">
+                <p>
+                    Wenn die Verbindung schlecht ist, hilft diese Reihenfolge – von der
+                    billigsten Maßnahme aufwärts:
+                </p>
+                <ol>
+                    <li>
+                        <strong>Erstmaßnahme: geringfügiger Standortwechsel.</strong> Ein paar
+                        Schritte, ein Fenster, eine Etage höher – oft reicht das schon, weil
+                        Auslöschung und Funkschatten sehr kleinräumig sein können.
+                    </li>
+                    <li>
+                        <strong>Antennen immer senkrecht stellen</strong> – auch auf dem
+                        Fahrzeugdach. Eine geneigte Antenne verschlechtert das
+                        Abstrahldiagramm messbar.
+                    </li>
+                    <li>
+                        <strong>Im Analogfunk: Rauschsperre ausschalten.</strong> Schwache
+                        Signale, die die Rauschsperre nicht öffnen, werden dadurch überhaupt
+                        erst hörbar.
+                    </li>
+                    <li>
+                        <strong>Handsprechfunkgeräte nicht in Fahrzeugkabinen einsetzen.</strong>
+                        Die Karosserie schirmt ab. Stattdessen das Fahrzeugfunkgerät oder eine
+                        Außenantenne nutzen.
+                    </li>
+                </ol>
+                <p class="mb-0">
+                    Bringt das nichts, bleibt die technische Lösung: eine
+                    <strong>Relaisfunkstelle</strong>, die Reichweite vergrößert und
+                    Funkschattenbereiche verkleinert – siehe
+                    <a href="../verkehrsarten/">Verkehrsarten und Relaisbetrieb</a>.
+                </p>
+            </div>
+        </div>
+
+        <div class="card mb-3">
+            <div class="card-header"><h2 class="h4 mb-0" id="uebung">Reichweite in der Übung erlebbar machen</h2></div>
+            <div class="card-body">
+                <p class="mb-0">
+                    Physik lässt sich schwer im Unterrichtsraum vermitteln – aber gut auf dem
+                    Übungsgelände. Verteile die Teilnehmer einer
+                    <a href="../funkuebung-planen/">Funkübung</a> bewusst so, dass Keller,
+                    Hallen und Geländekanten dazwischenliegen: Die Gruppe merkt selbst, wo die
+                    Verbindung abreißt und welcher Schritt zur Seite sie zurückbringt. Der
+                    Sprechfunk Übungsgenerator liefert dazu die
+                    <a href="../funksprueche/">Funksprüche</a> und den
+                    <a href="../regiebuch-funkuebung/">Nachrichtenplan</a> – die Übungsleitung
+                    sieht live, welche Station gerade nicht durchkommt.
+                </p>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-body">
+                <h2 class="h4">Funkübung mit echten Reichweitenproblemen planen</h2>
+                <p>
+                    Teilnehmer eintragen, Funksprüche wählen – Vordrucke, Nachrichtenplan
+                    und Live-Übungsleitung erzeugt der Generator.
+                    <a href="../open-source/">Kostenlos, ohne Anmeldung, quelloffen</a>.
+                </p>
+                <p class="mb-0">
+                    <a href="../" class="btn btn-primary">Übung erstellen</a>
+                    <a href="../antennen/" class="btn btn-outline-primary">Antennen</a>
+                    <a href="../verkehrsarten/" class="btn btn-outline-primary">Verkehrsarten</a>
+                    <a href="../bos-funk/" class="btn btn-outline-primary">BOS-Funk Grundlagen</a>
+                </p>
+            </div>
+        </div>
+    </article>
+</main>
+
+<footer class="main-footer">
+    <span class="footer-links">
+        <a href="../">Anwendung</a>
+        <a href="../anleitung/">Anleitung</a>
+        <a href="../buchstabiertafel/">Buchstabiertafel</a>
+        <a href="../meldevordruck/">Meldevordruck</a>
+        <a href="../funksprueche/">Funksprüche</a>
+        <a href="../faq/">FAQ</a>
+    </span>
+    <span class="footer-links">
+        <a href="../impressum/">Impressum</a>
+        <a href="../datenschutz/">Datenschutz</a>
+        <a href="mailto:johannes.rudolph@thw-oldenburg.de">Kontakt</a>
+        <a href="https://github.com/wattnpapa/sprechfunk-uebung" target="_blank" rel="noopener noreferrer">GitHub</a>
+        <a href="https://github.com/wattnpapa/sprechfunk-uebung/blob/main/LICENSE" target="_blank" rel="noopener noreferrer">EUPL-1.2-Lizenz</a>
+    </span>
+</footer>
+
+</body>
+
+</html>

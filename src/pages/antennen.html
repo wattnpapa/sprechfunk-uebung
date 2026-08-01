@@ -1,0 +1,417 @@
+<!DOCTYPE html>
+<html lang="de">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Antennen und Antennenleitungen im BOS-Funk: Aufbau, Dämpfung, Schutzabstände | Sprechfunk Übungsgenerator</title>
+    <link rel="icon" type="image/png" href="../assets/favicon.png">
+    <link rel="canonical" href="https://sprechfunk-uebung.de/antennen/">
+    <meta name="robots" content="index,follow,max-image-preview:large,max-snippet:-1">
+    <meta name="theme-color" content="#0d6efd">
+
+    <meta name="description" content="Antennen und Antennenleitungen im BOS-Sprechfunk: warum die Antennenlänge zur Frequenz passen muss, Dämpfung und Impedanz von Antennenleitungen, senkrechte Montage auf Fahrzeugen, Entkopplung mehrerer Antennen sowie Schutzabstände zu Freileitungen und Verhalten bei Gewitter.">
+    <meta name="author" content="Johannes Rudolph">
+
+    <meta property="og:title" content="Antennen und Antennenleitungen im BOS-Funk: Aufbau, Dämpfung, Schutzabstände">
+    <meta property="og:description" content="Antennenlänge und Frequenz, Impedanz und Dämpfung, senkrechte Montage, Entkopplung – und die Schutzabstände beim Aufbau von Funkanlagen.">
+    <meta property="og:url" content="https://sprechfunk-uebung.de/antennen/">
+    <meta property="og:type" content="article">
+    <meta property="og:locale" content="de_DE">
+    <meta property="og:site_name" content="Sprechfunk Übungsgenerator">
+    <meta property="og:image" content="https://sprechfunk-uebung.de/assets/og-image.png">
+    <meta property="og:image:width" content="1200">
+    <meta property="og:image:height" content="630">
+    <meta property="og:image:alt" content="Sprechfunk Übungsgenerator – Übungen für den BOS-Sprechfunk erstellen">
+
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="Antennen und Antennenleitungen im BOS-Funk: Aufbau, Dämpfung, Schutzabstände">
+    <meta name="twitter:description" content="Antennenlänge und Frequenz, Impedanz und Dämpfung, senkrechte Montage, Entkopplung und Schutzabstände beim Antennenaufbau.">
+    <meta name="twitter:image" content="https://sprechfunk-uebung.de/assets/og-image.png">
+
+    <link rel="stylesheet" href="../bundle.css">
+    <link rel="stylesheet" href="../style.css">
+
+    <!-- GoatCounter: cookielose, anonyme Reichweitenmessung -->
+    <script data-goatcounter="https://sprechfunk-uebung.goatcounter.com/count"
+            async src="//gc.zgo.at/count.js"></script>
+
+    <script type="application/ld+json">
+        {
+            "@context": "https://schema.org",
+            "@type": "Article",
+            "headline": "Antennen und Antennenleitungen im BOS-Funk: Aufbau, Dämpfung, Schutzabstände",
+            "description": "Antennentechnik im BOS-Sprechfunk: Anpassung an die Frequenz, Impedanz und Dämpfung der Antennenleitungen, Montage auf Fahrzeugen, Entkopplung mehrerer Antennen sowie Schutzabstände beim Aufbau von Funkanlagen.",
+            "inLanguage": "de",
+            "url": "https://sprechfunk-uebung.de/antennen/",
+            "image": "https://sprechfunk-uebung.de/assets/og-image.png",
+            "author": {
+                "@type": "Person",
+                "name": "Johannes Rudolph",
+                "url": "https://github.com/wattnpapa"
+            },
+            "publisher": {
+                "@type": "Person",
+                "name": "Johannes Rudolph"
+            },
+            "isPartOf": {
+                "@type": "WebSite",
+                "name": "Sprechfunk Übungsgenerator",
+                "url": "https://sprechfunk-uebung.de/"
+            },
+            "about": [
+                { "@type": "Thing", "name": "Antenne" },
+                { "@type": "Thing", "name": "Antennenleitung" },
+                { "@type": "Thing", "name": "BOS-Funk" }
+            ]
+        }
+    </script>
+    <script type="application/ld+json">
+        {
+            "@context": "https://schema.org",
+            "@type": "BreadcrumbList",
+            "itemListElement": [
+                {
+                    "@type": "ListItem",
+                    "position": 1,
+                    "name": "Startseite",
+                    "item": "https://sprechfunk-uebung.de/"
+                },
+                {
+                    "@type": "ListItem",
+                    "position": 2,
+                    "name": "Antennen",
+                    "item": "https://sprechfunk-uebung.de/antennen/"
+                }
+            ]
+        }
+    </script>
+    <script>
+        // Gleiche Theme-Auswahl wie in der App anwenden (statische Seiten laden kein Bundle).
+        document.addEventListener("DOMContentLoaded", function () {
+            var stored = localStorage.getItem("theme");
+            if (stored) {
+                document.body.setAttribute("data-theme", stored);
+            }
+        });
+    </script>
+</head>
+
+<body data-theme="light">
+<header class="app-header">
+    <div class="container app-header-grid">
+        <div class="app-header-title">
+            <h1 class="h2 mb-0">
+                <i class="fas fa-broadcast-tower"></i> Sprechfunk Übungsgenerator
+            </h1>
+        </div>
+        <div class="app-header-actions d-none d-md-flex">
+            <a href="../" class="btn btn-primary">
+                <i class="fas fa-arrow-left"></i> Zur Anwendung
+            </a>
+            <a href="../anleitung/" class="btn btn-info">
+                <i class="fas fa-book"></i> Anleitung
+            </a>
+            <a href="https://github.com/wattnpapa/sprechfunk-uebung" class="btn btn-dark">
+                <i class="fab fa-github"></i> GitHub
+            </a>
+        </div>
+    </div>
+</header>
+
+<main class="container my-4 app-view-shell">
+    <nav aria-label="Brotkrumennavigation" class="mb-3">
+        <ol class="breadcrumb mb-0">
+            <li class="breadcrumb-item"><a href="../">Startseite</a></li>
+            <li class="breadcrumb-item active" aria-current="page">Antennen</li>
+        </ol>
+    </nav>
+
+    <article>
+        <div class="card mb-3">
+            <div class="card-body">
+                <h2 class="h3">Antennen und Antennenleitungen – das schwächste Glied der Funkstrecke</h2>
+                <p>
+                    Ein Funkgerät ist nur so gut wie das, was hinten dranhängt. Antennen senden
+                    die Sendeenergie aus und empfangen die von einem anderen Sender
+                    abgestrahlte Energie als Empfangssignal. Fehler in Antenne oder Kabel
+                    kosten unmittelbar <a href="../funkreichweite/">Reichweite</a> – und können
+                    im schlimmsten Fall das Gerät zerstören.
+                </p>
+                <p class="mb-0">
+                    Diese Seite fasst die Antennentechnik aus dem THW-Handbuch
+                    <em>Sprechfunk im THW</em> (Kapitel 2.5 und 3.2) zusammen: Anpassung,
+                    Leitungen, Montage, Entkopplung – und die Schutzabstände, die beim Aufbau
+                    einer Funkanlage einzuhalten sind.
+                </p>
+            </div>
+        </div>
+
+        <div class="card mb-3">
+            <div class="card-header"><h2 class="h4 mb-0" id="anpassung">Anpassung: Die Antennenlänge gehört zur Frequenz</h2></div>
+            <div class="card-body">
+                <p>
+                    Antennen müssen <strong>an die Frequenz des Funkgerätes angepasst</strong>
+                    sein. Das heißt: Sie müssen bei der Betriebsfrequenz die Leistung des
+                    Senders möglichst komplett abstrahlen können – und das gelingt nur, wenn
+                    sie die <strong>richtige Länge</strong> haben.
+                </p>
+                <div class="alert alert-danger" role="note">
+                    <strong>Antennen dürfen daher nicht in ihrer Länge verändert werden.</strong>
+                    Unangepasste Antennen führen dazu, dass die Sendeleistung reflektiert wird.
+                    Sie läuft zurück zum Funkgerät und wird dort in <strong>Wärme</strong>
+                    umgewandelt. Das führt zu einer stärkeren Erwärmung des Gerätes und
+                    möglicherweise zur <strong>Zerstörung des Senders</strong>. Es gibt Geräte,
+                    die bei einer zu großen Fehlanpassung der Antenne den Sender abschalten.
+                </div>
+                <p>
+                    Zwei weitere Grundsätze aus dem Handbuch:
+                </p>
+                <ul class="mb-0">
+                    <li>
+                        Funkanlagen sind mit der <strong>geringsten erforderlichen
+                        Sendeleistung und Antennenhöhe</strong> zu betreiben, um Störungen
+                        anderer Funkstellen in weiter entfernten Gebieten zu vermeiden.
+                    </li>
+                    <li>
+                        Je nach Einsatzzweck werden an festen Funkstellen
+                        <strong>Rundstrahlantennen</strong> oder
+                        <strong>Richtantennen</strong> eingesetzt.
+                    </li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="card mb-3">
+            <div class="card-header"><h2 class="h4 mb-0" id="leitungen">Antennenleitungen: Impedanz, Dämpfung, Biegeradius</h2></div>
+            <div class="card-body">
+                <p>
+                    Antennenleitungen transportieren die Sendeenergie vom Sender zur Antenne
+                    beziehungsweise die Empfangsleistung der Antenne zum Empfänger. Die
+                    Antennenleitung beeinflusst dadurch <strong>Sende- und Empfangszweig
+                    gleichermaßen</strong> – ein schlechtes Kabel verschlechtert also beides.
+                </p>
+                <p>
+                    Handelsübliche Antennenleitungen für Funkanwendungen besitzen in der Regel
+                    eine <strong>Impedanz von 50 Ohm</strong>. Diese wird durch das
+                    <strong>Verhältnis der Durchmesser von Innenleiter zu Außenleiter</strong>
+                    bestimmt. Daraus folgt unmittelbar die wichtigste Handhabungsregel:
+                </p>
+                <div class="alert alert-warning" role="note">
+                    Die Leitung darf <strong>nicht über das zulässige Maß hinaus verformt</strong>
+                    werden. Quetschungen durch Darüberlaufen oder -fahren sind unbedingt zu
+                    vermeiden. Auch bei der Verlegung sind die zulässigen
+                    <strong>Biegeradien</strong> nicht zu unterschreiten. Jede Verformung
+                    ändert das Durchmesserverhältnis – und damit die Impedanz.
+                </div>
+                <p>Weitere Punkte aus der Ausbildungspraxis:</p>
+                <ul class="mb-0">
+                    <li>
+                        <strong>Dämpfung:</strong> Leitungen weisen eine typische Dämpfung auf,
+                        die von der <strong>Länge der Leitung und der Frequenz</strong> abhängt
+                        und sich als Leistungsverlust bemerkbar macht. Auch der
+                        <strong>Kabeltyp</strong> hat Einfluss auf die Dämpfung.
+                    </li>
+                    <li>
+                        <strong>Kabelstrecken möglichst kurz halten</strong> – jeder Meter
+                        kostet Leistung.
+                    </li>
+                    <li>
+                        Müssen <strong>mehrere Kabel verbunden</strong> werden, ist darauf zu
+                        achten, dass diese <strong>dieselbe Impedanz</strong> haben.
+                    </li>
+                    <li>
+                        <strong>Kupplungen und Adapter</strong> zwischen Steckern und Buchsen
+                        wirken wie <strong>Störstellen</strong> – so wenige wie möglich.
+                    </li>
+                    <li>
+                        Die an den Leitungen montierten <strong>Stecker</strong> sollten bei
+                        mobilem Betrieb auf <strong>Verschmutzungen und Korrosion</strong>
+                        überprüft werden. Verschmutzte Stecker führen ebenfalls zu
+                        Reflexionsstellen.
+                    </li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="card mb-3">
+            <div class="card-header"><h2 class="h4 mb-0" id="fahrzeuge">Antennen auf Fahrzeugen: senkrecht, immer</h2></div>
+            <div class="card-body">
+                <p>
+                    Antennen auf Fahrzeugen sollten <strong>immer senkrecht stehen</strong>.
+                    Anderenfalls werden die <strong>Abstrahlrichtung</strong> und die
+                    <strong>abgestrahlte Leistung</strong> negativ beeinflusst: Mit
+                    zunehmendem Neigungswinkel wird die Abstrahlcharakteristik gegenüber der
+                    ursprünglichen Form stark eingeschränkt.
+                </p>
+                <p class="mb-0">
+                    Die schräg nach hinten gelegte Fahrzeugantenne mag sportlich aussehen –
+                    funktechnisch ist sie ein Reichweitenverlust. Deshalb steht „Antennen
+                    immer senkrecht stellen“ auch in den
+                    <a href="../funkreichweite/#stoerungen">Merkregeln zur
+                    Störungsbeseitigung</a>. Aus demselben Grund gilt: <strong>Handsprechfunkgeräte
+                    nicht in Fahrzeugkabinen einsetzen</strong> – stattdessen das
+                    Fahrzeugfunkgerät oder eine Außenantenne nutzen.
+                </p>
+            </div>
+        </div>
+
+        <div class="card mb-3">
+            <div class="card-header"><h2 class="h4 mb-0" id="entkopplung">Entkopplung mehrerer Antennen</h2></div>
+            <div class="card-body">
+                <p>
+                    Mehrere Antennen in nächster Nähe sollten möglichst auf
+                    <strong>unterschiedlichen Höhen</strong> aufgebaut sein. Damit wird
+                    erreicht, dass möglichst wenig Sendeleistung der einen Antenne in die
+                    andere Antenne einkoppelt. Diese <strong>Entkopplung</strong> ist
+                    erforderlich, damit sich die Frequenzen nicht gegenseitig überlagern.
+                </p>
+                <ul class="mb-0">
+                    <li>
+                        <strong>Je größer der Abstand, desto besser die Entkopplung</strong>
+                        zwischen den Antennen.
+                    </li>
+                    <li>
+                        Bei Montage der Antennen <strong>auf gleicher Höhe</strong> ist ein
+                        <strong>größerer Abstand</strong> nötig, um dieselbe Entkopplung zu
+                        erreichen wie bei Montage der Antennen <strong>vertikal
+                        übereinander</strong>.
+                    </li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="card mb-3">
+            <div class="card-header"><h2 class="h4 mb-0" id="schutzabstand">Aufbau von Funkanlagen: Schutzabstände zu Freileitungen</h2></div>
+            <div class="card-body">
+                <p>
+                    Funkanlagen sind immer mit Antennenanlagen verbunden, die zum Teil auf
+                    Sendemasten installiert sind. In der Nähe von Freileitungen ist ein
+                    <strong>erweiterter Schutzabstand</strong> einzuhalten, um eine Berührung
+                    der Leitungen zu vermeiden. Er errechnet sich aus:
+                </p>
+                <p class="text-center mb-3">
+                    <strong>Erweiterter Schutzabstand = Höhe Strommast + Höhe Antenne
+                    + Schutzabstand</strong>
+                </p>
+                <p>
+                    Der einzusetzende Schutzabstand ist von der <strong>Spannung der
+                    elektrischen Leitung</strong> abhängig:
+                </p>
+                <div class="table-responsive">
+                    <table class="table table-striped align-middle mb-3">
+                        <caption>Schutzabstände nach der Spannung der elektrischen Leitung</caption>
+                        <thead>
+                            <tr>
+                                <th scope="col">Spannung</th>
+                                <th scope="col">Mindestabstand</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr><td>bis 1000 V</td><td>1 Meter</td></tr>
+                            <tr><td>bis 110 kV</td><td>3 Meter</td></tr>
+                            <tr><td>bis 220 kV</td><td>4 Meter</td></tr>
+                            <tr><td>bis 380 kV</td><td>5 Meter</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+                <div class="alert alert-danger" role="note">
+                    <ul class="mb-0">
+                        <li>
+                            Es ist <strong>immer ein erweiterter Schutzabstand von mindestens
+                            20 Metern</strong> einzuhalten. Bei Sturm beziehungsweise
+                            Sturmwarnung ist der Abstand zu <strong>verdoppeln</strong>.
+                        </li>
+                        <li>
+                            Das Ausfahren von <strong>Schiebemasten</strong> erfordert
+                            besondere Aufmerksamkeit bei <strong>Dunkelheit</strong>.
+                        </li>
+                        <li>
+                            Der <strong>Aufbau von Antennen unter Freileitungen ist
+                            verboten.</strong>
+                        </li>
+                    </ul>
+                </div>
+                <p class="mb-0">
+                    Ist die Spannung der Leitung unbekannt, gilt im Zweifel ein Schutzabstand
+                    von <strong>5 Metern</strong> – zusätzlich zu den mindestens 20 Metern
+                    erweitertem Schutzabstand. Allgemeine Informationen zu Gefahren durch
+                    elektrischen Strom stehen im Handbuch der Grundausbildung
+                    „Stromerzeugung und Beleuchtung“ und sind zwingend zu beachten.
+                </p>
+            </div>
+        </div>
+
+        <div class="card mb-3">
+            <div class="card-header"><h2 class="h4 mb-0" id="gewitter">Verhalten bei Gewitter</h2></div>
+            <div class="card-body">
+                <p>
+                    <strong>Beim Herannahen eines Gewitters ist der Funkbetrieb
+                    einzustellen.</strong> Nur in dringenden Notfällen ist von dieser Regelung
+                    abzuweichen.
+                </p>
+                <p class="mb-0">
+                    Bei Einsätzen ist im Einzelfall durch die für den Einsatz verantwortliche
+                    Person nach pflichtgemäßem Ermessen abzuwägen zwischen der möglichen
+                    Gefährdung durch atmosphärische Überspannungen und den Nachteilen, die
+                    eine Einstellung des Fernmeldebetriebes für die Schadensbekämpfung
+                    bedeuten würde.
+                </p>
+            </div>
+        </div>
+
+        <div class="card mb-3">
+            <div class="card-header"><h2 class="h4 mb-0" id="checkliste">Kurzcheck vor der Übung</h2></div>
+            <div class="card-body">
+                <ul class="mb-0">
+                    <li>Antenne unbeschädigt, unverändert, fest verschraubt?</li>
+                    <li>Fahrzeugantennen senkrecht?</li>
+                    <li>Stecker sauber und korrosionsfrei, keine unnötigen Adapter?</li>
+                    <li>Kabel ohne Knicke, Quetschungen und zu enge Radien, so kurz wie möglich?</li>
+                    <li>Mehrere Antennen entkoppelt – unterschiedliche Höhen, ausreichend Abstand?</li>
+                    <li>Beim Mastaufbau: mindestens 20 m erweiterter Schutzabstand, bei Sturm doppelt, nie unter Freileitungen?</li>
+                    <li>Wetterlage geprüft – Gewitter angekündigt?</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-body">
+                <h2 class="h4">Technik geprüft – jetzt die Funkdisziplin trainieren</h2>
+                <p>
+                    Teilnehmer eintragen, Funksprüche wählen – Vordrucke, Nachrichtenplan
+                    und Live-Übungsleitung erzeugt der Generator.
+                    <a href="../open-source/">Kostenlos, ohne Anmeldung, quelloffen</a>.
+                </p>
+                <p class="mb-0">
+                    <a href="../" class="btn btn-primary">Übung erstellen</a>
+                    <a href="../funkreichweite/" class="btn btn-outline-primary">Reichweite</a>
+                    <a href="../verkehrsarten/" class="btn btn-outline-primary">Verkehrsarten</a>
+                    <a href="../sprechfunk-regeln/" class="btn btn-outline-primary">Sprechfunk-Regeln</a>
+                </p>
+            </div>
+        </div>
+    </article>
+</main>
+
+<footer class="main-footer">
+    <span class="footer-links">
+        <a href="../">Anwendung</a>
+        <a href="../anleitung/">Anleitung</a>
+        <a href="../buchstabiertafel/">Buchstabiertafel</a>
+        <a href="../meldevordruck/">Meldevordruck</a>
+        <a href="../funksprueche/">Funksprüche</a>
+        <a href="../faq/">FAQ</a>
+    </span>
+    <span class="footer-links">
+        <a href="../impressum/">Impressum</a>
+        <a href="../datenschutz/">Datenschutz</a>
+        <a href="mailto:johannes.rudolph@thw-oldenburg.de">Kontakt</a>
+        <a href="https://github.com/wattnpapa/sprechfunk-uebung" target="_blank" rel="noopener noreferrer">GitHub</a>
+        <a href="https://github.com/wattnpapa/sprechfunk-uebung/blob/main/LICENSE" target="_blank" rel="noopener noreferrer">EUPL-1.2-Lizenz</a>
+    </span>
+</footer>
+
+</body>
+
+</html>
