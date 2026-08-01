@@ -1,0 +1,441 @@
+<!DOCTYPE html>
+<html lang="de">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Funkmeldesystem (FMS): Statusmeldungen 0 bis 9 im BOS-Funk | Sprechfunk Übungsgenerator</title>
+    <link rel="icon" type="image/png" href="../assets/favicon.png">
+    <link rel="canonical" href="https://sprechfunk-uebung.de/funkmeldesystem/">
+    <meta name="robots" content="index,follow,max-image-preview:large,max-snippet:-1">
+    <meta name="theme-color" content="#0d6efd">
+
+    <meta name="description" content="Funkmeldesystem (FMS) im BOS-Funk verständlich erklärt: alle Statusmeldungen 0 bis 9 vom Fahrzeug zur Leitstelle, die Statuskennungen der Leitstelle, Status im Digitalfunk und typische Fehler – mit Übungsbeispielen für die Sprechfunkausbildung.">
+    <meta name="author" content="Johannes Rudolph">
+
+    <meta property="og:title" content="Funkmeldesystem (FMS): Statusmeldungen 0 bis 9 im BOS-Funk">
+    <meta property="og:description" content="Alle FMS-Status von 0 bis 9, die Statuskennungen der Leitstelle, Statusmeldungen im Digitalfunk und die häufigsten Fehler – kompakt für die Sprechfunkausbildung.">
+    <meta property="og:url" content="https://sprechfunk-uebung.de/funkmeldesystem/">
+    <meta property="og:type" content="article">
+    <meta property="og:locale" content="de_DE">
+    <meta property="og:site_name" content="Sprechfunk Übungsgenerator">
+    <meta property="og:image" content="https://sprechfunk-uebung.de/assets/og-image.png">
+    <meta property="og:image:width" content="1200">
+    <meta property="og:image:height" content="630">
+    <meta property="og:image:alt" content="Sprechfunk Übungsgenerator – Übungen für den BOS-Sprechfunk erstellen">
+
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="Funkmeldesystem (FMS): Statusmeldungen 0 bis 9 im BOS-Funk">
+    <meta name="twitter:description" content="Alle FMS-Status von 0 bis 9, die Statuskennungen der Leitstelle und die häufigsten Fehler – kompakt erklärt.">
+    <meta name="twitter:image" content="https://sprechfunk-uebung.de/assets/og-image.png">
+
+    <link rel="stylesheet" href="../bundle.css">
+    <link rel="stylesheet" href="../style.css">
+
+    <!-- GoatCounter: cookielose, anonyme Reichweitenmessung -->
+    <script data-goatcounter="https://sprechfunk-uebung.goatcounter.com/count"
+            async src="//gc.zgo.at/count.js"></script>
+
+    <script type="application/ld+json">
+        {
+            "@context": "https://schema.org",
+            "@type": "Article",
+            "headline": "Funkmeldesystem (FMS): Statusmeldungen 0 bis 9 im BOS-Funk",
+            "description": "Das Funkmeldesystem im BOS-Funk verständlich erklärt: die Statusmeldungen 0 bis 9 vom Fahrzeug zur Leitstelle, die Statuskennungen der Leitstelle, Statusmeldungen im Digitalfunk und typische Fehler in der Anwendung.",
+            "inLanguage": "de",
+            "url": "https://sprechfunk-uebung.de/funkmeldesystem/",
+            "image": "https://sprechfunk-uebung.de/assets/og-image.png",
+            "author": {
+                "@type": "Person",
+                "name": "Johannes Rudolph",
+                "url": "https://github.com/wattnpapa"
+            },
+            "publisher": {
+                "@type": "Person",
+                "name": "Johannes Rudolph"
+            },
+            "isPartOf": {
+                "@type": "WebSite",
+                "name": "Sprechfunk Übungsgenerator",
+                "url": "https://sprechfunk-uebung.de/"
+            },
+            "about": [
+                { "@type": "Thing", "name": "Funkmeldesystem" },
+                { "@type": "Thing", "name": "FMS-Status" },
+                { "@type": "Thing", "name": "BOS-Funk" }
+            ]
+        }
+    </script>
+    <script type="application/ld+json">
+        {
+            "@context": "https://schema.org",
+            "@type": "BreadcrumbList",
+            "itemListElement": [
+                {
+                    "@type": "ListItem",
+                    "position": 1,
+                    "name": "Startseite",
+                    "item": "https://sprechfunk-uebung.de/"
+                },
+                {
+                    "@type": "ListItem",
+                    "position": 2,
+                    "name": "Funkmeldesystem (FMS)",
+                    "item": "https://sprechfunk-uebung.de/funkmeldesystem/"
+                }
+            ]
+        }
+    </script>
+    <script>
+        // Gleiche Theme-Auswahl wie in der App anwenden (statische Seiten laden kein Bundle).
+        document.addEventListener("DOMContentLoaded", function () {
+            var stored = localStorage.getItem("theme");
+            if (stored) {
+                document.body.setAttribute("data-theme", stored);
+            }
+        });
+    </script>
+</head>
+
+<body data-theme="light">
+<header class="app-header">
+    <div class="container app-header-grid">
+        <div class="app-header-title">
+            <p class="h2 mb-0">
+                <i class="fas fa-broadcast-tower"></i> Sprechfunk Übungsgenerator
+            </p>
+        </div>
+        <div class="app-header-actions d-none d-md-flex">
+            <a href="../" class="btn btn-primary">
+                <i class="fas fa-arrow-left"></i> Zur Anwendung
+            </a>
+            <a href="../anleitung/" class="btn btn-info">
+                <i class="fas fa-book"></i> Anleitung
+            </a>
+            <a href="https://github.com/wattnpapa/sprechfunk-uebung" class="btn btn-dark">
+                <i class="fab fa-github"></i> GitHub
+            </a>
+        </div>
+    </div>
+</header>
+
+<main class="container my-4 app-view-shell">
+    <nav aria-label="Brotkrumennavigation" class="mb-3">
+        <ol class="breadcrumb mb-0">
+            <li class="breadcrumb-item"><a href="../">Startseite</a></li>
+            <li class="breadcrumb-item active" aria-current="page">Funkmeldesystem (FMS)</li>
+        </ol>
+    </nav>
+
+    <article>
+        <div class="card mb-3">
+            <div class="card-body">
+                <h1 class="h3">Funkmeldesystem (FMS) – Statusmeldungen im BOS-Funk</h1>
+                <p>
+                    Das <strong>Funkmeldesystem</strong>, kurz <strong>FMS</strong>, ist die
+                    stille Hälfte des BOS-Funks: Statt jede Lageänderung zu sprechen, drückt
+                    die Besatzung eine Zifferntaste am Funkgerät – die Leitstelle sieht den
+                    neuen <strong>Status</strong> sofort im Einsatzleitsystem. Das hält den
+                    Funkkanal frei für das, was wirklich gesprochen werden muss, und
+                    dokumentiert den Einsatzverlauf nebenbei mit Zeitstempel.
+                </p>
+                <p class="mb-0">
+                    Wer Sprechfunk ausbildet, kommt an den Status nicht vorbei: Sie gehören
+                    in jede <a href="../funkuebung-planen/">Funkübung</a> genauso wie das
+                    <a href="../sprechfunk-regeln/">Anrufverfahren</a> und das
+                    <a href="../buchstabiertafel/">Buchstabieren</a>. Diese Seite erklärt die
+                    Statusmeldungen 0 bis 9, die Gegenrichtung von der Leitstelle zum
+                    Fahrzeug, die Besonderheiten im <a href="../bos-funk/">Digitalfunk</a>
+                    und die Fehler, die in der Praxis am häufigsten passieren.
+                </p>
+            </div>
+        </div>
+
+        <div class="card mb-3">
+            <div class="card-header"><h2 class="h4 mb-0" id="grundlagen">Was das Funkmeldesystem leistet</h2></div>
+            <div class="card-body">
+                <p>
+                    FMS überträgt kurze Datentelegramme parallel zum Sprechfunk. Jedes
+                    Telegramm enthält die <strong>Fahrzeugkennung</strong> – Organisation,
+                    Landkreis und Fahrzeug – und den aktuellen <strong>Status</strong>.
+                    Entwickelt wurde das Verfahren für den analogen 4-m-Betriebsfunk; im
+                    Digitalfunk lebt es als Statusmeldung technisch anders, funktional aber
+                    unverändert weiter.
+                </p>
+                <ul class="mb-0">
+                    <li>
+                        <strong>Funkdisziplin:</strong> Routinemeldungen wie „einsatzbereit“
+                        oder „am Einsatzort“ belegen keine Sprechzeit mehr.
+                    </li>
+                    <li>
+                        <strong>Dokumentation:</strong> Jeder Statuswechsel wird mit Uhrzeit
+                        protokolliert – die Grundlage für Einsatzauswertung und Abrechnung.
+                    </li>
+                    <li>
+                        <strong>Disposition:</strong> Die Leitstelle sieht auf einen Blick,
+                        welche Fahrzeuge verfügbar sind, ohne nachfragen zu müssen.
+                    </li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="card mb-3">
+            <div class="card-header"><h2 class="h4 mb-0" id="status-fahrzeug">Statusmeldungen 0 bis 9: Fahrzeug an Leitstelle</h2></div>
+            <div class="card-body">
+                <p>
+                    Diese Status setzt die Fahrzeugbesatzung. Die Bedeutungen folgen der
+                    bundesweit gebräuchlichen Belegung – <strong>verbindlich ist immer die
+                    Dienstanweisung der zuständigen Leitstelle</strong>, weil einzelne Status
+                    je nach Bundesland, Organisation und Fachdienst abweichend belegt sind.
+                </p>
+                <div class="table-responsive">
+                    <table class="table table-striped table-sm align-middle">
+                        <caption class="visually-hidden">FMS-Statusmeldungen vom Fahrzeug an die Leitstelle</caption>
+                        <thead>
+                            <tr>
+                                <th scope="col">Status</th>
+                                <th scope="col">Bedeutung</th>
+                                <th scope="col">Wann gedrückt wird</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <th scope="row">0</th>
+                                <td>Priorisierter Ruf / Notfall</td>
+                                <td>Eigengefährdung oder Notfall der Besatzung – hat auf dem Kanal Vorrang vor allem anderen.</td>
+                            </tr>
+                            <tr>
+                                <th scope="row">1</th>
+                                <td>Einsatzbereit über Funk</td>
+                                <td>Fahrzeug ist unterwegs, aber frei und über Funk erreichbar.</td>
+                            </tr>
+                            <tr>
+                                <th scope="row">2</th>
+                                <td>Einsatzbereit auf Wache</td>
+                                <td>Fahrzeug steht am Standort und ist verfügbar.</td>
+                            </tr>
+                            <tr>
+                                <th scope="row">3</th>
+                                <td>Einsatzauftrag übernommen</td>
+                                <td>Auftrag angenommen, Fahrzeug rückt aus und ist auf Anfahrt.</td>
+                            </tr>
+                            <tr>
+                                <th scope="row">4</th>
+                                <td>Ankunft am Einsatzort</td>
+                                <td>Fahrzeug ist an der Einsatzstelle eingetroffen.</td>
+                            </tr>
+                            <tr>
+                                <th scope="row">5</th>
+                                <td>Sprechwunsch</td>
+                                <td>Die Besatzung möchte mit der Leitstelle sprechen und wartet auf Aufforderung.</td>
+                            </tr>
+                            <tr>
+                                <th scope="row">6</th>
+                                <td>Nicht einsatzbereit</td>
+                                <td>Fahrzeug ist außer Dienst – Defekt, Wartung, fehlendes Personal.</td>
+                            </tr>
+                            <tr>
+                                <th scope="row">7</th>
+                                <td>Einsatzgebunden / Abfahrt vom Einsatzort</td>
+                                <td>Im Rettungsdienst: Patient aufgenommen, Transport läuft. Bei anderen Fachdiensten regional unterschiedlich belegt.</td>
+                            </tr>
+                            <tr>
+                                <th scope="row">8</th>
+                                <td>Ankunft am Zielort</td>
+                                <td>Im Rettungsdienst: Krankenhaus erreicht, Übergabe beginnt.</td>
+                            </tr>
+                            <tr>
+                                <th scope="row">9</th>
+                                <td>Handquittung / Fremdanmeldung</td>
+                                <td>Quittung auf eine Anweisung der Leitstelle oder Anmeldung in einem fremden Leitstellenbereich.</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <p class="mb-0 small text-body-secondary">
+                    Merkhilfe für die Ausbildung: 1 und 2 heißen „frei“, 3 und 4 begleiten die
+                    Anfahrt, 7 und 8 den Transport, 6 heißt „gar nichts geht“.
+                </p>
+            </div>
+        </div>
+
+        <div class="card mb-3">
+            <div class="card-header"><h2 class="h4 mb-0" id="status-leitstelle">Gegenrichtung: Statuskennungen der Leitstelle</h2></div>
+            <div class="card-body">
+                <p>
+                    Auch die Leitstelle kann Status an das Fahrzeug senden – sie erscheinen
+                    im Display und werden traditionell mit Buchstaben bezeichnet. Ihre
+                    Belegung ist deutlich uneinheitlicher als die der Ziffernstatus und wird
+                    regional festgelegt. Häufig verwendet werden:
+                </p>
+                <div class="table-responsive">
+                    <table class="table table-striped table-sm align-middle">
+                        <caption class="visually-hidden">Statuskennungen der Leitstelle an das Fahrzeug</caption>
+                        <thead>
+                            <tr>
+                                <th scope="col">Kennung</th>
+                                <th scope="col">Typische Bedeutung</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <th scope="row">C</th>
+                                <td>Sprechaufforderung – die Leitstelle bittet um Meldung über Funk.</td>
+                            </tr>
+                            <tr>
+                                <th scope="row">E</th>
+                                <td>Einrücken – Einsatz beendet oder abgebrochen.</td>
+                            </tr>
+                            <tr>
+                                <th scope="row">F</th>
+                                <td>Melden über Fernsprecher – Rückruf per Telefon statt über Funk.</td>
+                            </tr>
+                            <tr>
+                                <th scope="row">J</th>
+                                <td>Anweisung abwarten – Auftrag folgt.</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <p class="mb-0">
+                    Weil die Belegung örtlich variiert, gehört sie in die Einweisung am
+                    Fahrzeug – und nicht ins Auswendiglernen aus dem Internet. Für die Übung
+                    reicht es zu wissen: <em>Ein Status der Leitstelle ist eine Anweisung und
+                    will quittiert werden.</em>
+                </p>
+            </div>
+        </div>
+
+        <div class="card mb-3">
+            <div class="card-header"><h2 class="h4 mb-0" id="digitalfunk">Status im Digitalfunk</h2></div>
+            <div class="card-body">
+                <p>
+                    Im <a href="../bos-funk/">Digitalfunk BOS</a> heißt das Verfahren nicht
+                    mehr FMS, die Bedienung fühlt sich aber gleich an: Die Statusmeldung wird
+                    als kurzes Datentelegramm über das TETRA-Netz gesendet, die Kennung des
+                    Geräts liefert die <strong>OPTA</strong> mit. Drei Unterschiede sind für
+                    die Ausbildung relevant:
+                </p>
+                <ul class="mb-0">
+                    <li>
+                        <strong>Mehr Statuswerte:</strong> Der Digitalfunk ist nicht auf zehn
+                        Ziffern begrenzt; Leitstellen können zusätzliche Status vergeben.
+                    </li>
+                    <li>
+                        <strong>Rückmeldung:</strong> Das Gerät zeigt an, ob der Status
+                        zugestellt wurde – im Analogfunk blieb das ungewiss.
+                    </li>
+                    <li>
+                        <strong>Nur im Netzbetrieb:</strong> Statusmeldungen brauchen TMO.
+                        Im Direktbetrieb (DMO) an der Einsatzstelle erreichen sie die
+                        Leitstelle nicht – dort wird wieder gesprochen.
+                    </li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="card mb-3">
+            <div class="card-header"><h2 class="h4 mb-0" id="fehler">Die häufigsten Fehler im Umgang mit dem Status</h2></div>
+            <div class="card-body">
+                <ul class="mb-0">
+                    <li>
+                        <strong>Status vergessen:</strong> Der Klassiker – das Fahrzeug ist
+                        längst zurück, steht für die Leitstelle aber noch auf 3. Wer nicht
+                        auf 1 oder 2 zurückgeht, fehlt in der Disposition.
+                    </li>
+                    <li>
+                        <strong>Status statt Meldung:</strong> Status 4 sagt „wir sind da“ –
+                        nicht, was vorgefunden wurde. Die
+                        <a href="../meldevordruck/">Lagemeldung</a> ersetzt er nie.
+                    </li>
+                    <li>
+                        <strong>Sprechwunsch ohne Geduld:</strong> Nach Status 5 wird
+                        gewartet, bis die Leitstelle aufruft – nicht sofort dazwischengefunkt.
+                    </li>
+                    <li>
+                        <strong>Status während der Fahrt:</strong> Tasten drücken ist
+                        Beifahrersache. Wer fährt, funkt nicht.
+                    </li>
+                    <li>
+                        <strong>Fremde Belegung angenommen:</strong> Status 7 und 8 bedeuten
+                        im Rettungsdienst etwas anderes als in mancher Feuerwehr. Im
+                        Zweifel gilt die örtliche Regelung.
+                    </li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="card mb-3">
+            <div class="card-header"><h2 class="h4 mb-0" id="ueben">Status in der Sprechfunkübung trainieren</h2></div>
+            <div class="card-body">
+                <p>
+                    Am Funkgerät sind Status eine Taste – im Kopf sind sie eine Entscheidung.
+                    Genau die lässt sich in einer <strong>BOS-Sprechfunkübung</strong>
+                    trainieren, auch ohne Anbindung an ein echtes Einsatzleitsystem: Die
+                    Übungsleitung spielt die Leitstelle und lässt den Status ansagen, statt
+                    ihn zu drücken.
+                </p>
+                <ul>
+                    <li>
+                        <strong>Status mitsprechen:</strong> „Florian Musterstadt 1/44/1 –
+                        Status 3, kommen.“ Die Übungsleitung quittiert und notiert die Zeit.
+                    </li>
+                    <li>
+                        <strong>Statuskette abfahren:</strong> Jeder Teilnehmer durchläuft zu
+                        seinem <a href="../funkuebung-szenarien/">Szenario</a> die Folge
+                        3 – 4 – 7 – 8 – 1 und meldet jeden Wechsel.
+                    </li>
+                    <li>
+                        <strong>Lücken einbauen:</strong> Die Übungsleitung fragt gezielt bei
+                        Fahrzeugen nach, die den Statuswechsel „vergessen“ haben – der
+                        Lerneffekt sitzt danach.
+                    </li>
+                </ul>
+                <p class="mb-0">
+                    Den zeitlichen Rahmen dafür liefert der
+                    <a href="../regiebuch-funkuebung/">Nachrichtenplan</a>: Er zeigt der
+                    Übungsleitung live, welche Meldung als Nächstes fällig ist.
+                </p>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-body">
+                <h2 class="h4">Funkübung mit Statusmeldungen vorbereiten</h2>
+                <p>
+                    Teilnehmer mit <a href="../funkrufnamen/">Funkrufnamen</a> eintragen,
+                    Funksprüche wählen – Vordrucke, Nachrichtenplan und Live-Übungsleitung
+                    erzeugt der Generator.
+                    <a href="../open-source/">Kostenlos, ohne Anmeldung, quelloffen</a>.
+                </p>
+                <p class="mb-0">
+                    <a href="../" class="btn btn-primary">Übung erstellen</a>
+                    <a href="../sprechfunk-regeln/" class="btn btn-outline-primary">Sprechfunk-Regeln</a>
+                    <a href="../bos-funk/" class="btn btn-outline-primary">BOS-Funk Grundlagen</a>
+                </p>
+            </div>
+        </div>
+    </article>
+</main>
+
+<footer class="main-footer">
+    <span class="footer-links">
+        <a href="../">Anwendung</a>
+        <a href="../anleitung/">Anleitung</a>
+        <a href="../buchstabiertafel/">Buchstabiertafel</a>
+        <a href="../meldevordruck/">Meldevordruck</a>
+        <a href="../funksprueche/">Funksprüche</a>
+        <a href="../faq/">FAQ</a>
+    </span>
+    <span class="footer-links">
+        <a href="../impressum/">Impressum</a>
+        <a href="../datenschutz/">Datenschutz</a>
+        <a href="mailto:johannes.rudolph@thw-oldenburg.de">Kontakt</a>
+        <a href="https://github.com/wattnpapa/sprechfunk-uebung" target="_blank" rel="noopener noreferrer">GitHub</a>
+        <a href="https://github.com/wattnpapa/sprechfunk-uebung/blob/main/LICENSE" target="_blank" rel="noopener noreferrer">EUPL-1.2-Lizenz</a>
+    </span>
+</footer>
+
+</body>
+
+</html>

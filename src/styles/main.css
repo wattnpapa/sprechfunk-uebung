@@ -355,8 +355,12 @@ code {
     padding: 0.7rem 1.25rem;
 }
 
+/* Der Markenname im Kopfbalken ist bewusst KEINE h1: die h1 jeder Seite
+   gehört zum Seitenthema (SEO/Keyword). Das <p> muss darum dieselbe
+   Darstellung erhalten wie die früheren Überschriften. */
 .app-header-title h1,
-.app-header-title h2 {
+.app-header-title h2,
+.app-header-title p {
     margin: 0;
     color: var(--kopf-auf);
     font-size: var(--t-l);

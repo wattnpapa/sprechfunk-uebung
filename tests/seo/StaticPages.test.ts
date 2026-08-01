@@ -92,17 +92,13 @@ describe("Statische Seiten: SEO-Pflichtangaben", () => {
         expect(beschreibung).toMatch(/ohne Anmeldung/i);
         expect(beschreibung).toMatch(/ohne Installation/i);
 
-        const h1 = /<h1[^>]*>([\s\S]*?)<\/h1>/i.exec(html)?.[1];
-        expect(h1).toBeTruthy();
-        const h1Text = h1!.replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").trim();
-        expect(h1Text).toContain("Sprechfunk Übungsgenerator");
-
         const introStart = html.indexOf("id=\"seoIntroArea\"");
         expect(introStart, "Die Startseite braucht den Einstiegstext #seoIntroArea").toBeGreaterThan(-1);
         const intro = html.slice(introStart, html.indexOf("id=\"adminArea\""));
 
-        const introUeberschrift = /<h2[^>]*>([\s\S]*?)<\/h2>/i.exec(intro)?.[1];
-        expect(introUeberschrift).toBeTruthy();
+        // Die h1 der Startseite steht im Einstiegstext, nicht im Kopfbalken.
+        const introUeberschrift = /<h1[^>]*>([\s\S]*?)<\/h1>/i.exec(intro)?.[1];
+        expect(introUeberschrift, "Die h1 der Startseite gehoert in #seoIntroArea").toBeTruthy();
         const introUeberschriftText = introUeberschrift!.replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").trim();
         expect(introUeberschriftText).toMatch(/Sprechfunkübung online erstellen/);
         expect(introUeberschriftText).toMatch(/kostenlos/i);
@@ -110,6 +106,50 @@ describe("Statische Seiten: SEO-Pflichtangaben", () => {
 
         expect(intro).toMatch(/ohne Installation/i);
     });
+
+    /**
+     * Das Hauptkeyword muss in Titel, h1 und im Einstiegstext stehen – sonst
+     * ordnet Google die Startseite dem Suchbegriff nicht zu. Der Test haelt die
+     * drei Stellen zusammen, weil sie in verschiedenen Bloecken der Datei liegen
+     * und beim Umformulieren einzeln verrutschen.
+     */
+    it("platziert das Hauptkeyword in Titel, h1 und Einstiegstext der Startseite", () => {
+        const html = leseSeite("index.html");
+        // "BOS Sprechfunk Übung" – mit oder ohne Bindestrich/Fuge geschrieben.
+        const keyword = /BOS[- ]Sprechfunk[- ]?übung/i;
+
+        expect(attribut(html, /<title>([^<]*)<\/title>/i)!).toMatch(keyword);
+
+        const intro = html.slice(html.indexOf("id=\"seoIntroArea\""), html.indexOf("id=\"adminArea\""));
+        expect(/<h1[^>]*>([\s\S]*?)<\/h1>/i.exec(intro)![1]).toMatch(keyword);
+
+        // Erste 100 Woerter des sichtbaren Einstiegstexts.
+        const ersteWorte = intro
+            .replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").trim()
+            .split(" ").slice(0, 100).join(" ");
+        expect(ersteWorte, "Das Keyword fehlt in den ersten 100 Woertern").toMatch(keyword);
+    });
+
+    /**
+     * Der Produktname im Kopfbalken war frueher die h1 jeder Seite – damit hatte
+     * keine Unterseite eine Ueberschrift zu ihrem eigenen Thema. Der Test haelt
+     * die Struktur fest: genau eine h1 je Seite, und sie beschreibt das Thema.
+     */
+    it.each(seiten.map(seite => [seite.slug || "(startseite)", seite] as const))(
+        "%s hat genau eine themenbezogene h1",
+        (_name, seite) => {
+            const html = leseSeite(seite.source);
+
+            const h1s = [...html.matchAll(/<h1[^>]*>([\s\S]*?)<\/h1>/gi)]
+                .map(treffer => treffer[1].replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").trim());
+
+            expect(h1s, "Jede Seite braucht genau eine h1").toHaveLength(1);
+            expect(h1s[0], "Der Produktname allein ist kein Seitenthema")
+                .not.toBe("Sprechfunk Übungsgenerator");
+            // Rechtsseiten ("Impressum") duerfen kurz sein, leer aber nicht.
+            expect(h1s[0].length).toBeGreaterThan(5);
+        }
+    );
 
     /**
      * FAQ-Markup darf nur Fragen enthalten, die auch sichtbar auf der Seite stehen –
