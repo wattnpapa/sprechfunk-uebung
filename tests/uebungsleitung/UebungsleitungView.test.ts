@@ -16,6 +16,7 @@ vi.mock("../../src/core/chart", () => {
 });
 
 import { UebungsleitungView } from "../../src/uebungsleitung/UebungsleitungView";
+import { captureFieldFocus, restoreFieldFocus } from "../../src/utils/focus";
 
 const setDom = () => {
     const dom = new JSDOM(`
@@ -144,6 +145,32 @@ describe("UebungsleitungView", () => {
         expect(onLoesungswort).toHaveBeenCalledWith("Alpha", "IST");
         expect(onStaerke).toHaveBeenCalledWith("Alpha", 0, "9");
         expect(onNotiz).toHaveBeenCalledWith("Alpha", "Hinweis");
+    });
+
+    it("keeps the note field focused when a live update rebuilds the table", () => {
+        const view = new UebungsleitungView();
+        const listeOptions = {
+            nachrichten: [{ nr: 1, sender: "Heros Lübeck 201", empfaenger: ["B"], text: "hallo" }],
+            nachrichtenStatus: { "Heros Lübeck 201__1": { notiz: "Notiz" } },
+            hideAbgesetzt: false,
+            senderFilter: "",
+            empfaengerFilter: "",
+            textFilter: ""
+        };
+
+        view.renderNachrichtenListe(listeOptions);
+        const note = document.querySelector(".nachricht-notiz") as HTMLTextAreaElement;
+        note.focus();
+        note.setSelectionRange(3, 3);
+
+        const snapshot = captureFieldFocus();
+        view.renderNachrichtenListe(listeOptions);
+        restoreFieldFocus(snapshot);
+
+        const rebuilt = document.querySelector(".nachricht-notiz") as HTMLTextAreaElement;
+        expect(rebuilt).not.toBe(note);
+        expect(document.activeElement).toBe(rebuilt);
+        expect(rebuilt.selectionStart).toBe(3);
     });
 
     it("renders nachrichten table and triggers nachrichten callbacks", () => {

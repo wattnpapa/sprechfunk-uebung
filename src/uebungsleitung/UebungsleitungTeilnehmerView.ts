@@ -116,6 +116,9 @@ export class UebungsleitungTeilnehmerView {
                 target.style.height = "auto";
                 target.style.height = `${target.scrollHeight}px`;
             }
+            // Bereits beim Tippen übernehmen: ein Live-Update kann die Zeile neu
+            // aufbauen, bevor `change` (erst beim Verlassen) je feuern würde.
+            this.handleTeilnehmerChange(e.target as HTMLInputElement, callbacks);
         });
     }
 
@@ -169,7 +172,7 @@ export class UebungsleitungTeilnehmerView {
                 rows="1"
                 placeholder="Notiz…"
                 data-action="notiz"
-                data-teilnehmer="${name}"
+                data-teilnehmer="${this.escapeAttr(name)}"
               >${status?.notizen ?? ""}</textarea>
             </td>
             <td>

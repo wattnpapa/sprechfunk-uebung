@@ -8,6 +8,7 @@ import type { Firestore } from "firebase/firestore";
 import {FunkUebung} from "../models/FunkUebung";
 import { uiFeedback } from "../core/UiFeedback";
 import { debounce } from "../utils/debounce";
+import { captureFieldFocus, restoreFieldFocus } from "../utils/focus";
 import { formatNatoDate } from "../utils/date";
 import { ladePdfGenerator } from "../services/pdfGeneratorLazy";
 import { LiveStatusService } from "../services/LiveStatusService";
@@ -58,9 +59,11 @@ export class UebungsleitungController {
     private textFilter = "";
     private showStaerkeDetails = false;
     private debouncedRenderNachrichten = debounce(() => this.renderNachrichten(), 140);
-    private debouncedSaveNotiz = debounce((sender: string, nr: number, val: string) => {
-        this.persistNachrichtNotiz(sender, nr, val);
-    }, 220);
+    /**
+     * Tippen schreibt sofort in den lokalen Zustand, damit ein Live-Update den
+     * Text nicht zurücksetzt; nur das Speichern/Veröffentlichen wird gebündelt.
+     */
+    private debouncedSave = debounce(() => this.save(), 220);
     private db: Firestore;
     private liveStatus: LiveStatusService | null = null;
     /** Zuletzt empfangene Selbstmeldungen der Teilnehmer. */
@@ -308,6 +311,9 @@ export class UebungsleitungController {
     }
 
     public dispose(): void {
+        // Noch ausstehende, gebündelte Eingaben (z. B. eine gerade getippte
+        // Notiz) dürfen beim Verlassen der Seite nicht verloren gehen.
+        this.save();
         if (this.cockpitInterval !== null) {
             clearInterval(this.cockpitInterval);
             this.cockpitInterval = null;
@@ -323,12 +329,14 @@ export class UebungsleitungController {
         if (!this.uebung || !this.storage) {
             return;
         }
+        const focusSnapshot = captureFieldFocus();
         this.view.renderTeilnehmerListe(
             this.uebung,
             this.storage.teilnehmer,
             this.showStaerkeDetails,
             this.buildFortschritt()
         );
+        restoreFieldFocus(focusSnapshot);
     }
 
     /** Fortschritt je Teilnehmer aus den Live-Meldungen – Basis für Nachzügler-Erkennung. */
@@ -361,10 +369,10 @@ export class UebungsleitungController {
             return;
         }
 
-        const activeEl = document.activeElement as HTMLInputElement | null;
-        const shouldRestoreTextFilterFocus = activeEl?.id === "nachrichtenTextFilterInput";
-        const caretPos = shouldRestoreTextFilterFocus ? (activeEl.selectionStart ?? this.textFilter.length) : null;
-        
+        // Die Tabelle wird komplett neu gebaut – Fokus und Cursor eines gerade
+        // bearbeiteten Feldes (Notiz, Suchfeld) müssen das überleben.
+        const focusSnapshot = captureFieldFocus();
+
         // Build flat list
         const nachrichten: FlattenedNachricht[] = [];
         Object.entries(this.uebung.nachrichten).forEach(([sender, msgs]) => {
@@ -421,14 +429,7 @@ export class UebungsleitungController {
         this.view.updateHeatmap(heatmapBins);
         this.view.updateTeilnehmerTimeline(this.buildTeilnehmerTimeline(nachrichten, effektiv));
 
-        if (shouldRestoreTextFilterFocus) {
-            const input = document.getElementById("nachrichtenTextFilterInput") as HTMLInputElement | null;
-            if (input) {
-                input.focus({ preventScroll: true });
-                const pos = Math.min(caretPos ?? input.value.length, input.value.length);
-                input.setSelectionRange(pos, pos);
-            }
-        }
+        restoreFieldFocus(focusSnapshot);
     }
 
     private calculateEtaLabel(
@@ -673,7 +674,7 @@ export class UebungsleitungController {
             return;
         }
         entry.loesungswortGesendet = val;
-        this.save();
+        this.debouncedSave();
     }
 
     private updateStaerke(name: string, idx: number, val: string) {
@@ -683,7 +684,7 @@ export class UebungsleitungController {
         }
         entry.teilstaerken = entry.teilstaerken || [];
         entry.teilstaerken[idx] = val;
-        this.save();
+        this.debouncedSave();
     }
 
     private updateNotiz(name: string, val: string) {
@@ -692,7 +693,7 @@ export class UebungsleitungController {
             return;
         }
         entry.notizen = val;
-        this.save();
+        this.debouncedSave();
     }
 
     private toggleStaerkeDetails() {
@@ -750,7 +751,7 @@ export class UebungsleitungController {
     }
 
     private updateNachrichtNotiz(sender: string, nr: number, val: string) {
-        this.debouncedSaveNotiz(sender, nr, val);
+        this.persistNachrichtNotiz(sender, nr, val);
     }
 
     private persistNachrichtNotiz(sender: string, nr: number, val: string) {
@@ -762,7 +763,7 @@ export class UebungsleitungController {
         entry.notiz = val;
         entry.notizGeaendertUm = new Date().toISOString();
         this.storage.nachrichten[key] = entry;
-        this.save();
+        this.debouncedSave();
     }
 
     private async exportPdf() {
