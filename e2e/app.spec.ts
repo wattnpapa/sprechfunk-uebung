@@ -86,7 +86,10 @@ test.beforeEach(async ({ context }) => {
 test("@smoke @generator loads main app shell", async ({ page }) => {
     await page.goto("/");
 
-    await expect(page.getByRole("heading", { name: "Sprechfunk Übungsgenerator" })).toBeVisible();
+    // Der Markenschriftzug im Header ist bewusst kein Heading mehr (nur ein H1
+    // pro Seite, das liegt im seoIntroArea), daher per Text statt Rolle pruefen.
+    await expect(page.locator(".app-header-title")).toContainText("Sprechfunk Übungsgenerator");
+    await expect(page.getByRole("heading", { level: 1 })).toBeVisible();
     await expect(page.getByTestId("route-generator")).toBeVisible();
 });
 
@@ -550,7 +553,7 @@ test("@routing sets html title per module route", async ({ page }) => {
     // Die Generator-Ansicht ist die indexierbare Startseite und behaelt den
     // Titel aus index.html; nur die noindex-Ansichten bekommen einen Arbeitstitel.
     await page.goto("/#/generator");
-    await expect(page).toHaveTitle(/^Funkübung online erstellen .* \| Sprechfunk Übungsgenerator$/);
+    await expect(page).toHaveTitle(/^BOS Sprechfunk Übung erstellen .* \| Sprechfunk Übungsgenerator$/);
 
     await page.goto("/#/admin");
     await expect(page).toHaveTitle("Sprechfunkuebung - Admin");
