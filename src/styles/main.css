@@ -1733,11 +1733,14 @@ select option {
     outline-offset: 2px;
 }
 
+/* Auch auf kleinen Bildschirmen waagerecht und umbrechend: als senkrechte
+   Liste bräuchten sieben Einträge sieben Zeilen und schöben den Inhalt aus dem
+   Bild. Zuklappen bleibt über die Zusammenfassung möglich. */
 .site-nav-list {
     display: flex;
-    flex-direction: column;
-    gap: 0.15rem;
-    margin: 0 0 0.5rem;
+    flex-flow: row wrap;
+    gap: 0.15rem 0.4rem;
+    margin: 0 0 0.4rem;
     padding: 0;
     list-style: none;
 }
@@ -1768,11 +1771,109 @@ select option {
     }
 
     .site-nav-list {
-        flex-direction: row;
-        flex-wrap: wrap;
         gap: 0.25rem 0.5rem;
         margin-bottom: 0;
         padding: 0.25rem 0;
+    }
+}
+
+/* ==========================================================================
+   Wissensbereich: Inhalt mit Themen-Seitenleiste
+   Einspaltig auf kleinen Bildschirmen (Leiste über dem Inhalt), ab 992px
+   zweispaltig mit mitlaufender Leiste links.
+   ========================================================================== */
+
+.wissen-layout {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 1rem;
+    align-items: start;
+}
+
+.wissen-sidebar {
+    font-size: var(--t-s);
+    /* Auf kleinen Bildschirmen steht die Leiste über dem Inhalt. Ohne
+       Höhenbegrenzung schöbe die aufgeklappte Kategorie den Text weit nach
+       unten; begrenzt und scrollbar bleibt beides erreichbar. */
+    max-height: 13rem;
+    overflow-y: auto;
+    padding: 0.5rem 0.6rem;
+    border: var(--strich) solid var(--linie);
+    border-radius: 0.4rem;
+    background: var(--flaeche);
+}
+
+.wissen-sidebar-kopf {
+    margin: 0 0 0.5rem;
+    font-weight: 600;
+}
+
+.wissen-sidebar-kopf a {
+    color: var(--text);
+    text-decoration: none;
+}
+
+.wissen-sidebar-gruppe + .wissen-sidebar-gruppe {
+    margin-top: 0.25rem;
+}
+
+.wissen-sidebar-titel {
+    cursor: pointer;
+    padding: 0.35rem 0;
+    font-weight: 600;
+    color: var(--text-2);
+}
+
+.wissen-sidebar-titel:focus-visible {
+    outline: 2px solid currentcolor;
+    outline-offset: 2px;
+}
+
+.wissen-sidebar-liste {
+    margin: 0.15rem 0 0.5rem;
+    padding-left: 0.6rem;
+    border-left: var(--strich) solid var(--linie);
+}
+
+.wissen-sidebar-link {
+    display: block;
+    padding: 0.25rem 0.4rem;
+    color: var(--text-2);
+    border-radius: 0.3rem;
+    text-decoration: none;
+}
+
+.wissen-sidebar-link:hover {
+    color: var(--text);
+    background: var(--flaeche-2, rgb(0 0 0 / 6%));
+}
+
+.wissen-sidebar-link.active,
+.wissen-sidebar-link[aria-current="page"] {
+    color: var(--text);
+    font-weight: 600;
+    background: var(--flaeche-2, rgb(0 0 0 / 8%));
+}
+
+@media (min-width: 992px) {
+    .wissen-layout {
+        grid-template-columns: 16rem minmax(0, 1fr);
+        gap: 1.5rem;
+    }
+
+    .wissen-sidebar {
+        position: sticky;
+        /* Etwas Abstand zur Navigationsleiste über dem Inhalt. */
+        top: 1rem;
+        max-height: calc(100vh - 2rem);
+        padding: 0;
+        border: 0;
+        background: none;
+    }
+
+    /* Verhindert, dass breite Tabellen die Inhaltsspalte aufblähen. */
+    .wissen-inhalt {
+        min-width: 0;
     }
 }
 

@@ -13,7 +13,8 @@ import {
     renderBreadcrumb,
     renderFooter,
     renderHauptnavigation,
-    renderHubKategorie
+    renderHubKategorie,
+    renderWissenSidebar
 } from "./navigation.mjs";
 import {
     extractDefinedTerms,
@@ -82,11 +83,50 @@ export function renderPageWithStructuredData({
         terme
     });
 
+    // Erst nach dem FAQ-Block: der hängt sich an </main>, und die Seitenleiste
+    // verschiebt dieses Ende.
+    html = setzeWissenSidebar(html, page);
     html = setzeArtikelZeitstempel(html, page, dateModified);
     html = setzeSichtbaresDatum(html, dateModified);
     html = ersetzeJsonLd(html, graph);
     pruefeFaqSichtbar(page, faq, html);
     return { html, graph, faq, terme, title, description, breadcrumb };
+}
+
+/**
+ * Stellt die Themen-Seitenleiste neben den Inhalt (Wissensbereich).
+ *
+ * Betroffen sind der Hub und alle Seiten mit hubCategory. Dafür wird das
+ * vorhandene <main> in ein Grid gehüllt: die Klasse `container` wandert vom
+ * <main> auf den Wrapper, sonst entstünden zwei verschachtelte Container mit
+ * doppeltem Innenabstand.
+ */
+export function setzeWissenSidebar(html, page) {
+    const imWissensbereich = page.slug === HUB_SLUG || page.hubCategory !== undefined;
+    if (!imWissensbereich) return html;
+
+    const mainStart = /<main([^>]*)class="([^"]*)"([^>]*)>/i;
+    const treffer = mainStart.exec(html);
+    if (!treffer) {
+        throw new Error(`Seite "${page.slug}": kein <main> mit class für die Seitenleiste gefunden.`);
+    }
+    if (!html.includes("</main>")) {
+        throw new Error(`Seite "${page.slug}": kein </main> für die Seitenleiste gefunden.`);
+    }
+
+    const klassen = treffer[2].split(/\s+/).filter(Boolean);
+    const hatContainer = klassen.includes("container");
+    const mainKlassen = klassen.filter(klasse => klasse !== "container").join(" ");
+
+    const wrapperKlassen = ["wissen-layout", hatContainer ? "container" : null]
+        .filter(Boolean).join(" ");
+
+    const neuesMain = `<div class="${wrapperKlassen}">\n${renderWissenSidebar(page.slug)}`
+        + `    <main${treffer[1]}class="${mainKlassen} wissen-inhalt"${treffer[3]}>`;
+
+    return html
+        .replace(mainStart, neuesMain)
+        .replace(/<\/main>/, "</main>\n</div>");
 }
 
 /**

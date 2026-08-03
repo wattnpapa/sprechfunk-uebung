@@ -85,6 +85,73 @@ test.describe("@seo Content-Hub", () => {
     });
 });
 
+test.describe("@seo Themen-Seitenleiste", () => {
+    const wissensSeiten = [
+        ...seiten.filter(seite => seite.hubCategory !== undefined),
+        seiten.find(seite => seite.slug === HUB_SLUG)!
+    ];
+
+    for (const seite of wissensSeiten) {
+        test(`${pfadVon(seite.slug)} zeigt die vollständige Themenliste`, async ({ page }) => {
+            await page.goto(pfadVon(seite.slug));
+
+            const sidebar = page.getByTestId("wissen-sidebar");
+            await expect(sidebar).toBeVisible();
+
+            // Alle Inhaltsseiten stehen in der Leiste, nicht nur die eigene Kategorie.
+            for (const ziel of hubZiele) {
+                await expect(sidebar.getByTestId(`sidebar-link-${ziel.slug}`)).toHaveCount(1);
+            }
+        });
+    }
+
+    test("hebt die aktuelle Seite hervor und klappt ihre Kategorie auf", async ({ page }) => {
+        await page.goto("/buchstabiertafel/");
+
+        const aktiv = page.getByTestId("sidebar-link-buchstabiertafel");
+        await expect(aktiv).toHaveAttribute("aria-current", "page");
+        await expect(aktiv).toBeVisible();
+
+        // Die Kategorie der Seite ist offen, eine andere nicht.
+        await expect(page.getByTestId("sidebar-gruppe-grundlagen")).toHaveAttribute("open", "");
+        await expect(page.getByTestId("sidebar-gruppe-technik")).not.toHaveAttribute("open", "");
+
+        // Genau eine Seite ist als aktuell markiert.
+        expect(await page.locator('.wissen-sidebar-link[aria-current="page"]').count()).toBe(1);
+    });
+
+    test("erscheint nicht außerhalb des Wissensbereichs", async ({ page }) => {
+        for (const pfad of ["/", "/impressum/", "/datenschutz/"]) {
+            await page.goto(pfad);
+            await expect(page.getByTestId("wissen-sidebar"), `${pfad} braucht keine Themenleiste`)
+                .toHaveCount(0);
+        }
+    });
+
+    test("liegt links neben dem Inhalt", async ({ page }) => {
+        await page.setViewportSize({ width: 1280, height: 900 });
+        await page.goto("/funkuebung-feuerwehr/");
+
+        const leiste = await page.getByTestId("wissen-sidebar").boundingBox();
+        const inhalt = await page.locator("main.wissen-inhalt").boundingBox();
+        expect(leiste, "Seitenleiste nicht im Layout").toBeTruthy();
+        expect(inhalt, "Inhaltsspalte nicht im Layout").toBeTruthy();
+        // Links daneben, nicht darüber.
+        expect(leiste!.x).toBeLessThan(inhalt!.x);
+        expect(leiste!.y).toBeLessThan(inhalt!.y + 80);
+    });
+
+    test("ist ohne JavaScript vollständig vorhanden", async ({ browser }) => {
+        const kontext = await browser.newContext({ javaScriptEnabled: false });
+        const seite = await kontext.newPage();
+        await seite.goto("/funkuebung-feuerwehr/");
+
+        await expect(seite.getByTestId("wissen-sidebar")).toBeVisible();
+        expect(await seite.locator(".wissen-sidebar-link").count()).toBe(hubZiele.length);
+        await kontext.close();
+    });
+});
+
 test.describe("@seo Klicktiefe", () => {
     test("erreicht jede Content-Seite in höchstens zwei Klicks von der Startseite", async ({ page }) => {
         const slugsVon = async (pfad: string, prefix: RegExp) => {

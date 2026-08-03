@@ -106,6 +106,55 @@ ${glieder}
 `;
 }
 
+/**
+ * Themen-Seitenleiste für den Wissensbereich: die vollständige Baumstruktur
+ * aller Inhaltsseiten, gruppiert nach Kategorie.
+ *
+ * Steht auf dem Hub und auf jeder Themenseite, damit von überall aus alle
+ * Inhalte sichtbar sind, ohne über den Hub zurückzugehen. Quelle ist dieselbe
+ * Registry wie für Hub-Karten und Brotkrumen.
+ *
+ * Die Kategorie der aktuellen Seite ist aufgeklappt, die übrigen sind
+ * zugeklappt – sonst stünden auf jeder Seite 26 Links offen. Alle Gruppen sind
+ * <details>, also ohne JavaScript bedienbar und per Tastatur erreichbar.
+ */
+export function renderWissenSidebar(aktuellerSlug) {
+    const gruppen = HUB_CATEGORIES.map(kategorie => {
+        const seiten = hubSeiten(kategorie.key);
+        if (seiten.length === 0) return "";
+
+        const istAktiveKategorie = seiten.some(seite => seite.slug === aktuellerSlug);
+        const eintraege = seiten.map(seite => {
+            const aktiv = seite.slug === aktuellerSlug;
+            return `                    <li>`
+                + `<a class="wissen-sidebar-link${aktiv ? " active" : ""}"`
+                + ` href="${relativerPfad(aktuellerSlug, seite.slug)}"`
+                + `${aktiv ? ' aria-current="page"' : ""}`
+                + ` data-testid="sidebar-link-${seite.slug}">${escapeHtml(seite.label ?? seite.slug)}</a></li>`;
+        }).join("\n");
+
+        return `            <details class="wissen-sidebar-gruppe"${istAktiveKategorie ? " open" : ""}`
+            + ` data-testid="sidebar-gruppe-${kategorie.key}">
+                <summary class="wissen-sidebar-titel">${escapeHtml(kategorie.label)}</summary>
+                <ul class="wissen-sidebar-liste list-unstyled">
+${eintraege}
+                </ul>
+            </details>`;
+    }).filter(Boolean).join("\n");
+
+    // aria-label unterscheidet die Landmarke von Haupt- und Brotkrumennavigation;
+    // mehrere gleich benannte nav-Elemente sind ein Barrierefreiheitsverstoß.
+    return `    <aside class="wissen-sidebar" data-testid="wissen-sidebar">
+        <nav aria-label="Themen im Sprechfunk-Wissen">
+            <p class="wissen-sidebar-kopf">
+                <a href="${relativerPfad(aktuellerSlug, HUB_SLUG)}">Sprechfunk-Wissen</a>
+            </p>
+${gruppen}
+        </nav>
+    </aside>
+`;
+}
+
 /** Eine Karte je Seite. `beschreibung` ist der erste Satz ihrer meta description. */
 export function renderHubKarte(page, aktuellerSlug, beschreibung) {
     const href = relativerPfad(aktuellerSlug, page.slug);
