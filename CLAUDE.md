@@ -10,9 +10,13 @@ Sprechfunk Übungsgenerator is a single-page web application for creating BOS ra
 
 ```bash
 npm ci
-cp src/firebase-config.template.js src/firebase-config.js  # required for local dev/tests without secrets
 npm run build
 ```
+
+`src/firebase-config.js` is committed and already contains the working config — no copy
+step needed. Only overwrite it from `src/firebase-config.template.js` if you deliberately
+want placeholder values; that dirties the working tree, so revert it afterwards
+(`git checkout -- src/firebase-config.js`). See Conventions below for why the file is tracked.
 
 ## Common Commands
 
@@ -84,7 +88,21 @@ Rollup bundles `src/app.ts` → `dist/bundle.js`. PostCSS extracts CSS. FontAwes
 - **Commit style**: Conventional Commits scoped to module — `fix(generator):`, `feat(admin):`, `test(e2e):`, `chore(ci):`
 - **TypeScript**: strict mode; no implicit `any` (explicit casts require ESLint disable comment)
 - **Firestore**: sanitize data before writing (no `undefined` fields, no empty keys); queries must handle missing-index errors gracefully
-- **`firebase-config.js`** is gitignored — never commit real Firebase credentials
+- **`src/firebase-config.js` is deliberately committed, not gitignored.** A Firebase *web*
+  config is not a secret: it identifies the project, it does not authenticate. It has to ship
+  to the browser, so the same values are already in the public `dist/bundle.js` on
+  sprechfunk-uebung.de — checking them in adds no exposure. Keeping the file tracked means
+  local dev, the test suite and `scripts/backfill-stat-felder.mjs` work straight after
+  `npm ci`, without secrets. `src/firebase-config.template.js` exists for CI, which
+  regenerates the file from `secrets.FIREBASE_*` (`.github/workflows/main.yml`,
+  `e2e-nightly.yml`); keep the two in sync — guarded by
+  `tests/repo/FirebaseConfigDoku.test.ts`.
+  - The actual access boundary is `firestore.rules`, **not** the API key. Those rules
+    knowingly allow anonymous read, create and delete (see the "Restrisiken" comments there),
+    because the app has no notion of identity. Restricting the key to a domain would not
+    change that — an HTTP `Referer` is client-controlled and forgeable.
+  - Do commit no *server* credentials: service-account JSON, Admin-SDK keys or CI tokens
+    never belong in the repo.
 - **`firestore.rules`** denies every subcollection of `/uebungen` except
   `status`; new persisted fields must be added to the allowlists there, or
   Firestore rejects the write in production (guarded by

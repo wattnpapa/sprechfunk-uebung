@@ -15,8 +15,13 @@ Diese Datei definiert Arbeitsregeln für AI-/Automations-Agents in diesem Reposi
 
 ## Projekt-Setup
 1. `npm ci`
-2. `cp src/firebase-config.template.js src/firebase-config.js` (für lokale Tests ohne Secrets)
-3. `npm run build`
+2. `npm run build`
+
+`src/firebase-config.js` ist bewusst eingecheckt und enthält bereits eine funktionierende
+Konfiguration – du brauchst keinen Kopierschritt. Überschreibe die Datei nur, wenn du
+absichtlich Platzhalter willst; das macht deinen Working Tree dirty, also setze sie danach
+mit `git checkout -- src/firebase-config.js` zurück. Hintergrund in `CLAUDE.md`
+unter „Conventions“.
 
 ## Wichtige Befehle
 - `npm run build` – Web-Build

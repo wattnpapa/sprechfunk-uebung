@@ -18,15 +18,35 @@ Voraussetzungen:
 
 Schritte:
 1. `npm ci`
-2. `cp src/firebase-config.template.js src/firebase-config.js` (für lokale Entwicklung/Tests ohne Secrets)
-3. `npm run build`
-4. `npm run serve`
-5. Browser öffnen: `http://127.0.0.1:3000`
+2. `npm run build`
+3. `npm run serve`
+4. Browser öffnen: `http://127.0.0.1:3000`
 
 Entwicklung mit Watch:
 - `npm run dev`
 
-`src/firebase-config.js` ist gitignored – niemals echte Firebase-Credentials committen.
+## Firebase-Konfiguration
+
+`src/firebase-config.js` ist **bewusst eingecheckt und nicht gitignored**. Eine Firebase-*Web*-
+Konfiguration ist kein Geheimnis: sie identifiziert das Projekt, sie authentifiziert nicht.
+Sie muss ohnehin in den Browser ausgeliefert werden, dieselben Werte stehen also bereits im
+öffentlichen `dist/bundle.js` auf sprechfunk-uebung.de. Einchecken erzeugt damit keine
+zusätzliche Offenlegung, spart dir aber jeden Einrichtungsschritt: nach `npm ci` laufen
+lokale Entwicklung, Tests und `scripts/backfill-stat-felder.mjs` sofort.
+
+`src/firebase-config.template.js` existiert für die CI, die die Datei in
+`.github/workflows/main.yml` und `e2e-nightly.yml` aus `secrets.FIREBASE_*` neu erzeugt.
+Wenn du ein Feld ergänzt, ergänze es in beiden – `tests/repo/FirebaseConfigDoku.test.ts`
+prüft das.
+
+Die eigentliche Zugriffsgrenze ist `firestore.rules`, **nicht** der API-Key. Diese Regeln
+erlauben anonymes Lesen, Anlegen und Löschen bewusst (siehe die Kommentare zu den
+„Restrisiken“ dort), weil die Anwendung keinen Identitätsbegriff hat. Eine Domain-
+Beschränkung des Keys würde daran nichts ändern, denn der HTTP-`Referer` ist clientseitig
+setzbar und damit fälschbar.
+
+Was du dagegen **nie** committen darfst: *Server*-Credentials – Service-Account-JSONs,
+Admin-SDK-Schlüssel oder CI-Tokens.
 
 ## Tests und Qualität
 

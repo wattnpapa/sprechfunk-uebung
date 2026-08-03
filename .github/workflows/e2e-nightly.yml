@@ -32,7 +32,8 @@ jobs:
           sed "s|\${FIREBASE_PROJECT_ID}|${{ secrets.FIREBASE_PROJECT_ID }}|g" | \
           sed "s|\${FIREBASE_STORAGE_BUCKET}|${{ secrets.FIREBASE_STORAGE_BUCKET }}|g" | \
           sed "s|\${FIREBASE_MESSAGING_SENDER_ID}|${{ secrets.FIREBASE_MESSAGING_SENDER_ID }}|g" | \
-          sed "s|\${FIREBASE_APP_ID}|${{ secrets.FIREBASE_APP_ID }}|g" \
+          sed "s|\${FIREBASE_APP_ID}|${{ secrets.FIREBASE_APP_ID }}|g" | \
+          sed "s|\${FIREBASE_MEASUREMENT_ID}|${{ secrets.FIREBASE_MEASUREMENT_ID }}|g" \
           > src/firebase-config.js
 
       - name: Install Playwright browsers
