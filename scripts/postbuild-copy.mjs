@@ -1,14 +1,31 @@
 import { execFile } from "node:child_process";
-import { cp, mkdir, readFile, stat, writeFile } from "node:fs/promises";
+import { cp, mkdir, readFile, writeFile } from "node:fs/promises";
 import path from "node:path";
 import { promisify } from "node:util";
-import { buildSitemap, SITE_PAGES, STATIC_SUBPAGES } from "./site-pages.mjs";
+import { buildSitemap, SITEMAP_PAGES, SITE_PAGES, STATIC_SUBPAGES } from "./site-pages.mjs";
 import { renderPageWithStructuredData } from "./lib/render-page.mjs";
+import { createGitRunner, resolveLastmod } from "./lib/lastmod.mjs";
 
 const execFileAsync = promisify(execFile);
 
 const root = process.cwd();
 const dist = path.join(root, "dist");
+
+/**
+ * Änderungsdatum je Seite (AP-03), einmal ermittelt und gemerkt: Sitemap,
+ * JSON-LD und sichtbares Datum müssen denselben Wert tragen, und git log soll
+ * nicht zweimal je Datei laufen. Steht bewusst hier oben – die Datei nutzt
+ * top-level await, und const wird nicht gehoistet.
+ */
+const lastmodCache = new Map();
+const runGit = createGitRunner(execFileAsync, root);
+
+async function lastmodFuerSeite(page) {
+    if (lastmodCache.has(page.slug)) return lastmodCache.get(page.slug);
+    const iso = await resolveLastmod(page, runGit);
+    lastmodCache.set(page.slug, iso);
+    return iso;
+}
 
 await mkdir(dist, { recursive: true });
 
@@ -59,12 +76,25 @@ for (const page of STATIC_SUBPAGES) {
 }
 
 // sitemap.xml aus derselben Seitenliste erzeugen, damit sie beim Hinzufügen einer
-// Seite nicht händisch nachgezogen werden muss.
+// Seite nicht händisch nachgezogen werden muss. Rechtstexte sind über
+// inSitemap: false ausgenommen (SITEMAP_PAGES).
 const lastmodBySlug = {};
-for (const page of SITE_PAGES) {
-    lastmodBySlug[page.slug] = await lastModified(path.join(root, "src", page.source));
+for (const page of SITEMAP_PAGES) {
+    lastmodBySlug[page.slug] = await lastmodFuerSeite(page);
 }
 await writeFile(path.join(dist, "sitemap.xml"), buildSitemap(lastmodBySlug), "utf8");
+
+const ohneDatum = SITEMAP_PAGES.filter(page => !lastmodBySlug[page.slug]);
+if (ohneDatum.length > 0) {
+    // Kein harter Abbruch: ein Tarball-Build ohne Git ist ein legitimer Fall.
+    // Sichtbar machen muss man es trotzdem, sonst fällt ein flacher Klon in CI
+    // erst auf, wenn die Sitemap draußen schon wertlos ist.
+    process.stdout.write(
+        `Hinweis: für ${ohneDatum.length} von ${SITEMAP_PAGES.length} Seiten war kein `
+        + "Commit-Datum ermittelbar – lastmod bleibt dort weg. "
+        + "Braucht der Deploy-Job fetch-depth: 0?\n"
+    );
+}
 
 /**
  * Setzt den generierten JSON-LD-Graphen und – wo Fragen hinterlegt sind – den
@@ -75,28 +105,11 @@ async function withStructuredData(page, quelle) {
     const { html } = renderPageWithStructuredData({
         page,
         html: quelle,
-        dateModified: await lastModified(path.join(root, "src", page.source))
+        dateModified: await lastmodFuerSeite(page)
     });
     return html;
 }
 
-/** Datum der letzten inhaltlichen Änderung: Git-Commit-Datum, sonst Datei-Zeitstempel.
- *  Achtung: braucht die volle Git-Historie. Bei flachem Clone (fetch-depth 1)
- *  liefert git log für jede Datei den Tip-Commit – deshalb setzt der
- *  Deploy-Workflow fetch-depth: 0. */
-async function lastModified(file) {
-    try {
-        const { stdout } = await execFileAsync("git", ["log", "-1", "--format=%cs", "--", file], { cwd: root });
-        const committed = stdout.trim();
-        if (committed) {
-            return committed;
-        }
-    } catch {
-        // kein Git-Checkout (z. B. Tarball-Build) – Datei-Zeitstempel genügt
-    }
-    const { mtime } = await stat(file);
-    return mtime.toISOString().slice(0, 10);
-}
 
 const bundleCssPath = path.join(dist, "bundle.css");
 try {

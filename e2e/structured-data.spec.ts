@@ -103,6 +103,71 @@ test("@seo die Startseite behält den FAQ-Block beim Routenwechsel im DOM", asyn
     await expect(page.locator("#faq")).toHaveCount(1);
 });
 
+test("@seo Sitemap führt keine changefreq/priority und keine Rechtstexte", async ({ request }) => {
+    const antwort = await request.get("/sitemap.xml");
+    expect(antwort.status()).toBe(200);
+    const xml = await antwort.text();
+
+    expect(xml).not.toContain("changefreq");
+    expect(xml).not.toContain("priority");
+    expect(xml).not.toContain("/impressum/");
+    expect(xml).not.toContain("/datenschutz/");
+
+    const locs = [...xml.matchAll(/<loc>([^<]+)<\/loc>/g)].map(treffer => treffer[1]);
+    expect(locs).toHaveLength(SITE_PAGES.length - 2);
+});
+
+test("@seo Sitemap trägt unterschiedliche lastmod-Werte", async ({ request }) => {
+    // Tragen alle URLs denselben Wert, ist das das Muster, an dem Google das
+    // Feld domainweit entwertet – genau der Zustand vor AP-03.
+    const xml = await (await request.get("/sitemap.xml")).text();
+    const werte = [...xml.matchAll(/<lastmod>([^<]+)<\/lastmod>/g)].map(treffer => treffer[1]);
+
+    expect(werte.length).toBeGreaterThan(0);
+    expect(new Set(werte).size, "alle URLs tragen denselben lastmod").toBeGreaterThan(1);
+    for (const wert of werte) {
+        expect(wert).toMatch(/^\d{4}-\d{2}-\d{2}(T\d{2}:\d{2}:\d{2}(Z|[+-]\d{2}:\d{2}))?$/);
+    }
+});
+
+test("@seo Rechtstexte bleiben erreichbar und im Footer verlinkt", async ({ page, request }) => {
+    for (const slug of ["impressum", "datenschutz"]) {
+        const antwort = await request.get(`/${slug}/`);
+        expect(antwort.status(), `/${slug}/ muss 200 liefern`).toBe(200);
+        // Nicht in der Sitemap heißt nicht deindexiert.
+        expect(await antwort.text()).not.toContain("noindex");
+    }
+
+    await page.goto("/");
+    await expect(page.getByTestId("footer-link-impressum")).toHaveAttribute("href", "impressum/");
+    await expect(page.getByTestId("footer-link-datenschutz")).toHaveAttribute("href", "datenschutz/");
+});
+
+test("@seo Inhaltsseiten zeigen das Änderungsdatum sichtbar und maschinenlesbar", async ({ page }) => {
+    await page.goto("/funkuebung-feuerwehr/");
+
+    const zeile = page.getByTestId("aktualisiert-am");
+    await expect(zeile).toBeVisible();
+    await expect(zeile).toContainText(/^Aktualisiert am \d{2}\.\d{2}\.\d{4}$/);
+
+    // Sichtbares Datum, article:modified_time und JSON-LD müssen denselben Tag nennen.
+    const datumAttribut = await zeile.locator("time").getAttribute("datetime");
+    expect(datumAttribut).toMatch(/^\d{4}-\d{2}-\d{2}$/);
+
+    const metaModified = await page.locator('meta[property="article:modified_time"]')
+        .getAttribute("content");
+    expect(metaModified?.slice(0, 10)).toBe(datumAttribut);
+
+    const knoten = await ladeGraph(page);
+    const webPage = knoten.find(eintrag => typVon(eintrag) === "WebPage")!;
+    expect(String(webPage.dateModified).slice(0, 10)).toBe(datumAttribut);
+
+    // published_time bleibt fix und darf nicht mit modified_time verschmelzen.
+    const metaPublished = await page.locator('meta[property="article:published_time"]')
+        .getAttribute("content");
+    expect(metaPublished).toBe(String(webPage.datePublished));
+});
+
 test("@seo führt nirgends erfundene Bewertungen", async ({ page }) => {
     for (const seite of SITE_PAGES.slice(0, 5)) {
         await page.goto(pfadVon(seite.slug));

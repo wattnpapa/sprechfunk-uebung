@@ -6,7 +6,8 @@
 // zweite Nachbildung im Test würde irgendwann auseinanderlaufen.
 
 import { canonicalUrl } from "../site-pages.mjs";
-import { buildGraph, renderFaqHtml } from "./schema-graph.mjs";
+import { deutschesDatum, nurDatum } from "./lastmod.mjs";
+import { buildGraph, escapeHtml, renderFaqHtml } from "./schema-graph.mjs";
 import {
     extractBreadcrumb,
     extractDefinedTerms,
@@ -62,9 +63,50 @@ export function renderPageWithStructuredData({ page, html: quelle, dateModified 
         terme
     });
 
+    html = setzeArtikelZeitstempel(html, page, dateModified);
+    html = setzeSichtbaresDatum(html, dateModified);
     html = ersetzeJsonLd(html, graph);
     pruefeFaqSichtbar(page, faq, html);
     return { html, graph, faq, terme, title, description, breadcrumb };
+}
+
+/**
+ * Die sichtbare Datumszeile hängt hinter der Brotkrumenleiste. Bewusst kein
+ * Platzhalter je Seite: der Anker existiert auf allen 28 Inhaltsseiten schon,
+ * und beim Anlegen einer neuen Seite kann man ihn nicht vergessen.
+ * Die Startseite hat keine Brotkrumen und bekommt daher keine Zeile.
+ */
+const BREADCRUMB_ENDE = /(<ol[^>]*class="[^"]*breadcrumb[^"]*"[\s\S]*?<\/ol>\s*<\/nav>)/i;
+
+/**
+ * Setzt article:published_time und article:modified_time (AP-03).
+ * published_time kommt aus dem fixen datePublished der Registry,
+ * modified_time aus der Git-Historie. Fehlt der Wert, wird das Meta-Tag
+ * weggelassen statt ein Datum zu erfinden.
+ */
+export function setzeArtikelZeitstempel(html, page, dateModified) {
+    const tags = [];
+    if (page.datePublished) {
+        tags.push(`    <meta property="article:published_time" content="${escapeHtml(page.datePublished)}">`);
+    }
+    if (dateModified) {
+        tags.push(`    <meta property="article:modified_time" content="${escapeHtml(dateModified)}">`);
+    }
+    if (tags.length === 0) return html;
+    return html.replace("</head>", `${tags.join("\n")}\n</head>`);
+}
+
+/**
+ * Hängt die sichtbare Datumszeile hinter die Brotkrumenleiste.
+ * Ohne ermittelbares Datum oder ohne Brotkrumen bleibt die Seite unverändert –
+ * lieber keine Angabe als eine erfundene.
+ */
+export function setzeSichtbaresDatum(html, dateModified) {
+    if (!dateModified || !BREADCRUMB_ENDE.test(html)) return html;
+    const zeile = `\n    <p class="container text-body-secondary small mt-2 mb-0" data-testid="aktualisiert-am">`
+        + `Aktualisiert am <time datetime="${escapeHtml(nurDatum(dateModified))}">`
+        + `${escapeHtml(deutschesDatum(dateModified))}</time></p>`;
+    return html.replace(BREADCRUMB_ENDE, `$1${zeile}`);
 }
 
 /** Entfernt etwaige ld+json-Blöcke und setzt genau einen neuen ein. */

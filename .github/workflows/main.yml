@@ -28,6 +28,12 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v7
+        with:
+          # Vollständige Historie: der Build leitet sitemap-lastmod und
+          # schema.org/dateModified je Seite aus dem letzten inhaltlichen Commit
+          # ab. Bei fetch-depth 1 existiert nur der Tip-Commit, dann tragen alle
+          # Seiten dasselbe Datum (AP-03).
+          fetch-depth: 0
       - name: Detect relevant changes
         id: filter
         uses: dorny/paths-filter@v4
@@ -53,6 +59,12 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v7
+        with:
+          # Vollständige Historie: der Build leitet sitemap-lastmod und
+          # schema.org/dateModified je Seite aus dem letzten inhaltlichen Commit
+          # ab. Bei fetch-depth 1 existiert nur der Tip-Commit, dann tragen alle
+          # Seiten dasselbe Datum (AP-03).
+          fetch-depth: 0
 
       - name: Setup Node.js
         uses: actions/setup-node@v7

@@ -2,7 +2,9 @@ import { readFileSync } from "node:fs";
 import path from "node:path";
 import { describe, expect, it } from "vitest";
 // @ts-expect-error – reines JS-Modul ohne Typdeklaration, bewusst geteilt mit dem Build
-import { buildSitemap, canonicalUrl, SITE_PAGES, SITE_URL, STATIC_SUBPAGES } from "../../scripts/site-pages.mjs";
+import {
+    buildSitemap, canonicalUrl, SITEMAP_PAGES, SITE_PAGES, SITE_URL, STATIC_SUBPAGES
+} from "../../scripts/site-pages.mjs";
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-ignore -- reines JS-Hilfsmodul ohne Typdeklarationen, absichtlich .mjs
 import { renderPageWithStructuredData } from "../../scripts/lib/render-page.mjs";
@@ -19,8 +21,8 @@ const root = path.resolve(__dirname, "..", "..");
 interface SitePage {
     slug: string;
     source: string;
-    changefreq: string;
-    priority: string;
+    sources: string[];
+    inSitemap?: boolean;
 }
 
 const seiten = SITE_PAGES as SitePage[];
@@ -205,32 +207,89 @@ describe("Statische Seiten: SEO-Pflichtangaben", () => {
 
 describe("Sitemap", () => {
 
-    it("enthält genau die Canonicals der registrierten Seiten", () => {
+    it("enthält genau die Canonicals der Sitemap-Seiten", () => {
         const xml = buildSitemap();
         const locs = [...xml.matchAll(/<loc>([^<]+)<\/loc>/g)].map(treffer => treffer[1]);
 
-        expect(locs).toEqual(seiten.map(seite => canonicalUrl(seite.slug)));
+        expect(locs).toEqual(SITEMAP_PAGES.map((seite: SitePage) => canonicalUrl(seite.slug)));
     });
 
-    it("schreibt lastmod als ISO-Datum, wenn eines bekannt ist", () => {
-        const xml = buildSitemap({ "": "2026-07-26" });
+    it("nimmt die Rechtstexte nicht auf, behält sie aber in der Registry", () => {
+        const xml = buildSitemap();
 
-        expect(xml).toContain("<lastmod>2026-07-26</lastmod>");
+        // Nicht in der Crawl-Priorisierung …
+        expect(xml).not.toContain(canonicalUrl("impressum"));
+        expect(xml).not.toContain(canonicalUrl("datenschutz"));
+        // … aber weiterhin registriert und damit ausgeliefert und verlinkt.
+        for (const slug of ["impressum", "datenschutz"]) {
+            expect(seiten.map(seite => seite.slug)).toContain(slug);
+            expect(STATIC_SUBPAGES.map((seite: SitePage) => seite.slug)).toContain(slug);
+        }
+        expect(SITEMAP_PAGES).toHaveLength(seiten.length - 2);
+    });
+
+    it("schreibt lastmod als ISO-Zeitstempel, wenn einer bekannt ist", () => {
+        const xml = buildSitemap({ "": "2026-08-01T17:19:45+02:00" });
+
+        expect(xml).toContain("<lastmod>2026-08-01T17:19:45+02:00</lastmod>");
         expect([...xml.matchAll(/<lastmod>/g)]).toHaveLength(1);
     });
 
-    it("ist wohlgeformtes XML mit gültigen Prioritäten", () => {
-        const xml = buildSitemap();
+    it("lässt lastmod weg, statt ein Datum zu raten", () => {
+        // Kein Wert für eine Seite heißt: Feld weglassen. Ein falsches lastmod
+        // entwertet das Feld domainweit, ein fehlendes kostet nur das Signal.
+        const xml = buildSitemap({});
+
+        expect(xml).not.toContain("<lastmod>");
+        expect([...xml.matchAll(/<loc>/g)]).toHaveLength(SITEMAP_PAGES.length);
+    });
+
+    it("führt weder changefreq noch priority", () => {
+        // Google wertet beides nicht aus; ungepflegte Werte sind schlechter als keine.
+        const xml = buildSitemap({ "": "2026-08-01T17:19:45+02:00" });
+
+        expect(xml).not.toContain("changefreq");
+        expect(xml).not.toContain("priority");
+        for (const seite of seiten as unknown as Record<string, unknown>[]) {
+            expect(seite.changefreq).toBeUndefined();
+            expect(seite.priority).toBeUndefined();
+        }
+    });
+
+    it("entspricht dem Schema von sitemaps.org", () => {
+        const lastmods = Object.fromEntries(
+            SITEMAP_PAGES.map((seite: SitePage, index: number) =>
+                [seite.slug, `2026-08-0${(index % 3) + 1}T10:00:00+02:00`])
+        );
+        const xml = buildSitemap(lastmods);
 
         expect(xml.startsWith("<?xml version=\"1.0\" encoding=\"UTF-8\"?>")).toBe(true);
+        expect(xml).toContain('<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">');
         expect(xml.trimEnd().endsWith("</urlset>")).toBe(true);
 
-        for (const seite of seiten) {
-            expect(Number(seite.priority)).toBeGreaterThan(0);
-            expect(Number(seite.priority)).toBeLessThanOrEqual(1);
-            expect(["always", "hourly", "daily", "weekly", "monthly", "yearly", "never"])
-                .toContain(seite.changefreq);
+        // Nur die im Schema erlaubten Kindelemente von <url>.
+        const erlaubt = new Set(["loc", "lastmod", "changefreq", "priority"]);
+        const bloecke = [...xml.matchAll(/<url>([\s\S]*?)<\/url>/g)].map(treffer => treffer[1]);
+        expect(bloecke).toHaveLength(SITEMAP_PAGES.length);
+        for (const block of bloecke) {
+            const tags = [...block.matchAll(/<(\w+)>/g)].map(treffer => treffer[1]);
+            expect(tags[0], "loc muss zuerst stehen").toBe("loc");
+            for (const tag of tags) expect(erlaubt).toContain(tag);
+            expect(new Set(tags).size, "kein Kindelement doppelt").toBe(tags.length);
         }
+
+        // <loc> absolut, <lastmod> als W3C-Datum.
+        for (const loc of [...xml.matchAll(/<loc>([^<]+)<\/loc>/g)].map(t => t[1])) {
+            expect(loc.startsWith(`${SITE_URL}/`)).toBe(true);
+            expect(loc).not.toContain("&");
+        }
+        for (const wert of [...xml.matchAll(/<lastmod>([^<]+)<\/lastmod>/g)].map(t => t[1])) {
+            expect(wert).toMatch(/^\d{4}-\d{2}-\d{2}(T\d{2}:\d{2}:\d{2}(Z|[+-]\d{2}:\d{2}))?$/);
+            expect(Number.isNaN(Date.parse(wert))).toBe(false);
+        }
+        // 50.000 URLs bzw. 50 MB sind die Grenzen des Formats.
+        expect(bloecke.length).toBeLessThanOrEqual(50_000);
+        expect(Buffer.byteLength(xml, "utf8")).toBeLessThan(50 * 1024 * 1024);
     });
 
     it("ist in der robots.txt verlinkt", () => {

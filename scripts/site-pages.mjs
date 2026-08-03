@@ -6,8 +6,18 @@ export const SITE_URL = "https://sprechfunk-uebung.de";
 
 /**
  * slug          – Verzeichnis unterhalb der Domain ("" = Startseite)
- * source        – Datei unterhalb von src/
- * priority      – Sitemap-Priorität
+ * source        – auszuliefernde Datei unterhalb von src/
+ *
+ * Felder für die Sitemap (AP-03):
+ * sources       – alle Dateien, aus denen sich der Seiteninhalt speist; für
+ *                 lastmod gilt das jüngste inhaltliche Commit-Datum daraus
+ * contentUpdated– optionales Override (ISO). Hat Vorrang vor der Git-Historie,
+ *                 wenn diese in die Irre führt. Sonst leer lassen.
+ * inSitemap     – false nimmt die URL aus der sitemap.xml, ohne sie zu
+ *                 deindexieren (Rechtstexte)
+ *
+ * changefreq und priority gibt es bewusst nicht mehr: Google wertet beides
+ * nicht aus, und ungepflegte Werte sind schlechter als keine.
  *
  * Felder für die strukturierten Daten (AP-02):
  * schemaType    – Hauptknoten: Article | HowTo | FAQPage | CollectionPage | WebPage
@@ -29,7 +39,7 @@ export const SITE_URL = "https://sprechfunk-uebung.de";
  */
 export const SITE_PAGES = [
     {
-        slug: "", source: "index.html", changefreq: "weekly", priority: "1.0",
+        slug: "", source: "index.html", sources: ["src/index.html"],
         schemaType: "WebPage", datePublished: "2025-02-21", software: true,
         about: ["BOS-Sprechfunk", "Funkübung", "Sprechfunkausbildung"],
         // Kein HowTo: die Startseite enthält keine sichtbare, nummerierte
@@ -58,7 +68,7 @@ export const SITE_PAGES = [
         ]
     },
     {
-        slug: "anleitung", source: "pages/anleitung.html", changefreq: "monthly", priority: "0.9",
+        slug: "anleitung", source: "pages/anleitung.html", sources: ["src/pages/anleitung.html"],
         schemaType: "HowTo", datePublished: "2026-07-26",
         about: ["Sprechfunkübung", "Anleitung", "Übungsleitung"],
         howTo: {
@@ -94,7 +104,7 @@ export const SITE_PAGES = [
         ]
     },
     {
-        slug: "funktionen", source: "pages/funktionen.html", changefreq: "monthly", priority: "0.8",
+        slug: "funktionen", source: "pages/funktionen.html", sources: ["src/pages/funktionen.html"],
         schemaType: "Article", datePublished: "2026-07-30",
         about: ["Funkübung", "Funktionen", "Sprechfunkausbildung"],
         faq: [
@@ -117,7 +127,7 @@ export const SITE_PAGES = [
         ]
     },
     {
-        slug: "buchstabiertafel", source: "pages/buchstabiertafel.html", changefreq: "yearly", priority: "0.8",
+        slug: "buchstabiertafel", source: "pages/buchstabiertafel.html", sources: ["src/pages/buchstabiertafel.html"],
         schemaType: "Article", datePublished: "2026-07-26",
         about: ["Buchstabiertafel", "DIN 5009", "NATO-Alphabet", "Buchstabieren"],
         definedTerms: { name: "Buchstabiertafel im BOS-Sprechfunk", tableIndex: 0 },
@@ -141,7 +151,7 @@ export const SITE_PAGES = [
         ]
     },
     {
-        slug: "meldevordruck", source: "pages/meldevordruck.html", changefreq: "yearly", priority: "0.8",
+        slug: "meldevordruck", source: "pages/meldevordruck.html", sources: ["src/pages/meldevordruck.html"],
         schemaType: "Article", datePublished: "2026-07-26",
         about: ["Meldevordruck", "Nachrichtenvordruck", "Nachrichtenaufnahme"],
         faq: [
@@ -164,7 +174,7 @@ export const SITE_PAGES = [
         ]
     },
     {
-        slug: "funksprueche", source: "pages/funksprueche.html", changefreq: "monthly", priority: "0.8",
+        slug: "funksprueche", source: "pages/funksprueche.html", sources: ["src/pages/funksprueche.html"],
         schemaType: "CollectionPage", datePublished: "2026-07-26",
         about: ["Funksprüche", "Übungstexte", "Sprechfunkübung"],
         collection: [
@@ -191,7 +201,7 @@ export const SITE_PAGES = [
         ]
     },
     {
-        slug: "funkuebung-feuerwehr", source: "pages/funkuebung-feuerwehr.html", changefreq: "monthly", priority: "0.8",
+        slug: "funkuebung-feuerwehr", source: "pages/funkuebung-feuerwehr.html", sources: ["src/pages/funkuebung-feuerwehr.html"],
         schemaType: "Article", datePublished: "2026-07-28",
         about: ["Funkübung", "Feuerwehr", "Sprechfunkausbildung"],
         faq: [
@@ -214,7 +224,7 @@ export const SITE_PAGES = [
         ]
     },
     {
-        slug: "funkuebung-thw", source: "pages/funkuebung-thw.html", changefreq: "monthly", priority: "0.8",
+        slug: "funkuebung-thw", source: "pages/funkuebung-thw.html", sources: ["src/pages/funkuebung-thw.html"],
         schemaType: "Article", datePublished: "2026-07-28",
         about: ["Funkübung", "THW", "Standortausbildung"],
         faq: [
@@ -237,7 +247,7 @@ export const SITE_PAGES = [
         ]
     },
     {
-        slug: "funkuebung-katastrophenschutz", source: "pages/funkuebung-katastrophenschutz.html", changefreq: "monthly", priority: "0.8",
+        slug: "funkuebung-katastrophenschutz", source: "pages/funkuebung-katastrophenschutz.html", sources: ["src/pages/funkuebung-katastrophenschutz.html"],
         schemaType: "Article", datePublished: "2026-07-28",
         about: ["Funkübung", "Katastrophenschutz", "Bevölkerungsschutz"],
         faq: [
@@ -260,7 +270,7 @@ export const SITE_PAGES = [
         ]
     },
     {
-        slug: "funkuebung-dienstabend", source: "pages/funkuebung-dienstabend.html", changefreq: "monthly", priority: "0.8",
+        slug: "funkuebung-dienstabend", source: "pages/funkuebung-dienstabend.html", sources: ["src/pages/funkuebung-dienstabend.html"],
         schemaType: "Article", datePublished: "2026-07-28",
         about: ["Funkübung", "Dienstabend", "Ausbildungsdienst"],
         howTo: {
@@ -294,7 +304,7 @@ export const SITE_PAGES = [
         ]
     },
     {
-        slug: "funkuebung-vorlage", source: "pages/funkuebung-vorlage.html", changefreq: "monthly", priority: "0.8",
+        slug: "funkuebung-vorlage", source: "pages/funkuebung-vorlage.html", sources: ["src/pages/funkuebung-vorlage.html"],
         schemaType: "Article", datePublished: "2026-07-26",
         about: ["Funkübung", "Vorlage", "Übungsunterlagen"],
         faq: [
@@ -317,7 +327,7 @@ export const SITE_PAGES = [
         ]
     },
     {
-        slug: "funkuebung-planen", source: "pages/funkuebung-planen.html", changefreq: "monthly", priority: "0.8",
+        slug: "funkuebung-planen", source: "pages/funkuebung-planen.html", sources: ["src/pages/funkuebung-planen.html"],
         schemaType: "HowTo", datePublished: "2026-07-29",
         about: ["Funkübung", "Übungsplanung", "Übungsleitung"],
         howTo: {
@@ -354,7 +364,7 @@ export const SITE_PAGES = [
         ]
     },
     {
-        slug: "funkuebung-szenarien", source: "pages/funkuebung-szenarien.html", changefreq: "monthly", priority: "0.8",
+        slug: "funkuebung-szenarien", source: "pages/funkuebung-szenarien.html", sources: ["src/pages/funkuebung-szenarien.html"],
         schemaType: "Article", datePublished: "2026-07-29",
         about: ["Funkübung", "Szenarien", "Übungslage"],
         faq: [
@@ -377,7 +387,7 @@ export const SITE_PAGES = [
         ]
     },
     {
-        slug: "sprechfunk-regeln", source: "pages/sprechfunk-regeln.html", changefreq: "monthly", priority: "0.7",
+        slug: "sprechfunk-regeln", source: "pages/sprechfunk-regeln.html", sources: ["src/pages/sprechfunk-regeln.html"],
         schemaType: "Article", datePublished: "2026-07-29",
         about: ["Sprechfunk-Regeln", "DV 810.3", "Funkdisziplin"],
         faq: [
@@ -400,7 +410,7 @@ export const SITE_PAGES = [
         ]
     },
     {
-        slug: "betriebsworte", source: "pages/betriebsworte.html", changefreq: "yearly", priority: "0.7",
+        slug: "betriebsworte", source: "pages/betriebsworte.html", sources: ["src/pages/betriebsworte.html"],
         schemaType: "Article", datePublished: "2026-08-01",
         about: ["Betriebsworte", "DV 810.3", "Verkehrsabwicklung"],
         definedTerms: { name: "Betriebsworte im BOS-Sprechfunk", tableIndex: 0 },
@@ -424,7 +434,7 @@ export const SITE_PAGES = [
         ]
     },
     {
-        slug: "uebungsfunkverkehr", source: "pages/uebungsfunkverkehr.html", changefreq: "monthly", priority: "0.7",
+        slug: "uebungsfunkverkehr", source: "pages/uebungsfunkverkehr.html", sources: ["src/pages/uebungsfunkverkehr.html"],
         schemaType: "Article", datePublished: "2026-08-01",
         about: ["Übungsfunkverkehr", "Vorrangstufen", "DV 810.3"],
         faq: [
@@ -447,7 +457,7 @@ export const SITE_PAGES = [
         ]
     },
     {
-        slug: "bos-funk", source: "pages/bos-funk.html", changefreq: "yearly", priority: "0.7",
+        slug: "bos-funk", source: "pages/bos-funk.html", sources: ["src/pages/bos-funk.html"],
         schemaType: "Article", datePublished: "2026-07-30",
         about: ["BOS-Funk", "Digitalfunk", "TETRA", "Rufgruppe"],
         faq: [
@@ -470,7 +480,7 @@ export const SITE_PAGES = [
         ]
     },
     {
-        slug: "funkreichweite", source: "pages/funkreichweite.html", changefreq: "yearly", priority: "0.7",
+        slug: "funkreichweite", source: "pages/funkreichweite.html", sources: ["src/pages/funkreichweite.html"],
         schemaType: "Article", datePublished: "2026-08-01",
         about: ["Funkreichweite", "Wellenausbreitung", "Funktechnik"],
         faq: [
@@ -493,7 +503,7 @@ export const SITE_PAGES = [
         ]
     },
     {
-        slug: "verkehrsarten", source: "pages/verkehrsarten.html", changefreq: "yearly", priority: "0.7",
+        slug: "verkehrsarten", source: "pages/verkehrsarten.html", sources: ["src/pages/verkehrsarten.html"],
         schemaType: "Article", datePublished: "2026-08-01",
         about: ["Verkehrsarten", "Relaisverkehr", "DV 810.3"],
         definedTerms: { name: "Relaisschaltungen RS-1 bis RS-4", tableIndex: 0 },
@@ -517,7 +527,7 @@ export const SITE_PAGES = [
         ]
     },
     {
-        slug: "antennen", source: "pages/antennen.html", changefreq: "yearly", priority: "0.7",
+        slug: "antennen", source: "pages/antennen.html", sources: ["src/pages/antennen.html"],
         schemaType: "Article", datePublished: "2026-08-01",
         about: ["Antennen", "Antennenleitungen", "Funktechnik"],
         faq: [
@@ -540,7 +550,7 @@ export const SITE_PAGES = [
         ]
     },
     {
-        slug: "funkrufnamen", source: "pages/funkrufnamen.html", changefreq: "yearly", priority: "0.7",
+        slug: "funkrufnamen", source: "pages/funkrufnamen.html", sources: ["src/pages/funkrufnamen.html"],
         schemaType: "Article", datePublished: "2026-07-30",
         about: ["Funkrufnamen", "Organisationskennwort", "BOS-Sprechfunk"],
         faq: [
@@ -563,7 +573,7 @@ export const SITE_PAGES = [
         ]
     },
     {
-        slug: "funkrufnamen-thw", source: "pages/funkrufnamen-thw.html", changefreq: "yearly", priority: "0.7",
+        slug: "funkrufnamen-thw", source: "pages/funkrufnamen-thw.html", sources: ["src/pages/funkrufnamen-thw.html"],
         schemaType: "Article", datePublished: "2026-08-01",
         about: ["Funkrufnamen", "THW", "HEROS"],
         faq: [
@@ -586,7 +596,7 @@ export const SITE_PAGES = [
         ]
     },
     {
-        slug: "funkmeldesystem", source: "pages/funkmeldesystem.html", changefreq: "yearly", priority: "0.7",
+        slug: "funkmeldesystem", source: "pages/funkmeldesystem.html", sources: ["src/pages/funkmeldesystem.html"],
         schemaType: "Article", datePublished: "2026-08-01",
         about: ["Funkmeldesystem", "FMS", "Statusmeldungen"],
         definedTerms: { name: "FMS-Statusmeldungen 0 bis 9", tableIndex: 0 },
@@ -610,7 +620,7 @@ export const SITE_PAGES = [
         ]
     },
     {
-        slug: "open-source", source: "pages/open-source.html", changefreq: "yearly", priority: "0.6",
+        slug: "open-source", source: "pages/open-source.html", sources: ["src/pages/open-source.html"],
         schemaType: "Article", datePublished: "2026-07-29",
         about: ["Open Source", "EUPL-1.2", "Datenschutz"],
         faq: [
@@ -633,7 +643,7 @@ export const SITE_PAGES = [
         ]
     },
     {
-        slug: "digitale-funkuebung", source: "pages/digitale-funkuebung.html", changefreq: "monthly", priority: "0.7",
+        slug: "digitale-funkuebung", source: "pages/digitale-funkuebung.html", sources: ["src/pages/digitale-funkuebung.html"],
         schemaType: "Article", datePublished: "2026-07-28",
         about: ["Digitale Funkübung", "Teilnehmer-Link", "Online-Dienstabend"],
         // Kein HowTo: die Seite enthält keine sichtbare, nummerierte Schrittfolge.
@@ -657,7 +667,7 @@ export const SITE_PAGES = [
         ]
     },
     {
-        slug: "regiebuch-funkuebung", source: "pages/regiebuch-funkuebung.html", changefreq: "monthly", priority: "0.7",
+        slug: "regiebuch-funkuebung", source: "pages/regiebuch-funkuebung.html", sources: ["src/pages/regiebuch-funkuebung.html"],
         schemaType: "Article", datePublished: "2026-07-28",
         about: ["Regiebuch", "Nachrichtenplan", "Übungsleitung"],
         // Kein HowTo: die Seite enthält keine sichtbare, nummerierte Schrittfolge.
@@ -681,7 +691,7 @@ export const SITE_PAGES = [
         ]
     },
     {
-        slug: "faq", source: "pages/faq.html", changefreq: "monthly", priority: "0.7",
+        slug: "faq", source: "pages/faq.html", sources: ["src/pages/faq.html"],
         schemaType: "FAQPage", datePublished: "2026-07-26",
         about: ["Sprechfunkübung", "Häufige Fragen"],
         // Die Fragen stehen bereits sichtbar auf der Seite und werden von dort
@@ -689,16 +699,28 @@ export const SITE_PAGES = [
         faqFromPage: true
     },
     {
-        slug: "impressum", source: "pages/impressum.html", changefreq: "yearly", priority: "0.2",
+        slug: "impressum", source: "pages/impressum.html", sources: ["src/pages/impressum.html"],
+        // Rechtstext: bleibt indexierbar und im Footer verlinkt, gehört aber
+        // nicht in die Crawl-Priorisierung.
+        inSitemap: false,
         schemaType: "WebPage", datePublished: "2026-07-26",
         about: ["Impressum"]
     },
     {
-        slug: "datenschutz", source: "pages/datenschutz.html", changefreq: "yearly", priority: "0.2",
+        slug: "datenschutz", source: "pages/datenschutz.html", sources: ["src/pages/datenschutz.html"],
+        // Rechtstext: bleibt indexierbar und im Footer verlinkt, gehört aber
+        // nicht in die Crawl-Priorisierung.
+        inSitemap: false,
         schemaType: "WebPage", datePublished: "2026-07-26",
         about: ["Datenschutz"]
     }
 ];
+
+/**
+ * Seiten, die in die sitemap.xml gehören. Rechtstexte sind bewusst nicht dabei:
+ * sie bleiben erreichbar und verlinkt, sind aber kein Crawl-Ziel.
+ */
+export const SITEMAP_PAGES = SITE_PAGES.filter(page => page.inSitemap !== false);
 
 /** Seiten, die als eigenes Verzeichnis (=> /slug/index.html) ausgeliefert werden. */
 export const STATIC_SUBPAGES = SITE_PAGES.filter(page => page.slug !== "");
@@ -712,14 +734,12 @@ export function canonicalUrl(slug) {
  * Seiten ohne Datum werden ohne <lastmod> ausgegeben.
  */
 export function buildSitemap(lastmodBySlug = {}) {
-    const entries = SITE_PAGES.map(page => {
+    const entries = SITEMAP_PAGES.map(page => {
         const lastmod = lastmodBySlug[page.slug];
         return [
             "  <url>",
             `    <loc>${canonicalUrl(page.slug)}</loc>`,
             lastmod ? `    <lastmod>${lastmod}</lastmod>` : null,
-            `    <changefreq>${page.changefreq}</changefreq>`,
-            `    <priority>${page.priority}</priority>`,
             "  </url>"
         ].filter(Boolean).join("\n");
     });
