@@ -40,6 +40,7 @@ export const SITE_URL = "https://sprechfunk-uebung.de";
 export const SITE_PAGES = [
     {
         slug: "", source: "index.html", sources: ["src/index.html"],
+        label: "Übung erstellen",
         schemaType: "WebPage", datePublished: "2025-02-21", software: true,
         about: ["BOS-Sprechfunk", "Funkübung", "Sprechfunkausbildung"],
         // Kein HowTo: die Startseite enthält keine sichtbare, nummerierte
@@ -69,6 +70,8 @@ export const SITE_PAGES = [
     },
     {
         slug: "anleitung", source: "pages/anleitung.html", sources: ["src/pages/anleitung.html"],
+        label: "Anleitung",
+        hubCategory: "anwendung",
         schemaType: "HowTo", datePublished: "2026-07-26",
         about: ["Sprechfunkübung", "Anleitung", "Übungsleitung"],
         howTo: {
@@ -105,6 +108,8 @@ export const SITE_PAGES = [
     },
     {
         slug: "funktionen", source: "pages/funktionen.html", sources: ["src/pages/funktionen.html"],
+        label: "Funktionen im Überblick",
+        hubCategory: "anwendung",
         schemaType: "Article", datePublished: "2026-07-30",
         about: ["Funkübung", "Funktionen", "Sprechfunkausbildung"],
         faq: [
@@ -128,6 +133,8 @@ export const SITE_PAGES = [
     },
     {
         slug: "buchstabiertafel", source: "pages/buchstabiertafel.html", sources: ["src/pages/buchstabiertafel.html"],
+        label: "Buchstabiertafel",
+        hubCategory: "grundlagen",
         schemaType: "Article", datePublished: "2026-07-26",
         about: ["Buchstabiertafel", "DIN 5009", "NATO-Alphabet", "Buchstabieren"],
         definedTerms: { name: "Buchstabiertafel im BOS-Sprechfunk", tableIndex: 0 },
@@ -152,6 +159,8 @@ export const SITE_PAGES = [
     },
     {
         slug: "meldevordruck", source: "pages/meldevordruck.html", sources: ["src/pages/meldevordruck.html"],
+        label: "Meldevordruck",
+        hubCategory: "anwendung",
         schemaType: "Article", datePublished: "2026-07-26",
         about: ["Meldevordruck", "Nachrichtenvordruck", "Nachrichtenaufnahme"],
         faq: [
@@ -175,6 +184,8 @@ export const SITE_PAGES = [
     },
     {
         slug: "funksprueche", source: "pages/funksprueche.html", sources: ["src/pages/funksprueche.html"],
+        label: "Funksprüche",
+        hubCategory: "anwendung",
         schemaType: "CollectionPage", datePublished: "2026-07-26",
         about: ["Funksprüche", "Übungstexte", "Sprechfunkübung"],
         collection: [
@@ -202,6 +213,8 @@ export const SITE_PAGES = [
     },
     {
         slug: "funkuebung-feuerwehr", source: "pages/funkuebung-feuerwehr.html", sources: ["src/pages/funkuebung-feuerwehr.html"],
+        label: "Funkübung Feuerwehr",
+        hubCategory: "uebungen",
         schemaType: "Article", datePublished: "2026-07-28",
         about: ["Funkübung", "Feuerwehr", "Sprechfunkausbildung"],
         faq: [
@@ -225,6 +238,8 @@ export const SITE_PAGES = [
     },
     {
         slug: "funkuebung-thw", source: "pages/funkuebung-thw.html", sources: ["src/pages/funkuebung-thw.html"],
+        label: "Funkübung THW",
+        hubCategory: "uebungen",
         schemaType: "Article", datePublished: "2026-07-28",
         about: ["Funkübung", "THW", "Standortausbildung"],
         faq: [
@@ -248,6 +263,8 @@ export const SITE_PAGES = [
     },
     {
         slug: "funkuebung-katastrophenschutz", source: "pages/funkuebung-katastrophenschutz.html", sources: ["src/pages/funkuebung-katastrophenschutz.html"],
+        label: "Funkübung Katastrophenschutz",
+        hubCategory: "uebungen",
         schemaType: "Article", datePublished: "2026-07-28",
         about: ["Funkübung", "Katastrophenschutz", "Bevölkerungsschutz"],
         faq: [
@@ -271,6 +288,8 @@ export const SITE_PAGES = [
     },
     {
         slug: "funkuebung-dienstabend", source: "pages/funkuebung-dienstabend.html", sources: ["src/pages/funkuebung-dienstabend.html"],
+        label: "Funkübung für den Dienstabend",
+        hubCategory: "uebungen",
         schemaType: "Article", datePublished: "2026-07-28",
         about: ["Funkübung", "Dienstabend", "Ausbildungsdienst"],
         howTo: {
@@ -305,6 +324,8 @@ export const SITE_PAGES = [
     },
     {
         slug: "funkuebung-vorlage", source: "pages/funkuebung-vorlage.html", sources: ["src/pages/funkuebung-vorlage.html"],
+        label: "Funkübung Vorlage",
+        hubCategory: "uebungen",
         schemaType: "Article", datePublished: "2026-07-26",
         about: ["Funkübung", "Vorlage", "Übungsunterlagen"],
         faq: [
@@ -328,6 +349,8 @@ export const SITE_PAGES = [
     },
     {
         slug: "funkuebung-planen", source: "pages/funkuebung-planen.html", sources: ["src/pages/funkuebung-planen.html"],
+        label: "Funkübung planen",
+        hubCategory: "uebungen",
         schemaType: "HowTo", datePublished: "2026-07-29",
         about: ["Funkübung", "Übungsplanung", "Übungsleitung"],
         howTo: {
@@ -365,6 +388,8 @@ export const SITE_PAGES = [
     },
     {
         slug: "funkuebung-szenarien", source: "pages/funkuebung-szenarien.html", sources: ["src/pages/funkuebung-szenarien.html"],
+        label: "Szenarien für die Funkübung",
+        hubCategory: "uebungen",
         schemaType: "Article", datePublished: "2026-07-29",
         about: ["Funkübung", "Szenarien", "Übungslage"],
         faq: [
@@ -388,6 +413,8 @@ export const SITE_PAGES = [
     },
     {
         slug: "sprechfunk-regeln", source: "pages/sprechfunk-regeln.html", sources: ["src/pages/sprechfunk-regeln.html"],
+        label: "Sprechfunk-Regeln",
+        hubCategory: "grundlagen",
         schemaType: "Article", datePublished: "2026-07-29",
         about: ["Sprechfunk-Regeln", "DV 810.3", "Funkdisziplin"],
         faq: [
@@ -411,6 +438,8 @@ export const SITE_PAGES = [
     },
     {
         slug: "betriebsworte", source: "pages/betriebsworte.html", sources: ["src/pages/betriebsworte.html"],
+        label: "Betriebsworte",
+        hubCategory: "grundlagen",
         schemaType: "Article", datePublished: "2026-08-01",
         about: ["Betriebsworte", "DV 810.3", "Verkehrsabwicklung"],
         definedTerms: { name: "Betriebsworte im BOS-Sprechfunk", tableIndex: 0 },
@@ -435,6 +464,8 @@ export const SITE_PAGES = [
     },
     {
         slug: "uebungsfunkverkehr", source: "pages/uebungsfunkverkehr.html", sources: ["src/pages/uebungsfunkverkehr.html"],
+        label: "Übungsfunkverkehr",
+        hubCategory: "uebungen",
         schemaType: "Article", datePublished: "2026-08-01",
         about: ["Übungsfunkverkehr", "Vorrangstufen", "DV 810.3"],
         faq: [
@@ -458,6 +489,8 @@ export const SITE_PAGES = [
     },
     {
         slug: "bos-funk", source: "pages/bos-funk.html", sources: ["src/pages/bos-funk.html"],
+        label: "BOS-Funk Grundlagen",
+        hubCategory: "grundlagen",
         schemaType: "Article", datePublished: "2026-07-30",
         about: ["BOS-Funk", "Digitalfunk", "TETRA", "Rufgruppe"],
         faq: [
@@ -481,6 +514,8 @@ export const SITE_PAGES = [
     },
     {
         slug: "funkreichweite", source: "pages/funkreichweite.html", sources: ["src/pages/funkreichweite.html"],
+        label: "Reichweite von Funkwellen",
+        hubCategory: "technik",
         schemaType: "Article", datePublished: "2026-08-01",
         about: ["Funkreichweite", "Wellenausbreitung", "Funktechnik"],
         faq: [
@@ -504,6 +539,8 @@ export const SITE_PAGES = [
     },
     {
         slug: "verkehrsarten", source: "pages/verkehrsarten.html", sources: ["src/pages/verkehrsarten.html"],
+        label: "Verkehrsarten",
+        hubCategory: "grundlagen",
         schemaType: "Article", datePublished: "2026-08-01",
         about: ["Verkehrsarten", "Relaisverkehr", "DV 810.3"],
         definedTerms: { name: "Relaisschaltungen RS-1 bis RS-4", tableIndex: 0 },
@@ -528,6 +565,8 @@ export const SITE_PAGES = [
     },
     {
         slug: "antennen", source: "pages/antennen.html", sources: ["src/pages/antennen.html"],
+        label: "Antennen",
+        hubCategory: "technik",
         schemaType: "Article", datePublished: "2026-08-01",
         about: ["Antennen", "Antennenleitungen", "Funktechnik"],
         faq: [
@@ -551,6 +590,8 @@ export const SITE_PAGES = [
     },
     {
         slug: "funkrufnamen", source: "pages/funkrufnamen.html", sources: ["src/pages/funkrufnamen.html"],
+        label: "Funkrufnamen",
+        hubCategory: "rufnamen",
         schemaType: "Article", datePublished: "2026-07-30",
         about: ["Funkrufnamen", "Organisationskennwort", "BOS-Sprechfunk"],
         faq: [
@@ -574,6 +615,8 @@ export const SITE_PAGES = [
     },
     {
         slug: "funkrufnamen-thw", source: "pages/funkrufnamen-thw.html", sources: ["src/pages/funkrufnamen-thw.html"],
+        label: "Funkrufnamen im THW",
+        hubCategory: "rufnamen",
         schemaType: "Article", datePublished: "2026-08-01",
         about: ["Funkrufnamen", "THW", "HEROS"],
         faq: [
@@ -597,6 +640,8 @@ export const SITE_PAGES = [
     },
     {
         slug: "funkmeldesystem", source: "pages/funkmeldesystem.html", sources: ["src/pages/funkmeldesystem.html"],
+        label: "Funkmeldesystem (FMS)",
+        hubCategory: "rufnamen",
         schemaType: "Article", datePublished: "2026-08-01",
         about: ["Funkmeldesystem", "FMS", "Statusmeldungen"],
         definedTerms: { name: "FMS-Statusmeldungen 0 bis 9", tableIndex: 0 },
@@ -621,6 +666,8 @@ export const SITE_PAGES = [
     },
     {
         slug: "open-source", source: "pages/open-source.html", sources: ["src/pages/open-source.html"],
+        label: "Kostenlos und Open Source",
+        hubCategory: "anwendung",
         schemaType: "Article", datePublished: "2026-07-29",
         about: ["Open Source", "EUPL-1.2", "Datenschutz"],
         faq: [
@@ -644,6 +691,8 @@ export const SITE_PAGES = [
     },
     {
         slug: "digitale-funkuebung", source: "pages/digitale-funkuebung.html", sources: ["src/pages/digitale-funkuebung.html"],
+        label: "Digitale Funkübung",
+        hubCategory: "uebungen",
         schemaType: "Article", datePublished: "2026-07-28",
         about: ["Digitale Funkübung", "Teilnehmer-Link", "Online-Dienstabend"],
         // Kein HowTo: die Seite enthält keine sichtbare, nummerierte Schrittfolge.
@@ -668,6 +717,8 @@ export const SITE_PAGES = [
     },
     {
         slug: "regiebuch-funkuebung", source: "pages/regiebuch-funkuebung.html", sources: ["src/pages/regiebuch-funkuebung.html"],
+        label: "Regiebuch Funkübung",
+        hubCategory: "uebungen",
         schemaType: "Article", datePublished: "2026-07-28",
         about: ["Regiebuch", "Nachrichtenplan", "Übungsleitung"],
         // Kein HowTo: die Seite enthält keine sichtbare, nummerierte Schrittfolge.
@@ -691,7 +742,35 @@ export const SITE_PAGES = [
         ]
     },
     {
+        slug: "wissen", source: "pages/wissen.html", sources: ["src/pages/wissen.html"],
+        label: "Wissen",
+        schemaType: "CollectionPage", datePublished: "2026-08-03",
+        about: ["Sprechfunk", "BOS-Funk", "Funkübung", "Wissensübersicht"],
+        // Die ItemList entsteht beim Build aus HUB_CATEGORIES und den Seiten der
+        // Kategorien – eine zweite Liste hier würde auseinanderlaufen.
+        faq: [
+            {
+                q: "Wo fange ich an, wenn ich zum ersten Mal eine Funkübung leite?",
+                a: "Mit der Seite „Funkübung planen“: sie führt in sieben Schritten von der Zielsetzung bis zur Nachbesprechung. Für den konkreten Abend liefert „Funkübung für den Dienstabend“ einen erprobten Zeitplan."
+            },
+            {
+                q: "Welche Seiten brauche ich für die Sprechfunkausbildung?",
+                a: "Die Grundlagen stehen in „Sprechfunk-Regeln“, „Betriebsworte“ und „Buchstabiertafel“. Diese drei deckt jede Grundausbildung ab und sie eignen sich als Handout."
+            },
+            {
+                q: "Sind die Inhalte an eine Organisation gebunden?",
+                a: "Nein. Die Regeln der PDV/DV 810.3 gelten organisationsübergreifend. Für THW und Feuerwehr gibt es zusätzlich eigene Seiten zu Funkrufnamen und Übungsformaten."
+            },
+            {
+                q: "Kostet die Nutzung etwas?",
+                a: "Nein. Alle Inhalte und der Übungsgenerator sind kostenlos, ohne Anmeldung und ohne Installation nutzbar; der Quellcode steht unter der EUPL-1.2."
+            }
+        ]
+    },
+    {
         slug: "faq", source: "pages/faq.html", sources: ["src/pages/faq.html"],
+        label: "FAQ",
+        hubCategory: "anwendung",
         schemaType: "FAQPage", datePublished: "2026-07-26",
         about: ["Sprechfunkübung", "Häufige Fragen"],
         // Die Fragen stehen bereits sichtbar auf der Seite und werden von dort
@@ -700,6 +779,7 @@ export const SITE_PAGES = [
     },
     {
         slug: "impressum", source: "pages/impressum.html", sources: ["src/pages/impressum.html"],
+        label: "Impressum",
         // Rechtstext: bleibt indexierbar und im Footer verlinkt, gehört aber
         // nicht in die Crawl-Priorisierung.
         inSitemap: false,
@@ -708,12 +788,51 @@ export const SITE_PAGES = [
     },
     {
         slug: "datenschutz", source: "pages/datenschutz.html", sources: ["src/pages/datenschutz.html"],
+        label: "Datenschutz",
         // Rechtstext: bleibt indexierbar und im Footer verlinkt, gehört aber
         // nicht in die Crawl-Priorisierung.
         inSitemap: false,
         schemaType: "WebPage", datePublished: "2026-07-26",
         about: ["Datenschutz"]
     }
+];
+
+/** Slug der Hub-Seite, die alle Inhaltsseiten bündelt (AP-04). */
+export const HUB_SLUG = "wissen";
+
+/**
+ * Kategorien des Content-Hubs. Reihenfolge = Reihenfolge auf /wissen/ und in
+ * der Brotkrumenleiste. `hubCategory` je Seite verweist auf `key`.
+ *
+ * Die fünfte Kategorie geht über die vier des Arbeitspakets hinaus: dessen
+ * Zuordnung deckt nur 20 der 26 Inhaltsseiten ab, das Abnahmekriterium verlangt
+ * aber jede Seite mit einem Klick vom Hub aus. Ohne sie wären Anleitung, FAQ,
+ * Funksprüche, Funktionen, Meldevordruck und Open Source vom Hub nicht erreichbar.
+ */
+export const HUB_CATEGORIES = [
+    { key: "uebungen", label: "Funkübungen planen und durchführen", anchor: "uebungen" },
+    { key: "grundlagen", label: "Sprechfunk-Grundlagen", anchor: "grundlagen" },
+    { key: "rufnamen", label: "Funkrufnamen und Kennungen", anchor: "rufnamen" },
+    { key: "technik", label: "Technik der Funkstrecke", anchor: "technik" },
+    { key: "anwendung", label: "Anwendung, Vorlagen und Nachschlagewerke", anchor: "anwendung" }
+];
+
+/** Seiten einer Hub-Kategorie, in Registry-Reihenfolge. */
+export function hubSeiten(key) {
+    return SITE_PAGES.filter(page => page.hubCategory === key);
+}
+
+/**
+ * Hauptnavigation, auf jeder Seite identisch und statisch ausgeliefert.
+ * Absichtlich sechs Einträge: die Tiefe kommt über den Hub, nicht über ein Menü.
+ */
+export const MAIN_NAV = [
+    { slug: "", label: "Übung erstellen" },
+    { slug: HUB_SLUG, label: "Wissen" },
+    { slug: "funksprueche", label: "Funksprüche" },
+    { slug: "anleitung", label: "Anleitung" },
+    { slug: "faq", label: "FAQ" },
+    { slug: "open-source", label: "Über das Projekt" }
 ];
 
 /**

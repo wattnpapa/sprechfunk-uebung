@@ -1696,10 +1696,108 @@ select option {
    7. Fußbereich
    ========================================================================== */
 
+/* ==========================================================================
+   Globale Hauptnavigation (AP-04)
+   Statisches Markup, keine JavaScript-Abhängigkeit. Das <details> wird offen
+   ausgeliefert; auf kleinen Bildschirmen dient die Zusammenfassung als
+   Umschalter, auf großen ist sie ausgeblendet und die Liste liegt waagerecht.
+   ========================================================================== */
+
+.site-nav {
+    background: var(--flaeche);
+    border-bottom: var(--strich) solid var(--linie);
+    font-size: var(--t-s);
+}
+
+.site-nav-summary {
+    cursor: pointer;
+    padding: 0.5rem 0;
+    font-weight: 600;
+    color: var(--text);
+    list-style: none;
+}
+
+.site-nav-summary::-webkit-details-marker {
+    display: none;
+}
+
+.site-nav-summary::before {
+    content: "☰";
+    margin-right: 0.5rem;
+}
+
+/* Sichtbarer Fokusring: die Zusammenfassung ist der Umschalter und muss
+   per Tastatur erkennbar erreichbar sein. */
+.site-nav-summary:focus-visible {
+    outline: var(--strich-stark, 2px) solid var(--fokus, currentcolor);
+    outline-offset: 2px;
+}
+
+.site-nav-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.15rem;
+    margin: 0 0 0.5rem;
+    padding: 0;
+    list-style: none;
+}
+
+.site-nav-list .nav-link {
+    display: block;
+    padding: 0.4rem 0.6rem;
+    color: var(--text-2);
+    border-radius: 0.35rem;
+    text-decoration: none;
+}
+
+.site-nav-list .nav-link:hover {
+    color: var(--text);
+    background: var(--flaeche-2, rgb(0 0 0 / 6%));
+}
+
+.site-nav-list .nav-link.active,
+.site-nav-list .nav-link[aria-current="page"] {
+    color: var(--text);
+    font-weight: 600;
+    background: var(--flaeche-2, rgb(0 0 0 / 8%));
+}
+
+@media (min-width: 768px) {
+    .site-nav-summary {
+        display: none;
+    }
+
+    .site-nav-list {
+        flex-direction: row;
+        flex-wrap: wrap;
+        gap: 0.25rem 0.5rem;
+        margin-bottom: 0;
+        padding: 0.25rem 0;
+    }
+}
+
+/* Hub-Karten auf /wissen/: der ganze Kartenkörper ist der Link. */
+.hub-karte {
+    color: inherit;
+    transition: border-color 0.15s ease;
+}
+
+.hub-karte:hover,
+.hub-karte:focus-visible {
+    border-color: var(--linie-stark);
+}
+
+.hub-karte .card-title {
+    color: var(--text);
+}
+
+.hub-karte .card-text {
+    color: var(--text-2);
+}
+
+/* Seit AP-04 vierspaltig und damit zu hoch für einen klebenden Footer:
+   position: sticky würde bei sechs Links je Spalte den Inhalt verdecken. */
 .main-footer {
-    position: sticky;
-    bottom: 0;
-    z-index: 4000;
     margin-top: auto;
     flex-shrink: 0;
     background: var(--flaeche);
@@ -1707,11 +1805,16 @@ select option {
     border-top: var(--strich) solid var(--linie);
     box-shadow: none;
     font-size: var(--t-s);
-    padding: 0.6rem 1.25rem;
-    display: flex;
-    flex-wrap: wrap;
-    align-items: center;
-    gap: 0.55rem 0.9rem;
+    padding: 1.25rem;
+}
+
+.main-footer .footer-spalten-titel {
+    color: var(--text);
+    margin-bottom: 0.5rem;
+}
+
+.main-footer .footer-links-liste li + li {
+    margin-top: 0.3rem;
 }
 
 .main-footer b {

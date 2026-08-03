@@ -53,6 +53,26 @@ export function extractTitle(html) {
     return treffer ? plainText(treffer[1]) : null;
 }
 
+/**
+ * Erster Satz eines Textes, für die Kartentexte des Hubs (AP-04).
+ * Die Descriptions sind zwei bis drei Sätze lang; auf einer Karte steht einer.
+ * Abkürzungen mit Punkt (z. B., ca., Nr.) beenden keinen Satz.
+ */
+export function ersterSatz(text) {
+    const roh = String(text ?? "").trim();
+    if (roh === "") return "";
+    const ABKUERZUNG = /(?:\b[zZ]\.|\bca\.|\bNr\.|\bbzw\.|\bevtl\.|\bggf\.|\bu\.|\bd\.|\bo\.|\bS\.|\bAbs\.|\bvgl\.|\betc\.)$/;
+    for (const treffer of roh.matchAll(/[.!?](?=\s|$)/g)) {
+        const ende = treffer.index + 1;
+        const davor = roh.slice(0, ende);
+        if (ABKUERZUNG.test(davor)) continue;
+        // Ein einzelner Buchstabe vor dem Punkt ist eine Initiale, kein Satzende.
+        if (/(?:^|\s)\p{L}\.$/u.test(davor)) continue;
+        return davor;
+    }
+    return roh;
+}
+
 export function extractMetaDescription(html) {
     const treffer = html.match(/<meta\s+name="description"\s+content="([^"]*)"/i);
     return treffer ? decodeEntities(treffer[1]).trim() : null;

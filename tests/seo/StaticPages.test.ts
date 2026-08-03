@@ -3,7 +3,8 @@ import path from "node:path";
 import { describe, expect, it } from "vitest";
 // @ts-expect-error – reines JS-Modul ohne Typdeklaration, bewusst geteilt mit dem Build
 import {
-    buildSitemap, canonicalUrl, SITEMAP_PAGES, SITE_PAGES, SITE_URL, STATIC_SUBPAGES
+    buildSitemap, canonicalUrl, HUB_CATEGORIES, HUB_SLUG, SITEMAP_PAGES, SITE_PAGES, SITE_URL,
+    STATIC_SUBPAGES
 } from "../../scripts/site-pages.mjs";
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-ignore -- reines JS-Hilfsmodul ohne Typdeklarationen, absichtlich .mjs
@@ -23,6 +24,7 @@ interface SitePage {
     source: string;
     sources: string[];
     inSitemap?: boolean;
+    hubCategory?: string;
 }
 
 const seiten = SITE_PAGES as SitePage[];
@@ -183,13 +185,42 @@ describe("Statische Seiten: SEO-Pflichtangaben", () => {
         }
     });
 
-    it("verlinkt jede Unterseite von der Startseite aus", () => {
+    /**
+     * Seit AP-04 verlinkt die Startseite nicht mehr alle 28 Unterseiten
+     * hintereinander, sondern gezielt – die Tiefe kommt über den Hub /wissen/.
+     * Die Zusicherung ist deshalb die Klicktiefe: höchstens zwei Klicks von der
+     * Startseite zu jeder Seite, also direkt oder über den Hub. Die Hub-Karten
+     * entstehen erst beim Build, hier zählt die Kategoriezuordnung der Registry.
+     */
+    it("erreicht jede Unterseite in höchstens zwei Klicks von der Startseite", () => {
         const start = leseSeite("index.html");
+        const hubMarkup = leseSeite("pages/wissen.html");
 
         for (const seite of STATIC_SUBPAGES as SitePage[]) {
-            expect(start, `${seite.slug} ist von der Startseite aus nicht erreichbar`)
-                .toContain(`href="${seite.slug}/"`);
+            const direkt = start.includes(`href="${seite.slug}/"`);
+            const ueberHub = seite.hubCategory !== undefined
+                && hubMarkup.includes(`<!-- AP-04:KARTEN:${seite.hubCategory} -->`);
+            // Rechtstexte hängen im Footer, der auf jeder Seite steht.
+            const imFooter = seite.inSitemap === false;
+
+            expect(direkt || ueberHub || imFooter,
+                `${seite.slug} ist weder direkt, noch über den Hub, noch im Footer erreichbar`)
+                .toBe(true);
         }
+    });
+
+    it("verlinkt den Hub von der Startseite aus", () => {
+        // Ohne diesen Link wäre die zweite Klickebene nicht erreichbar.
+        expect(leseSeite("index.html")).toContain(`href="${HUB_SLUG}/"`);
+    });
+
+    it("ordnet jede Inhaltsseite genau einer Hub-Kategorie zu", () => {
+        const schluessel = new Set(HUB_CATEGORIES.map((k: { key: string }) => k.key));
+        const ohne = (STATIC_SUBPAGES as SitePage[])
+            .filter(seite => seite.slug !== HUB_SLUG && seite.inSitemap !== false)
+            .filter(seite => !schluessel.has(seite.hubCategory ?? ""));
+
+        expect(ohne.map(seite => seite.slug), "Seiten ohne Hub-Kategorie").toEqual([]);
     });
 
     it("nennt in der 404-Seite nur existierende Ziele und bleibt auf noindex", () => {

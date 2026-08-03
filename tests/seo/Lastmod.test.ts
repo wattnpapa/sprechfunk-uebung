@@ -195,15 +195,29 @@ describe("lastmod im echten Repository", () => {
         }
     }, 120_000);
 
-    it("liefert für jede Sitemap-Seite ein Datum", () => {
+    /** Ist die Quelldatei der Seite überhaupt schon committet? */
+    const istCommittet = (seite: { sources: string[] }) => seite.sources.some(datei => {
+        try {
+            return execFileSync("git", ["log", "-1", "--format=%H", "--", datei], {
+                cwd: projekt, encoding: "utf8"
+            }).trim() !== "";
+        } catch {
+            return false;
+        }
+    });
+
+    it("liefert für jede committete Sitemap-Seite ein Datum", () => {
         if (istFlach()) {
             // Flacher Klon: git log kennt nur den Tip-Commit. Kein Fehler, aber
             // auch keine belastbare Aussage – der Deploy-Job klont vollständig.
             expect(Object.keys(werte)).toHaveLength(SITEMAP_PAGES.length);
             return;
         }
-        for (const [slug, wert] of Object.entries(werte)) {
-            expect(wert, `kein lastmod für "${slug || "/"}"`).toBeTruthy();
+        for (const seite of SITEMAP_PAGES as { slug: string; sources: string[] }[]) {
+            // Eine neu angelegte, noch nicht committete Seite hat zu Recht kein
+            // Datum – geraten wird nichts. Alles andere muss eines haben.
+            if (!istCommittet(seite)) continue;
+            expect(werte[seite.slug], `kein lastmod für "${seite.slug || "/"}"`).toBeTruthy();
         }
     });
 

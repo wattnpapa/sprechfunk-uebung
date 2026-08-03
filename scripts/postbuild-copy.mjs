@@ -5,6 +5,7 @@ import { promisify } from "node:util";
 import { buildSitemap, SITEMAP_PAGES, SITE_PAGES, STATIC_SUBPAGES } from "./site-pages.mjs";
 import { renderPageWithStructuredData } from "./lib/render-page.mjs";
 import { createGitRunner, resolveLastmod } from "./lib/lastmod.mjs";
+import { ersterSatz, extractMetaDescription } from "./lib/page-metadata.mjs";
 
 const execFileAsync = promisify(execFile);
 
@@ -25,6 +26,22 @@ async function lastmodFuerSeite(page) {
     const iso = await resolveLastmod(page, runGit);
     lastmodCache.set(page.slug, iso);
     return iso;
+}
+
+/**
+ * Kartentexte für den Hub (AP-04): je Seite der erste Satz ihrer eigenen
+ * meta description. Muss vor dem Rendern der Seiten bereitstehen, weil
+ * /wissen/ die Texte aller anderen Seiten braucht. Ein zweiter, handgepflegter
+ * Beschreibungstext in der Registry würde von den Seiten abweichen.
+ */
+const beschreibungen = {};
+for (const page of SITE_PAGES) {
+    const quelle = await readFile(path.join(root, "src", page.source), "utf8");
+    const description = extractMetaDescription(quelle);
+    if (!description) {
+        throw new Error(`Seite "${page.slug || "/"}": meta description fehlt, Hub-Karte nicht baubar.`);
+    }
+    beschreibungen[page.slug] = ersterSatz(description);
 }
 
 await mkdir(dist, { recursive: true });
@@ -105,7 +122,8 @@ async function withStructuredData(page, quelle) {
     const { html } = renderPageWithStructuredData({
         page,
         html: quelle,
-        dateModified: await lastmodFuerSeite(page)
+        dateModified: await lastmodFuerSeite(page),
+        beschreibungen
     });
     return html;
 }

@@ -86,8 +86,8 @@ function alleSchluessel(wert: unknown, treffer: string[] = []): string[] {
 }
 
 describe("Schema-Graph je Seite", () => {
-    it("die Registry deckt alle 29 ausgelieferten URLs ab", () => {
-        expect(SITE_PAGES).toHaveLength(29);
+    it("die Registry deckt alle 30 ausgelieferten URLs ab", () => {
+        expect(SITE_PAGES).toHaveLength(30);
     });
 
     for (const page of SITE_PAGES) {
@@ -282,22 +282,27 @@ describe("HowTo nur bei sichtbarer Schrittfolge", () => {
 });
 
 describe("Zusicherungen des Generators", () => {
+    // Header und Footer sind Pflicht: seit AP-04 setzt der Generator dort
+    // Hauptnavigation und Spalten-Footer ein.
     const minimal = (rumpf: string) =>
-        `<html><head><title>T</title><meta name="description" content="D"></head><body><main>${rumpf}</main></body></html>`;
+        "<html><head><title>T</title><meta name=\"description\" content=\"D\"></head>"
+        + `<body><header></header><main>${rumpf}</main><footer></footer></body></html>`;
 
     const seite = { slug: "test", source: "pages/test.html", schemaType: "Article", datePublished: "2026-01-01" };
 
     it("wirft ohne <title>", () => {
         expect(() => renderPageWithStructuredData({
             page: seite,
-            html: '<html><head><meta name="description" content="D"></head><body><main></main></body></html>'
+            html: '<html><head><meta name="description" content="D"></head>'
+                + "<body><header></header><main></main><footer></footer></body></html>"
         })).toThrow(/title/i);
     });
 
     it("wirft ohne meta description", () => {
         expect(() => renderPageWithStructuredData({
             page: seite,
-            html: "<html><head><title>T</title></head><body><main></main></body></html>"
+            html: "<html><head><title>T</title></head>"
+                + "<body><header></header><main></main><footer></footer></body></html>"
         })).toThrow(/description/i);
     });
 
@@ -318,7 +323,8 @@ describe("Zusicherungen des Generators", () => {
     it("wirft, wenn kein Platzhalter und kein </main> für den FAQ-Block existiert", () => {
         expect(() => renderPageWithStructuredData({
             page: { ...seite, faq: [{ q: "Frage?", a: "Antwort." }] },
-            html: '<html><head><title>T</title><meta name="description" content="D"></head><body></body></html>'
+            html: '<html><head><title>T</title><meta name="description" content="D"></head>'
+                + "<body><header></header><footer></footer></body></html>"
         })).toThrow(/weder .* noch <\/main>/);
     });
 

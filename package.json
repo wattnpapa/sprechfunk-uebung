@@ -59,6 +59,7 @@
     "test:e2e:seo": "playwright test -g \"@seo\""
   },
   "devDependencies": {
+    "@axe-core/playwright": "^4.12.1",
     "@eslint/js": "^10.0.1",
     "@playwright/test": "^1.62.0",
     "@rollup/plugin-commonjs": "^29.0.3",
