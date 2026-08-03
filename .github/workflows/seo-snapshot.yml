@@ -1,0 +1,67 @@
+name: SEO-Rang-Snapshot
+
+on:
+  schedule:
+    # Montags 05:00 UTC. Search-Console-Daten haben rund drei Tage Nachlauf,
+    # das Skript berücksichtigt den Versatz selbst.
+    - cron: "0 5 * * 1"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: seo-snapshot
+  cancel-in-progress: false
+
+jobs:
+  snapshot:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+        with:
+          # Auf den Branch selbst auschecken, sonst gibt es keinen HEAD zum Pushen.
+          ref: main
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v7
+        with:
+          node-version: '24'
+
+      # Kein npm ci: das Skript nutzt ausschließlich Node-Builtins
+      # (node:crypto, node:fs, node:path) und braucht keine Abhängigkeiten.
+
+      - name: Secret prüfen
+        id: guard
+        env:
+          GSC_SERVICE_ACCOUNT_JSON: ${{ secrets.GSC_SERVICE_ACCOUNT_JSON }}
+        run: |
+          if [ -z "$GSC_SERVICE_ACCOUNT_JSON" ]; then
+            echo "vorhanden=false" >> "$GITHUB_OUTPUT"
+            echo "GSC_SERVICE_ACCOUNT_JSON ist nicht gesetzt – Job wird übersprungen."
+            echo "### SEO-Snapshot übersprungen" >> "$GITHUB_STEP_SUMMARY"
+            echo "Secret \`GSC_SERVICE_ACCOUNT_JSON\` fehlt. Kein Fehler." >> "$GITHUB_STEP_SUMMARY"
+          else
+            echo "vorhanden=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Snapshot erzeugen
+        if: steps.guard.outputs.vorhanden == 'true'
+        env:
+          GSC_SERVICE_ACCOUNT_JSON: ${{ secrets.GSC_SERVICE_ACCOUNT_JSON }}
+          GSC_SITE_URL: ${{ vars.GSC_SITE_URL }}
+        run: node scripts/seo-rank-snapshot.mjs
+
+      - name: Snapshot committen
+        if: steps.guard.outputs.vorhanden == 'true'
+        run: |
+          if [ -z "$(git status --porcelain seo/snapshots)" ]; then
+            echo "Keine Änderung an seo/snapshots – nichts zu committen."
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add seo/snapshots
+          git commit -m "chore(seo): Rang-Snapshot $(date -u +%F)"
+          git push

@@ -90,3 +90,65 @@ Rollup bundles `src/app.ts` → `dist/bundle.js`. PostCSS extracts CSS. FontAwes
   Firestore rejects the write in production (guarded by
   `tests/services/FirestoreRules.contract.test.ts`)
 - **`localStorage` seed paths** support mock/E2E mode; don't break them when refactoring storage logic
+
+## SEO-Arbeitspakete (AP-XX)
+
+Gemeinsamer Kontext für die SEO-Arbeitspakete. Ziel ist Platz 1 für "BOS Sprechfunk Übung"
+auf https://sprechfunk-uebung.de (Repo `wattnpapa/sprechfunk-uebung`, EUPL-1.2, öffentlich).
+
+### Regeln je Arbeitspaket
+1. Vor Beginn `AGENTS.md`, `CLAUDE.md` und `README.md` lesen. Deren Konventionen haben Vorrang.
+2. Bestehende Struktur erweitern, nicht parallel neu erfinden — insbesondere `scripts/site-pages.mjs`
+   statt einer zweiten Seiten-Registry.
+3. Keine neuen Laufzeit-Abhängigkeiten ohne Begründung im PR-Text. Das Performance-Budget
+   (`npm run perf:budget`, `scripts/check-performance-budget.mjs`) ist ein Wettbewerbsvorteil.
+4. Jede Änderung an Seiten oder Metadaten braucht einen Test: Vitest für Datenstrukturen und
+   generierte Metadaten (`tests/seo/StaticPages.test.ts`), Playwright für gerendertes HTML und Navigation.
+5. `npm run lint`, `npm test` und der Build müssen grün sein, bevor der PR gestellt wird.
+6. Ein PR je Arbeitspaket, Titel `seo(AP-XX): kurze Beschreibung`. Im PR-Text: was, warum, wie zu prüfen.
+7. Keine URL löschen oder umbenennen ohne Weiterleitung — **aber siehe Hosting-Hinweis unten**.
+
+### Hosting (wichtig, weicht von der Annahme "Firebase Hosting" ab)
+Deployment läuft über **GitHub Pages** (`.github/workflows/main.yml`, `actions/deploy-pages`).
+`firebase.json` enthält **nur** `firestore` und `emulators` — **keine** `hosting`-Sektion.
+Firebase liefert hier ausschließlich Firestore als Datenbank, nicht die Website.
+
+Folge: **echte 301-Weiterleitungen sind aktuell nicht möglich.** GitHub Pages serviert keine
+serverseitigen Redirects, und `firebase.json` ist dafür nicht der richtige Ort. Wer eine URL
+umbenennt, braucht daher eine bewusste Entscheidung:
+- HTML-Stub am alten Pfad mit `<link rel="canonical">` auf das neue Ziel plus Meta-Refresh, oder
+- Wechsel auf einen Host mit Redirect-Support (eigener ADR unter `docs/adr/`).
+
+Nicht stillschweigend annehmen, ein Redirect sei eingerichtet.
+
+### Seiten-Registry
+`SITE_PAGES` in `scripts/site-pages.mjs` hält je Seite nur `slug`, `source`, `changefreq`
+und `priority` — **nicht** Titles und Descriptions. Die stehen in der jeweiligen
+`src/pages/<slug>.html` und werden von `tests/seo/StaticPages.test.ts` gegen Canonical,
+`og:*` und interne Verlinkung geprüft.
+
+### Sprache und Inhalt
+- Deutsche Texte in Du-Form, wie im Bestand.
+- Keine Werbesprache, keine Superlative ohne Beleg.
+- Keine erfundenen Quellen, Normen, Zahlen oder Zitate.
+- Fachbegriffe korrekt: BOS, TMO, DMO, Rufgruppe, Funkrufname, OPTA, Meldevordruck, Nachrichtenvordruck.
+- Zitierbare Quellen nur real existierende: DV 810.3, BOS-Funkrichtlinie, FwDV 100,
+  THW-Dienstvorschriften. Im Zweifel keine Quelle angeben statt eine zu erfinden.
+
+### Wettbewerbslage
+Hauptwettbewerber `funkuebung.de`: kommerzielles Freemium mit Registrierungspflicht, getrennte
+Marketing-Site und App, Ratgeber-Artikel unter `/ratgeber/`, strukturierte Daten inkl. HowTo und
+FAQPage, sichtbare Aktualisierungsdaten.
+
+Eigene, belegbare Vorteile: kostenlos, ohne Anmeldung, ohne Installation, Open Source,
+über 1.800 Funksprüche in `assets/funksprueche/` (am 2026-08-03 exakt 3.683 nicht leere
+Zeilen). Die Zahl ändert sich mit jeder Pflege der Vorlagen, daher vor dem Zitieren neu
+zählen statt diesen Stand zu übernehmen:
+
+```
+cat assets/funksprueche/*.txt | grep -cve '^[[:space:]]*$'
+```
+
+Diese Punkte in Inhalten sichtbar machen, ohne den Wettbewerber abzuwerten oder unbelegte
+Behauptungen über ihn aufzustellen. Performance-Vergleiche nur mit selbst gemessenen,
+datierten Werten.

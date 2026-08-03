@@ -4,6 +4,10 @@ name: Deploy static content to Pages
 on:
   push:
     branches: ["main"]
+    # Der wöchentliche Rang-Snapshot (seo-snapshot.yml) committet nach seo/.
+    # Diese Dateien landen nicht in dist/, ein Deploy wäre folgenlos.
+    paths-ignore:
+      - 'seo/**'
 
   workflow_dispatch:
 
