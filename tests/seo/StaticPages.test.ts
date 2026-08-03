@@ -3,6 +3,9 @@ import path from "node:path";
 import { describe, expect, it } from "vitest";
 // @ts-expect-error – reines JS-Modul ohne Typdeklaration, bewusst geteilt mit dem Build
 import { buildSitemap, canonicalUrl, SITE_PAGES, SITE_URL, STATIC_SUBPAGES } from "../../scripts/site-pages.mjs";
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+// @ts-ignore -- reines JS-Hilfsmodul ohne Typdeklarationen, absichtlich .mjs
+import { renderPageWithStructuredData } from "../../scripts/lib/render-page.mjs";
 
 /**
  * Die indexierbaren Seiten sind statisches HTML: Fehler in Canonical, Titel oder
@@ -157,11 +160,14 @@ describe("Statische Seiten: SEO-Pflichtangaben", () => {
      * Ueberschriften stehen in derselben Datei und laufen beim Pflegen leicht auseinander.
      */
     it("bildet im FAQ-Schema nur sichtbar beantwortete Fragen ab", () => {
+        // Seit AP-02 steht das JSON-LD nicht mehr in der Quelldatei, sondern wird
+        // beim Build erzeugt. Geprüft wird daher der generierte Graph – die
+        // Zusicherung bleibt dieselbe: keine Frage ohne sichtbare Antwort.
         const html = leseSeite("pages/faq.html");
+        const seite = SITE_PAGES.find(eintrag => eintrag.slug === "faq")!;
+        const { graph } = renderPageWithStructuredData({ page: seite, html, dateModified: "2026-08-01" });
 
-        const schema = [...html.matchAll(/<script type="application\/ld\+json">([\s\S]*?)<\/script>/g)]
-            .map(treffer => JSON.parse(treffer[1]))
-            .find(daten => daten["@type"] === "FAQPage");
+        const schema = graph["@graph"].find((knoten: Record<string, unknown>) => knoten["@type"] === "FAQPage");
         expect(schema, "Die FAQ-Seite braucht ein FAQPage-Schema").toBeTruthy();
 
         const ueberschriften = [...html.matchAll(/<h3[^>]*>([\s\S]*?)<\/h3>/g)]

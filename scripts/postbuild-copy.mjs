@@ -3,6 +3,7 @@ import { cp, mkdir, readFile, stat, writeFile } from "node:fs/promises";
 import path from "node:path";
 import { promisify } from "node:util";
 import { buildSitemap, SITE_PAGES, STATIC_SUBPAGES } from "./site-pages.mjs";
+import { renderPageWithStructuredData } from "./lib/render-page.mjs";
 
 const execFileAsync = promisify(execFile);
 
@@ -27,7 +28,15 @@ const generatorPlaceholder = "<!-- Wird von GeneratorView.ts befüllt -->";
 if (!indexHtml.includes(generatorPlaceholder)) {
     throw new Error("Generator-Platzhalter nicht in src/index.html gefunden");
 }
-await writeFile(path.join(dist, "index.html"), indexHtml.replace(generatorPlaceholder, markupMatch[1]), "utf8");
+const startseite = SITE_PAGES.find(page => page.slug === "");
+if (!startseite) {
+    throw new Error("Startseite (slug \"\") fehlt in SITE_PAGES");
+}
+await writeFile(
+    path.join(dist, "index.html"),
+    await withStructuredData(startseite, indexHtml.replace(generatorPlaceholder, markupMatch[1])),
+    "utf8"
+);
 await cp(path.join(root, "src", "404.html"), path.join(dist, "404.html"));
 await cp(path.join(root, "howto.md"), path.join(dist, "howto.md"));
 // style.css minifiziert ausliefern: Die Datei geht nicht durch den
@@ -45,7 +54,8 @@ await cp(path.join(root, "src", "robots.txt"), path.join(dist, "robots.txt"));
 for (const page of STATIC_SUBPAGES) {
     const target = path.join(dist, page.slug);
     await mkdir(target, { recursive: true });
-    await cp(path.join(root, "src", page.source), path.join(target, "index.html"));
+    const quelle = await readFile(path.join(root, "src", page.source), "utf8");
+    await writeFile(path.join(target, "index.html"), await withStructuredData(page, quelle), "utf8");
 }
 
 // sitemap.xml aus derselben Seitenliste erzeugen, damit sie beim Hinzufügen einer
@@ -56,7 +66,24 @@ for (const page of SITE_PAGES) {
 }
 await writeFile(path.join(dist, "sitemap.xml"), buildSitemap(lastmodBySlug), "utf8");
 
-/** Datum der letzten inhaltlichen Änderung: Git-Commit-Datum, sonst Datei-Zeitstempel. */
+/**
+ * Setzt den generierten JSON-LD-Graphen und – wo Fragen hinterlegt sind – den
+ * sichtbaren FAQ-Block in eine Seite ein (AP-02). Die Logik steht in
+ * lib/render-page.mjs, damit der Vitest-Test denselben Code prüft.
+ */
+async function withStructuredData(page, quelle) {
+    const { html } = renderPageWithStructuredData({
+        page,
+        html: quelle,
+        dateModified: await lastModified(path.join(root, "src", page.source))
+    });
+    return html;
+}
+
+/** Datum der letzten inhaltlichen Änderung: Git-Commit-Datum, sonst Datei-Zeitstempel.
+ *  Achtung: braucht die volle Git-Historie. Bei flachem Clone (fetch-depth 1)
+ *  liefert git log für jede Datei den Tip-Commit – deshalb setzt der
+ *  Deploy-Workflow fetch-depth: 0. */
 async function lastModified(file) {
     try {
         const { stdout } = await execFileAsync("git", ["log", "-1", "--format=%cs", "--", file], { cwd: root });
