@@ -102,12 +102,12 @@
     "@types/marked": "^6.0.0",
     "bootstrap": "^5.3.8",
     "chart.js": "^4.5.1",
-    "firebase": "^12.16.0",
+    "firebase": "^12.17.0",
     "jspdf": "^4.2.1",
     "jspdf-autotable": "^5.0.8",
     "jszip": "^3.10.1",
     "marked": "^18.0.7",
-    "pdfjs-dist": "^6.1.200"
+    "pdfjs-dist": "^6.2.108"
   },
   "overrides": {
     "braces": "3.0.3",
