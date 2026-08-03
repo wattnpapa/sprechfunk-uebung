@@ -32,6 +32,64 @@ export class GenerationService {
 
         this.updateChecksum(uebung);
         this.berechneLoesungsStaerken(uebung);
+        // Erst hier, weil die Art von `staerken` und `loesungsbuchstaben` abhängt
+        // und beide vorher gefüllt werden.
+        this.markiereNachrichtenArt(uebung);
+    }
+
+    /**
+     * Vermerkt je Nachricht, ob sie als Spruch oder als Durchsage abzusetzen ist.
+     *
+     * Zwingend Spruch sind Nachrichten mit mitschreibpflichtigem Inhalt:
+     * Lösungsbuchstaben, Stärkemeldungen und Buchstabier-Aufgaben gehen
+     * verloren, wenn die Gegenstelle sie nicht in den Vordruck aufnimmt. Die
+     * An-/Abmeldung ist formlos und damit Durchsage. Alle übrigen Nachrichten
+     * verteilt `spruchAnteilProzent`.
+     *
+     * Die Empfängerzahl spielt bewusst keine Rolle – auch eine Nachricht an
+     * alle oder an mehrere kann ein Spruch sein.
+     */
+    private markiereNachrichtenArt(uebung: FunkUebung): void {
+        if (!uebung.nachrichtenArtAktiv) {
+            return;
+        }
+
+        const anteil = Math.min(100, Math.max(0, uebung.spruchAnteilProzent ?? 50));
+
+        Object.values(uebung.nachrichten).forEach(nachrichtenListe => {
+            const frei: Nachricht[] = [];
+
+            nachrichtenListe.forEach(nachricht => {
+                if (this.istZwingendSpruch(nachricht)) {
+                    nachricht.art = "spruch";
+                    return;
+                }
+                nachricht.art = "durchsage";
+                const istAnmeldung = uebung.anmeldungAktiv && nachricht.id === 1;
+                if (!istAnmeldung) {
+                    frei.push(nachricht);
+                }
+            });
+
+            // Pro Teilnehmer aufteilen statt je Nachricht zu würfeln, damit der
+            // eingestellte Anteil auch bei wenigen Nachrichten eingehalten wird.
+            const zielSprueche = Math.round((frei.length * anteil) / 100);
+            shuffle(frei, this.rng)
+                .slice(0, zielSprueche)
+                .forEach(nachricht => {
+                    nachricht.art = "spruch";
+                });
+        });
+    }
+
+    /**
+     * Nachrichten, deren Inhalt die Gegenstelle zum Mitschreiben zwingt und die
+     * deshalb unabhängig vom eingestellten Anteil immer Spruch sind.
+     */
+    private istZwingendSpruch(nachricht: Nachricht): boolean {
+        return (nachricht.loesungsbuchstaben?.length ?? 0) > 0
+            || (nachricht.staerken?.length ?? 0) > 0
+            || enthaeltBuchstabierAufgabe(nachricht.nachricht);
     }
 
     /**

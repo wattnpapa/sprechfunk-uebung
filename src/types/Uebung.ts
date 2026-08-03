@@ -37,6 +37,16 @@ export interface Uebung {
    */
     seed?: string;
     istStandardKonfiguration?: boolean;
+    /**
+   * Kennzeichnet je Nachricht, ob sie als Spruch oder Durchsage abzusetzen ist.
+   * Bewusst opt-in: viele Übungen trainieren die Unterscheidung nicht.
+   */
+    nachrichtenArtAktiv?: boolean;
+    /**
+   * Anteil der Sprüche unter den Nachrichten, deren Art nicht schon durch den
+   * Inhalt festgelegt ist. Nur wirksam bei `nachrichtenArtAktiv`.
+   */
+    spruchAnteilProzent?: number;
     spielModus?: "klassisch" | "xZeit";
     xZeitIntervallMinuten?: number;
     xZeitStartOffsetMinuten?: number;

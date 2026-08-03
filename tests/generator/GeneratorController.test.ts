@@ -41,6 +41,7 @@ vi.mock("../../src/generator/GeneratorView", () => ({
         bindLoesungswortOptionChange() {}
         bindTeilnehmerEvents() {}
         bindAnmeldungToggle() {}
+        bindNachrichtenArtToggle() {}
         bindPrimaryActions() {}
         bindQuickJoin() {}
         setVersionInfo() {}
@@ -109,6 +110,7 @@ describe("GeneratorController", () => {
             bindLoesungswortOptionChange: vi.fn(),
             bindTeilnehmerEvents: vi.fn(),
             bindAnmeldungToggle: vi.fn(),
+            bindNachrichtenArtToggle: vi.fn(),
             bindSpielModusToggle: vi.fn(),
             bindPrimaryActions: vi.fn(),
             bindQuickJoin: vi.fn(),
@@ -652,6 +654,7 @@ describe("GeneratorController", () => {
             bindLoesungswortOptionChange,
             bindTeilnehmerEvents: vi.fn(),
             bindAnmeldungToggle: vi.fn(),
+            bindNachrichtenArtToggle: vi.fn(),
             bindSpielModusToggle: vi.fn(),
             bindPrimaryActions: vi.fn(),
             bindQuickJoin: vi.fn(),
@@ -687,6 +690,7 @@ describe("GeneratorController", () => {
         const bindLoesungswortOptionChange = vi.fn();
         const bindTeilnehmerEvents = vi.fn();
         const bindAnmeldungToggle = vi.fn();
+        const bindNachrichtenArtToggle = vi.fn();
         const bindPrimaryActions = vi.fn();
         const updateDistributionInputs = vi.fn();
         const view = {
@@ -695,6 +699,7 @@ describe("GeneratorController", () => {
             bindLoesungswortOptionChange,
             bindTeilnehmerEvents,
             bindAnmeldungToggle,
+            bindNachrichtenArtToggle,
             bindSpielModusToggle: vi.fn(),
             bindPrimaryActions,
             bindQuickJoin: vi.fn(),

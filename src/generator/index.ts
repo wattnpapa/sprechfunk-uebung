@@ -134,6 +134,9 @@ export class GeneratorController {
         this.view.bindAnmeldungToggle(checked => {
             this.funkUebung.anmeldungAktiv = checked;
         });
+        this.view.bindNachrichtenArtToggle(aktiv => {
+            this.funkUebung.nachrichtenArtAktiv = aktiv;
+        });
         this.view.bindSpielModusToggle();
         this.view.bindPrimaryActions({
             onAddTeilnehmer: () => this.addTeilnehmer(),
@@ -482,6 +485,8 @@ export class GeneratorController {
             spruecheAnMehrere: uebung.spruecheAnMehrere,
             buchstabierenAn: uebung.buchstabierenAn,
             anmeldungAktiv: uebung.anmeldungAktiv,
+            nachrichtenArtAktiv: uebung.nachrichtenArtAktiv ?? false,
+            spruchAnteilProzent: uebung.spruchAnteilProzent ?? 50,
             loesungswoerter: uebung.loesungswoerter || {},
             loesungsStaerken: uebung.loesungsStaerken || {}
         });

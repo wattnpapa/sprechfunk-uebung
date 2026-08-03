@@ -23,6 +23,7 @@ import {
     type TeilnehmerFortschritt
 } from "../services/liveStatusMerge";
 import type { TeilnehmerLiveDoc } from "../types/LiveStatus";
+import type { NachrichtArt } from "../types/Nachricht";
 import { berechneSollFortschritt, fruehesteBasis, parseHHMMtoMs } from "../utils/xzeit";
 
 interface FlattenedNachricht {
@@ -31,6 +32,7 @@ interface FlattenedNachricht {
     empfaenger: string[];
     text: string;
     xZeitSlot?: number;
+    art?: NachrichtArt;
 }
 
 interface SentNachricht {
@@ -382,7 +384,8 @@ export class UebungsleitungController {
                     sender,
                     empfaenger: msg.empfaenger,
                     text: msg.nachricht,
-                    ...(msg.xZeitSlot !== undefined ? { xZeitSlot: msg.xZeitSlot } : {})
+                    ...(msg.xZeitSlot !== undefined ? { xZeitSlot: msg.xZeitSlot } : {}),
+                    ...(msg.art !== undefined ? { art: msg.art } : {})
                 });
             });
         });

@@ -382,6 +382,9 @@ export class FirebaseService {
             if (xZeitSlot !== undefined) {
                 base.xZeitSlot = xZeitSlot;
             }
+            if (obj["art"] === "spruch" || obj["art"] === "durchsage") {
+                base.art = obj["art"];
+            }
             return base;
         };
 
@@ -425,6 +428,8 @@ export class FirebaseService {
             checksumme: typeof data.checksumme === "string" ? data.checksumme : "",
             funksprueche: toStringArray(data.funksprueche),
             anmeldungAktiv: typeof data.anmeldungAktiv === "boolean" ? data.anmeldungAktiv : true,
+            nachrichtenArtAktiv: typeof data.nachrichtenArtAktiv === "boolean" ? data.nachrichtenArtAktiv : false,
+            spruchAnteilProzent: typeof data.spruchAnteilProzent === "number" ? data.spruchAnteilProzent : 50,
             seed: typeof data.seed === "string" ? data.seed : undefined,
             verwendeteVorlagen: toStringArray(data.verwendeteVorlagen),
             istStandardKonfiguration: typeof data.istStandardKonfiguration === "boolean" ? data.istStandardKonfiguration : false,
