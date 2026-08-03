@@ -54,6 +54,7 @@
     "coverage:readme": "node scripts/update-coverage-link.mjs",
     "og:image": "node scripts/generate-og-image.mjs",
     "anleitung:screenshots": "node scripts/generate-anleitung-screenshots.mjs",
+    "vordruck:referenz": "node scripts/generate-vordruck-referenz.mjs",
     "deps:audit": "npm audit --omit=dev --audit-level=high",
     "perf:budget": "node scripts/check-performance-budget.mjs"
   },
