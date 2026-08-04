@@ -1087,6 +1087,29 @@ export const SITE_PAGES = [
         faqFromPage: true
     },
     {
+        slug: "einbetten", source: "pages/einbetten.html", sources: ["src/pages/einbetten.html"],
+        kurzGesagt: "Die Buchstabiertafel lässt sich als Widget in die eigene Website oder ins Intranet einbinden; der Code lädt nichts nach und setzt keine Cookies. Dazu kommen vier druckfertige A4-Aushänge mit Quellenangabe, Lizenzhinweis und QR-Code. Alles steht unter der EUPL-1.2 und darf weitergegeben werden.",
+        related: ["buchstabiertafel", "open-source", "meldevordruck"],
+        label: "Einbetten und weitergeben",
+        hubCategory: "anwendung",
+        schemaType: "Article", datePublished: "2026-08-04",
+        about: ["Buchstabiertafel", "Einbetten", "Druckvorlagen"],
+        faq: [
+            {
+                q: "Setzt das eingebettete Widget Cookies?",
+                a: "Nein. Es lädt weder Skripte noch Schriften oder Bilder nach und stellt keine Verbindung zu Dritten her. Das sandbox-Attribut im Einbettungscode enthält bewusst kein allow-scripts, der Browser verhindert die Ausführung von JavaScript also selbst."
+            },
+            {
+                q: "Darf ich die Aushänge ausdrucken und weitergeben?",
+                a: "Ja. Alles steht unter der EUPL-1.2: ausdrucken, kopieren, im Intranet ablegen und in eigene Ausbildungsunterlagen übernehmen ist erlaubt, erwartet wird die Nennung der Quelle."
+            },
+            {
+                q: "Veralten die PDFs?",
+                a: "Nein, sie entstehen bei jedem Erzeugen der Website neu aus denselben Inhalten wie die Seiten. Eine Korrektur auf der Website ändert damit auch den Aushang."
+            }
+        ]
+    },
+    {
         slug: "autor", source: "pages/autor.html", sources: ["src/pages/autor.html"],
         kurzGesagt: "Der Übungsgenerator ist aus der eigenen Ausbildungspraxis entstanden, nicht am Reißbrett. Der Autor ist seit 2007 beim Technischen Hilfswerk aktiv, Gruppenführer der Fachgruppe Kommunikation und Bereichsausbilder für Sprechfunk. Die mitgelieferten Übungstexte stammen aus tatsächlich gefunkten Übungen mehrerer Ortsverbände. Das Projekt ist Ehrenamt, quelloffen und ohne kommerzielles Interesse.",
         related: ["ueber-das-projekt", "open-source", "funkuebung-thw"],

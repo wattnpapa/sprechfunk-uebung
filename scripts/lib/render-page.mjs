@@ -9,6 +9,8 @@ import { HUB_CATEGORIES, HUB_SLUG, SITE_PAGES, SITE_URL } from "../site-pages.mj
 import { ogUrl } from "./og-bilder.mjs";
 import { hatDiagramm, renderDiagramm } from "./diagramme.mjs";
 import { hatQuellen, renderQuellenAbschnitt } from "./quellen.mjs";
+import { AUSHAENGE, aushangPfad } from "./aushaenge.mjs";
+import { EMBEDS, embedSnippet, embedUrl } from "./embed.mjs";
 import { deutschesDatum, nurDatum } from "./lastmod.mjs";
 import { buildGraph, escapeHtml, renderFaqHtml } from "./schema-graph.mjs";
 import {
@@ -120,6 +122,8 @@ export function renderPageWithStructuredData({
     // Nach dem FAQ-Block, damit "Weiterlesen" der letzte Abschnitt vor dem
     // Footer ist – und vor der Seitenleiste, die </main> verschiebt.
     html = setzeDiagramm(html, page);
+    html = setzeEinbettung(html, page);
+    html = setzeDownloadHinweis(html, page);
     html = setzeQuellen(html, page);
     html = setzePictureQuellen(html, webpBilder);
     html = setzeWeiterlesen(html, page, alleSeiten, beschreibungen);
@@ -131,6 +135,82 @@ export function renderPageWithStructuredData({
     return { html, graph, faq, terme, title, description, breadcrumb };
 }
 
+
+/**
+ * Füllt die Platzhalter auf /einbetten/ (AP-12).
+ *
+ * Der Einbettungscode und die Aushangliste stehen nicht im Quelltext der
+ * Seite, sondern entstehen aus lib/embed.mjs und lib/aushaenge.mjs. Sonst
+ * müsste jede Änderung an einer der beiden Stellen von Hand nachgezogen
+ * werden – und ein Code-Schnipsel, der ins Leere zeigt, fällt niemandem auf.
+ */
+export function setzeEinbettung(html, page) {
+    if (page.slug !== "einbetten") return html;
+
+    const embed = EMBEDS[0];
+    const code = embedSnippet(embed);
+    const vorschau = `<iframe src="${escapeHtml(embedUrl(embed))}"`
+        + ` title="${escapeHtml(embed.titel)} – ${escapeHtml(embed.untertitel)}"`
+        + ` width="100%" height="${embed.hoehe}" loading="lazy"`
+        + ` sandbox="allow-popups allow-popups-to-escape-sandbox"`
+        + ` style="border:1px solid #dee2e6;border-radius:8px;max-width:100%"></iframe>`;
+
+    const liste = `<ul class="list-unstyled mb-0" data-testid="aushang-liste">\n`
+        + AUSHAENGE.map(aushang => `                        <li class="mb-2">
+                            <a href="..${aushangPfad(aushang)}" download>
+                                <i class="fas fa-file-pdf"></i> ${escapeHtml(aushang.titel)}
+                            </a>
+                            – ${escapeHtml(aushang.untertitel)}
+                        </li>`).join("\n")
+        + `\n                    </ul>`;
+
+    let ergebnis = html;
+    for (const [platzhalter, ersatz] of [
+        ["<!-- EMBED_CODE -->", escapeHtml(code)],
+        ["<!-- EMBED_VORSCHAU -->", vorschau],
+        ["<!-- AUSHAENGE_LISTE -->", liste]
+    ]) {
+        if (!ergebnis.includes(platzhalter)) {
+            throw new Error(`Seite "einbetten": Platzhalter ${platzhalter} fehlt.`);
+        }
+        ergebnis = ergebnis.replace(platzhalter, ersatz);
+    }
+    return ergebnis;
+}
+
+/**
+ * Hängt den Hinweis auf den druckfertigen Aushang an die zugehörige Seite (AP-12).
+ *
+ * Der Download gehört dorthin, wo jemand das Thema nachschlägt – nicht nur auf
+ * eine eigene Downloadseite, die man erst finden muss.
+ */
+export function setzeDownloadHinweis(html, page) {
+    if (page.slug === undefined) return html;
+    const aushang = AUSHAENGE.find(eintrag => eintrag.ziel === page.slug);
+    if (!aushang) return html;
+    if (!html.includes("</main>")) return html;
+
+    const tiefe = page.slug === "" ? 0 : page.slug.split("/").filter(Boolean).length;
+    const auf = "../".repeat(tiefe);
+    // Die id wird hier gesetzt, nicht von ergaenzeUeberschriftIds: der Block
+    // entsteht erst danach, und eine h2 ohne Anker bricht die Inhaltsprüfung.
+    const block = `        <section class="card shadow-sm my-4" data-testid="aushang-download">
+            <div class="card-body">
+                <h2 class="h5" id="zum-ausdrucken">Zum Ausdrucken</h2>
+                <p>
+                    Diese Seite gibt es auch als druckfertigen A4-Aushang mit Quellenangabe,
+                    Lizenzhinweis und QR-Code – zum Aufhängen und Weitergeben.
+                </p>
+                <p class="mb-0">
+                    <a href="${auf}${aushangPfad(aushang).slice(1)}" class="btn btn-outline-primary" download>
+                        <i class="fas fa-file-pdf"></i> ${escapeHtml(aushang.titel)} als PDF
+                    </a>
+                    <a href="${auf}einbetten/" class="btn btn-outline-secondary">Alle Aushänge und Widgets</a>
+                </p>
+            </div>
+        </section>`;
+    return html.replace("</main>", `${block}\n</main>`);
+}
 
 /**
  * Setzt den Abschnitt „Grundlagen und Quellen“ ans Seitenende (AP-11).
@@ -600,11 +680,13 @@ export function setzeSichtbaresDatum(html, dateModified, page = {}) {
 
     // Autorenangabe verweist auf /autor/ (AP-11): dort steht, woher die
     // fachliche Grundlage kommt – im Impressum steht nur die Anbieterkennung.
-    // Auf der Autorenseite selbst entfällt der Verweis auf sich selbst.
-    if (page.slug !== undefined && page.inSitemap !== false && page.slug !== "autor") {
-        const autor = relativerPfad(page.slug ?? "", "autor");
-        teile.push(`von <a href="${autor}">Johannes Rudolph</a>, `
-            + "Bereichsausbilder Sprechfunk (THW)");
+    // Auf der Autorenseite selbst bleibt die Angabe stehen, nur ohne Verweis
+    // auf sich selbst.
+    if (page.slug !== undefined && page.inSitemap !== false) {
+        const name = page.slug === "autor"
+            ? "Johannes Rudolph"
+            : `<a href="${relativerPfad(page.slug ?? "", "autor")}">Johannes Rudolph</a>`;
+        teile.push(`von ${name}, Bereichsausbilder Sprechfunk (THW)`);
     }
 
     if (teile.length === 0) return html;
