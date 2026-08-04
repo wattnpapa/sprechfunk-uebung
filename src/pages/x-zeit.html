@@ -1,0 +1,361 @@
+<!DOCTYPE html>
+<html lang="de">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>X-Zeit in der Funkübung: zeitversetzt planen und üben</title>
+    <link rel="icon" type="image/png" href="../assets/favicon.png">
+    <link rel="canonical" href="https://sprechfunk-uebung.de/x-zeit/">
+    <meta name="robots" content="index,follow,max-image-preview:large,max-snippet:-1">
+    <meta name="theme-color" content="#0d6efd">
+
+    <meta name="description" content="X-Zeit heißt: Nachrichten werden relativ zum Übungsbeginn fällig. Wie der X-Zeit-Modus mit Intervall und Start-Offset rechnet, an einem Beispiel erklärt.">
+    <meta name="author" content="Johannes Rudolph">
+
+    <meta property="og:title" content="X-Zeit in der Funkübung: zeitversetzt planen und üben">
+    <meta property="og:description" content="X-Zeit heißt: Nachrichten werden relativ zum Übungsbeginn fällig. Wie der X-Zeit-Modus mit Intervall und Start-Offset rechnet, an einem Beispiel erklärt.">
+    <meta property="og:url" content="https://sprechfunk-uebung.de/x-zeit/">
+    <meta property="og:type" content="article">
+    <meta property="og:locale" content="de_DE">
+    <meta property="og:site_name" content="Sprechfunk Übungsgenerator">
+    <meta property="og:image" content="https://sprechfunk-uebung.de/assets/og-image.png">
+    <meta property="og:image:width" content="1200">
+    <meta property="og:image:height" content="630">
+    <meta property="og:image:alt" content="Sprechfunk Übungsgenerator – Übungen für den BOS-Sprechfunk erstellen">
+
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="X-Zeit in der Funkübung: zeitversetzt planen und üben">
+    <meta name="twitter:description" content="X-Zeit heißt: Nachrichten werden relativ zum Übungsbeginn fällig. Wie der X-Zeit-Modus mit Intervall und Start-Offset rechnet, an einem Beispiel erklärt.">
+    <meta name="twitter:image" content="https://sprechfunk-uebung.de/assets/og-image.png">
+
+    <link rel="stylesheet" href="../bundle.css">
+    <link rel="stylesheet" href="../style.css">
+
+    <!-- GoatCounter: cookielose, anonyme Reichweitenmessung -->
+    <script data-goatcounter="https://sprechfunk-uebung.goatcounter.com/count"
+            async src="//gc.zgo.at/count.js"></script>
+
+    <script>
+        // Gleiche Theme-Auswahl wie in der App anwenden (statische Seiten laden kein Bundle).
+        document.addEventListener("DOMContentLoaded", function () {
+            var stored = localStorage.getItem("theme");
+            if (stored) {
+                document.body.setAttribute("data-theme", stored);
+            }
+        });
+    </script>
+</head>
+
+<body data-theme="light">
+<header class="app-header">
+    <div class="container app-header-grid">
+        <div class="app-header-title">
+            <p class="h2 mb-0">
+                <i class="fas fa-broadcast-tower"></i> Sprechfunk Übungsgenerator
+            </p>
+        </div>
+        <div class="app-header-actions d-none d-md-flex">
+            <a href="../" class="btn btn-primary">
+                <i class="fas fa-arrow-left"></i> Zur Anwendung
+            </a>
+            <a href="../anleitung/" class="btn btn-info">
+                <i class="fas fa-book"></i> Anleitung
+            </a>
+            <a href="https://github.com/wattnpapa/sprechfunk-uebung" class="btn btn-dark">
+                <i class="fab fa-github"></i> GitHub
+            </a>
+        </div>
+    </div>
+</header>
+
+<main class="container my-4 app-view-shell">
+    <nav aria-label="Brotkrumennavigation" class="mb-3">
+        <ol class="breadcrumb mb-0">
+            <li class="breadcrumb-item"><a href="../">Startseite</a></li>
+            <li class="breadcrumb-item active" aria-current="page">X-Zeit</li>
+        </ol>
+    </nav>
+
+    <article>
+        <div class="card mb-3">
+            <div class="card-body">
+                <h1 class="h3">X-Zeit in der Sprechfunkübung</h1>
+                <p>
+                    <strong>X-Zeit</strong> ist eine relative Zeitangabe. <strong>X+15</strong>
+                    bedeutet: fünfzehn Minuten nach dem festgelegten Beginn. Im Übungsbetrieb
+                    tritt sie an die Stelle fester Uhrzeiten im Ablaufplan.
+                </p>
+                <p class="mb-0">
+                    Der <strong>Sprechfunk Übungsgenerator</strong> hat dafür einen eigenen
+                    Spiel-Modus. Er legt jede Nachricht der Übung auf einen X-Zeit-Slot und
+                    rechnet während des Betriebs mit. Diese Seite erklärt die Rechnung dahinter
+                    und zeigt, wie sich Intervall und Start-Offset sinnvoll wählen lassen.
+                </p>
+            </div>
+        </div>
+
+        <section class="card shadow-sm mb-4">
+            <div class="card-header"><h2 class="h4 mb-0" id="begriff">Was die X-Zeit bezeichnet</h2></div>
+            <div class="card-body">
+                <p>
+                    Die X-Zeit ist ein Bezugszeitpunkt. Er heißt X, weil er beim Planen noch
+                    nicht feststeht. Alle weiteren Angaben zählen von ihm aus: X+5, X+20,
+                    X+90.
+                </p>
+                <p>
+                    Der Zeitpunkt selbst wird erst am Übungstag gesetzt. Bis dahin bleibt der
+                    Plan gültig, egal ob die Übung um 19:00 oder um 19:25 beginnt. Genau das ist
+                    der Zweck der Schreibweise.
+                </p>
+                <p class="mb-0">
+                    Zu unterscheiden ist die X-Zeit von der Uhrzeit im
+                    <a href="../meldevordruck/">Meldevordruck</a>. Dort steht, wann eine
+                    Nachricht tatsächlich aufgenommen wurde. Die X-Zeit sagt, wann sie fällig
+                    war.
+                </p>
+            </div>
+        </section>
+
+        <section class="card shadow-sm mb-4">
+            <div class="card-header"><h2 class="h4 mb-0" id="warum">Warum relative Zeiten robuster sind</h2></div>
+            <div class="card-body">
+                <p>
+                    Ein Ablaufplan mit Uhrzeiten ist nach zehn Minuten Verzug falsch. Wer ihn
+                    dann noch benutzt, korrigiert im Kopf mit. Nach der dritten Korrektur
+                    stimmen die Zahlen für niemanden mehr.
+                </p>
+                <p>
+                    Bei relativen Angaben bleibt der Abstand zwischen zwei Ereignissen
+                    erhalten. Verschiebt sich der Beginn, verschiebt sich der ganze Plan
+                    mit. Es gibt nur einen Wert zu korrigieren, und zwar den Startzeitpunkt.
+                </p>
+                <p class="mb-0">
+                    Dazu kommt die Wiederverwendbarkeit. Derselbe Plan trägt zwei Gruppen an
+                    zwei Abenden, ohne dass eine Zeile geändert wird. Für die
+                    <a href="../funkuebung-planen/">Planung einer Funkübung</a> heißt das:
+                    einmal rechnen, mehrfach nutzen.
+                </p>
+            </div>
+        </section>
+
+        <section class="card shadow-sm mb-4">
+            <div class="card-header"><h2 class="h4 mb-0" id="modus">Der X-Zeit-Modus im Generator</h2></div>
+            <div class="card-body">
+                <p>
+                    In den Kopfdaten der Übung steht die Auswahl <strong>Spiel-Modus</strong>
+                    mit zwei Möglichkeiten. <em>Klassisch</em> vergibt keine Zeiten; jede
+                    Funkstelle arbeitet ihre Liste in eigenem Tempo ab. <em>X-Zeit</em>
+                    schaltet zwei zusätzliche Felder frei.
+                </p>
+                <ul>
+                    <li>
+                        <strong>Intervall (Min.)</strong> – der Abstand zwischen zwei
+                        aufeinanderfolgenden Nachrichten der Übung. Vorbelegt mit 3 Minuten.
+                    </li>
+                    <li>
+                        <strong>Start-Offset (Min.)</strong> – die Vorlaufzeit, bevor die erste
+                        Nachricht fällig wird. Vorbelegt mit 0 Minuten.
+                    </li>
+                </ul>
+                <p class="mb-0">
+                    Aus diesen zwei Zahlen entsteht die gesamte Zeitachse. Sie steht danach im
+                    <a href="../regiebuch-funkuebung/">Nachrichtenplan</a> und auf den
+                    Druckunterlagen.
+                </p>
+            </div>
+        </section>
+
+        <section class="card shadow-sm mb-4">
+            <div class="card-header"><h2 class="h4 mb-0" id="beispiel">Ein durchgerechnetes Beispiel</h2></div>
+            <div class="card-body">
+                <p>
+                    Die Zuteilung folgt einer einfachen Formel. Für die Nachricht an Position
+                    <em>n</em> gilt:
+                </p>
+                <p><strong>X+ = Start-Offset + n × Intervall</strong></p>
+                <p>
+                    <em>n</em> zählt über die ganze Übung, nicht je Funkstelle. Angenommen, acht
+                    Funkstellen setzen je sechs Funksprüche ab, der Anmeldungs-Funkspruch ist
+                    aktiv, das Intervall beträgt 2 Minuten und der Start-Offset 5 Minuten.
+                </p>
+                <ul>
+                    <li>
+                        Die acht Anmeldungen liegen alle auf <strong>X+0</strong>. Sie sind der
+                        Beginn und nehmen keinen eigenen Slot in der Reihe ein.
+                    </li>
+                    <li>
+                        Es bleiben 8 × 5 = <strong>40 Nachrichten</strong> für die Zeitachse.
+                    </li>
+                    <li>
+                        Die erste liegt auf 5 + 1 × 2 = <strong>X+7</strong>, die letzte auf
+                        5 + 40 × 2 = <strong>X+85</strong>.
+                    </li>
+                </ul>
+                <p class="mb-0">
+                    Der Übungsbetrieb dauert damit 85 Minuten nach dem Start. Die Reihenfolge
+                    läuft rundenweise: erst der zweite Funkspruch aller acht Stellen, dann der
+                    dritte, und so weiter. Damit ist jede Funkstelle über den ganzen Abend
+                    verteilt beschäftigt.
+                </p>
+            </div>
+        </section>
+
+        <section class="card shadow-sm mb-4">
+            <div class="card-header"><h2 class="h4 mb-0" id="intervall">Das Intervall gegen die Gesamtzahl rechnen</h2></div>
+            <div class="card-body">
+                <p>
+                    Hier steckt die häufigste Fehlannahme. Das Intervall gilt für die Übung als
+                    Ganzes, nicht für die einzelne Funkstelle. Drei Minuten klingen nach wenig
+                    und ergeben bei vielen Teilnehmern eine lange Übung.
+                </p>
+                <p>
+                    Zehn Funkstellen mit je zehn Funksprüchen kommen auf 90 Nachrichten in der
+                    Reihe. Bei einem Intervall von 3 Minuten liegt die letzte auf X+270. Das
+                    sind viereinhalb Stunden.
+                </p>
+                <p>
+                    Deshalb lohnt die Rechnung in die andere Richtung. Für einen Rahmen von
+                    90 Minuten und 40 Nachrichten bleiben gut 2 Minuten je Nachricht. Als
+                    Faustformel:
+                </p>
+                <p>
+                    <strong>Dauer ≈ Start-Offset + Funkstellen × (Funksprüche − 1) × Intervall</strong>
+                </p>
+                <p class="mb-0">
+                    Nach unten gibt es eine Grenze. Ein vollständiger Verkehr mit Anruf,
+                    Nachricht und Bestätigung braucht auf dem Kanal 45 bis 90 Sekunden. Ein
+                    Intervall unter einer Minute erzeugt daher Wartezeiten, weil die
+                    Fälligkeiten schneller auflaufen als der Kanal sie abarbeitet.
+                </p>
+            </div>
+        </section>
+
+        <section class="card shadow-sm mb-4">
+            <div class="card-header"><h2 class="h4 mb-0" id="teilnehmer">Was die Funkstelle am Gerät sieht</h2></div>
+            <div class="card-body">
+                <p>
+                    In der Teilnehmeransicht erscheint im X-Zeit-Modus ein Banner mit einem
+                    Zeitfeld und der Schaltfläche <em>Jetzt starten</em>. Damit setzt die
+                    Funkstelle ihre X-Zeit-Basis auf den tatsächlichen Beginn. Ohne gesetzte
+                    Basis gibt es keinen Countdown, sondern einen Hinweis darauf.
+                </p>
+                <p>
+                    Ist die Basis gesetzt, zeigt die Ansicht die Restzeit bis zur nächsten
+                    fälligen Nachricht. Jede Zeile der Tabelle trägt ihren Slot als Kennzeichen
+                    X+n.
+                </p>
+                <p class="mb-0">
+                    Dazu kommt der Fokus-Modus, der nur in diesem Spiel-Modus verfügbar ist. Er
+                    blendet die Tabelle aus und zeigt allein die aktuell fällige Nachricht.
+                    Künftige Texte bleiben bis zu ihrer Fälligkeit verborgen. Wer vorausliest,
+                    kann sich also keinen Vorsprung verschaffen – ein Vorteil gegenüber der
+                    ausgedruckten Liste bei der
+                    <a href="../digitale-funkuebung/">digitalen Funkübung</a>.
+                </p>
+            </div>
+        </section>
+
+        <section class="card shadow-sm mb-4">
+            <div class="card-header"><h2 class="h4 mb-0" id="leitung">Was die Übungsleitung sieht</h2></div>
+            <div class="card-body">
+                <p>
+                    Die Übungsleitung bekommt im X-Zeit-Modus ein Cockpit. Es zeigt die laufende
+                    Uhrzeit, die Laufzeit seit der Basis und den Vergleich zwischen Soll und
+                    Ist. Im klassischen Modus bleibt es ausgeblendet, weil dort keine Zeitachse
+                    existiert.
+                </p>
+                <p>
+                    Das Soll ist die Anzahl der Nachrichten, die laut Plan bereits fällig
+                    sind. Das Ist zählt die tatsächlich abgesetzten. Aus der Differenz entsteht
+                    der Plan-Status.
+                </p>
+                <ul>
+                    <li>Ist mindestens gleich Soll: <strong>im Plan</strong>.</li>
+                    <li>Ein oder zwei Nachrichten Rückstand: Warnstufe.</li>
+                    <li>Ab drei Nachrichten Rückstand: deutliche Kennzeichnung.</li>
+                </ul>
+                <p class="mb-0">
+                    Der Nutzen liegt im Gegensteuern, bevor die Zeit knapp wird. Zwei
+                    Funkstellen mit weniger Sprüchen entlasten den Kanal sofort.
+                </p>
+            </div>
+        </section>
+
+        <section class="card shadow-sm mb-4">
+            <div class="card-header"><h2 class="h4 mb-0" id="vordrucke">X+n auf den Vordrucken</h2></div>
+            <div class="card-body">
+                <p>
+                    Die X-Zeit steht auch auf Papier. In Meldevordruck und Nachrichtenvordruck
+                    tritt sie an die Stelle der laufenden Nummer und erscheint dort als X+n.
+                </p>
+                <p class="mb-0">
+                    Damit funktioniert eine X-Zeit-Übung ohne jeden Bildschirm. Die
+                    Übungsleitung nennt beim Start die Uhrzeit, alle notieren sie, und jede
+                    Funkstelle rechnet ihre Fälligkeiten selbst aus. Der Rechenschritt ist
+                    ausdrücklich Teil der Übung.
+                </p>
+            </div>
+        </section>
+
+        <section class="card shadow-sm mb-4">
+            <div class="card-header"><h2 class="h4 mb-0" id="grenzen">Grenzen des Verfahrens</h2></div>
+            <div class="card-body">
+                <p>
+                    Eine getaktete Übung verzeiht weniger. Wer zurückfällt, bekommt die nächste
+                    Fälligkeit trotzdem, und der Rückstand wächst. Für eine erste Übung nach
+                    dem Lehrgang ist der klassische Modus deshalb die bessere Wahl.
+                </p>
+                <p>
+                    Ein Slot ist außerdem keine Sendeerlaubnis. Fällig heißt: ab jetzt darf die
+                    Nachricht abgesetzt werden, sobald der Kanal frei ist. Die
+                    <a href="../betriebsworte/">Betriebsworte</a> und die Regeln zur
+                    Verkehrsabwicklung gelten unverändert.
+                </p>
+                <p class="mb-0">
+                    Nachrichten an alle Funkstellen belegen einen eigenen Slot. Sie brauchen auf
+                    dem Kanal länger als eine gerichtete Nachricht, weil jede Gegenstelle
+                    einzeln bestätigt. Wer viele Rundsprüche einplant, rechnet das Intervall
+                    besser großzügiger.
+                </p>
+            </div>
+        </section>
+
+        <div class="card">
+            <div class="card-body">
+                <h2 class="h4">Übung mit X-Zeit erstellen</h2>
+                <p>
+                    Teilnehmer eintragen, Spiel-Modus X-Zeit wählen, Intervall und Start-Offset
+                    setzen – die Zeitachse rechnet der Generator.
+                </p>
+                <p class="mb-0">
+                    <a href="../" class="btn btn-primary">Übung erstellen</a>
+                    <a href="../regiebuch-funkuebung/" class="btn btn-outline-primary">Nachrichtenplan ansehen</a>
+                    <a href="../anleitung/" class="btn btn-outline-primary">Zur Anleitung</a>
+                </p>
+            </div>
+        </div>
+    </article>
+</main>
+
+<footer class="main-footer">
+    <span class="footer-links">
+        <a href="../">Anwendung</a>
+        <a href="../anleitung/">Anleitung</a>
+        <a href="../buchstabiertafel/">Buchstabiertafel</a>
+        <a href="../meldevordruck/">Meldevordruck</a>
+        <a href="../funksprueche/">Funksprüche</a>
+        <a href="../faq/">FAQ</a>
+    </span>
+    <span class="footer-links">
+        <a href="../impressum/">Impressum</a>
+        <a href="../datenschutz/">Datenschutz</a>
+        <a href="mailto:johannes.rudolph@thw-oldenburg.de">Kontakt</a>
+        <a href="https://github.com/wattnpapa/sprechfunk-uebung" target="_blank" rel="noopener noreferrer">GitHub</a>
+        <a href="https://github.com/wattnpapa/sprechfunk-uebung/blob/main/LICENSE" target="_blank" rel="noopener noreferrer">EUPL-1.2-Lizenz</a>
+    </span>
+</footer>
+
+</body>
+
+</html>
