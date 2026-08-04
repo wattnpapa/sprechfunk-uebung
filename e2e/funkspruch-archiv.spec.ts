@@ -103,8 +103,20 @@ test.describe("Download und Wiedereinlesen im Generator", () => {
         });
     }
 
-    test("@seo die heruntergeladene Datei lässt sich im Generator wieder einlesen", async ({ page, request }) => {
+    test("@seo die heruntergeladene Datei lässt sich im Generator wieder einlesen", async ({ page, context, request }) => {
         const inhalt = await (await request.get(`/assets/funksprueche-${kleinste.slug}.txt`)).text();
+
+        // Firestore-Mock einschalten, wie es app.spec.ts für alle Generator-Tests
+        // tut. Ohne ihn spricht der Test die echte Datenbank an: lokal geht das
+        // gut (die committete Config funktioniert) und legt nebenbei Übungen im
+        // Produktivbestand an – in CI wird firebase-config.js aus Secrets erzeugt,
+        // das Speicherversprechen löst nie auf, und die Generierung bleibt ohne
+        // Fehlermeldung vor den Links stehen. Genau daran ist der Deploy seit
+        // AP-08 gescheitert.
+        await context.addInitScript(() => {
+            window.localStorage.setItem("useFirestoreEmulator", "1");
+            window.localStorage.setItem("e2eFirestoreSeed", JSON.stringify({}));
+        });
 
         await page.goto("/");
 
@@ -121,7 +133,18 @@ test.describe("Download und Wiedereinlesen im Generator", () => {
             await felder.nth(i).fill(namen[i] ?? `Heros Beispielstadt 9${i}/9${i}`);
         }
         await page.locator("#nameDerUebung").fill("Archiv-Round-Trip");
+
+        // Verteilung ausdrücklich setzen statt sie zu erben: validateSpruchVerteilung
+        // bricht ab, sobald „Sprüche pro Teilnehmer" kleiner ist als Anmeldung
+        // plus „an Alle" plus „an Mehrere". Die Prozentfelder rechnen die
+        // versteckten Anzahlfelder bei jedem input-Ereignis neu, deshalb zuerst
+        // die Anzahl, dann die Prozentsätze – und danach die Probe darauf.
         await page.locator("#spruecheProTeilnehmer").fill("3");
+        await page.locator("#prozentAnAlle").fill("0");
+        await page.locator("#prozentAnMehrere").fill("0");
+        await page.locator("#prozentAnBuchstabieren").fill("0");
+        await expect(page.locator("#spruecheAnAlle")).toHaveValue("0");
+        await expect(page.locator("#spruecheAnMehrere")).toHaveValue("0");
 
         await page.locator("#optionUpload").check();
         await page.locator("#funksprueche").setInputFiles({
@@ -135,6 +158,13 @@ test.describe("Download und Wiedereinlesen im Generator", () => {
         // Die Übung entsteht: ohne lesbare Datei bliebe der Nachrichtenpool leer
         // und die Generierung käme nicht bis zu den Links.
         await expect(page.locator("#uebung-links")).toBeVisible();
+
+        // Beleg, dass der Mock gegriffen hat: die Übung liegt im lokalen Speicher.
+        // Ohne diese Probe würde ein Abrutschen auf die echte Datenbank lokal
+        // wieder unbemerkt bleiben und erst den Deploy zerlegen.
+        const imMock = await page.evaluate(() =>
+            Object.keys(JSON.parse(window.localStorage.getItem("e2eFirestoreSeed") ?? "{}")).length);
+        expect(imMock, "Übung wurde nicht im Firestore-Mock gespeichert").toBeGreaterThan(0);
         await expect(
             page.locator("#links-teilnehmer-container .generator-link-row[data-link-type='teilnehmer']")
         ).toHaveCount(anzahlFelder);
