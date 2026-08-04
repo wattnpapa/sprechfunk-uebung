@@ -8,6 +8,7 @@
 import { HUB_CATEGORIES, HUB_SLUG, SITE_PAGES, SITE_URL } from "../site-pages.mjs";
 import { ogUrl } from "./og-bilder.mjs";
 import { hatDiagramm, renderDiagramm } from "./diagramme.mjs";
+import { hatQuellen, renderQuellenAbschnitt } from "./quellen.mjs";
 import { deutschesDatum, nurDatum } from "./lastmod.mjs";
 import { buildGraph, escapeHtml, renderFaqHtml } from "./schema-graph.mjs";
 import {
@@ -119,6 +120,7 @@ export function renderPageWithStructuredData({
     // Nach dem FAQ-Block, damit "Weiterlesen" der letzte Abschnitt vor dem
     // Footer ist – und vor der Seitenleiste, die </main> verschiebt.
     html = setzeDiagramm(html, page);
+    html = setzeQuellen(html, page);
     html = setzePictureQuellen(html, webpBilder);
     html = setzeWeiterlesen(html, page, alleSeiten, beschreibungen);
     html = setzeWissenSidebar(html, page);
@@ -129,6 +131,22 @@ export function renderPageWithStructuredData({
     return { html, graph, faq, terme, title, description, breadcrumb };
 }
 
+
+/**
+ * Setzt den Abschnitt „Grundlagen und Quellen“ ans Seitenende (AP-11).
+ *
+ * Vor dem Weiterlesen-Block, damit die Lesetipps der letzte Abschnitt bleiben.
+ * Nur für Seiten, die fachliche Regeln wiedergeben – eine Übungsanleitung
+ * braucht keine Vorschriftenliste.
+ */
+export function setzeQuellen(html, page) {
+    if (page.slug === undefined || !hatQuellen(page.slug)) return html;
+    const block = renderQuellenAbschnitt(page.slug);
+    if (!html.includes("</main>")) {
+        throw new Error(`Seite "${page.slug}": kein </main> für den Quellenabschnitt.`);
+    }
+    return html.replace("</main>", `${block}\n</main>`);
+}
 
 /**
  * Hüllt Rasterbilder in <picture> mit WebP-Quelle (AP-10).
@@ -580,10 +598,12 @@ export function setzeSichtbaresDatum(html, dateModified, page = {}) {
     const woerter = zaehleWoerter(sichtbarerText(redaktionellerTeil(html)));
     if (woerter > 0) teile.push(`Lesezeit ca. ${lesezeitMinuten(woerter)} Minuten`);
 
-    // Autorenangabe verweist bis AP-11 auf das Impressum; dort steht der Autor.
-    if (page.slug !== undefined && page.inSitemap !== false) {
-        const impressum = relativerPfad(page.slug ?? "", "impressum");
-        teile.push(`von <a href="${impressum}">Johannes Rudolph</a>, `
+    // Autorenangabe verweist auf /autor/ (AP-11): dort steht, woher die
+    // fachliche Grundlage kommt – im Impressum steht nur die Anbieterkennung.
+    // Auf der Autorenseite selbst entfällt der Verweis auf sich selbst.
+    if (page.slug !== undefined && page.inSitemap !== false && page.slug !== "autor") {
+        const autor = relativerPfad(page.slug ?? "", "autor");
+        teile.push(`von <a href="${autor}">Johannes Rudolph</a>, `
             + "Bereichsausbilder Sprechfunk (THW)");
     }
 

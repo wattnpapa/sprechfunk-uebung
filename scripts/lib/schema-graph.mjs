@@ -18,12 +18,14 @@ export const WEBSITE_ID = `${SITE_URL}/#website`;
 export const AUTHOR_ID = `${SITE_URL}/#autor`;
 export const SOFTWARE_ID = `${SITE_URL}/#software`;
 
-export const SCHEMA_TYPES = ["Article", "HowTo", "FAQPage", "CollectionPage", "WebPage"];
+export const SCHEMA_TYPES = ["Article", "HowTo", "FAQPage", "CollectionPage", "ProfilePage", "WebPage"];
 
 const LOGO_URL = `${SITE_URL}/assets/favicon.png`;
 const OG_IMAGE_URL = `${SITE_URL}/assets/og-image.png`;
 const REPO_URL = "https://github.com/wattnpapa/sprechfunk-uebung";
 const PROFILE_URL = "https://github.com/wattnpapa";
+// Porträt aus dem Autoren-Modal der Startseite – dieselbe Quelle, kein zweites Bild.
+const PORTRAIT_URL = "https://www.gravatar.com/avatar/b4d8c8a87a392586b9caee287180163b?s=400";
 
 /** Knoten-@id je Seite. Ein Fragment je Rolle, damit Referenzen eindeutig sind. */
 export function nodeId(slug, fragment) {
@@ -50,7 +52,14 @@ export function buildOrganization() {
         "@type": "Organization",
         "@id": ORGANIZATION_ID,
         name: "Sprechfunk Übungsgenerator",
+        description: "Privates, ehrenamtliches Open-Source-Projekt für die Sprechfunkausbildung "
+            + "im Bevölkerungs- und Katastrophenschutz. Kein Angebot einer Behörde.",
         url: `${SITE_URL}/`,
+        // Die Seite, die diese Entität beschreibt (AP-11). Bewusst als URL und
+        // nicht als @id-Referenz: der Knoten der Zielseite liegt in deren
+        // eigenem Graphen, ein @id darauf bliebe hier unauflösbar.
+        mainEntityOfPage: canonicalUrl("ueber-das-projekt"),
+        founder: { "@id": AUTHOR_ID },
         logo: {
             "@type": "ImageObject",
             url: LOGO_URL,
@@ -62,16 +71,56 @@ export function buildOrganization() {
 }
 
 /** Die Person hinter dem Projekt. Bleibt als eigener Knoten erhalten, weil
- *  Autorschaft und Betreiber fachlich zwei verschiedene Aussagen sind. */
+ *  Autorschaft und Betreiber fachlich zwei verschiedene Aussagen sind.
+ *
+ *  Alle Angaben stehen sichtbar auf /autor/ und im Autoren-Modal der Startseite.
+ *  Das Ehrenamt im THW steht als `memberOf`, nicht als `worksFor`: es ist eine
+ *  Mitgliedschaft, kein Beschäftigungsverhältnis, und ein falsches Feld wäre
+ *  hier eine Behauptung über eine Behörde. */
 export function buildAuthor() {
     return {
         "@type": "Person",
         "@id": AUTHOR_ID,
         name: "Johannes Rudolph",
         jobTitle: "Bereichsausbilder Sprechfunk (THW)",
-        url: `${SITE_URL}/impressum/`,
+        description: "Seit 2007 im Technischen Hilfswerk aktiv, Gruppenführer der Fachgruppe "
+            + "Kommunikation und Bereichsausbilder für Sprechfunk.",
+        url: `${SITE_URL}/autor/`,
+        image: PORTRAIT_URL,
+        worksFor: { "@id": ORGANIZATION_ID },
+        memberOf: {
+            "@type": "Organization",
+            name: "Technisches Hilfswerk",
+            url: "https://www.thw.de/"
+        },
+        knowsAbout: [
+            "BOS-Funk",
+            "Sprechfunkausbildung",
+            "Digitalfunk",
+            "Katastrophenschutz"
+        ],
         sameAs: [PROFILE_URL, REPO_URL]
     };
+}
+
+/**
+ * ProfilePage für /autor/. Der Hauptgegenstand ist die Person selbst – sie
+ * steht als eigener Knoten im Graphen, hier wird sie nur referenziert, damit
+ * es nicht zwei Fassungen derselben Person gibt.
+ */
+export function buildProfilePage({ page, title, description, dateModified }) {
+    return kompakt({
+        "@type": "ProfilePage",
+        "@id": nodeId(page.slug, "profile"),
+        mainEntityOfPage: { "@id": nodeId(page.slug, "webpage") },
+        name: title,
+        description,
+        inLanguage: "de",
+        url: canonicalUrl(page.slug),
+        datePublished: page.datePublished,
+        dateModified: dateModified ?? undefined,
+        mainEntity: { "@id": AUTHOR_ID }
+    });
 }
 
 export function buildWebSite() {
@@ -286,6 +335,7 @@ function buildPrimary(kontext) {
         case "HowTo": return buildHowTo(kontext);
         case "FAQPage": return buildFaqPage(kontext);
         case "CollectionPage": return buildCollection(kontext);
+        case "ProfilePage": return buildProfilePage(kontext);
         case "WebPage": return null; // WebPage ist bereits Teil jedes Graphen
         default:
             throw new Error(`Unbekannter schemaType "${kontext.page.schemaType}" für Slug "${kontext.page.slug}"`);

@@ -1087,6 +1087,56 @@ export const SITE_PAGES = [
         faqFromPage: true
     },
     {
+        slug: "autor", source: "pages/autor.html", sources: ["src/pages/autor.html"],
+        kurzGesagt: "Der Übungsgenerator ist aus der eigenen Ausbildungspraxis entstanden, nicht am Reißbrett. Der Autor ist seit 2007 beim Technischen Hilfswerk aktiv, Gruppenführer der Fachgruppe Kommunikation und Bereichsausbilder für Sprechfunk. Die mitgelieferten Übungstexte stammen aus tatsächlich gefunkten Übungen mehrerer Ortsverbände. Das Projekt ist Ehrenamt, quelloffen und ohne kommerzielles Interesse.",
+        related: ["ueber-das-projekt", "open-source", "funkuebung-thw"],
+        label: "Über den Autor",
+        hubCategory: "anwendung",
+        schemaType: "ProfilePage", datePublished: "2026-08-04",
+        about: ["Sprechfunk Übungsgenerator", "Über den Autor"],
+        faq: [
+            {
+                q: "Welche Qualifikation steht hinter den Inhalten?",
+                a: "Der Autor ist seit 2007 beim Technischen Hilfswerk aktiv, Gruppenführer der Fachgruppe Kommunikation und Bereichsausbilder für Sprechfunk. Die Inhalte stammen aus dieser Ausbildungspraxis."
+            },
+            {
+                q: "Ist die Seite ein offizielles Angebot des THW?",
+                a: "Nein. Es ist ein privates, ehrenamtliches Projekt ohne amtlichen Charakter. Maßgeblich sind die geltenden Dienstvorschriften und die Festlegungen der eigenen Organisation."
+            },
+            {
+                q: "Woher kommen die Übungsfunksprüche?",
+                a: "Aus tatsächlich gefunkten Übungen mehrerer THW-Ortsverbände sowie einem Bestand kurzer Meldungen für die Grundausbildung. Der vollständige Bestand ist im Funkspruch-Archiv einsehbar."
+            }
+        ]
+    },
+    {
+        slug: "ueber-das-projekt", source: "pages/ueber-das-projekt.html", sources: ["src/pages/ueber-das-projekt.html"],
+        kurzGesagt: "Der Sprechfunk Übungsgenerator ist ein privates, ehrenamtliches Projekt ohne Firma, Finanzierung und Werbung. Er ist kein offizielles Angebot einer Behörde. Die fachlichen Seiten nennen ihre Quellen und sagen, wo keine geprüfte Quelle vorliegt. Fehler lassen sich über GitHub oder per E-Mail melden und werden nachvollziehbar korrigiert.",
+        related: ["autor", "open-source", "kostenlos-ohne-anmeldung"],
+        label: "Über das Projekt",
+        hubCategory: "anwendung",
+        schemaType: "Article", datePublished: "2026-08-04",
+        about: ["Sprechfunk Übungsgenerator", "Über das Projekt"],
+        faq: [
+            {
+                q: "Ist das ein offizielles Angebot des THW oder einer Behörde?",
+                a: "Nein. Es ist ein privates, ehrenamtliches Projekt ohne amtlichen Charakter. Maßgeblich sind die geltenden Dienstvorschriften und die Festlegungen der eigenen Organisation."
+            },
+            {
+                q: "Wie werden die fachlichen Inhalte geprüft?",
+                a: "Jede Regelseite trägt den Abschnitt „Grundlagen und Quellen“ mit dem zugrunde liegenden Dokument, den am Original geprüften Abschnitten und dem Prüfdatum. Wo keine geprüfte Quelle vorliegt, steht das dort ausdrücklich."
+            },
+            {
+                q: "Wie melde ich einen fachlichen Fehler?",
+                a: "Bevorzugt über ein Issue auf GitHub, weil die Meldung dort nachvollziehbar bleibt, sonst per E-Mail. Korrekturen werden über die öffentliche Versionsverwaltung nachvollziehbar gemacht und das Änderungsdatum der Seite wird angepasst."
+            },
+            {
+                q: "Wie finanziert sich das Projekt?",
+                a: "Gar nicht. Es gibt keine Firma, keine Werbung, kein Sponsoring und keine Preisstufen. Die Arbeit passiert im Ehrenamt."
+            }
+        ]
+    },
+    {
         slug: "impressum", source: "pages/impressum.html", sources: ["src/pages/impressum.html"],
         label: "Impressum",
         // Rechtstext: bleibt indexierbar und im Footer verlinkt, gehört aber
