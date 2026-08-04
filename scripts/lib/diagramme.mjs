@@ -302,6 +302,15 @@ export const DIAGRAMME = {
             { text: "selbst betreiben", betont: true }
         ])
     },
+    "einbetten": {
+        titel: "Zwei Wege der Weitergabe",
+        beschreibung: "Derselbe Inhalt geht entweder als Widget in eine fremde Seite oder als PDF an die Pinnwand.",
+        alt: "Gegenüberstellung: Widget im iframe mit Quellenzeile auf der einbettenden Seite gegenüber druckfertigem A4-Aushang mit QR-Code",
+        bauen: () => gegenueber(
+            { titel: "Als Widget", punkte: ["iframe in die eigene Seite", "lädt nichts nach", "Quellenzeile darunter"] },
+            { titel: "Als Aushang", punkte: ["A4 zum Ausdrucken", "QR-Code auf die Seite", "EUPL-1.2, Weitergabe frei"] }
+        )
+    },
     "autor": {
         titel: "Woher die Inhalte kommen",
         beschreibung: "Von der Ausbildungspraxis über echte Übungen bis zu den Seiten dieser Website.",

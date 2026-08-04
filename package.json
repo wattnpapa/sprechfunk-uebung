@@ -34,7 +34,7 @@
   "type": "module",
   "main": "app.js",
   "scripts": {
-    "build": "rollup -c && node scripts/postbuild-copy.mjs",
+    "build": "rollup -c && node scripts/postbuild-copy.mjs && node scripts/generate-embed.mjs && node scripts/generate-pdfs.mjs",
     "watch": "chokidar \"src/**/*\" \"assets/**/*\" \"rollup.config.js\" -c \"npm run build\"",
     "serve": "serve dist -l tcp://127.0.0.1:3000",
     "start": "npm run build && npm run serve",
@@ -60,7 +60,11 @@
     "links:check": "node scripts/check-internal-links.mjs --strict",
     "content:check": "node scripts/check-content-quality.mjs --strict",
     "bilder:webp": "node scripts/generate-webp.mjs",
-    "cls:check": "node scripts/check-cls.mjs"
+    "cls:check": "node scripts/check-cls.mjs",
+    "pdfs": "node scripts/generate-pdfs.mjs",
+    "embed": "node scripts/generate-embed.mjs",
+    "backlinks:report": "node scripts/seo-backlinks.mjs",
+    "outreach:check": "node scripts/check-outreach.mjs"
   },
   "devDependencies": {
     "@axe-core/playwright": "^4.12.1",

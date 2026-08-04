@@ -1,0 +1,108 @@
+name: Neue Funksprüche
+description: Eine Sammlung von Übungsfunksprüchen beisteuern
+title: "Funksprüche: "
+labels: ["funksprueche", "inhalt"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Danke, dass du Übungstexte beisteuerst. Der Bestand ist bisher stark
+        THW-geprägt – Sammlungen von Feuerwehren, Rettungsdienst und
+        Hilfsorganisationen fehlen am meisten.
+
+        **Bitte vorher durchsehen:** keine Namen von Einsatzkräften, keine
+        Adressen von Betroffenen, keine Kennzeichen privater Fahrzeuge und
+        keine Berichte aus tatsächlichen Einsätzen. Orts- und Straßennamen
+        sind unkritisch und sogar erwünscht.
+
+  - type: input
+    id: herkunft
+    attributes:
+      label: Herkunft
+      description: Welche Einheit oder Organisation hat diese Übungstexte verwendet?
+      placeholder: THW-Ortsverband Musterstadt / Freiwillige Feuerwehr Musterstadt
+    validations:
+      required: true
+
+  - type: dropdown
+    id: organisation
+    attributes:
+      label: Organisation
+      description: Bestimmt, wo die Sammlung in der Anwendung einsortiert wird.
+      options:
+        - THW
+        - Feuerwehr
+        - Rettungsdienst oder Hilfsorganisation
+        - organisationsübergreifend
+    validations:
+      required: true
+
+  - type: textarea
+    id: funksprueche
+    attributes:
+      label: Die Funksprüche
+      description: >
+        Ein Funkspruch je Zeile, sonst nichts – keine Nummerierung, keine
+        Absender, keine Kopfzeile. Alternativ kannst du hier eine .txt-Datei
+        anhängen und das Feld leer lassen.
+      placeholder: |
+        Ein Baum ist auf die Fahrbahn der Bundesstraße 213 gestürzt und blockiert beide Fahrtrichtungen.
+        Wir benötigen zusätzlich zwei Atemschutzgeräteträger an der Einsatzstelle Schulzentrum.
+        Der Pegel an der Messstelle Süd ist in der letzten Stunde um 12 Zentimeter gestiegen.
+      render: text
+
+  - type: dropdown
+    id: schwierigkeit
+    attributes:
+      label: Schwierigkeit
+      description: Kurze Meldungen für die Grundausbildung oder gemischte Längen?
+      options:
+        - gemischt
+        - einfach (kurze Meldungen für die Grundausbildung)
+    validations:
+      required: true
+
+  - type: checkboxes
+    id: pruefung
+    attributes:
+      label: Vor dem Absenden geprüft
+      options:
+        - label: Die Texte enthalten keine personenbezogenen Daten.
+          required: true
+        - label: Es sind Übungslagen, keine Berichte aus tatsächlichen Einsätzen.
+          required: true
+        - label: >
+            Ich darf diese Texte weitergeben und bin damit einverstanden, dass sie
+            unter der EUPL-1.2 veröffentlicht werden.
+          required: true
+
+  - type: checkboxes
+    id: nennung
+    attributes:
+      label: Nennung
+      description: >
+        Ohne Häkchen wird nichts genannt. Genannt werden Einheiten und
+        Organisationen; ein Klarname erscheint nur, wenn du ihn unten selbst
+        angibst.
+      options:
+        - label: >
+            Die oben genannte Einheit darf in CONTRIBUTORS.md und auf
+            sprechfunk-uebung.de/open-source/ genannt werden.
+          required: false
+
+  - type: input
+    id: nennung_name
+    attributes:
+      label: Abweichender Name für die Nennung
+      description: Optional. Leer lassen, um die Herkunft von oben zu verwenden.
+      placeholder: z. B. „FF Musterstadt, Fachbereich Ausbildung"
+    validations:
+      required: false
+
+  - type: textarea
+    id: anmerkungen
+    attributes:
+      label: Anmerkungen
+      description: Alles, was sonst noch wichtig ist – Besonderheiten, Kontext, Rückfragen.
+    validations:
+      required: false
