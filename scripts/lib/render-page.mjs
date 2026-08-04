@@ -5,7 +5,8 @@
 // Damit prüft der Vitest-Test genau den Code, der auch den Build erzeugt – eine
 // zweite Nachbildung im Test würde irgendwann auseinanderlaufen.
 
-import { HUB_CATEGORIES, HUB_SLUG, SITE_PAGES } from "../site-pages.mjs";
+import { HUB_CATEGORIES, HUB_SLUG, SITE_PAGES, SITE_URL } from "../site-pages.mjs";
+import { ogUrl } from "./og-bilder.mjs";
 import { deutschesDatum, nurDatum } from "./lastmod.mjs";
 import { buildGraph, escapeHtml, renderFaqHtml } from "./schema-graph.mjs";
 import {
@@ -72,6 +73,7 @@ export function renderPageWithStructuredData({
     // ersetzt, bevor FAQ-Block und Datumszeile daran verankert werden.
     let html = quelle;
     html = ersetzeBestandszahlen(html, bestand);
+    html = setzeOgBild(html, page, title);
     html = setzeHauptnavigation(html, page);
     html = ersetzeBreadcrumb(html, page);
     html = ersetzeFooter(html, page);
@@ -124,6 +126,57 @@ export function renderPageWithStructuredData({
     return { html, graph, faq, terme, title, description, breadcrumb };
 }
 
+
+/**
+ * Setzt das seitenindividuelle Social-Preview-Bild (AP-10).
+ *
+ * Vorher teilten sich alle Seiten ein Bild; in Chat- und Netzwerkvorschauen war
+ * damit nicht erkennbar, welche Seite geteilt wurde. Die Quelldateien tragen
+ * weiter einen Platzhalterpfad – maßgeblich ist, was hier eingesetzt wird, damit
+ * Dateiname und Tag garantiert aus derselben Ableitung stammen.
+ *
+ * `og:image:alt` bekommt den Seitentitel: er beschreibt, was im Bild steht,
+ * denn das Bild zeigt genau diesen Titel.
+ */
+export function setzeOgBild(html, page, titel) {
+    const url = ogUrl(page.slug ?? "", SITE_URL);
+    const alt = escapeHtml(String(titel ?? "").replace(/\s*\|\s*Sprechfunk Übungsgenerator\s*$/, ""));
+
+    let ergebnis = html
+        .replace(/(<meta property="og:image" content=")[^"]*(">)/, `$1${url}$2`)
+        .replace(/(<meta name="twitter:image" content=")[^"]*(">)/, `$1${url}$2`)
+        .replace(/(<meta property="og:image:alt" content=")[^"]*(">)/, `$1${alt}$2`);
+
+    // Rechtstexte tragen im Quelltext gar keine og-Bildtags. Ohne diesen Zweig
+    // hätten genau sie keine Vorschau – und der Ersetzungsversuch oben liefe
+    // stillschweigend ins Leere.
+    if (!/<meta property="og:image"/.test(ergebnis)) {
+        if (!ergebnis.includes("</head>")) {
+            throw new Error(`Seite "${page.slug || "/"}": kein </head> für die Bildtags.`);
+        }
+        return ergebnis.replace("</head>", `${[
+            `    <meta property="og:image" content="${url}">`,
+            '    <meta property="og:image:width" content="1200">',
+            '    <meta property="og:image:height" content="630">',
+            `    <meta property="og:image:alt" content="${alt}">`,
+            `    <meta name="twitter:image" content="${url}">`
+        ].join("\n")}\n</head>`);
+    }
+
+    // Einzelne fehlende Tags ergänzen. Die Rechtstexte haben og:image, aber
+    // kein twitter:image – ein Zweig, der nur beim Fehlen aller Tags greift,
+    // hätte genau sie übersehen.
+    const ergaenze = (marke, zeile) => {
+        if (new RegExp(marke).test(ergebnis)) return;
+        ergebnis = ergebnis.replace(
+            /(<meta property="og:image" content="[^"]*">)/,
+            `$1\n${zeile}`
+        );
+    };
+    ergaenze('<meta property="og:image:alt"', `    <meta property="og:image:alt" content="${alt}">`);
+    ergaenze('<meta name="twitter:image"', `    <meta name="twitter:image" content="${url}">`);
+    return ergebnis;
+}
 
 /**
  * Setzt die Bestandszahlen in den Fließtext ein (AP-08, Punkt 5).
