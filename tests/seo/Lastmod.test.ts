@@ -195,16 +195,27 @@ describe("lastmod im echten Repository", () => {
         }
     }, 120_000);
 
-    /** Ist die Quelldatei der Seite überhaupt schon committet? */
-    const istCommittet = (seite: { sources: string[] }) => seite.sources.some(datei => {
+    /**
+     * Ist die Seite selbst schon committet?
+     *
+     * Geprüft wird allein sources[0], die eigene HTML-Quelle. Ein `some` über
+     * alle Quellen wäre falsch: Archivseiten führen zusätzlich ihre
+     * Funkspruch-Datei, und deren Historie kann ausschließlich aus mechanischen
+     * Commits bestehen (nachrichten_thw_saarstedt.txt hat genau einen, mit
+     * Betreff „refactor(…)“). Die Seite gälte dann als committet, obwohl ihr
+     * eigenes HTML noch nirgends steht – und hätte zu Recht kein Datum.
+     */
+    const istCommittet = (seite: { sources: string[] }) => {
+        const eigeneQuelle = seite.sources[0];
+        if (eigeneQuelle === undefined) return false;
         try {
-            return execFileSync("git", ["log", "-1", "--format=%H", "--", datei], {
+            return execFileSync("git", ["log", "-1", "--format=%H", "--", eigeneQuelle], {
                 cwd: projekt, encoding: "utf8"
             }).trim() !== "";
         } catch {
             return false;
         }
-    });
+    };
 
     it("liefert für jede committete Sitemap-Seite ein Datum", () => {
         if (istFlach()) {

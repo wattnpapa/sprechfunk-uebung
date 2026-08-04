@@ -12,9 +12,16 @@
 import { escapeHtml } from "./schema-graph.mjs";
 import { HUB_CATEGORIES, HUB_SLUG, MAIN_NAV, canonicalUrl, hubSeiten } from "../site-pages.mjs";
 
-/** Relativer Pfad von einer Seite zu einer anderen. */
+/**
+ * Relativer Pfad von einer Seite zu einer anderen.
+ *
+ * Die Tiefe folgt der Zahl der Slug-Segmente: /faq/ liegt eine Ebene unter der
+ * Wurzel, /funksprueche/vorlage/thw-lehrte/ drei. Ein festes "../" hätte die
+ * Archivseiten auf nicht existierende Pfade zeigen lassen.
+ */
 export function relativerPfad(vonSlug, zuSlug) {
-    const auf = vonSlug === "" ? "" : "../";
+    const tiefe = vonSlug === "" ? 0 : vonSlug.split("/").filter(Boolean).length;
+    const auf = "../".repeat(tiefe);
     return zuSlug === "" ? (auf || "./") : `${auf}${zuSlug}/`;
 }
 
@@ -68,7 +75,17 @@ export function breadcrumbFuer(page) {
     if (page.slug === "") return [];
 
     const pfad = [{ name: "Startseite", slug: "" }];
-    if (page.slug !== HUB_SLUG && page.hubCategory) {
+
+    // Seiten unterhalb einer anderen Seite (Funkspruch-Archiv, AP-08) tragen
+    // ihre Elternebene selbst. Sie ersetzt den Hub-Pfad, statt ihn zu ergänzen:
+    // die Brotkrume soll der URL folgen. Über hubCategory bleiben die Seiten
+    // trotzdem in Hub-Karten und Seitenleiste sichtbar.
+    const eltern = page.breadcrumbEltern ?? [];
+    for (const stufe of eltern) {
+        pfad.push({ name: stufe.name, slug: stufe.slug });
+    }
+
+    if (eltern.length === 0 && page.slug !== HUB_SLUG && page.hubCategory) {
         const kategorie = HUB_CATEGORIES.find(eintrag => eintrag.key === page.hubCategory);
         pfad.push({ name: "Wissen", slug: HUB_SLUG });
         if (kategorie) {
