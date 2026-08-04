@@ -1,194 +1,155 @@
-import { readFileSync } from "node:fs";
+// Die Vergleichsseite /alternative/ vergleicht Wege, nicht Anbieter.
+//
+// Ursprünglich (AP-09) stand dort ein namentlicher Vergleich mit einem
+// kommerziellen Anbieter, belegt mit Fundstellen und Abrufdatum. Diese
+// Entscheidung wurde zurückgenommen: über andere soll hier nicht geurteilt
+// werden. Der Test dreht sich damit um – er erzwingt jetzt die Abwesenheit
+// solcher Aussagen, statt sie zu belegen.
+//
+// Was bleibt: die Seite muss die eigenen Grenzen weiterhin offen benennen.
+// Eine Vergleichsseite, die nur die eigenen Vorzüge aufzählt, wäre Werbung.
+
+import { readFileSync, readdirSync } from "node:fs";
 import path from "node:path";
 
 import { describe, expect, it } from "vitest";
 
-import { SITE_PAGES } from "../../scripts/site-pages.mjs";
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-// @ts-ignore -- reine JS-Hilfsmodule ohne Typdeklarationen, absichtlich .mjs
-import { plainText, zaehleWoerter } from "../../scripts/lib/page-metadata.mjs";
-
-interface Registrierung {
-    slug: string;
-    kurzGesagt?: string;
-    faq?: { q: string; a: string }[];
-}
+// @ts-ignore -- reines JS-Hilfsmodul ohne Typdeklarationen, absichtlich .mjs
+import { plainText } from "../../scripts/lib/page-metadata.mjs";
 
 const ROOT = path.resolve(__dirname, "..", "..");
 const lese = (datei: string) => readFileSync(path.join(ROOT, datei), "utf8");
 
 const ALTERNATIVE = "src/pages/alternative.html";
-const KOSTENLOS = "src/pages/kostenlos-ohne-anmeldung.html";
-const REGISTER = "seo/wettbewerbsvergleich.md";
 
-/** Der namentlich genannte Wettbewerber. */
-const WETTBEWERBER = "funkuebung.de";
+/**
+ * Hosts, auf die eine Inhaltsseite verweisen darf.
+ *
+ * Bewusst strukturell statt über eine Sperrliste von Namen: eine Sperrliste
+ * müsste den Namen, um den es geht, selbst führen – und genau der soll hier
+ * nirgends stehen. Erlaubt sind die eigene Domain, das eigene Repository und
+ * die Fundstellen aus dem Quellenregister (AP-11).
+ */
+const ERLAUBTE_HOSTS = [
+    "sprechfunk-uebung.de",
+    "github.com",
+    "www.dinmedia.de",
+    "kv-lahn-dill.dlrg.de",
+    "www.gravatar.com",
+    "gc.zgo.at",
+    "www.thw.de",
+    // Eigenes Schwesterprojekt, kein fremder Anbieter.
+    "erfassungsbogen.app"
+];
 
-describe("Belegpflicht für Aussagen über Dritte", () => {
-    it("nennt den Wettbewerber ausschließlich auf der Vergleichsseite", () => {
-        // Auf anderen Seiten hätte eine Nennung keinen Beleg-Kommentar und
-        // wäre damit nicht nachprüfbar.
-        const seiten = ["src/index.html", KOSTENLOS, "src/pages/open-source.html",
-            "src/pages/funktionen.html", "src/pages/faq.html", "src/pages/funkuebung-vorlage.html"];
-        for (const seite of seiten) {
-            expect(lese(seite), `${seite} nennt ${WETTBEWERBER} ohne Beleg`)
-                .not.toContain(WETTBEWERBER);
+const host = (url: string): string => {
+    try {
+        return new URL(url).host;
+    } catch {
+        return "";
+    }
+};
+
+/** Alle ausgelieferten Quellen, die Fließtext enthalten. */
+function inhaltsdateien(): string[] {
+    const seiten = readdirSync(path.join(ROOT, "src", "pages"))
+        .filter(name => name.endsWith(".html"))
+        .map(name => `src/pages/${name}`);
+    return ["src/index.html", ...seiten];
+}
+
+describe("Keine Bewertung fremder Anbieter", () => {
+    it.each(inhaltsdateien())("%s verweist nur auf bekannte Hosts", datei => {
+        const fremd = [...lese(datei).matchAll(/href="(https?:\/\/[^"]+)"/g)]
+            .map(treffer => host(treffer[1]))
+            .filter(wert => wert !== "" && !ERLAUBTE_HOSTS.includes(wert));
+        expect([...new Set(fremd)], `${datei} verweist auf ${[...new Set(fremd)].join(", ")}`)
+            .toEqual([]);
+    });
+
+    it("verfolgt keine fremde Marke als Keyword", () => {
+        const keywords = JSON.parse(lese("seo/keywords.json")) as Record<string, string[]>;
+        expect(keywords.competitors).toEqual([]);
+        // Auch in den übrigen Gruppen darf kein Domainname stehen: ein Keyword
+        // mit Punkt-TLD ist praktisch immer ein Markenname.
+        for (const [gruppe, liste] of Object.entries(keywords)) {
+            const domains = liste.filter(begriff => /\.[a-z]{2,}$/i.test(begriff));
+            expect(domains, `Gruppe ${gruppe} enthält einen Domainnamen`).toEqual([]);
         }
     });
 
-    it("belegt die Aussagen der Vergleichstabelle mit URL und Abrufdatum", () => {
+    it("erkennt einen fremden Host auch wirklich", () => {
+        // Gegenprobe: ohne sie wäre der Test auch bei kaputter Prüfung grün.
+        expect(host("https://beispiel-anbieter.example/preise")).toBe("beispiel-anbieter.example");
+        expect(ERLAUBTE_HOSTS).not.toContain("beispiel-anbieter.example");
+    });
+
+    it("verlinkt von der Vergleichsseite auf keine fremde Anbieterseite", () => {
         const html = lese(ALTERNATIVE);
+        const externe = [...html.matchAll(/href="(https?:\/\/[^"]+)"/g)]
+            .map(treffer => treffer[1])
+            .filter(url => !url.startsWith("https://sprechfunk-uebung.de/")
+                && !url.startsWith("https://github.com/wattnpapa/"));
+        expect(externe, `unerwartete externe Verweise: ${externe.join(", ")}`).toEqual([]);
+    });
+
+    it("führt keine Belegkommentare über Dritte mehr", () => {
+        expect(lese(ALTERNATIVE)).not.toMatch(/<!--\s*Beleg:/);
+    });
+});
+
+describe("Vergleichsseite", () => {
+    it("vergleicht vier Wege und in der Tabelle nur die drei nachprüfbaren", () => {
+        const html = lese(ALTERNATIVE);
+        for (const anker of ["handarbeit", "tabelle", "freier-generator", "kommerziell"]) {
+            expect(html, `Abschnitt #${anker} fehlt`).toContain(`id="${anker}"`);
+        }
+
         const tabelle = /<table[^>]*data-testid="alternativen-tabelle"[\s\S]*?<\/table>/.exec(html)?.[0];
-        expect(tabelle, "Vergleichstabelle fehlt").toBeTruthy();
+        expect(tabelle, "Vergleichstabelle fehlt").toBeDefined();
 
-        const belege = [...tabelle!.matchAll(
-            /<!--\s*Beleg:\s*(https:\/\/[^\s]+)\s*–\s*abgerufen\s*(\d{4}-\d{2}-\d{2})\s*–\s*([\s\S]*?)-->/g
-        )];
-        expect(belege.length, "zu wenige Beleg-Kommentare").toBeGreaterThanOrEqual(8);
+        // Merkmal + drei Wege: über die kommerzielle Kategorie steht in der
+        // Tabelle bewusst nichts, weil es hier nicht nachprüfbar wäre.
+        const kopf = /<thead>[\s\S]*?<\/thead>/.exec(tabelle!)?.[0] ?? "";
+        expect([...kopf.matchAll(/<th(?=[\s>])[^>]*>/g)]).toHaveLength(4);
 
-        for (const [, url, datum] of belege) {
-            expect(url).toContain(WETTBEWERBER);
-            expect(datum).toMatch(/^\d{4}-\d{2}-\d{2}$/);
+        // Jede Zeile trägt genau so viele Zellen wie der Kopf Spalten hat.
+        for (const zeile of tabelle!.matchAll(/<tr>([\s\S]*?)<\/tr>/g)) {
+            const zellen = [...zeile[1].matchAll(/<(th|td)(?=[\s>])[^>]*>/g)];
+            if (zellen.length === 0) continue;
+            expect(zellen).toHaveLength(4);
         }
     });
 
-    it("trägt das Abrufdatum sichtbar an der Tabelle", () => {
-        const html = lese(ALTERNATIVE);
-        const caption = /<caption[\s\S]*?<\/caption>/.exec(html)?.[0] ?? "";
-        expect(caption).toMatch(/abgerufen am \d{1,2}\. \w+ \d{4}/);
-        expect(caption).toContain(WETTBEWERBER);
-    });
-
-    it("nennt keine Beträge auf der Vergleichsseite", () => {
-        // Preise veralten. Die Seite nennt nur die Tarifstruktur und verlinkt
-        // die Preisseite des Anbieters; die Beträge stehen datiert im Register.
+    it("nennt keine Beträge", () => {
+        // Preise Dritter ändern sich und wären hier sofort veraltet.
         const text = plainText(lese(ALTERNATIVE));
-        expect(text).not.toMatch(/\d+[,.]\d{2}\s*€/);
-        expect(text).not.toMatch(/€\s*\d/);
-        expect(text).not.toMatch(/\d+\s*Euro/i);
+        expect(text).not.toMatch(/\d+[.,]\d{2}\s*(€|EUR|Euro)/i);
+        expect(text).not.toMatch(/(€|EUR)\s*\d/i);
     });
 
     it("verzichtet auf herabsetzende Wertungen", () => {
         const text = plainText(lese(ALTERNATIVE)).toLowerCase();
         for (const wort of ["schlechter", "überteuert", "umständlich", "unseriös",
-            "veraltet", "mangelhaft"]) {
-            expect(text, `Wertung „${wort}“ auf der Vergleichsseite`).not.toContain(wort);
+            "abzocke", "veraltet", "primitiv", "besser als"]) {
+            expect(text, `wertendes Wort "${wort}"`).not.toContain(wort);
         }
     });
 
-    it("benennt mindestens zwei Punkte für die Alternative", () => {
+    it("benennt die eigenen Grenzen, nicht nur die eigenen Vorzüge", () => {
+        const text = plainText(lese(ALTERNATIVE)).toLowerCase();
+        // Ohne Konto kein Zugriffsschutz, keine Rollen, kein Vertragspartner:
+        // das sind die drei Punkte, an denen dieser Generator nicht passt.
+        expect(text).toContain("zugriffsschutz");
+        expect(text).toContain("rechteverwaltung");
+        expect(text).toMatch(/weder rechnung noch vertrag/);
+    });
+
+    it("räumt ein, dass ein anderer Weg der bessere sein kann", () => {
         const html = lese(ALTERNATIVE);
         expect(html).toContain('id="wann-kommerziell"');
-        const abschnitt = /id="wann-kommerziell"[\s\S]*?<\/section>/.exec(html)?.[0] ?? "";
-        const gruende = [...abschnitt.matchAll(/<strong>[^<]+<\/strong>/g)];
-        expect(gruende.length).toBeGreaterThanOrEqual(2);
-    });
-});
-
-describe("Quellenregister", () => {
-    const register = lese(REGISTER);
-
-    it("führt jede Beleg-URL der Seite auch im Register", () => {
-        const urls = new Set([...lese(ALTERNATIVE).matchAll(/<!--\s*Beleg:\s*(https:\/\/[^\s]+)/g)]
-            .map(treffer => treffer[1] as string));
-        expect(urls.size).toBeGreaterThan(0);
-        for (const url of urls) {
-            expect(register, `${url} fehlt im Register`).toContain(url);
-        }
-    });
-
-    it("nennt Erhebung, fachliche Bestätigung und rechtliche Freigabe", () => {
-        expect(register).toContain("Erhebung");
-        expect(register).toContain("Fachliche Bestätigung");
-        expect(register).toContain("Rechtliche Freigabe");
-    });
-
-    it("nennt eine Wiedervorlage in der Zukunft der Erhebung", () => {
-        const erhebung = /Letzte Erhebung: (\d{4}-\d{2}-\d{2})/.exec(register)?.[1];
-        const wieder = /Nächste Wiedervorlage: (\d{4}-\d{2}-\d{2})/.exec(register)?.[1];
-        expect(erhebung).toBeTruthy();
-        expect(wieder).toBeTruthy();
-        expect(new Date(wieder!).getTime()).toBeGreaterThan(new Date(erhebung!).getTime());
-    });
-
-    it("hält fest, was bewusst nicht behauptet wird", () => {
-        expect(register).toContain("Bewusst nicht behauptet");
-    });
-});
-
-describe("Eigene Aussagen deckungsgleich mit der Datenschutzerklärung", () => {
-    const datenschutz = plainText(lese("src/pages/datenschutz.html"));
-    const seite = plainText(lese(KOSTENLOS));
-
-    it("nennt dieselben gespeicherten Daten wie die Datenschutzerklärung", () => {
-        for (const begriff of ["Übungsname", "Funkrufnamen", "Funksprüche"]) {
-            expect(datenschutz, `Datenschutz nennt ${begriff} nicht mehr`).toContain(begriff);
-            expect(seite, `Seite nennt ${begriff} nicht`).toContain(begriff);
-        }
-    });
-
-    it("übernimmt den Hinweis, nichts Schützenswertes einzutragen", () => {
-        expect(datenschutz).toContain("nicht in einer Übung sichtbar sein sollen");
-        expect(seite).toContain("nicht in einer Übung sichtbar sein sollen");
-    });
-
-    it("nennt GoatCounter und die Cookiefreiheit wie die Erklärung", () => {
-        expect(datenschutz).toContain("GoatCounter");
-        expect(seite).toContain("GoatCounter");
-        expect(datenschutz).toContain("keine Cookies");
-        expect(seite).toContain("ohne Cookies");
-    });
-
-    it("sagt keine Speicherdauer zu, weil die Erklärung keine nennt", () => {
-        // Es gibt keine TTL und keinen Aufräumjob. Eine Dauer auf der Seite wäre
-        // eine Zusage, die weder Erklärung noch Code hergeben.
-        expect(datenschutz).not.toMatch(/Speicherdauer|gelöscht nach|Löschfrist/);
-        expect(seite).not.toMatch(/Speicherdauer|gelöscht nach|Löschfrist|\d+\s*Tage[n]? gespeichert/);
-    });
-
-    it("verschweigt den fehlenden Zugriffsschutz nicht", () => {
-        // firestore.rules dokumentiert das als Restrisiko 1. Eine Seite, die
-        // „ohne Anmeldung“ bewirbt und das auslässt, wäre irreführend.
-        expect(lese("firestore.rules")).toContain("kein Zugriffsschutz");
-        expect(seite).toContain("keinen Zugriffsschutz");
-    });
-});
-
-describe("Umfang und Format der neuen Seiten", () => {
-    it.each([
-        ["alternative", ALTERNATIVE],
-        ["kostenlos-ohne-anmeldung", KOSTENLOS]
-    ])("/%s/ hat mindestens 900 Wörter", (slug, datei) => {
-        // Gezählt wird, was auf der ausgelieferten Seite steht: der Quelltext
-        // plus „Kurz gesagt“ und die FAQ, die der Build aus der Registry
-        // einsetzt. Beides ist sichtbarer Inhalt – check-content-quality.mjs
-        // zählt es ebenso. Nur den Quelltext zu messen wäre zu streng und
-        // würde außerdem eine zweite, abweichende Zählweise etablieren.
-        const main = /<main[\s\S]*?<\/main>/.exec(lese(datei))?.[0] ?? "";
-        const seite = (SITE_PAGES as Registrierung[]).find(eintrag => eintrag.slug === slug);
-        expect(seite, `${slug} fehlt in der Registry`).toBeTruthy();
-
-        const ausRegistry = [
-            seite!.kurzGesagt ?? "",
-            ...(seite!.faq ?? []).flatMap(eintrag => [eintrag.q, eintrag.a])
-        ].join(" ");
-
-        const woerter = zaehleWoerter(plainText(main)) + zaehleWoerter(ausRegistry);
-        expect(woerter).toBeGreaterThanOrEqual(900);
-    });
-
-    it.each([
-        ["/alternative/", ALTERNATIVE],
-        ["/kostenlos-ohne-anmeldung/", KOSTENLOS]
-    ])("%s trägt den Wettbewerbernamen nicht in Titel, h1 oder Description", (_name, datei) => {
-        const html = lese(datei);
-        const felder: [string, string][] = [
-            ["Titel", /<title>([^<]*)<\/title>/.exec(html)?.[1] ?? ""],
-            ["h1", /<h1[^>]*>([\s\S]*?)<\/h1>/.exec(html)?.[1] ?? ""],
-            ["Description", /<meta name="description" content="([^"]*)"/.exec(html)?.[1] ?? ""]
-        ];
-        for (const [feld, wert] of felder) {
-            expect(wert, `${feld} nennt den Wettbewerber`).not.toContain(WETTBEWERBER);
-        }
+        const text = plainText(html).toLowerCase();
+        expect(text).toContain("keine gegner");
     });
 });

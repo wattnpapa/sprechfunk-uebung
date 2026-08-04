@@ -15,8 +15,9 @@ export function normalizeQuery(query) {
 
 /**
  * Normalisierte Keywords je Gruppe, Duplikate innerhalb einer Gruppe entfernt.
- * Mehrfachzugehörigkeit bleibt erhalten: "funkuebung.de" steht in `defensive`
- * und `competitors` und muss in beiden Auswertungen auftauchen.
+ * Mehrfachzugehörigkeit bleibt erhalten: ein Begriff kann in `defensive` und in
+ * `competitors` stehen und muss dann in beiden Auswertungen auftauchen.
+ * Leere Gruppen sind zulässig.
  */
 export function keywordsByGroup(keywords = {}) {
     const ergebnis = {};

@@ -173,13 +173,20 @@ und `priority` — **nicht** Titles und Descriptions. Die stehen in der jeweilig
 - Zitierbare Quellen nur real existierende: DV 810.3, BOS-Funkrichtlinie, FwDV 100,
   THW-Dienstvorschriften. Im Zweifel keine Quelle angeben statt eine zu erfinden.
 
-### Wettbewerbslage
-Hauptwettbewerber `funkuebung.de`: kommerzielles Freemium mit Registrierungspflicht, getrennte
-Marketing-Site und App, Ratgeber-Artikel unter `/ratgeber/`, strukturierte Daten inkl. HowTo und
-FAQPage, sichtbare Aktualisierungsdaten.
+### Eigene Position
+**Über andere Anbieter wird hier nicht geurteilt.** Keine namentliche Nennung, kein
+Merkmalsvergleich, keine Aussagen über deren Preise, Funktionsumfang oder Datenschutz —
+auch nicht belegt und auch nicht wohlwollend. `tests/seo/Wettbewerbsvergleich.test.ts`
+erzwingt das über alle Seiten hinweg und über `seo/keywords.json`. Die Seite
+`/alternative/` vergleicht Wege (Handarbeit, Tabelle, dieser Generator, kommerzielle
+Kategorie), nicht Produkte.
 
 Eigene, belegbare Vorteile: kostenlos, ohne Anmeldung, ohne Installation, Open Source,
 ein gewachsener Bestand echter Übungsfunksprüche in `assets/funksprueche/`.
+
+Ebenso wichtig sind die eigenen Grenzen, und sie gehören sichtbar auf die Seiten: ohne
+Konto gibt es keinen Zugriffsschutz und keine Rechteverwaltung, es gibt keinen
+Vertragspartner, keine Rechnung und keinen Anspruch auf Unterstützung.
 
 **Die Anzahl nicht von Hand zitieren.** Seit AP-08 kommt sie aus dem gezählten Bestand:
 `ANZAHL_GESAMT` (alle Vorlagen, also was der Generator verteilt) und `ANZAHL_ARCHIV`
