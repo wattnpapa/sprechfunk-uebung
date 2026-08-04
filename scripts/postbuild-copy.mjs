@@ -6,6 +6,9 @@ import { buildSitemap, SITEMAP_PAGES, SITE_PAGES, STATIC_SUBPAGES } from "./site
 import { renderPageWithStructuredData } from "./lib/render-page.mjs";
 import { createGitRunner, resolveLastmod } from "./lib/lastmod.mjs";
 import { ersterSatz, extractMetaDescription } from "./lib/page-metadata.mjs";
+import { ARCHIV_VORLAGEN } from "./lib/funkspruch-daten.mjs";
+import { BESTAND } from "./lib/funkspruch-bestand.mjs";
+import { downloadDateiname, txtInhalt } from "./lib/funkspruch-seiten.mjs";
 
 const execFileAsync = promisify(execFile);
 
@@ -123,9 +126,27 @@ async function withStructuredData(page, quelle) {
         page,
         html: quelle,
         dateModified: await lastmodFuerSeite(page),
-        beschreibungen
+        beschreibungen,
+        bestand: BESTAND
     });
     return html;
+}
+
+// Downloads des Funkspruch-Archivs (AP-08). Sie liegen unter dist/assets/,
+// damit sie wie die übrigen Downloads ausgeliefert werden und nicht mit einer
+// Seiten-URL kollidieren. Format ist exakt das Upload-Format des Generators,
+// also eine Nachricht je Zeile – so schließt sich der Kreis vom Fund über den
+// Download zurück in die eigene Übung.
+for (const vorlage of ARCHIV_VORLAGEN) {
+    const eintraege = BESTAND.nachVorlage.get(vorlage.slug) ?? [];
+    if (eintraege.length === 0) {
+        throw new Error(`Vorlage "${vorlage.slug}" ist im Archiv, hat aber keine Funksprüche.`);
+    }
+    await writeFile(
+        path.join(dist, "assets", downloadDateiname(vorlage.slug)),
+        txtInhalt(eintraege),
+        "utf8"
+    );
 }
 
 

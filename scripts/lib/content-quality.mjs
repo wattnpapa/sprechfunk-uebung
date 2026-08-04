@@ -10,9 +10,18 @@ export const GRENZEN = {
     descMin: 140,
     descMax: 160,
     woerterMin: 800,
+    // Archivseiten (AP-08) tragen ihre Substanz in der Liste. Geprüft wird
+    // deshalb zusätzlich der eigene Text: eine Liste mit 750 Funksprüchen und
+    // zwei Sätzen Einleitung wäre formal lang und inhaltlich leer.
+    eigeneWoerterMin: 300,
     satzlaengeMax: 20,
     absatzMax: 120,
-    transferMaxBytes: 120 * 1024
+    transferMaxBytes: 120 * 1024,
+    // Unkomprimierte Seitengröße. Übertragen wird gzip, aber die rohe Größe
+    // bestimmt, wie viel ein Parser aufbauen muss – und AP-08 zieht die Grenze
+    // ausdrücklich bei 300 KB. Ohne diese Regel wäre die größte Archivseite
+    // unbemerkt darüber gewachsen (sie lag bei 333 KB).
+    roheBytesMax: 300 * 1024
 };
 
 /**
@@ -104,6 +113,11 @@ export function pruefeSeite(seite, grenzen = GRENZEN) {
         melde("zu-kurz", `${seite.woerter} Wörter (Ziel ${ziel})`);
     }
 
+    if (seite.archiv && (seite.eigeneWoerter ?? 0) < grenzen.eigeneWoerterMin) {
+        melde("zu-wenig-eigener-text",
+            `${seite.eigeneWoerter ?? 0} Wörter eigener Text neben der Liste (mindestens ${grenzen.eigeneWoerterMin})`);
+    }
+
     for (const floskel of findeFloskeln(seite.text)) {
         melde("floskel", `enthält „${floskel}“`);
     }
@@ -149,6 +163,11 @@ export function pruefeSeite(seite, grenzen = GRENZEN) {
 
     if ((seite.transferBytes ?? 0) > grenzen.transferMaxBytes) {
         melde("zu-gross", `${Math.round(seite.transferBytes / 1024)} KB (höchstens ${grenzen.transferMaxBytes / 1024} KB)`);
+    }
+
+    if ((seite.roheBytes ?? 0) > grenzen.roheBytesMax) {
+        melde("zu-viel-markup",
+            `${Math.round(seite.roheBytes / 1024)} KB unkomprimiert (höchstens ${grenzen.roheBytesMax / 1024} KB)`);
     }
 
     return verstoesse;

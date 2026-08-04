@@ -7,6 +7,9 @@ import { canonicalUrl, SITE_PAGES, SITE_URL } from "../../scripts/site-pages.mjs
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-ignore -- reine JS-Hilfsmodule ohne Typdeklarationen, absichtlich .mjs
 import { renderPageWithStructuredData, sichtbarerText } from "../../scripts/lib/render-page.mjs";
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+// @ts-ignore
+import { BESTAND } from "../../scripts/lib/funkspruch-bestand.mjs";
 
 const ROOT = path.resolve(__dirname, "..", "..");
 // Fester Wert, damit die Erwartungen nicht von der Git-Historie abhängen.
@@ -23,7 +26,12 @@ function graphFuer(page: { source: string }) {
     return renderPageWithStructuredData({
         page,
         html: quelleLesen(page.source),
-        dateModified: DATE_MODIFIED
+        dateModified: DATE_MODIFIED,
+        // Seit AP-08 tragen die Quellseiten Platzhalter für die Bestandszahl
+        // und die Archivseiten ihre Funkspruch-Liste. Ohne Bestand bricht das
+        // Rendern ab – zu Recht, denn eine ausgelieferte Seite mit
+        // unaufgelöstem Platzhalter wäre schlimmer als ein Buildfehler.
+        bestand: BESTAND
     });
 }
 
@@ -87,7 +95,7 @@ function alleSchluessel(wert: unknown, treffer: string[] = []): string[] {
 
 describe("Schema-Graph je Seite", () => {
     it("die Registry deckt alle 30 ausgelieferten URLs ab", () => {
-        expect(SITE_PAGES).toHaveLength(31);
+        expect(SITE_PAGES).toHaveLength(37);
     });
 
     for (const page of SITE_PAGES) {

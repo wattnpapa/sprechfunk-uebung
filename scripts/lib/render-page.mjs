@@ -9,6 +9,15 @@ import { HUB_CATEGORIES, HUB_SLUG, SITE_PAGES } from "../site-pages.mjs";
 import { deutschesDatum, nurDatum } from "./lastmod.mjs";
 import { buildGraph, escapeHtml, renderFaqHtml } from "./schema-graph.mjs";
 import {
+    FILTER_SKRIPT,
+    LISTE_PLATZHALTER,
+    VORLAGEN_PLATZHALTER,
+    renderFilter,
+    renderFunkspruchListe,
+    renderVorlagenTabelle
+} from "./funkspruch-seiten.mjs";
+import { deutscheZahl } from "./funkspruch-daten.mjs";
+import {
     relativerPfad,
     breadcrumbFuer,
     renderBreadcrumb,
@@ -38,7 +47,8 @@ export const FAQ_PLATZHALTER = "<!-- AP-02:FAQ -->";
  * FAQ-Fragen oder fehlender Description darf nicht durchlaufen.
  */
 export function renderPageWithStructuredData({
-    page, html: quelle, dateModified = null, beschreibungen = {}, alleSeiten = SITE_PAGES
+    page, html: quelle, dateModified = null, beschreibungen = {}, alleSeiten = SITE_PAGES,
+    bestand = null
 }) {
     const title = extractTitle(quelle);
     const description = extractMetaDescription(quelle);
@@ -61,10 +71,14 @@ export function renderPageWithStructuredData({
     // Globale Bausteine zuerst: Navigation, Brotkrumen und Footer werden
     // ersetzt, bevor FAQ-Block und Datumszeile daran verankert werden.
     let html = quelle;
+    html = ersetzeBestandszahlen(html, bestand);
     html = setzeHauptnavigation(html, page);
     html = ersetzeBreadcrumb(html, page);
     html = ersetzeFooter(html, page);
     html = setzeHubKarten(html, page, beschreibungen);
+    // Vor den Einleitungsblöcken: das Inhaltsverzeichnis zählt die Abschnitte
+    // der fertigen Seite, und die Liste bringt keine eigene h2 mit.
+    html = setzeFunkspruchInhalte(html, page, bestand);
 
     if (!page.faqFromPage && faq.length > 0) {
         const block = renderFaqHtml(faq);
@@ -80,8 +94,14 @@ export function renderPageWithStructuredData({
         }
     }
 
+    // Umfang der Sammlung für Archivseiten: die Zahl steht im ItemList-Knoten,
+    // die Einträge selbst bleiben im sichtbaren HTML (AP-08).
+    const collectionAnzahl = page.archivVorlage && bestand
+        ? (bestand.nachVorlage.get(page.archivVorlage) ?? []).length
+        : undefined;
+
     const graph = buildGraph({
-        page: { ...page, breadcrumb, faq },
+        page: { ...page, breadcrumb, faq, collectionAnzahl },
         title,
         description,
         dateModified,
@@ -104,6 +124,72 @@ export function renderPageWithStructuredData({
     return { html, graph, faq, terme, title, description, breadcrumb };
 }
 
+
+/**
+ * Setzt die Bestandszahlen in den Fließtext ein (AP-08, Punkt 5).
+ *
+ * Die Zahl steht an rund einem Dutzend Stellen auf der Domain. Als Platzhalter
+ * im Quelltext gepflegt kann sie nicht auseinanderlaufen: sie stammt immer aus
+ * dem gezählten Bestand. Ein unaufgelöster Platzhalter bricht den Build – eine
+ * ausgelieferte Seite mit „{{FUNKSPRUECHE_GESAMT}} Funksprüche“ wäre schlimmer
+ * als eine veraltete Zahl.
+ */
+export const BESTAND_PLATZHALTER = {
+    "{{FUNKSPRUECHE_GESAMT}}": bestand => deutscheZahl(bestand.anzahlGesamt),
+    "{{FUNKSPRUECHE_ARCHIV}}": bestand => deutscheZahl(bestand.anzahlArchiv)
+};
+
+export function ersetzeBestandszahlen(html, bestand) {
+    let ergebnis = html;
+    for (const [platzhalter, wert] of Object.entries(BESTAND_PLATZHALTER)) {
+        if (!ergebnis.includes(platzhalter)) continue;
+        if (!bestand) {
+            throw new Error(`Platzhalter ${platzhalter} gefunden, aber kein Bestand übergeben.`);
+        }
+        ergebnis = ergebnis.replaceAll(platzhalter, wert(bestand));
+    }
+    return ergebnis;
+}
+
+/**
+ * Setzt Funkspruch-Liste, Filter und Vorlagen-Übersicht ein (AP-08).
+ *
+ * Der Bestand kommt als Argument herein, damit diese Datei ohne Dateizugriff
+ * bleibt. Fehlt er, während eine Seite ihn braucht, wirft die Funktion: eine
+ * Archivseite mit leerem Platzhalter wäre eine ausgelieferte, leere Seite.
+ */
+export function setzeFunkspruchInhalte(html, page, bestand) {
+    const brauchtListe = html.includes(LISTE_PLATZHALTER);
+    const brauchtTabelle = html.includes(VORLAGEN_PLATZHALTER);
+    if (!brauchtListe && !brauchtTabelle) return html;
+
+    if (!bestand) {
+        throw new Error(`Seite "${page.slug}": Funkspruch-Bestand fehlt, Platzhalter nicht auflösbar.`);
+    }
+
+    let ergebnis = html;
+
+    if (brauchtTabelle) {
+        ergebnis = ergebnis.replace(VORLAGEN_PLATZHALTER, renderVorlagenTabelle(bestand, page.slug));
+    }
+
+    if (brauchtListe) {
+        const eintraege = bestand.nachVorlage.get(page.archivVorlage);
+        if (!eintraege || eintraege.length === 0) {
+            throw new Error(`Seite "${page.slug}": keine Funksprüche für Vorlage "${page.archivVorlage}".`);
+        }
+        ergebnis = ergebnis.replace(
+            LISTE_PLATZHALTER,
+            `${renderFilter(eintraege)}\n${renderFunkspruchListe(eintraege)}`
+        );
+        if (!ergebnis.includes("</body>")) {
+            throw new Error(`Seite "${page.slug}": kein </body> für das Filterskript gefunden.`);
+        }
+        ergebnis = ergebnis.replace("</body>", `${FILTER_SKRIPT}</body>`);
+    }
+
+    return ergebnis;
+}
 
 /** Grenze, ab der eine Seite ein Inhaltsverzeichnis bekommt (AP-06). */
 export const TOC_AB_H2 = 4;

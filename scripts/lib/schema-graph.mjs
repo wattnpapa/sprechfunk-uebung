@@ -226,15 +226,16 @@ export function buildFaqPage({ page, dateModified }) {
 
 export function buildCollection({ page, title, description }) {
     const eintraege = page.collection ?? [];
-    if (eintraege.length === 0) return null;
-    return kompakt({
-        "@type": "CollectionPage",
-        "@id": nodeId(page.slug, "collection"),
-        mainEntityOfPage: { "@id": nodeId(page.slug, "webpage") },
-        name: title,
-        description,
-        inLanguage: "de",
-        mainEntity: {
+    const anzahl = page.collectionAnzahl ?? 0;
+    if (eintraege.length === 0 && anzahl === 0) return null;
+
+    // Große Sammlungen (Funkspruch-Archiv, AP-08) nennen nur ihren Umfang.
+    // 752 ListItem-Knoten wären ein Vielfaches des Seiteninhalts an Markup,
+    // ohne dass ein Auswerter mehr erfährt als aus der sichtbaren Liste –
+    // itemListElement ist bei ItemList nicht verlangt.
+    const mainEntity = eintraege.length === 0
+        ? { "@type": "ItemList", numberOfItems: anzahl }
+        : {
             "@type": "ItemList",
             numberOfItems: eintraege.length,
             itemListElement: eintraege.map((eintrag, index) => kompakt({
@@ -243,7 +244,16 @@ export function buildCollection({ page, title, description }) {
                 name: eintrag.name,
                 url: eintrag.slug === undefined ? eintrag.url : canonicalUrl(eintrag.slug)
             }))
-        }
+        };
+
+    return kompakt({
+        "@type": "CollectionPage",
+        "@id": nodeId(page.slug, "collection"),
+        mainEntityOfPage: { "@id": nodeId(page.slug, "webpage") },
+        name: title,
+        description,
+        inLanguage: "de",
+        mainEntity
     });
 }
 

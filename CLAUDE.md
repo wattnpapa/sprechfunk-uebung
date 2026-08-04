@@ -159,13 +159,21 @@ Marketing-Site und App, Ratgeber-Artikel unter `/ratgeber/`, strukturierte Daten
 FAQPage, sichtbare Aktualisierungsdaten.
 
 Eigene, belegbare Vorteile: kostenlos, ohne Anmeldung, ohne Installation, Open Source,
-über 1.800 Funksprüche in `assets/funksprueche/` (am 2026-08-03 exakt 3.683 nicht leere
-Zeilen). Die Zahl ändert sich mit jeder Pflege der Vorlagen, daher vor dem Zitieren neu
-zählen statt diesen Stand zu übernehmen:
+ein gewachsener Bestand echter Übungsfunksprüche in `assets/funksprueche/`.
+
+**Die Anzahl nicht von Hand zitieren.** Seit AP-08 kommt sie aus dem gezählten Bestand:
+`ANZAHL_GESAMT` (alle Vorlagen, also was der Generator verteilt) und `ANZAHL_ARCHIV`
+(nur das öffentliche Archiv) aus `scripts/lib/funkspruch-bestand.mjs`. Im Fließtext der
+Seiten stehen die Platzhalter `{{FUNKSPRUECHE_GESAMT}}` und `{{FUNKSPRUECHE_ARCHIV}}`,
+die der Build auflöst. Ein Test verbietet die früher verstreute Zahl „1.800" domainweit.
 
 ```
-cat assets/funksprueche/*.txt | grep -cve '^[[:space:]]*$'
+node -e 'import("./scripts/lib/funkspruch-bestand.mjs").then(m => console.log(m.ANZAHL_GESAMT, m.ANZAHL_ARCHIV))'
 ```
+
+Am 2026-08-04 sind das 3.684 und 2.024. **Nicht über `cat *.txt | grep -c` zählen** – das
+Ergebnis ist um eins zu niedrig, weil `nachrichten_thw_melle.txt` ohne Zeilenumbruch endet
+und `cat` ihre letzte Zeile mit der ersten der Folgedatei verklebt.
 
 Diese Punkte in Inhalten sichtbar machen, ohne den Wettbewerber abzuwerten oder unbelegte
 Behauptungen über ihn aufzustellen. Performance-Vergleiche nur mit selbst gemessenen,

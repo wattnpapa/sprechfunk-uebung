@@ -188,23 +188,37 @@ describe("lastmod im echten Repository", () => {
     // Einmal für alle 27 Seiten ermitteln: je Seite ein git-Aufruf, das dauert
     // im echten Repo länger als der Standard-Timeout eines einzelnen Tests.
     const werte: Record<string, string | null> = {};
+    /** Alle Commit-Zeitpunkte je Seite – ebenfalls zu langsam für einen Einzeltest. */
+    const zeitenProSeite: Record<string, Set<string>> = {};
 
     beforeAll(async () => {
         for (const seite of SITEMAP_PAGES as { slug: string; sources: string[] }[]) {
             werte[seite.slug] = await resolveLastmod(seite, projektGit);
+            zeitenProSeite[seite.slug] = commitZeiten(seite);
         }
     }, 120_000);
 
-    /** Ist die Quelldatei der Seite überhaupt schon committet? */
-    const istCommittet = (seite: { sources: string[] }) => seite.sources.some(datei => {
+    /**
+     * Ist die Seite selbst schon committet?
+     *
+     * Geprüft wird allein sources[0], die eigene HTML-Quelle. Ein `some` über
+     * alle Quellen wäre falsch: Archivseiten führen zusätzlich ihre
+     * Funkspruch-Datei, und deren Historie kann ausschließlich aus mechanischen
+     * Commits bestehen (nachrichten_thw_saarstedt.txt hat genau einen, mit
+     * Betreff „refactor(…)“). Die Seite gälte dann als committet, obwohl ihr
+     * eigenes HTML noch nirgends steht – und hätte zu Recht kein Datum.
+     */
+    const istCommittet = (seite: { sources: string[] }) => {
+        const eigeneQuelle = seite.sources[0];
+        if (eigeneQuelle === undefined) return false;
         try {
-            return execFileSync("git", ["log", "-1", "--format=%H", "--", datei], {
+            return execFileSync("git", ["log", "-1", "--format=%H", "--", eigeneQuelle], {
                 cwd: projekt, encoding: "utf8"
             }).trim() !== "";
         } catch {
             return false;
         }
-    });
+    };
 
     it("liefert für jede committete Sitemap-Seite ein Datum", () => {
         if (istFlach()) {
@@ -232,12 +246,66 @@ describe("lastmod im echten Repository", () => {
             .toBeGreaterThan(1);
     });
 
-    it("schreibt nicht das Build-Datum in alle URLs", () => {
+    /**
+     * Alle Commit-Zeitpunkte, die eine der Quellen der Seite berührt haben.
+     * Wird in beforeAll erhoben: 35 Seiten mal bis zu zwei Quellen sind rund 50
+     * git-Aufrufe und überschreiten den Standard-Timeout eines Einzeltests.
+     */
+    const commitZeiten = (seite: { sources: string[] }) => {
+        const zeiten = new Set<string>();
+        for (const quelle of seite.sources ?? []) {
+            try {
+                const ausgabe = execFileSync("git", ["log", "--format=%cI", "--", quelle], {
+                    cwd: projekt, encoding: "utf8"
+                });
+                for (const zeile of ausgabe.split("\n")) {
+                    if (zeile.trim() !== "") zeiten.add(zeile.trim());
+                }
+            } catch {
+                // Ohne Git keine Aussage – der Aufrufer prüft das über istFlach().
+            }
+        }
+        return zeiten;
+    };
+
+    /**
+     * Der Wert muss aus der Historie der Seite stammen, nicht aus der Uhr.
+     *
+     * Die frühere Fassung prüfte, ob nicht alle URLs das heutige Datum tragen.
+     * Das war kalenderabhängig und damit unbrauchbar: nach einem Tag, an dem
+     * jede Seite angefasst wurde, tragen zu Recht alle dasselbe Datum, und der
+     * Test schlug an, obwohl der Mechanismus einwandfrei arbeitete. Umgekehrt
+     * wäre er an jedem anderen Tag grün geworden, ohne etwas zu beweisen.
+     *
+     * Diese Fassung ist falsifizierbar und datumsunabhängig: würde lastmod aus
+     * `new Date()` gestempelt, träfe der Wert keinen Commit-Zeitpunkt der Quelle.
+     */
+    it("übernimmt lastmod aus der Historie der Seite, nicht aus der Uhr", () => {
         if (istFlach()) return;
-        const heute = new Date().toISOString().slice(0, 10);
-        const daten = Object.values(werte).map(nurDatum);
-        const alleHeute = daten.length > 0 && daten.every(wert => wert === heute);
-        expect(alleHeute, "jede URL trägt das heutige Datum – riecht nach Build-Datum").toBe(false);
+
+        let geprueft = 0;
+        for (const seite of SITEMAP_PAGES as { slug: string; sources: string[] }[]) {
+            const wert = werte[seite.slug];
+            if (!wert) continue;
+
+            const zeiten = zeitenProSeite[seite.slug] ?? new Set<string>();
+            expect(zeiten.has(wert),
+                `lastmod "${wert}" für "${seite.slug || "/"}" gehört zu keinem Commit `
+                + "ihrer Quellen – stammt der Wert aus der Uhr?").toBe(true);
+            geprueft++;
+        }
+
+        // Ohne geprüfte Seite wäre die Zusicherung wertlos.
+        expect(geprueft, "keine Seite mit lastmod – nichts geprüft").toBeGreaterThan(0);
+    });
+
+    it("nutzt nicht für jede Seite denselben Commit", () => {
+        if (istFlach()) return;
+        // Ergänzt die Datumsprüfung oben um die Streuung: ein einziger Wert für
+        // alle URLs ist das Muster, an dem Google lastmod domainweit entwertet.
+        const werteOhneNull = Object.values(werte).filter(Boolean);
+        expect(new Set(werteOhneNull).size,
+            "alle Seiten tragen denselben Zeitstempel").toBeGreaterThan(1);
     });
 });
 

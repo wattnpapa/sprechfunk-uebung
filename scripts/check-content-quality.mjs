@@ -45,7 +45,21 @@ function redaktionell(html) {
  * denn sie sind echter Seiteninhalt.
  */
 function prosa(html) {
-    return redaktionell(html).replace(/<table[\s\S]*?<\/table>/gi, " ");
+    return ohneListe(redaktionell(html)).replace(/<table[\s\S]*?<\/table>/gi, " ");
+}
+
+/**
+ * Ohne die Funkspruch-Liste (AP-08). Die Einträge sind wörtlich zitiertes
+ * Quellmaterial aus den Übungsvorlagen, kein redaktioneller Text. Sie als
+ * Prosa zu messen wäre in zwei Richtungen falsch: 462 Meldungen ohne Satzzeichen
+ * ergeben einen Satz mit 124 Wörtern, und ein Funkspruch, der „nicht nur“
+ * enthält, wäre ein Floskel-Verstoß, den man nur durch Fälschen des Zitats
+ * beheben könnte. Für die Wortzahl zählt die Liste weiter mit.
+ */
+function ohneListe(html) {
+    return html
+        .replace(/<ol[^>]*class="[^"]*funkspruch-liste[^"]*"[\s\S]*?<\/ol>/gi, " ")
+        .replace(/<div[^>]*class="[^"]*funkspruch-filter[^"]*"[\s\S]*?<\/div>\s*<\/div>/gi, " ");
 }
 
 async function leseSeite(page) {
@@ -58,6 +72,10 @@ async function leseSeite(page) {
         titel: (html.match(/<title>([^<]*)<\/title>/i) ?? ["", ""])[1],
         description: (html.match(/<meta name="description" content="([^"]*)"/i) ?? ["", ""])[1],
         woerter: zaehleWoerter(plainText(inhalt)),
+        // Eigener Text neben der Liste – nur so lässt sich die Substanz einer
+        // Archivseite prüfen, deren Wortzahl sonst allein aus Zitaten besteht.
+        archiv: page.archiv === true,
+        eigeneWoerter: zaehleWoerter(plainText(ohneListe(inhalt))),
         text: plainText(prosa(html)),
         absaetze: [...inhalt.matchAll(/<p[^>]*>([\s\S]*?)<\/p>/gi)].map(treffer => plainText(treffer[1])),
         ankerZiele: [...html.matchAll(/data-testid="inhaltsverzeichnis"[\s\S]*?<\/nav>/gi)]
@@ -65,6 +83,7 @@ async function leseSeite(page) {
         ankerVorhanden: [...html.matchAll(/\bid="([^"]+)"/g)].map(treffer => treffer[1]),
         // gzip: das ist die tatsächlich übertragene Größe.
         transferBytes: gzipSync(Buffer.from(html, "utf8")).length,
+        roheBytes: Buffer.byteLength(html, "utf8"),
         hatMetazeile: html.includes('data-testid="aktualisiert-am"'),
         hatKurzGesagt: html.includes('data-testid="kurz-gesagt"'),
         // /faq/ trägt die Fragen im eigenen Markup, ohne injizierten Block:
