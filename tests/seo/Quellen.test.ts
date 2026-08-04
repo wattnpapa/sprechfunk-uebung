@@ -37,10 +37,18 @@ const rendere = (seite: Seite): string => renderPageWithStructuredData({
     bestand: BESTAND
 }).html;
 
-/** Sichtbarer Text ohne Markup und ohne HTML-Kommentare (dort stehen Belege). */
+/**
+ * Sichtbarer Text ohne Markup und ohne HTML-Kommentare (dort stehen Belege).
+ *
+ * Die Skript-Regex trägt `i` und lässt Attribute im schließenden Tag zu:
+ * Browser akzeptieren `</SCRIPT foo="bar">`, und eine Regex, die das übersieht,
+ * ist der klassische Fehler beim Filtern von HTML (CodeQL js/bad-tag-filter).
+ * Hier laufen zwar nur eigene Seiten durch, aber ein Muster, das anderswo
+ * kopiert wird, sollte nicht das kaputte sein.
+ */
 const text = (html: string): string => html
     .replace(/<!--[\s\S]*?-->/g, " ")
-    .replace(/<script[\s\S]*?<\/script>/g, " ")
+    .replace(/<script\b[^>]*>[\s\S]*?<\/script\s*[^>]*>/gi, " ")
     .replace(/<[^>]+>/g, " ")
     .replace(/\s+/g, " ");
 
