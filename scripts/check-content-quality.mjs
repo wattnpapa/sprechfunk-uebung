@@ -29,7 +29,14 @@ const GENERIERT = [
     /<nav[^>]*data-testid="inhaltsverzeichnis"[\s\S]*?<\/nav>/gi,
     /<p[^>]*data-testid="aktualisiert-am"[\s\S]*?<\/p>/gi,
     /<section[^>]*data-testid="weiterlesen"[\s\S]*?<\/section>/gi,
-    /<ul[^>]*data-testid="hub-liste-[^"]*"[\s\S]*?<\/ul>/gi
+    /<ul[^>]*data-testid="hub-liste-[^"]*"[\s\S]*?<\/ul>/gi,
+    // Diagramme (AP-10) sind Abbildungen, nicht Fließtext. Ohne diese Zeile
+    // landete der <style>-Block des inline-SVG in der Textmessung – auf
+    // /betriebsworte/ als ein Absatz mit 412 „Wörtern“ CSS. Auch die
+    // Beschriftungen gehören nicht in die Wortzahl: sonst erreichte eine Seite
+    // ihr Wortziel über Diagrammlabels statt über Inhalt. Die Zugänglichkeit
+    // prüft tests/seo/Bilder.test.ts über title, desc und alt.
+    /<figure[^>]*data-testid="seiten-diagramm"[\s\S]*?<\/figure>/gi
 ];
 
 function redaktionell(html) {

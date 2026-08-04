@@ -5,3 +5,4 @@ User-agent: *
 Allow: /
 
 Sitemap: https://sprechfunk-uebung.de/sitemap.xml
+Sitemap: https://sprechfunk-uebung.de/sitemap-images.xml

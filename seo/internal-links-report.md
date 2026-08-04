@@ -86,7 +86,7 @@ Keine. Jede Inhaltsseite hat mindestens einen eingehenden Fließtext-Link.
 | `/uebungsfunkverkehr/` | 2 | „blitz- und staatsnot-nachrichten“, „übungsfunkverkehr“ |
 | `/funkreichweite/` | 3 | „merkregeln zur störungsbeseitigung“, „reichweite“, „reichweite von funkwellen“ |
 | `/x-zeit/` | 4 | „der x-zeit-modus“, „fälligkeitszeitpunkt als x+n“, „x-zeit“, „zeitversetzte fälligkeiten“ |
-| `/kostenlos-ohne-anmeldung/` | 2 | „funkübung kostenlos und ohne anmeldung“, „kostenlos und ohne anmeldung“ |
+| `/kostenlos-ohne-anmeldung/` | 3 | „funkübung kostenlos und ohne anmeldung“, „kostenlos und ohne anmeldung“, „nutzung ohne konto und ohne kosten“ |
 | `/funksprueche/vorlage/thw-lehrte/` | 4 | „752 nachrichten aus lehrte“, „große unwetterlage aus lehrte“, „thw lehrte“, „unwetterlage aus lehrte“ |
 | `/funksprueche/vorlage/thw-melle/` | 4 | „400 nachrichten aus melle“, „fachdichte lage aus melle“, „thw melle“, „vorlage aus melle“ |
 | `/funkuebung-katastrophenschutz/` | 4 | „funkübung im katastrophenschutz“, „hilfsorganisationen“, „katastrophenschutz“, „mehrere organisationen“ |
@@ -110,6 +110,5 @@ Keine. Jede Inhaltsseite hat mindestens einen eingehenden Fließtext-Link.
 - `/verkehrsarten/`: nur 2 verschiedene Ankertexte (Ziel: 3)
 - `/funkrufnamen-thw/`: nur 1 verschiedene Ankertexte (Ziel: 3)
 - `/open-source/`: nur 2 verschiedene Ankertexte (Ziel: 3)
-- `/kostenlos-ohne-anmeldung/`: nur 2 verschiedene Ankertexte (Ziel: 3)
 - `/faq/`: nur 2 verschiedene Ankertexte (Ziel: 3)
 

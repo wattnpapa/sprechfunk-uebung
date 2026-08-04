@@ -2,13 +2,14 @@ import { execFile } from "node:child_process";
 import { cp, mkdir, readFile, writeFile } from "node:fs/promises";
 import path from "node:path";
 import { promisify } from "node:util";
-import { buildSitemap, SITEMAP_PAGES, SITE_PAGES, STATIC_SUBPAGES } from "./site-pages.mjs";
+import { buildSitemap, canonicalUrl, SITEMAP_PAGES, SITE_PAGES, SITE_URL, STATIC_SUBPAGES } from "./site-pages.mjs";
 import { renderPageWithStructuredData } from "./lib/render-page.mjs";
 import { createGitRunner, resolveLastmod } from "./lib/lastmod.mjs";
 import { ersterSatz, extractMetaDescription } from "./lib/page-metadata.mjs";
 import { ARCHIV_VORLAGEN } from "./lib/funkspruch-daten.mjs";
 import { BESTAND } from "./lib/funkspruch-bestand.mjs";
 import { downloadDateiname, txtInhalt } from "./lib/funkspruch-seiten.mjs";
+import { bilderDerSeite, buildBilderSitemap } from "./lib/bilder-sitemap.mjs";
 
 const execFileAsync = promisify(execFile);
 
@@ -87,12 +88,23 @@ await writeFile(path.join(dist, "style.css"), minifiedCss.css, "utf8");
 await cp(path.join(root, "src", "firebase-config.js"), path.join(dist, "firebase-config.js"));
 await cp(path.join(root, "src", "robots.txt"), path.join(dist, "robots.txt"));
 
+// Bild-Einträge für die Bilder-Sitemap (AP-10), gesammelt beim Rendern:
+// nur das fertige HTML kennt die eingesetzten Bilder.
+const bilderProSeite = [];
+
 // Statische, crawlbare Inhaltsseiten als Verzeichnis-Index ablegen (=> /anleitung/, /faq/, ...).
 for (const page of STATIC_SUBPAGES) {
     const target = path.join(dist, page.slug);
     await mkdir(target, { recursive: true });
     const quelle = await readFile(path.join(root, "src", page.source), "utf8");
-    await writeFile(path.join(target, "index.html"), await withStructuredData(page, quelle), "utf8");
+    const fertig = await withStructuredData(page, quelle);
+    await writeFile(path.join(target, "index.html"), fertig, "utf8");
+    if (page.inSitemap !== false) {
+        bilderProSeite.push({
+            url: canonicalUrl(page.slug),
+            bilder: bilderDerSeite(page, fertig, SITE_URL)
+        });
+    }
 }
 
 // sitemap.xml aus derselben Seitenliste erzeugen, damit sie beim Hinzufügen einer
@@ -103,6 +115,14 @@ for (const page of SITEMAP_PAGES) {
     lastmodBySlug[page.slug] = await lastmodFuerSeite(page);
 }
 await writeFile(path.join(dist, "sitemap.xml"), buildSitemap(lastmodBySlug), "utf8");
+
+// Bilder-Sitemap. Die Startseite kommt dazu, weil sie das Autorenbild trägt.
+const startseiteHtml = await readFile(path.join(dist, "index.html"), "utf8");
+bilderProSeite.unshift({
+    url: canonicalUrl(""),
+    bilder: bilderDerSeite(startseite, startseiteHtml, SITE_URL)
+});
+await writeFile(path.join(dist, "sitemap-images.xml"), buildBilderSitemap(bilderProSeite), "utf8");
 
 const ohneDatum = SITEMAP_PAGES.filter(page => !lastmodBySlug[page.slug]);
 if (ohneDatum.length > 0) {

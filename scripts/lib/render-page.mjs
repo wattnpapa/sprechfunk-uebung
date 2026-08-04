@@ -7,6 +7,7 @@
 
 import { HUB_CATEGORIES, HUB_SLUG, SITE_PAGES, SITE_URL } from "../site-pages.mjs";
 import { ogUrl } from "./og-bilder.mjs";
+import { hatDiagramm, renderDiagramm } from "./diagramme.mjs";
 import { deutschesDatum, nurDatum } from "./lastmod.mjs";
 import { buildGraph, escapeHtml, renderFaqHtml } from "./schema-graph.mjs";
 import {
@@ -117,6 +118,7 @@ export function renderPageWithStructuredData({
 
     // Nach dem FAQ-Block, damit "Weiterlesen" der letzte Abschnitt vor dem
     // Footer ist – und vor der Seitenleiste, die </main> verschiebt.
+    html = setzeDiagramm(html, page);
     html = setzeWeiterlesen(html, page, alleSeiten, beschreibungen);
     html = setzeWissenSidebar(html, page);
     html = setzeArtikelZeitstempel(html, page, dateModified);
@@ -126,6 +128,53 @@ export function renderPageWithStructuredData({
     return { html, graph, faq, terme, title, description, breadcrumb };
 }
 
+
+/**
+ * Setzt das Diagramm der Seite ein (AP-10).
+ *
+ * Platz ist direkt hinter Inhaltsverzeichnis bzw. „Kurz gesagt“ – also über dem
+ * ersten Fachabschnitt. Damit steht es im sichtbaren Bereich, ohne die
+ * Einleitung vom Titel zu trennen.
+ *
+ * Inline-SVG statt <img>: kein zusätzlicher Request, skaliert verlustfrei, und
+ * über currentColor folgt es dem Dunkelmodus. width und height stehen im SVG,
+ * damit kein Layout Shift entsteht.
+ */
+export function setzeDiagramm(html, page) {
+    if (page.slug === undefined || page.slug === "" || page.inSitemap === false) return html;
+    if (!hatDiagramm(page.slug)) return html;
+
+    const figur = renderDiagramm(page.slug);
+
+    const tocEnde = html.indexOf('data-testid="inhaltsverzeichnis"');
+    if (tocEnde >= 0) {
+        const rest = html.slice(tocEnde);
+        const treffer = /<\/nav>\n?/.exec(rest);
+        if (treffer) {
+            const pos = tocEnde + treffer.index + treffer[0].length;
+            return `${html.slice(0, pos)}${figur}\n${html.slice(pos)}`;
+        }
+    }
+
+    const kurzEnde = html.indexOf('data-testid="kurz-gesagt"');
+    if (kurzEnde >= 0) {
+        const rest = html.slice(kurzEnde);
+        const treffer = /<\/section>\n?/.exec(rest);
+        if (treffer) {
+            const pos = kurzEnde + treffer.index + treffer[0].length;
+            return `${html.slice(0, pos)}${figur}\n${html.slice(pos)}`;
+        }
+    }
+
+    // Letzter Rückfall: vor den ersten Kartenblock nach der h1.
+    const h1 = html.search(/<h1[\s>]/i);
+    if (h1 < 0) return html;
+    const anker = /<(?:section|div)\s+class="[^"]*card[^"]*"/gi;
+    anker.lastIndex = h1;
+    const treffer = anker.exec(html);
+    if (!treffer) return html;
+    return `${html.slice(0, treffer.index)}${figur}\n${html.slice(treffer.index)}`;
+}
 
 /**
  * Setzt das seitenindividuelle Social-Preview-Bild (AP-10).
