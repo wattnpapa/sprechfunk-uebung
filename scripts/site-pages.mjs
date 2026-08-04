@@ -989,6 +989,64 @@ export const SITE_PAGES = [
         ]
     },
     {
+        slug: "kostenlos-ohne-anmeldung", source: "pages/kostenlos-ohne-anmeldung.html", sources: ["src/pages/kostenlos-ohne-anmeldung.html"],
+        kurzGesagt: "Die Nutzung ist kostenlos und verlangt kein Konto, keine Zahlungsdaten und keine Installation. Es gibt keine Testphase, die abläuft, und keine Funktion hinter einer Bezahlschranke. Gespeichert werden nur die Angaben, die für die Übung eingetragen werden, und die sind für jeden lesbar, der den Link kennt. Der Quellcode steht unter der EUPL-1.2 auf GitHub.",
+        related: ["open-source","faq","funktionen"],
+        label: "Kostenlos und ohne Anmeldung",
+        hubCategory: "anwendung",
+        schemaType: "Article", datePublished: "2026-08-04",
+        about: ["Funkübung", "Kostenlos und ohne Anmeldung"],
+        faq: [
+            {
+                q: "Gibt es eine Bezahlversion?",
+                a: "Nein. Es gibt keine Preisstufen, keine Premium-Funktionen und keine Obergrenzen für Teilnehmer, Übungen oder Exporte. Alle Funktionen sind vollständig verfügbar."
+            },
+            {
+                q: "Muss ich mich registrieren?",
+                a: "Nein. Es gibt kein Benutzerkonto und keine Anmeldung. Die Anwendung kennt keinen Begriff von Identität – Übungsleitung, Teilnehmer und Verwaltung sind reine Ansichten im Browser."
+            },
+            {
+                q: "Werden meine Übungsdaten gespeichert?",
+                a: "Ja. Übungsname, Funkrufnamen und die erzeugten Funksprüche liegen bei Firebase, dazu der Fortschritt je Funkstelle. Weil es keine Anmeldung gibt, gibt es auch keinen Zugriffsschutz: wer den Link hat, kann die Übung öffnen."
+            },
+            {
+                q: "Kann ich die Anwendung offline nutzen?",
+                a: "Nur eingeschränkt. Zum Erzeugen einer Übung und für den Teilnehmerzugang wird eine Verbindung gebraucht. Die Druckunterlagen lassen sich vorher als PDF oder ZIP herunterladen und offline verwenden."
+            },
+            {
+                q: "Darf ich sie in meiner Dienststelle einsetzen?",
+                a: "Die EUPL-1.2 erlaubt das, auch dienstlich. Ob die eigene Organisation den Einsatz eines externen Webdienstes zulässt, ist davon unabhängig zu klären – die Übungsdaten liegen bei Firebase."
+            }
+        ]
+    },
+    {
+        slug: "alternative", source: "pages/alternative.html", sources: ["src/pages/alternative.html"],
+        kurzGesagt: "Eine Sprechfunkübung lässt sich auf vier Wegen vorbereiten: von Hand, mit einer Tabellenvorlage, mit einem freien Generator oder mit einer kommerziellen Web-Anwendung. Die Wege unterscheiden sich in Vorbereitungszeit, Kosten, Registrierung und Funktionsumfang. Diese Seite stellt die Merkmale gegenüber, statt einen Sieger zu benennen. Für zwei Bedarfe ist die kommerzielle Lösung die passendere Wahl.",
+        related: ["funkuebung-planen","funkuebung-vorlage","kostenlos-ohne-anmeldung"],
+        label: "Alternativen im Vergleich",
+        hubCategory: "uebungen",
+        schemaType: "Article", datePublished: "2026-08-04",
+        about: ["Funkübung", "Alternativen im Vergleich"],
+        faq: [
+            {
+                q: "Was ist die Alternative zu einem Funkübungs-Generator mit Konto?",
+                a: "Drei Wege ohne Konto: von Hand mit Vordrucken, eine Excel- oder Word-Vorlage aus der eigenen Einheit, oder ein freier Generator im Browser. Welcher passt, hängt von Teilnehmerzahl, Zeit und den Vorgaben der Organisation ab."
+            },
+            {
+                q: "Wodurch unterscheiden sich die Angebote am deutlichsten?",
+                a: "An der Registrierung, an Mengengrenzen und an der Quelloffenheit. Bei den Kernfunktionen – Verteilung, PDF, Teilnehmerzugang, Live-Übungsleitung – liegen die Web-Anwendungen näher beieinander, als es zunächst wirkt."
+            },
+            {
+                q: "Wann ist eine kostenpflichtige Lösung die richtige?",
+                a: "Wenn über Rechnung beschafft werden muss, wenn ein Vertragspartner mit Zuständigkeit gebraucht wird oder wenn mehrere Personen mit eigenen Zugängen an Übungen arbeiten sollen. Ohne Benutzerkonten gibt es keine Rechteverwaltung."
+            },
+            {
+                q: "Sind die Angaben über andere Anbieter aktuell?",
+                a: "Sie stammen von der öffentlichen Website des jeweiligen Anbieters und tragen im Quelltext dieser Seite Fundstelle und Abrufdatum. Die Angaben werden halbjährlich geprüft; maßgeblich bleibt immer die Website des Anbieters."
+            }
+        ]
+    },
+    {
         slug: "wissen", source: "pages/wissen.html", sources: ["src/pages/wissen.html"],
         kurzGesagt: "Sprechfunk lernt man im Lehrgang und behält es durch regelmäßiges Üben. Diese Übersicht bündelt beides: die fachlichen Grundlagen des BOS-Sprechfunks und die praktische Arbeit mit Funkübungen. Die Betriebsabwicklung folgt organisationsübergreifend der PDV/DV 810.3. Für die Praxis erzeugt der Generator vollständige Übungen.",
         related: ["funkuebung-planen", "sprechfunk-regeln", "funksprueche"],

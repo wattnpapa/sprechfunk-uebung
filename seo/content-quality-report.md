@@ -11,26 +11,28 @@ Inhaltsverzeichnis, Metazeile, Seitenleiste und Weiterlesen-Block sind abgezogen
 
 | Seite | Wörter | Ziel | Titel | Desc | gzip |
 | --- | ---: | ---: | ---: | ---: | ---: |
-| `/funkuebung-planen/` | 822 | 800 | 53 | 149 | 8 KB |
-| `/open-source/` | 825 | 800 | 53 | 150 | 8 KB |
 | `/digitale-funkuebung/` | 826 | 800 | 51 | 152 | 7 KB |
 | `/meldevordruck/` | 831 | 800 | 51 | 150 | 7 KB |
 | `/funkrufnamen-thw/` | 832 | 800 | 51 | 149 | 8 KB |
 | `/funkrufnamen/` | 846 | 800 | 55 | 155 | 8 KB |
 | `/wissen/` | 847 | 800 | 53 | 155 | 10 KB |
 | `/faq/` | 854 | 800 | 53 | 149 | 8 KB |
-| `/funktionen/` | 861 | 800 | 53 | 153 | 8 KB |
 | `/verkehrsarten/` | 872 | 800 | 55 | 152 | 8 KB |
-| `/funkuebung-vorlage/` | 882 | 800 | 52 | 150 | 8 KB |
 | `/funkuebung-katastrophenschutz/` | 884 | 800 | 50 | 149 | 8 KB |
+| `/funkuebung-planen/` | 891 | 800 | 53 | 149 | 8 KB |
+| `/open-source/` | 920 | 800 | 53 | 150 | 8 KB |
 | `/funksprueche/` | 930 | 800 | 53 | 154 | 8 KB |
+| `/kostenlos-ohne-anmeldung/` | 945 | 800 | 54 | 156 | 7 KB |
 | `/betriebsworte/` | 949 | 800 | 56 | 155 | 9 KB |
 | `/funkmeldesystem/` | 953 | 800 | 52 | 150 | 8 KB |
+| `/funktionen/` | 963 | 800 | 53 | 153 | 8 KB |
+| `/funkuebung-vorlage/` | 972 | 800 | 52 | 150 | 8 KB |
 | `/funkuebung-dienstabend/` | 984 | 900 | 52 | 153 | 8 KB |
-| `/antennen/` | 990 | 800 | 55 | 155 | 8 KB |
+| `/antennen/` | 990 | 800 | 55 | 155 | 9 KB |
 | `/bos-funk/` | 1057 | 800 | 51 | 153 | 9 KB |
 | `/funkuebung-thw/` | 1094 | 1000 | 52 | 156 | 9 KB |
 | `/funkreichweite/` | 1097 | 800 | 51 | 156 | 9 KB |
+| `/alternative/` | 1120 | 800 | 56 | 149 | 8 KB |
 | `/funkuebung-feuerwehr/` | 1135 | 1100 | 51 | 156 | 9 KB |
 | `/uebungsfunkverkehr/` | 1155 | 800 | 52 | 155 | 9 KB |
 | `/x-zeit/` | 1170 | 800 | 53 | 153 | 8 KB |
