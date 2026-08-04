@@ -12,7 +12,7 @@ import { readFile, writeFile } from "node:fs/promises";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 
-import { SITE_PAGES } from "./site-pages.mjs";
+import { HUB_SLUG, SITE_PAGES } from "./site-pages.mjs";
 import { ankerHinweise, baueBericht, pruefeRegeln } from "./lib/internal-links.mjs";
 import { plainText } from "./lib/page-metadata.mjs";
 
@@ -76,6 +76,9 @@ async function main() {
         // einschließlich der generierten Blöcke – es geht um die Seitenlast.
         seite.linksImMain = [...mainBereich.matchAll(/<a[^>]+href="([^"]*)"/gi)]
             .filter(treffer => slugAusHref(treffer[1]) !== null).length;
+        // Der Hub ist von der Obergrenze ausgenommen: seine Kartenliste ist der
+        // Seiteninhalt und wächst mit jeder neuen Seite (siehe lib/internal-links.mjs).
+        seite.istHub = seite.slug === HUB_SLUG;
 
         for (const treffer of fliesstext.matchAll(/<a[^>]+href="([^"]*)"[^>]*>([\s\S]*?)<\/a>/gi)) {
             const ziel = slugAusHref(treffer[1]);

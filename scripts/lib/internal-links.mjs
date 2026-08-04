@@ -101,7 +101,14 @@ export function pruefeRegeln(seiten, links, grenzwerte = GRENZWERTE) {
         }
 
         // 4. Zu viele interne Links im main-Bereich.
-        if (seite.linksImMain !== undefined && seite.linksImMain > grenzwerte.maxLinksProSeite) {
+        //
+        // Der Hub ist ausgenommen. Die Regel soll verhindern, dass redaktionelle
+        // Seiten mit Links zugestopft werden; der Inhalt des Hubs *ist* die
+        // Linkliste, und sie wächst mit jeder neuen Seite. Bei 37 Seiten lag er
+        // bei 42 Links – die Grenze wäre dort dauerhaft und ohne Erkenntnisgewinn
+        // verletzt, während sie für jede andere Seite ihren Zweck behält.
+        if (!seite.istHub && seite.linksImMain !== undefined
+            && seite.linksImMain > grenzwerte.maxLinksProSeite) {
             verstoesse.push({
                 regel: "zu-viele-links",
                 seite: seite.slug,

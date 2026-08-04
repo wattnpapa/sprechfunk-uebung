@@ -5,7 +5,9 @@
 // Damit prüft der Vitest-Test genau den Code, der auch den Build erzeugt – eine
 // zweite Nachbildung im Test würde irgendwann auseinanderlaufen.
 
-import { HUB_CATEGORIES, HUB_SLUG, SITE_PAGES } from "../site-pages.mjs";
+import { HUB_CATEGORIES, HUB_SLUG, SITE_PAGES, SITE_URL } from "../site-pages.mjs";
+import { ogUrl } from "./og-bilder.mjs";
+import { hatDiagramm, renderDiagramm } from "./diagramme.mjs";
 import { deutschesDatum, nurDatum } from "./lastmod.mjs";
 import { buildGraph, escapeHtml, renderFaqHtml } from "./schema-graph.mjs";
 import {
@@ -48,7 +50,7 @@ export const FAQ_PLATZHALTER = "<!-- AP-02:FAQ -->";
  */
 export function renderPageWithStructuredData({
     page, html: quelle, dateModified = null, beschreibungen = {}, alleSeiten = SITE_PAGES,
-    bestand = null
+    bestand = null, webpBilder = new Set()
 }) {
     const title = extractTitle(quelle);
     const description = extractMetaDescription(quelle);
@@ -72,6 +74,7 @@ export function renderPageWithStructuredData({
     // ersetzt, bevor FAQ-Block und Datumszeile daran verankert werden.
     let html = quelle;
     html = ersetzeBestandszahlen(html, bestand);
+    html = setzeOgBild(html, page, title);
     html = setzeHauptnavigation(html, page);
     html = ersetzeBreadcrumb(html, page);
     html = ersetzeFooter(html, page);
@@ -115,6 +118,8 @@ export function renderPageWithStructuredData({
 
     // Nach dem FAQ-Block, damit "Weiterlesen" der letzte Abschnitt vor dem
     // Footer ist – und vor der Seitenleiste, die </main> verschiebt.
+    html = setzeDiagramm(html, page);
+    html = setzePictureQuellen(html, webpBilder);
     html = setzeWeiterlesen(html, page, alleSeiten, beschreibungen);
     html = setzeWissenSidebar(html, page);
     html = setzeArtikelZeitstempel(html, page, dateModified);
@@ -124,6 +129,137 @@ export function renderPageWithStructuredData({
     return { html, graph, faq, terme, title, description, breadcrumb };
 }
 
+
+/**
+ * Hüllt Rasterbilder in <picture> mit WebP-Quelle (AP-10).
+ *
+ * Nur wenn zu einem PNG auch eine WebP-Datei vorliegt. Die Menge der
+ * vorhandenen Dateien gibt der Aufrufer herein, damit diese Datei ohne
+ * Dateizugriff bleibt.
+ *
+ * Warum nicht für jedes Bild: bei sechs der zwölf Rasterbilder ist WebP größer
+ * als das mit pngquant palettierte PNG (beim Meldevordruck um 188 Prozent).
+ * scripts/generate-webp.mjs erzeugt die Datei dort nicht, und ohne Datei
+ * entsteht hier auch keine <source> – ein <picture> mit größerer Quelle wäre
+ * eine Verschlechterung mit Fortschrittsanstrich.
+ */
+export function setzePictureQuellen(html, webpBilder) {
+    if (!webpBilder || webpBilder.size === 0) return html;
+
+    return html.replace(/<img\s[^>]*?>/g, tag => {
+        const src = /\bsrc="([^"]*)"/.exec(tag)?.[1];
+        if (!src || !src.endsWith(".png")) return tag;
+
+        // Pfad relativ zur Wurzel, damit er zur übergebenen Menge passt.
+        const relativ = src.replace(/^(\.\.\/)+/, "");
+        const webp = relativ.replace(/\.png$/, ".webp");
+        if (!webpBilder.has(webp)) return tag;
+
+        const webpSrc = src.replace(/\.png$/, ".webp");
+        return `<picture>`
+            + `<source srcset="${webpSrc}" type="image/webp">`
+            + tag
+            + `</picture>`;
+    });
+}
+
+/**
+ * Setzt das Diagramm der Seite ein (AP-10).
+ *
+ * Platz ist direkt hinter Inhaltsverzeichnis bzw. „Kurz gesagt“ – also über dem
+ * ersten Fachabschnitt. Damit steht es im sichtbaren Bereich, ohne die
+ * Einleitung vom Titel zu trennen.
+ *
+ * Inline-SVG statt <img>: kein zusätzlicher Request, skaliert verlustfrei, und
+ * über currentColor folgt es dem Dunkelmodus. width und height stehen im SVG,
+ * damit kein Layout Shift entsteht.
+ */
+export function setzeDiagramm(html, page) {
+    if (page.slug === undefined || page.slug === "" || page.inSitemap === false) return html;
+    if (!hatDiagramm(page.slug)) return html;
+
+    const figur = renderDiagramm(page.slug);
+
+    const tocEnde = html.indexOf('data-testid="inhaltsverzeichnis"');
+    if (tocEnde >= 0) {
+        const rest = html.slice(tocEnde);
+        const treffer = /<\/nav>\n?/.exec(rest);
+        if (treffer) {
+            const pos = tocEnde + treffer.index + treffer[0].length;
+            return `${html.slice(0, pos)}${figur}\n${html.slice(pos)}`;
+        }
+    }
+
+    const kurzEnde = html.indexOf('data-testid="kurz-gesagt"');
+    if (kurzEnde >= 0) {
+        const rest = html.slice(kurzEnde);
+        const treffer = /<\/section>\n?/.exec(rest);
+        if (treffer) {
+            const pos = kurzEnde + treffer.index + treffer[0].length;
+            return `${html.slice(0, pos)}${figur}\n${html.slice(pos)}`;
+        }
+    }
+
+    // Letzter Rückfall: vor den ersten Kartenblock nach der h1.
+    const h1 = html.search(/<h1[\s>]/i);
+    if (h1 < 0) return html;
+    const anker = /<(?:section|div)\s+class="[^"]*card[^"]*"/gi;
+    anker.lastIndex = h1;
+    const treffer = anker.exec(html);
+    if (!treffer) return html;
+    return `${html.slice(0, treffer.index)}${figur}\n${html.slice(treffer.index)}`;
+}
+
+/**
+ * Setzt das seitenindividuelle Social-Preview-Bild (AP-10).
+ *
+ * Vorher teilten sich alle Seiten ein Bild; in Chat- und Netzwerkvorschauen war
+ * damit nicht erkennbar, welche Seite geteilt wurde. Die Quelldateien tragen
+ * weiter einen Platzhalterpfad – maßgeblich ist, was hier eingesetzt wird, damit
+ * Dateiname und Tag garantiert aus derselben Ableitung stammen.
+ *
+ * `og:image:alt` bekommt den Seitentitel: er beschreibt, was im Bild steht,
+ * denn das Bild zeigt genau diesen Titel.
+ */
+export function setzeOgBild(html, page, titel) {
+    const url = ogUrl(page.slug ?? "", SITE_URL);
+    const alt = escapeHtml(String(titel ?? "").replace(/\s*\|\s*Sprechfunk Übungsgenerator\s*$/, ""));
+
+    let ergebnis = html
+        .replace(/(<meta property="og:image" content=")[^"]*(">)/, `$1${url}$2`)
+        .replace(/(<meta name="twitter:image" content=")[^"]*(">)/, `$1${url}$2`)
+        .replace(/(<meta property="og:image:alt" content=")[^"]*(">)/, `$1${alt}$2`);
+
+    // Rechtstexte tragen im Quelltext gar keine og-Bildtags. Ohne diesen Zweig
+    // hätten genau sie keine Vorschau – und der Ersetzungsversuch oben liefe
+    // stillschweigend ins Leere.
+    if (!/<meta property="og:image"/.test(ergebnis)) {
+        if (!ergebnis.includes("</head>")) {
+            throw new Error(`Seite "${page.slug || "/"}": kein </head> für die Bildtags.`);
+        }
+        return ergebnis.replace("</head>", `${[
+            `    <meta property="og:image" content="${url}">`,
+            '    <meta property="og:image:width" content="1200">',
+            '    <meta property="og:image:height" content="630">',
+            `    <meta property="og:image:alt" content="${alt}">`,
+            `    <meta name="twitter:image" content="${url}">`
+        ].join("\n")}\n</head>`);
+    }
+
+    // Einzelne fehlende Tags ergänzen. Die Rechtstexte haben og:image, aber
+    // kein twitter:image – ein Zweig, der nur beim Fehlen aller Tags greift,
+    // hätte genau sie übersehen.
+    const ergaenze = (marke, zeile) => {
+        if (new RegExp(marke).test(ergebnis)) return;
+        ergebnis = ergebnis.replace(
+            /(<meta property="og:image" content="[^"]*">)/,
+            `$1\n${zeile}`
+        );
+    };
+    ergaenze('<meta property="og:image:alt"', `    <meta property="og:image:alt" content="${alt}">`);
+    ergaenze('<meta name="twitter:image"', `    <meta name="twitter:image" content="${url}">`);
+    return ergebnis;
+}
 
 /**
  * Setzt die Bestandszahlen in den Fließtext ein (AP-08, Punkt 5).

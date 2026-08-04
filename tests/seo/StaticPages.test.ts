@@ -73,7 +73,11 @@ describe("Statische Seiten: SEO-Pflichtangaben", () => {
             const html = leseSeite(seite.source);
 
             expect(ogInhalt(html, "og:url")).toBe(canonicalUrl(seite.slug));
-            expect(ogInhalt(html, "og:image")).toBe(`${SITE_URL}/assets/og-image.png`);
+            // Der Pfad im Quelltext ist nur ein Platzhalter: seit AP-10 setzt
+            // der Build je Seite ihr eigenes Bild ein. Hier wird deshalb nur
+            // geprüft, dass überhaupt ein Bild und die Maße stehen – die
+            // Seitenindividualität prüft tests/seo/OgBilder.test.ts.
+            expect(ogInhalt(html, "og:image")).toMatch(new RegExp(`^${SITE_URL}/assets/`));
             expect(ogInhalt(html, "og:image:width")).toBe("1200");
             expect(ogInhalt(html, "og:image:height")).toBe("630");
         }
