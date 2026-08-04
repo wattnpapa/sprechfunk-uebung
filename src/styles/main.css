@@ -23,6 +23,31 @@
    1. Token-System
    ========================================================================== */
 
+/*
+ * Ersatzschrift mit angepassten Metriken gegen Layout Shift.
+ *
+ * @fontsource liefert Archivo mit font-display: swap. Beim Wechsel von der
+ * Ersatz- zur Webschrift brach der Text neu um: gemessen am 2026-08-04 ergab
+ * das einen Cumulative Layout Shift von bis zu 0,3599 – die Einleitungskarte
+ * verlor eine Zeile, alles darunter rutschte 22 Pixel nach oben.
+ *
+ * Gemessen ist Arial nur 0,15 Prozent schmaler als Archivo (2607 gegen 2611
+ * Pixel für dieselbe Zeile bei 100px). Mit size-adjust und den Metriken der
+ * Webschrift bricht der Ersatz praktisch identisch um, und der Wechsel
+ * verschiebt nichts mehr.
+ */
+@font-face {
+    font-family: "Archivo Ersatz";
+    src: local("Arial"), local("Helvetica Neue"), local("Liberation Sans"), local("Nimbus Sans");
+    size-adjust: 100.15%;
+    /* Gemessen an Archivo selbst: Ascent 88 %, Descent 21 % der Schriftgröße.
+       Ohne diese Angaben übernimmt der Ersatz die Metriken von Arial (91/21)
+       und die Zeilenhöhe wechselt beim Laden. */
+    ascent-override: 88%;
+    descent-override: 21%;
+    line-gap-override: 0%;
+}
+
 :root {
     color-scheme: light;
 
@@ -83,7 +108,7 @@
     --ziel: 0rem;
 
     /* Schrift */
-    --schrift: "Archivo Variable", Archivo, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    --schrift: "Archivo Variable", Archivo, "Archivo Ersatz", Arial, Helvetica, sans-serif;
     --schrift-daten: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace;
 
     --t-xs: 0.75rem;
@@ -3051,4 +3076,28 @@ html:has(> body[data-theme="startrek"]) {
 [data-theme="startrek"] .main-footer a {
     color: var(--lcars-himmel);
     text-decoration-color: var(--lcars-himmel);
+}
+
+/*
+ * Diagramme der Inhaltsseiten (AP-10).
+ *
+ * width und height stehen am SVG, damit der Browser das Seitenverhältnis vor
+ * dem Layout kennt. Ohne max-width würde ein 784 Pixel breites Diagramm auf
+ * dem Smartphone über den Rand laufen und den Text umbrechen – gemessen als
+ * Layout Shift von 0,119 auf /funkuebung-szenarien/.
+ */
+.seiten-diagramm {
+    display: block;
+    max-width: 100%;
+    height: auto;
+    margin: 0 auto;
+    color: var(--bs-body-color, currentColor);
+}
+
+.seiten-diagramm-rahmen {
+    margin-inline: 0;
+}
+
+.seiten-diagramm-rahmen figcaption {
+    text-align: center;
 }

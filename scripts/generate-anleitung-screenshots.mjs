@@ -3,10 +3,11 @@
 //   npm run build && npm run serve   (in einem zweiten Terminal)
 //   npm run anleitung:screenshots
 // Die Bilder werden eingecheckt, damit der normale Build ohne Browser auskommt.
-// Nachbearbeitung vor dem Commit (Bildgröße halbieren und komprimieren):
-//   cd assets/anleitung
-//   for f in *.png; do sips --resampleWidth 1600 "$f"; done   # nur Bilder > 1600px
-//   npx -y pngquant-bin --quality=70-90 --speed 1 --ext .png --force *.png
+// Die Nachbearbeitung (Breite begrenzen, palettieren) macht das Skript selbst.
+// Sie war früher als manuelle Schritte dokumentiert – und genau deshalb bei
+// neuen Aufnahmen nicht angewendet: die Bilder lagen bei bis zu 578 KB, weit
+// über der Grenze von 200 KB. Danach werden die width/height-Attribute in
+// src/pages/anleitung.html an die tatsächlichen Maße angepasst.
 //
 // Läuft komplett gegen den lokalen Mock-Firestore (localStorage), es werden
 // keine echten Firebase-Daten gelesen oder geschrieben.
@@ -15,7 +16,10 @@
 
 import { mkdir } from "node:fs/promises";
 import path from "node:path";
+import { promisify } from "node:util";
 import { chromium } from "@playwright/test";
+
+import { AUFNAHME_NAMEN, aufnahmenDerPhase } from "./screenshots.config.mjs";
 
 const BASE = process.env.ANLEITUNG_BASE_URL ?? "http://127.0.0.1:3000";
 const OUT = path.join(process.cwd(), "assets", "anleitung");
@@ -154,6 +158,22 @@ await page.screenshot({ path: path.join(OUT, "teilnehmer-vordruck.png") });
 console.log("✓ teilnehmer-vordruck");
 await page.keyboard.press("Escape");
 
+// Teilnehmeransicht auf dem Smartphone: eigener Kontext, damit die
+// Bildschirmbreite nicht die übrigen Aufnahmen beeinflusst.
+const mobil = aufnahmenDerPhase("teilnehmer").find(a => a.name === "teilnehmer-smartphone");
+// Bewusst dieselbe Browser-Sitzung: der Mock-Firestore liegt im localStorage,
+// und ein neuer Kontext hätte einen eigenen – die erzeugte Übung wäre dort
+// nicht vorhanden. Geändert wird nur die Fenstergröße.
+const mobilSeite = await context.newPage();
+await mobilSeite.setViewportSize(mobil.viewport);
+await mobilSeite.goto(`${BASE}/#/teilnehmer/${uebungId}/${teilnehmerCode}`);
+await mobilSeite.reload();
+await mobilSeite.waitForSelector("#teilnehmerNachrichtenBody tr");
+await mobilSeite.waitForTimeout(600);
+await mobilSeite.screenshot({ path: path.join(OUT, "teilnehmer-smartphone.png") });
+console.log("✓ teilnehmer-smartphone");
+await mobilSeite.close();
+
 // ---------------------------------------------------------- Übungsleitung
 await page.goto(`${BASE}/#/uebungsleitung/${uebungId}`);
 await page.reload();
@@ -180,5 +200,118 @@ await page.screenshot({
 });
 console.log("✓ uebungsleitung-nachrichten");
 
+// ----------------------------------------------------------------- X-Zeit
+// Zweiter Lauf: das Cockpit der Übungsleitung existiert nur im X-Zeit-Modus
+// (uebungsleitung/index.ts, initCockpit). Deshalb eine eigene Übung.
+await page.goto(`${BASE}/`);
+await page.waitForSelector("#funkspruchVorlage option[value='thwleer']");
+await page.locator("#nameDerUebung").fill("Zeitversetzte Übung");
+await page.locator("#rufgruppe").fill("T_OL_GOLD-1");
+await page.locator("#spielModusXZeit").check();
+await page.waitForSelector("#xZeitOptionsContainer", { state: "visible" });
+await page.locator("#xZeitIntervallMinuten").fill("2");
+await page.locator("#xZeitStartOffsetMinuten").fill("5");
+
+const xInputs = page.locator("#teilnehmer-body .teilnehmer-input");
+while ((await xInputs.count()) < 3) {
+    await page.locator("#addTeilnehmerBtn").click();
+}
+for (let i = 0; i < await xInputs.count(); i++) {
+    await xInputs.nth(i).fill(`Heros Oldenburg 2${i + 1}/1${i + 1}`);
+}
+await page.locator("#spruecheProTeilnehmer").fill("6");
+await page.selectOption("#funkspruchVorlage", ["thwleer"]);
+await page.waitForTimeout(400);
+
+// Die Kopfdaten-Karte zeigt jetzt Intervall und Start-Offset.
+await shot(page.locator(".generator-setup-layout > div > .card").nth(0), "generator-x-zeit");
+
+await page.locator("#startUebungBtn").click();
+await page.waitForSelector("#uebung-links", { state: "visible" });
+await page.waitForTimeout(600);
+
+const xLinks = await page.locator("#links-teilnehmer-container .generator-link-row").evaluateAll(rows =>
+    rows.map(row => ({
+        type: row.getAttribute("data-link-type"),
+        url: row.querySelector(".generator-link-url code")?.textContent?.trim() ?? ""
+    }))
+);
+const xUebungId = (xLinks.find(l => l.type === "übung")?.url ?? "").split("/").pop();
+if (!xUebungId) throw new Error("X-Zeit-Übung: Übungs-Link nicht gefunden");
+
+await page.goto(`${BASE}/#/uebungsleitung/${xUebungId}`);
+await page.reload();
+await page.waitForSelector("#uebungsleitungTeilnehmer tr");
+// Basiszeit setzen, damit Laufzeit und Plan-Vergleich Werte zeigen.
+await page.waitForSelector("#uebungsleitungCockpit:not(.d-none)");
+// Basiszeit auf jetzt setzen, damit Laufzeit, X-Zeit und Plan-Vergleich Werte
+// zeigen statt Platzhalterstriche.
+await page.locator("#btn-cockpit-xzeit-jetzt").click();
+await page.waitForTimeout(1500);
+const cockpit = page.locator("#uebungsleitungCockpit");
+await cockpit.scrollIntoViewIfNeeded();
+await shot(cockpit, "uebungsleitung-cockpit");
+
 await browser.close();
-console.log(`Screenshots geschrieben nach: ${path.relative(process.cwd(), OUT)}`);
+
+// ------------------------------------------------------- Nachbearbeitung
+// Breite auf 1600 begrenzen und palettieren. Ohne diesen Schritt liegen die
+// Aufnahmen bei deviceScaleFactor 2 im Bereich mehrerer hundert Kilobyte.
+const { execFile: execFileCb } = await import("node:child_process");
+const lauf = promisify(execFileCb);
+const MAX_BREITE = 1600;
+const dateienNach = (await import("node:fs/promises")).readdir;
+
+for (const name of await dateienNach(OUT)) {
+    if (!name.endsWith(".png")) continue;
+    const datei = path.join(OUT, name);
+    const kopf = await (await import("node:fs/promises")).readFile(datei);
+    const breite = kopf.readUInt32BE(16);
+    if (breite > MAX_BREITE) {
+        await lauf("sips", ["--resampleWidth", String(MAX_BREITE), datei]);
+    }
+}
+await lauf("npx", ["-y", "pngquant-bin", "--quality=70-90", "--speed", "1",
+    "--ext", ".png", "--force", path.join(OUT, "*.png")], { shell: true });
+
+// width und height in der Anleitung an die tatsächlichen Maße anpassen: nach
+// dem Skalieren stimmen die alten Werte nicht mehr, und ein falsches
+// Seitenverhältnis erzeugt genau den Layout Shift, den die Attribute
+// verhindern sollen.
+const { readFile: leseDatei, writeFile: schreibeDatei } = await import("node:fs/promises");
+const anleitungPfad = path.join(process.cwd(), "src", "pages", "anleitung.html");
+let anleitung = await leseDatei(anleitungPfad, "utf8");
+let angepasst = 0;
+for (const name of await dateienNach(OUT)) {
+    if (!name.endsWith(".png")) continue;
+    const roh = await leseDatei(path.join(OUT, name));
+    const breite = roh.readUInt32BE(16);
+    const hoehe = roh.readUInt32BE(20);
+    const muster = new RegExp(
+        `(<img[^>]*src="\\.\\./assets/anleitung/${name.replace(".", "\\.")}"[\\s\\S]*?)width="\\d+" height="\\d+"`,
+        "g"
+    );
+    const vorher = anleitung;
+    anleitung = anleitung.replace(muster, `$1width="${breite}" height="${hoehe}"`);
+    if (anleitung !== vorher) angepasst++;
+}
+await schreibeDatei(anleitungPfad, anleitung, "utf8");
+console.log(`\nMaße in anleitung.html angepasst: ${angepasst}`);
+
+// Soll-Ist-Abgleich gegen die Konfiguration: eine fehlende Aufnahme darf nicht
+// unbemerkt bleiben, sonst zeigt die Anleitung irgendwann einen alten Stand.
+const { access } = await import("node:fs/promises");
+const fehlend = [];
+for (const name of AUFNAHME_NAMEN) {
+    try {
+        await access(path.join(OUT, `${name}.png`));
+    } catch {
+        fehlend.push(name);
+    }
+}
+if (fehlend.length > 0) {
+    console.error(`\nFehlende Aufnahmen: ${fehlend.join(", ")}`);
+    process.exit(1);
+}
+
+console.log(`\n${AUFNAHME_NAMEN.length} Aufnahmen geschrieben nach: ${path.relative(process.cwd(), OUT)}`);

@@ -11,9 +11,9 @@ Inhaltsverzeichnis, Metazeile, Seitenleiste und Weiterlesen-Block sind abgezogen
 
 | Seite | Wörter | Ziel | Titel | Desc | gzip |
 | --- | ---: | ---: | ---: | ---: | ---: |
-| `/digitale-funkuebung/` | 826 | 800 | 51 | 152 | 8 KB |
 | `/meldevordruck/` | 831 | 800 | 51 | 150 | 8 KB |
 | `/funkrufnamen-thw/` | 832 | 800 | 51 | 149 | 9 KB |
+| `/digitale-funkuebung/` | 836 | 800 | 51 | 152 | 8 KB |
 | `/funkrufnamen/` | 846 | 800 | 55 | 155 | 9 KB |
 | `/wissen/` | 847 | 800 | 53 | 155 | 11 KB |
 | `/faq/` | 854 | 800 | 53 | 149 | 9 KB |
@@ -35,9 +35,9 @@ Inhaltsverzeichnis, Metazeile, Seitenleiste und Weiterlesen-Block sind abgezogen
 | `/alternative/` | 1120 | 800 | 56 | 149 | 9 KB |
 | `/funkuebung-feuerwehr/` | 1135 | 1100 | 51 | 156 | 9 KB |
 | `/uebungsfunkverkehr/` | 1155 | 800 | 52 | 155 | 10 KB |
-| `/x-zeit/` | 1170 | 800 | 53 | 153 | 9 KB |
 | `/sprechfunk-regeln/` | 1172 | 800 | 54 | 147 | 10 KB |
-| `/regiebuch-funkuebung/` | 1221 | 1100 | 52 | 157 | 9 KB |
+| `/x-zeit/` | 1179 | 800 | 53 | 153 | 9 KB |
+| `/regiebuch-funkuebung/` | 1234 | 1100 | 52 | 157 | 9 KB |
 | `/anleitung/` | 1262 | 800 | 51 | 154 | 11 KB |
 | `/buchstabiertafel/` | 1273 | 800 | 53 | 157 | 11 KB |
 | `/funkuebung-szenarien/` | 1291 | 1200 | 51 | 149 | 10 KB |

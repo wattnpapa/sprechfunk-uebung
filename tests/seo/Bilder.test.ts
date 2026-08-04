@@ -5,6 +5,9 @@ import { describe, expect, it } from "vitest";
 
 import { SITE_PAGES } from "../../scripts/site-pages.mjs";
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+// @ts-ignore
+import { AUFNAHMEN, PHASEN } from "../../scripts/screenshots.config.mjs";
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-ignore -- reine JS-Hilfsmodule ohne Typdeklarationen, absichtlich .mjs
 import { DIAGRAMME, DIAGRAMM_SLUGS, hatDiagramm, renderDiagramm } from "../../scripts/lib/diagramme.mjs";
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
@@ -244,6 +247,49 @@ describe("Diagramme sind zugänglich und maßhaltig", () => {
             // ordnet ein, der andere ersetzt das Bild.
             expect(eintrag.alt, `${slug}: Alt-Text gleicht der Bildunterschrift`)
                 .not.toBe(eintrag.beschreibung);
+        }
+    });
+});
+
+describe("Aufnahmen stimmen mit der Konfiguration überein", () => {
+    it("liefert für jede konfigurierte Ansicht eine Datei", () => {
+        for (const eintrag of AUFNAHMEN as { name: string; beschreibung: string }[]) {
+            const datei = path.join(ROOT, "assets", "anleitung", `${eintrag.name}.png`);
+            expect(existsSync(datei),
+                `${eintrag.name}.png fehlt – "npm run anleitung:screenshots" ausführen`).toBe(true);
+        }
+    });
+
+    it("führt keine Aufnahme ohne Eintrag in der Konfiguration", () => {
+        // Sonst bleibt beim Umbenennen einer Ansicht eine Datei liegen, die
+        // niemand mehr pflegt.
+        const erwartet = new Set((AUFNAHMEN as { name: string }[]).map(e => `${e.name}.png`));
+        for (const name of readdirSync(path.join(ROOT, "assets", "anleitung"))) {
+            if (!name.endsWith(".png")) continue;
+            expect(erwartet.has(name), `${name} steht in keiner Konfiguration`).toBe(true);
+        }
+    });
+
+    it("beschreibt jede Ansicht und ordnet sie einer Phase zu", () => {
+        for (const eintrag of AUFNAHMEN as { name: string; phase: string; beschreibung: string }[]) {
+            expect(PHASEN as string[], `${eintrag.name}: unbekannte Phase`).toContain(eintrag.phase);
+            expect(eintrag.beschreibung.length, `${eintrag.name}: Beschreibung fehlt`)
+                .toBeGreaterThan(20);
+        }
+    });
+
+    it("deckt die vom Arbeitspaket verlangten Ansichten ab", () => {
+        const namen = (AUFNAHMEN as { name: string }[]).map(e => e.name);
+        for (const pflicht of [
+            "generator-x-zeit",          // X-Zeit-Konfiguration
+            "uebungsleitung-nachrichten", // Nachrichtenplan der Übungsleitung
+            "uebungsleitung-cockpit",     // Live-Status und Funklast
+            "teilnehmer-smartphone",      // Teilnehmeransicht auf dem Smartphone
+            "teilnehmer-vordruck",        // generierter Meldevordruck
+            "generator-statistik",        // Statistik-Ansicht
+            "generator-links"             // Ergebnis-Links
+        ]) {
+            expect(namen, `Ansicht ${pflicht} fehlt in der Konfiguration`).toContain(pflicht);
         }
     });
 });

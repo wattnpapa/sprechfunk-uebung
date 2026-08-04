@@ -59,7 +59,8 @@
     "test:e2e:seo": "playwright test -g \"@seo\"",
     "links:check": "node scripts/check-internal-links.mjs --strict",
     "content:check": "node scripts/check-content-quality.mjs --strict",
-    "bilder:webp": "node scripts/generate-webp.mjs"
+    "bilder:webp": "node scripts/generate-webp.mjs",
+    "cls:check": "node scripts/check-cls.mjs"
   },
   "devDependencies": {
     "@axe-core/playwright": "^4.12.1",
