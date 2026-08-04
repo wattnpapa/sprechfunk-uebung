@@ -50,7 +50,7 @@ export const FAQ_PLATZHALTER = "<!-- AP-02:FAQ -->";
  */
 export function renderPageWithStructuredData({
     page, html: quelle, dateModified = null, beschreibungen = {}, alleSeiten = SITE_PAGES,
-    bestand = null
+    bestand = null, webpBilder = new Set()
 }) {
     const title = extractTitle(quelle);
     const description = extractMetaDescription(quelle);
@@ -119,6 +119,7 @@ export function renderPageWithStructuredData({
     // Nach dem FAQ-Block, damit "Weiterlesen" der letzte Abschnitt vor dem
     // Footer ist – und vor der Seitenleiste, die </main> verschiebt.
     html = setzeDiagramm(html, page);
+    html = setzePictureQuellen(html, webpBilder);
     html = setzeWeiterlesen(html, page, alleSeiten, beschreibungen);
     html = setzeWissenSidebar(html, page);
     html = setzeArtikelZeitstempel(html, page, dateModified);
@@ -128,6 +129,39 @@ export function renderPageWithStructuredData({
     return { html, graph, faq, terme, title, description, breadcrumb };
 }
 
+
+/**
+ * Hüllt Rasterbilder in <picture> mit WebP-Quelle (AP-10).
+ *
+ * Nur wenn zu einem PNG auch eine WebP-Datei vorliegt. Die Menge der
+ * vorhandenen Dateien gibt der Aufrufer herein, damit diese Datei ohne
+ * Dateizugriff bleibt.
+ *
+ * Warum nicht für jedes Bild: bei sechs der zwölf Rasterbilder ist WebP größer
+ * als das mit pngquant palettierte PNG (beim Meldevordruck um 188 Prozent).
+ * scripts/generate-webp.mjs erzeugt die Datei dort nicht, und ohne Datei
+ * entsteht hier auch keine <source> – ein <picture> mit größerer Quelle wäre
+ * eine Verschlechterung mit Fortschrittsanstrich.
+ */
+export function setzePictureQuellen(html, webpBilder) {
+    if (!webpBilder || webpBilder.size === 0) return html;
+
+    return html.replace(/<img\s[^>]*?>/g, tag => {
+        const src = /\bsrc="([^"]*)"/.exec(tag)?.[1];
+        if (!src || !src.endsWith(".png")) return tag;
+
+        // Pfad relativ zur Wurzel, damit er zur übergebenen Menge passt.
+        const relativ = src.replace(/^(\.\.\/)+/, "");
+        const webp = relativ.replace(/\.png$/, ".webp");
+        if (!webpBilder.has(webp)) return tag;
+
+        const webpSrc = src.replace(/\.png$/, ".webp");
+        return `<picture>`
+            + `<source srcset="${webpSrc}" type="image/webp">`
+            + tag
+            + `</picture>`;
+    });
+}
 
 /**
  * Setzt das Diagramm der Seite ein (AP-10).

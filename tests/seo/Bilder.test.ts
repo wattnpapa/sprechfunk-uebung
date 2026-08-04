@@ -1,4 +1,4 @@
-import { readFileSync, statSync } from "node:fs";
+import { existsSync, readFileSync, readdirSync, statSync } from "node:fs";
 import path from "node:path";
 
 import { describe, expect, it } from "vitest";
@@ -25,12 +25,34 @@ const inhaltsseiten = alleSeiten.filter(seite => seite.slug !== "" && seite.inSi
 
 const leseQuelle = (source: string) => readFileSync(path.join(ROOT, "src", source), "utf8");
 
-/** Die fertig gerenderte Seite – nur so sind die injizierten Diagramme dabei. */
+/** Vorhandene WebP-Fassungen, wie der Build sie ermittelt. */
+const webpMenge = (): Set<string> => {
+    const menge = new Set<string>();
+    const durchlaufen = (verzeichnis: string, praefix: string): void => {
+        for (const eintrag of readdirSync(verzeichnis, { withFileTypes: true })) {
+            const relativ = `${praefix}/${eintrag.name}`;
+            if (eintrag.isDirectory()) {
+                durchlaufen(path.join(verzeichnis, eintrag.name), relativ);
+            } else if (eintrag.name.endsWith(".webp")) {
+                menge.add(relativ);
+            }
+        }
+    };
+    durchlaufen(path.join(ROOT, "assets"), "assets");
+    return menge;
+};
+
+/**
+ * Die fertig gerenderte Seite – nur so sind Diagramme und picture-Elemente
+ * dabei. webpBilder muss mit, sonst entstünde keine <source> und der Test
+ * prüfte etwas anderes als der Build erzeugt.
+ */
 const rendere = (seite: Seite): string => renderPageWithStructuredData({
     page: seite,
     html: leseQuelle(seite.source),
     dateModified: "2026-08-04",
-    bestand: BESTAND
+    bestand: BESTAND,
+    webpBilder: webpMenge()
 }).html;
 
 const bilderIn = (html: string): string[] => html.match(/<img[\s\S]*?>/g) ?? [];
@@ -222,6 +244,52 @@ describe("Diagramme sind zugänglich und maßhaltig", () => {
             // ordnet ein, der andere ersetzt das Bild.
             expect(eintrag.alt, `${slug}: Alt-Text gleicht der Bildunterschrift`)
                 .not.toBe(eintrag.beschreibung);
+        }
+    });
+});
+
+describe("WebP-Auslieferung über picture", () => {
+    it("liefert jede WebP-Datei kleiner als ihr PNG", () => {
+        // Kernaussage der Messung: WebP ist nicht per se kleiner. Bei
+        // palettierten Oberflächenaufnahmen war es bis zu 188 Prozent größer.
+        // Es darf nur dort liegen, wo es gewinnt.
+        for (const webp of webpMenge()) {
+            const png = webp.replace(/\.webp$/, ".png");
+            const pfadWebp = path.join(ROOT, webp);
+            const pfadPng = path.join(ROOT, png);
+            if (!existsSync(pfadPng)) continue;
+            expect(statSync(pfadWebp).size,
+                `${webp} ist größer als ${png} – dann gehört die Datei nicht dorthin`)
+                .toBeLessThan(statSync(pfadPng).size);
+        }
+    });
+
+    it("hüllt genau die Bilder mit WebP-Schwester in picture", () => {
+        const menge = webpMenge();
+        for (const seite of alleSeiten) {
+            const html = rendere(seite);
+            for (const bild of bilderIn(html)) {
+                const src = /\bsrc="([^"]*)"/.exec(bild)?.[1];
+                if (src === undefined || !src.endsWith(".png")) continue;
+                const relativ = src.replace(/^(\.\.\/)+/, "");
+                const hatWebp = menge.has(relativ.replace(/\.png$/, ".webp"));
+                const inPicture = html.includes(`<source srcset="${src.replace(/\.png$/, ".webp")}"`);
+                expect(inPicture,
+                    `${seite.slug || "/"}: ${relativ} ${hatWebp ? "hat WebP, aber keine source" : "hat keine WebP-Datei, aber eine source"}`)
+                    .toBe(hatWebp);
+            }
+        }
+    });
+
+    it("behält das img als Fallback im picture", () => {
+        const html = rendere(alleSeiten.find(seite => seite.slug === "anleitung")!);
+        expect(html).toContain("<picture>");
+        // Ohne <img> im <picture> zeigen ältere Browser nichts an.
+        const stellen = [...html.matchAll(/<picture>[\s\S]*?<\/picture>/g)];
+        expect(stellen.length).toBeGreaterThan(0);
+        for (const [block] of stellen) {
+            expect(block).toContain("<img");
+            expect(block).toContain('type="image/webp"');
         }
     });
 });

@@ -84,7 +84,11 @@ async function leseSeite(page) {
         archiv: page.archiv === true,
         eigeneWoerter: zaehleWoerter(plainText(ohneListe(inhalt))),
         text: plainText(prosa(html)),
-        absaetze: [...inhalt.matchAll(/<p[^>]*>([\s\S]*?)<\/p>/gi)].map(treffer => plainText(treffer[1])),
+        // Der Lookahead unterscheidet <p> von <picture>, <path> und <pre>:
+        // ohne ihn maß die Regel ein <picture>-Element als Absatz und meldete
+        // auf /anleitung/ einen „Absatz“ mit 157 Wörtern Bildmarkup.
+        absaetze: [...inhalt.matchAll(/<p(?=[\s>])[^>]*>([\s\S]*?)<\/p>/gi)]
+            .map(treffer => plainText(treffer[1])),
         ankerZiele: [...html.matchAll(/data-testid="inhaltsverzeichnis"[\s\S]*?<\/nav>/gi)]
             .flatMap(block => [...block[0].matchAll(/href="#([^"]+)"/g)].map(treffer => treffer[1])),
         ankerVorhanden: [...html.matchAll(/\bid="([^"]+)"/g)].map(treffer => treffer[1]),

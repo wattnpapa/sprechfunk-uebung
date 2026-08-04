@@ -38,6 +38,22 @@ async function lastmodFuerSeite(page) {
  * /wissen/ die Texte aller anderen Seiten braucht. Ein zweiter, handgepflegter
  * Beschreibungstext in der Registry würde von den Seiten abweichen.
  */
+// Vorhandene WebP-Fassungen (AP-10). Nur wo eine Datei liegt, entsteht eine
+// <source>; erzeugt werden sie von scripts/generate-webp.mjs.
+async function sammleWebp(verzeichnis, praefix = "assets", gesammelt = new Set()) {
+    const { readdir } = await import("node:fs/promises");
+    for (const eintrag of await readdir(verzeichnis, { withFileTypes: true })) {
+        const relativ = `${praefix}/${eintrag.name}`;
+        if (eintrag.isDirectory()) {
+            await sammleWebp(path.join(verzeichnis, eintrag.name), relativ, gesammelt);
+        } else if (eintrag.name.endsWith(".webp")) {
+            gesammelt.add(relativ);
+        }
+    }
+    return gesammelt;
+}
+const webpBilder = await sammleWebp(path.join(root, "assets"));
+
 const beschreibungen = {};
 for (const page of SITE_PAGES) {
     const quelle = await readFile(path.join(root, "src", page.source), "utf8");
@@ -147,7 +163,8 @@ async function withStructuredData(page, quelle) {
         html: quelle,
         dateModified: await lastmodFuerSeite(page),
         beschreibungen,
-        bestand: BESTAND
+        bestand: BESTAND,
+        webpBilder
     });
     return html;
 }
