@@ -30,7 +30,7 @@
       "position": 6.9
     },
     {
-      "keys": ["funkuebung.de", "https://sprechfunk-uebung.de/"],
+      "keys": ["beispiel-anbieter.example", "https://sprechfunk-uebung.de/"],
       "clicks": 1,
       "impressions": 25,
       "ctr": 0.04,

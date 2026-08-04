@@ -58,18 +58,34 @@ describe("keywordsByGroup", () => {
         expect(gruppen.primary).toHaveLength(8);
     });
 
+    // Mehrfachzugehörigkeit wird mit einem erfundenen Begriff geprüft, nicht mit
+    // einem echten Anbieter aus der Konfiguration: die Eigenschaft gehört dem
+    // Code, nicht der Keyword-Liste, und der Test soll nicht brechen, wenn sich
+    // die verfolgten Begriffe ändern.
+    const MEHRFACH = {
+        primary: ["funkübung"],
+        secondary: [],
+        defensive: ["beispiel-anbieter.example"],
+        competitors: ["beispiel-anbieter.example"]
+    };
+
     it("behält Keywords, die in mehreren Gruppen stehen, in jeder Gruppe", () => {
+        const gruppen = keywordsByGroup(MEHRFACH);
+        expect(gruppen.defensive).toContain("beispiel-anbieter.example");
+        expect(gruppen.competitors).toContain("beispiel-anbieter.example");
+    });
+
+    it("kommt mit leeren Gruppen zurecht", () => {
         const gruppen = keywordsByGroup(keywords);
-        expect(gruppen.defensive).toContain("funkuebung.de");
-        expect(gruppen.competitors).toContain("funkuebung.de");
+        expect(gruppen.competitors).toEqual([]);
     });
 
     it("bildet die Vereinigungsmenge ohne Duplikate", () => {
-        const alle = flattenKeywords(keywords);
-        expect(alle.has("funkuebung.de")).toBe(true);
+        const alle = flattenKeywords(MEHRFACH);
+        expect(alle.has("beispiel-anbieter.example")).toBe(true);
         expect(alle.size).toBeLessThan(
-            keywords.primary.length + keywords.secondary.length
-            + keywords.defensive.length + keywords.competitors.length
+            MEHRFACH.primary.length + MEHRFACH.secondary.length
+            + MEHRFACH.defensive.length + MEHRFACH.competitors.length
         );
     });
 });
@@ -100,8 +116,16 @@ describe("summarizeTracked", () => {
     });
 
     it("führt ein mehrfach zugeordnetes Keyword in beiden Gruppen mit denselben Werten", () => {
-        const defensiv = tracked.defensive.find(k => k.keyword === "funkuebung.de");
-        const wettbewerb = tracked.competitors.find(k => k.keyword === "funkuebung.de");
+        // Eigene Gruppen statt der ausgelieferten Konfiguration: dort steht
+        // bewusst kein Anbietername mehr.
+        const eigene = summarizeTracked(parseSearchAnalyticsRows(fixture), {
+            primary: [],
+            secondary: [],
+            defensive: ["beispiel-anbieter.example"],
+            competitors: ["beispiel-anbieter.example"]
+        });
+        const defensiv = eigene.defensive.find(k => k.keyword === "beispiel-anbieter.example");
+        const wettbewerb = eigene.competitors.find(k => k.keyword === "beispiel-anbieter.example");
         expect(defensiv.found).toBe(true);
         expect(wettbewerb).toEqual(defensiv);
     });
