@@ -57,7 +57,8 @@
     "deps:audit": "npm audit --omit=dev --audit-level=high",
     "perf:budget": "node scripts/check-performance-budget.mjs",
     "test:e2e:seo": "playwright test -g \"@seo\"",
-    "links:check": "node scripts/check-internal-links.mjs --strict"
+    "links:check": "node scripts/check-internal-links.mjs --strict",
+    "content:check": "node scripts/check-content-quality.mjs --strict"
   },
   "devDependencies": {
     "@axe-core/playwright": "^4.12.1",

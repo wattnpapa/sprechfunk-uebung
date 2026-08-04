@@ -9,6 +9,7 @@ import { HUB_CATEGORIES, HUB_SLUG, SITE_PAGES } from "../site-pages.mjs";
 import { deutschesDatum, nurDatum } from "./lastmod.mjs";
 import { buildGraph, escapeHtml, renderFaqHtml } from "./schema-graph.mjs";
 import {
+    relativerPfad,
     breadcrumbFuer,
     renderBreadcrumb,
     renderFooter,
@@ -18,6 +19,9 @@ import {
     renderWissenSidebar
 } from "./navigation.mjs";
 import {
+    slugFuerUeberschrift,
+    lesezeitMinuten,
+    zaehleWoerter,
     extractDefinedTerms,
     extractFaqFromHtml,
     extractMetaDescription,
@@ -84,15 +88,114 @@ export function renderPageWithStructuredData({
         terme
     });
 
+    // Erst IDs vergeben, dann das Verzeichnis daraus bauen – sonst verweist es
+    // auf Anker, die es noch nicht gibt.
+    html = ergaenzeUeberschriftIds(html);
+    html = setzeEinleitungsbloecke(html, page);
+
     // Nach dem FAQ-Block, damit "Weiterlesen" der letzte Abschnitt vor dem
     // Footer ist – und vor der Seitenleiste, die </main> verschiebt.
     html = setzeWeiterlesen(html, page, alleSeiten, beschreibungen);
     html = setzeWissenSidebar(html, page);
     html = setzeArtikelZeitstempel(html, page, dateModified);
-    html = setzeSichtbaresDatum(html, dateModified);
+    html = setzeSichtbaresDatum(html, dateModified, page);
     html = ersetzeJsonLd(html, graph);
     pruefeFaqSichtbar(page, faq, html);
     return { html, graph, faq, terme, title, description, breadcrumb };
+}
+
+
+/** Grenze, ab der eine Seite ein Inhaltsverzeichnis bekommt (AP-06). */
+export const TOC_AB_H2 = 4;
+
+/** Bereiche, deren Überschriften nicht zum redaktionellen Inhalt gehören. */
+const GENERIERTE_ABSCHNITTE = [
+    /<footer[\s\S]*?<\/footer>/gi,
+    /<aside[\s\S]*?<\/aside>/gi,
+    /<section[^>]*data-testid="weiterlesen"[\s\S]*?<\/section>/gi
+];
+
+/** Nur der redaktionelle Teil einer Seite, ohne generierte Blöcke. */
+function redaktionellerTeil(html) {
+    const main = (html.match(/<main[\s\S]*?<\/main>/i) ?? [""])[0];
+    let rest = main;
+    for (const muster of GENERIERTE_ABSCHNITTE) rest = rest.replace(muster, " ");
+    return rest;
+}
+
+/**
+ * Gibt jeder redaktionellen h2 ohne id eine stabile id (AP-06).
+ * Ohne Anker lässt sich kein Inhaltsverzeichnis bauen und niemand kann auf
+ * einen Abschnitt verlinken.
+ */
+export function ergaenzeUeberschriftIds(html) {
+    const belegt = new Set([...html.matchAll(/\bid="([^"]+)"/g)].map(treffer => treffer[1]));
+
+    return html.replace(/<h2([^>]*)>([\s\S]*?)<\/h2>/gi, (ganz, attribute, inhalt) => {
+        if (/\bid=/.test(attribute)) return ganz;
+        let id = slugFuerUeberschrift(inhalt);
+        let zaehler = 2;
+        while (belegt.has(id)) id = `${slugFuerUeberschrift(inhalt)}-${zaehler++}`;
+        belegt.add(id);
+        return `<h2${attribute} id="${id}">${inhalt}</h2>`;
+    });
+}
+
+/** Baut das Inhaltsverzeichnis, sobald es mehr als TOC_AB_H2 Abschnitte gibt. */
+export function baueInhaltsverzeichnis(html) {
+    const abschnitte = [...redaktionellerTeil(html).matchAll(/<h2[^>]*\bid="([^"]+)"[^>]*>([\s\S]*?)<\/h2>/gi)]
+        .map(treffer => ({ id: treffer[1], titel: plainText(treffer[2]) }))
+        // FAQ, Weiterlesen und das Verzeichnis selbst sind eigene Blöcke.
+        .filter(eintrag => !["faq-titel", "weiterlesen-titel", "inhalt-titel"].includes(eintrag.id));
+
+    if (abschnitte.length <= TOC_AB_H2) return "";
+
+    const eintraege = abschnitte.map(eintrag =>
+        `                <li><a href="#${eintrag.id}">${escapeHtml(eintrag.titel)}</a></li>`).join("\n");
+
+    return `        <nav class="card shadow-sm my-4" id="inhalt" aria-labelledby="inhalt-titel" data-testid="inhaltsverzeichnis">
+            <div class="card-header"><h2 class="h5 mb-0" id="inhalt-titel">Inhalt</h2></div>
+            <div class="card-body">
+                <ol class="mb-0">
+${eintraege}
+                </ol>
+            </div>
+        </nav>
+`;
+}
+
+/** „Kurz gesagt“: beantwortet die Suchanfrage in drei bis vier Sätzen (AP-06). */
+export function baueKurzGesagt(page) {
+    if (!page.kurzGesagt) return "";
+    return `        <section class="card shadow-sm my-4" id="kurz-gesagt" aria-labelledby="kurz-gesagt-titel" data-testid="kurz-gesagt">
+            <div class="card-header"><h2 class="h5 mb-0" id="kurz-gesagt-titel">Kurz gesagt</h2></div>
+            <div class="card-body">
+                <p class="mb-0">${escapeHtml(page.kurzGesagt)}</p>
+            </div>
+        </section>
+`;
+}
+
+/**
+ * Setzt „Kurz gesagt“ und Inhaltsverzeichnis zwischen Einleitung und Hauptteil.
+ *
+ * Anker ist der erste Kartenblock nach der h1 – die Seiten nutzen teils
+ * <section class="card">, teils <div class="card mb-3">. Ein Anker auf
+ * </section> allein hätte sieben Seiten übersprungen.
+ */
+export function setzeEinleitungsbloecke(html, page) {
+    const bloecke = baueKurzGesagt(page) + baueInhaltsverzeichnis(html);
+    if (bloecke === "") return html;
+
+    const h1 = html.search(/<h1[\s>]/i);
+    if (h1 < 0) return html;
+
+    const anker = /<(?:section|div)\s+class="[^"]*card[^"]*"/gi;
+    anker.lastIndex = h1;
+    const treffer = anker.exec(html);
+    if (!treffer) return html;
+
+    return `${html.slice(0, treffer.index)}${bloecke}${html.slice(treffer.index)}`;
 }
 
 /**
@@ -241,11 +344,30 @@ export function setzeArtikelZeitstempel(html, page, dateModified) {
  * Ohne ermittelbares Datum oder ohne Brotkrumen bleibt die Seite unverändert –
  * lieber keine Angabe als eine erfundene.
  */
-export function setzeSichtbaresDatum(html, dateModified) {
-    if (!dateModified || !BREADCRUMB_ENDE.test(html)) return html;
+export function setzeSichtbaresDatum(html, dateModified, page = {}) {
+    if (!BREADCRUMB_ENDE.test(html)) return html;
+
+    const teile = [];
+    if (dateModified) {
+        teile.push(`Aktualisiert am <time datetime="${escapeHtml(nurDatum(dateModified))}">`
+            + `${escapeHtml(deutschesDatum(dateModified))}</time>`);
+    }
+
+    // Lesezeit aus dem redaktionellen Text, nicht aus der ganzen Seite:
+    // Navigation, Footer und Seitenleiste liest niemand mit.
+    const woerter = zaehleWoerter(sichtbarerText(redaktionellerTeil(html)));
+    if (woerter > 0) teile.push(`Lesezeit ca. ${lesezeitMinuten(woerter)} Minuten`);
+
+    // Autorenangabe verweist bis AP-11 auf das Impressum; dort steht der Autor.
+    if (page.slug !== undefined && page.inSitemap !== false) {
+        const impressum = relativerPfad(page.slug ?? "", "impressum");
+        teile.push(`von <a href="${impressum}">Johannes Rudolph</a>, `
+            + "Bereichsausbilder Sprechfunk (THW)");
+    }
+
+    if (teile.length === 0) return html;
     const zeile = `\n    <p class="container text-body-secondary small mt-2 mb-0" data-testid="aktualisiert-am">`
-        + `Aktualisiert am <time datetime="${escapeHtml(nurDatum(dateModified))}">`
-        + `${escapeHtml(deutschesDatum(dateModified))}</time></p>`;
+        + `${teile.join(" · ")}</p>`;
     return html.replace(BREADCRUMB_ENDE, `$1${zeile}`);
 }
 

@@ -182,6 +182,9 @@ jobs:
       - name: Check internal links
         run: npm run links:check
 
+      - name: Check content quality
+        run: npm run content:check
+
       - name: Check performance budget
         run: npm run perf:budget
 

@@ -4,17 +4,17 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Funktionen im Überblick: Funksprüche verteilen, PDF-Vordrucke, Live-Übungsleitung | Sprechfunk Übungsgenerator</title>
+    <title>Funktionen: Funksprüche verteilen, PDFs, Live-Leitung</title>
     <link rel="icon" type="image/png" href="../assets/favicon.png">
     <link rel="canonical" href="https://sprechfunk-uebung.de/funktionen/">
     <meta name="robots" content="index,follow,max-image-preview:large,max-snippet:-1">
     <meta name="theme-color" content="#0d6efd">
 
-    <meta name="description" content="So funktioniert der Sprechfunk Übungsgenerator: Funksprüche automatisch auf alle Teilnehmer verteilen, Meldevordruck und Nachrichtenvordruck als PDF erzeugen, Buchstabieraufgaben und Lösungswörter einbauen und die Übung live begleiten – kostenlos, ohne Anmeldung, ohne Installation.">
+    <meta name="description" content="Funksprüche automatisch verteilen, Melde- und Nachrichtenvordruck als PDF erzeugen, Lösungswörter einbauen und die Übung live begleiten – ohne Anmeldung.">
     <meta name="author" content="Johannes Rudolph">
 
-    <meta property="og:title" content="Funktionen im Überblick: Funksprüche verteilen, PDF-Vordrucke, Live-Übungsleitung">
-    <meta property="og:description" content="Funksprüche automatisch verteilen, Druckunterlagen als PDF, Buchstabieraufgaben, Lösungswörter und Live-Übungsleitung – der komplette Funktionsumfang des Sprechfunk Übungsgenerators.">
+    <meta property="og:title" content="Funktionen: Funksprüche verteilen, PDFs, Live-Leitung">
+    <meta property="og:description" content="Funksprüche automatisch verteilen, Melde- und Nachrichtenvordruck als PDF erzeugen, Lösungswörter einbauen und die Übung live begleiten – ohne Anmeldung.">
     <meta property="og:url" content="https://sprechfunk-uebung.de/funktionen/">
     <meta property="og:type" content="article">
     <meta property="og:locale" content="de_DE">
@@ -25,8 +25,8 @@
     <meta property="og:image:alt" content="Sprechfunk Übungsgenerator – Übungen für den BOS-Sprechfunk erstellen">
 
     <meta name="twitter:card" content="summary_large_image">
-    <meta name="twitter:title" content="Funktionen im Überblick: Funksprüche verteilen, PDF-Vordrucke, Live-Übungsleitung">
-    <meta name="twitter:description" content="Der komplette Funktionsumfang des Sprechfunk Übungsgenerators – kostenlos, ohne Anmeldung, ohne Installation.">
+    <meta name="twitter:title" content="Funktionen: Funksprüche verteilen, PDFs, Live-Leitung">
+    <meta name="twitter:description" content="Funksprüche automatisch verteilen, Melde- und Nachrichtenvordruck als PDF erzeugen, Lösungswörter einbauen und die Übung live begleiten – ohne Anmeldung.">
     <meta name="twitter:image" content="https://sprechfunk-uebung.de/assets/og-image.png">
 
     <link rel="stylesheet" href="../bundle.css">
@@ -211,7 +211,34 @@
         </div>
 
         <div class="card">
+                    <section class="card shadow-sm mb-4">
+            <div class="card-header"><h2 class="h4 mb-0" id="verteilung">Verteilung: wer sendet an wen</h2></div>
             <div class="card-body">
+                <p>Die Verteilung ist der Kern der Anwendung. Aus der Teilnehmerliste und der gewünschten Zahl von Funksprüchen je Stelle entsteht eine Zuordnung, die jede Nachricht einem Absender und einem oder mehreren Empfängern gibt.</p>
+                <p>Dabei sind drei Empfängerformen möglich: eine einzelne Gegenstelle, mehrere ausgewählte Stellen oder alle Funkstellen des Verkehrskreises. Die Mischung entscheidet über die Kanalbelastung. Nachrichten an alle erzeugen weniger Verkehr als Einzelverbindungen, weil sie nur einmal gesendet werden.</p>
+                <p>Der Generator verteilt so, dass keine Stelle nur sendet oder nur empfängt. Wer acht Sprüche absetzt, nimmt in einer ausgeglichenen Übung eine ähnliche Zahl auf.</p>
+            </div>
+        </section>
+
+        <section class="card shadow-sm mb-4">
+            <div class="card-header"><h2 class="h4 mb-0" id="loesungswoerter">Lösungswörter und Buchstabieraufgaben</h2></div>
+            <div class="card-body">
+                <p>Lösungswörter verteilen die Buchstaben eines Wortes über mehrere Funksprüche. Jeder Teilnehmer erhält Teile, die er buchstabieren muss; am Ende der Übung wird das Wort aufgelöst. Es gibt drei Varianten: kein Lösungswort, ein gemeinsames für alle oder ein eigenes je Teilnehmer.</p>
+                <p>Unabhängig davon lässt sich ein Anteil der Funksprüche als Buchstabieraufgabe ausgeben. Wörter in Großbuchstaben müssen dann nach der Buchstabiertafel buchstabiert werden. Der Anteil ist einstellbar, damit die Übung nicht ausschließlich aus Buchstabieren besteht.</p>
+                <p>Beides zusammen trainiert die Tafel über eine ganze Übung statt in einer einzelnen Abfrage.</p>
+            </div>
+        </section>
+
+        <section class="card shadow-sm mb-4">
+            <div class="card-header"><h2 class="h4 mb-0" id="grenzen">Was der Generator nicht macht</h2></div>
+            <div class="card-body">
+                <p>Die Anwendung erzeugt Übungsunterlagen und begleitet den Verlauf. Sie ersetzt weder Funkgeräte noch die Übungsleitung. Wer die Rufgruppe zuweist, wer einweist und wer eine Nachbesprechung führt, bleibt eine Aufgabe für Menschen.</p>
+                <p>Auch die fachliche Bewertung bleibt außen vor. Ob ein Teilnehmer den Anruf korrekt gesprochen hat, hört nur die Übungsleitung; die Anwendung sieht lediglich, dass eine Nachricht als übertragen markiert wurde.</p>
+                <p>Bewusst fehlt außerdem eine Aufzeichnung des Funkverkehrs. Mitschnitte wären ausbildungsfachlich reizvoll und datenschutzrechtlich heikel, deshalb gibt es sie nicht.</p>
+            </div>
+        </section>
+
+<div class="card-body">
                 <h2 class="h4">Direkt loslegen</h2>
                 <p>
                     Keine Registrierung, keine Freischaltung: Teilnehmer eintragen,

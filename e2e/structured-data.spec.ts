@@ -148,7 +148,9 @@ test("@seo Inhaltsseiten zeigen das Änderungsdatum sichtbar und maschinenlesbar
 
     const zeile = page.getByTestId("aktualisiert-am");
     await expect(zeile).toBeVisible();
-    await expect(zeile).toContainText(/^Aktualisiert am \d{2}\.\d{2}\.\d{4}$/);
+    // Seit AP-06 ist daraus die vollständige Metazeile geworden:
+    // Datum · Lesezeit · Autor.
+    await expect(zeile).toContainText(/^Aktualisiert am \d{2}\.\d{2}\.\d{4} · Lesezeit ca\. \d+ Minuten · von /);
 
     // Sichtbares Datum, article:modified_time und JSON-LD müssen denselben Tag nennen.
     const datumAttribut = await zeile.locator("time").getAttribute("datetime");

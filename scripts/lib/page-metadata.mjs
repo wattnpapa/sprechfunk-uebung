@@ -48,6 +48,33 @@ export function plainText(html) {
         .trim();
 }
 
+/**
+ * Erzeugt eine stabile id aus einer Überschrift (AP-06).
+ * Stabil heißt: gleicher Text ergibt immer dieselbe id, damit Ankerlinks und
+ * externe Verweise beim Neubauen nicht brechen.
+ */
+export function slugFuerUeberschrift(text) {
+    return plainText(text)
+        .toLowerCase()
+        .replace(/ä/g, "ae").replace(/ö/g, "oe").replace(/ü/g, "ue").replace(/ß/g, "ss")
+        .replace(/[^a-z0-9]+/g, "-")
+        .replace(/^-+|-+$/g, "")
+        .slice(0, 60) || "abschnitt";
+}
+
+/**
+ * Lesezeit in Minuten. 200 Wörter je Minute ist der gängige Ansatz für
+ * Sachtexte; aufgerundet und mindestens eine Minute.
+ */
+export function lesezeitMinuten(woerter, woerterProMinute = 200) {
+    return Math.max(1, Math.ceil(woerter / woerterProMinute));
+}
+
+/** Zählt die Wörter eines Textes – Grundlage für Lesezeit und Längenprüfung. */
+export function zaehleWoerter(text) {
+    return String(text ?? "").split(/\s+/).filter(wort => /\p{L}/u.test(wort)).length;
+}
+
 export function extractTitle(html) {
     const treffer = html.match(/<title>([\s\S]*?)<\/title>/i);
     return treffer ? plainText(treffer[1]) : null;

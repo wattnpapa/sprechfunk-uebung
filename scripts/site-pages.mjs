@@ -70,6 +70,7 @@ export const SITE_PAGES = [
     },
     {
         slug: "anleitung", source: "pages/anleitung.html", sources: ["src/pages/anleitung.html"],
+        kurzGesagt: "Eine Sprechfunkübung entsteht in sechs Schritten: Kopfdaten, Teilnehmer, Nachrichten-Einstellungen, Quelle der Funksprüche, Lösungswörter und Erzeugen. Danach stehen Druckunterlagen als PDF und ZIP sowie die Links für Teilnehmer und Übungsleitung bereit. Während der Übung zeigt die Übungsleitungs-Ansicht den Fortschritt je Funkstelle. Programmierkenntnisse sind nicht nötig.",
         related: ["funktionen", "funkuebung-planen", "faq"],
         label: "Anleitung",
         hubCategory: "anwendung",
@@ -109,6 +110,7 @@ export const SITE_PAGES = [
     },
     {
         slug: "funktionen", source: "pages/funktionen.html", sources: ["src/pages/funktionen.html"],
+        kurzGesagt: "Der Generator verteilt Funksprüche auf die eingetragenen Funkstellen, erzeugt Melde- und Nachrichtenvordruck als PDF und begleitet die Übung live. Lösungswörter und Buchstabieraufgaben trainieren die Buchstabiertafel über eine ganze Übung hinweg. Für die Übungsleitung entsteht der Nachrichtenplan mit Status, Tempo und Funklast. Alles läuft im Browser, ohne Konto.",
         related: ["anleitung", "funksprueche", "regiebuch-funkuebung"],
         label: "Funktionen im Überblick",
         hubCategory: "anwendung",
@@ -135,6 +137,7 @@ export const SITE_PAGES = [
     },
     {
         slug: "buchstabiertafel", source: "pages/buchstabiertafel.html", sources: ["src/pages/buchstabiertafel.html"],
+        kurzGesagt: "Im BOS-Sprechfunk gilt in der Praxis die klassische Tafel mit Anton, Berta, Cäsar. Die DIN 5009:2022-06 ist die Neufassung mit Städtenamen, das ICAO-Alphabet der Luftfahrt kommt international vor. Umlaute, CH, SCH und ß haben eigene Zeichen. Mehrstellige Zahlen werden als ganze Zahl gesprochen, die Zwei zur Unterscheidung als „zwo“.",
         related: ["sprechfunk-regeln", "meldevordruck", "funksprueche"],
         label: "Buchstabiertafel",
         hubCategory: "grundlagen",
@@ -162,6 +165,7 @@ export const SITE_PAGES = [
     },
     {
         slug: "meldevordruck", source: "pages/meldevordruck.html", sources: ["src/pages/meldevordruck.html"],
+        kurzGesagt: "Im BOS-Sprechfunk werden Nachrichten schriftlich aufgenommen, nicht aus dem Kopf abgesetzt. Dafür gibt es zwei Vordrucke: den Meldevordruck in A5 für eine einzelne Nachricht und den Nachrichtenvordruck mit vier Nachrichten je Blatt. Beide stehen hier als leere PDF zum Ausdrucken bereit. Der Generator befüllt sie für eine Übung auch automatisch.",
         related: ["buchstabiertafel", "sprechfunk-regeln", "funksprueche"],
         label: "Meldevordruck",
         hubCategory: "anwendung",
@@ -188,6 +192,7 @@ export const SITE_PAGES = [
     },
     {
         slug: "funksprueche", source: "pages/funksprueche.html", sources: ["src/pages/funksprueche.html"],
+        kurzGesagt: "Der Generator bringt über 1.800 fertige Funksprüche in mehreren Vorlagen mit und verteilt sie automatisch auf die Teilnehmer. Die Vorlagen decken Einsatzlagen aus dem Katastrophenschutz und bewusst überzeichnete Lagen für Jugendgruppen ab. Eigene Texte lassen sich als Textdatei hochladen, eine Zeile je Funkspruch. Über Lösungswörter entstehen Buchstabieraufgaben.",
         related: ["funkuebung-szenarien", "buchstabiertafel", "funkuebung-vorlage"],
         label: "Funksprüche",
         hubCategory: "anwendung",
@@ -218,6 +223,7 @@ export const SITE_PAGES = [
     },
     {
         slug: "funkuebung-feuerwehr", source: "pages/funkuebung-feuerwehr.html", sources: ["src/pages/funkuebung-feuerwehr.html"],
+        kurzGesagt: "Eine Funkübung für die Feuerwehr ist in wenigen Minuten vorbereitet: Teilnehmer mit ihren Florian-Rufnamen eintragen, Umfang festlegen, Vorlage wählen. Der Generator verteilt die Funksprüche und erzeugt für jede Funkstelle die Druckunterlagen. Für den Dienstabend haben sich sechs bis zehn Funkstellen mit je sechs bis zehn Sprüchen bewährt. Gefunkt wird über die vorhandenen Handfunkgeräte.",
         related: ["funkuebung-dienstabend", "funksprueche", "funkrufnamen"],
         label: "Funkübung Feuerwehr",
         hubCategory: "uebungen",
@@ -244,6 +250,7 @@ export const SITE_PAGES = [
     },
     {
         slug: "funkuebung-thw", source: "pages/funkuebung-thw.html", sources: ["src/pages/funkuebung-thw.html"],
+        kurzGesagt: "Der Übungsgenerator ist im THW entstanden und in der Standortausbildung mehrerer Ortsverbände erprobt. Die mitgelieferten Vorlagen stammen aus echten THW-Übungslagen mit Erkundungsaufträgen, Materialanforderungen und Stärkemeldungen. Geübt wird mit den eigenen HEROS-Rufnamen des Ortsverbands. Zwischen SprFuGA und SprFuFü hält die Standortausbildung die Routine wach.",
         related: ["funkrufnamen-thw", "funkuebung-dienstabend", "funksprueche"],
         label: "Funkübung THW",
         hubCategory: "uebungen",
@@ -270,6 +277,7 @@ export const SITE_PAGES = [
     },
     {
         slug: "funkuebung-katastrophenschutz", source: "pages/funkuebung-katastrophenschutz.html", sources: ["src/pages/funkuebung-katastrophenschutz.html"],
+        kurzGesagt: "Im Einsatz arbeiten Feuerwehr, THW, DRK, DLRG, ASB, Johanniter und Malteser auf denselben Rufgruppen, geübt wird der Sprechfunk aber meist getrennt. Der Generator senkt die Hürde: eine komplette Funkübung ist in wenigen Minuten vorbereitet, für Bereitschaften, Einsatzeinheiten und Züge. Organisationsübergreifende Übungen sind ausdrücklich vorgesehen.",
         related: ["funkuebung-thw", "funkuebung-feuerwehr", "uebungsfunkverkehr"],
         label: "Funkübung Katastrophenschutz",
         hubCategory: "uebungen",
@@ -286,7 +294,7 @@ export const SITE_PAGES = [
             },
             {
                 q: "Was ist eine Fernmeldeübung?",
-                a: "Eine Übung, in der nicht nur das Sprechen, sondern auch Meldewege und Dokumentation trainiert werden – also das vollständige Aufnehmen und Weiterleiten von Nachrichten."
+                a: "Eine Übung, in der neben dem Sprechen auch Meldewege und Dokumentation trainiert werden – also das vollständige Aufnehmen und Weiterleiten von Nachrichten."
             },
             {
                 q: "Was kostet die Nutzung für unsere Organisation?",
@@ -296,6 +304,7 @@ export const SITE_PAGES = [
     },
     {
         slug: "funkuebung-dienstabend", source: "pages/funkuebung-dienstabend.html", sources: ["src/pages/funkuebung-dienstabend.html"],
+        kurzGesagt: "Für einen Dienstabend genügen rund 15 Minuten Vorbereitung am Rechner. Der Ablauf gliedert sich in Einweisung, Anmeldung der Funkstellen, Übungsbetrieb und Nachbesprechung und passt in 90 Minuten. Sechs bis zehn Funkstellen mit je sechs bis zehn Funksprüchen füllen diesen Rahmen aus. Die Checkliste unten führt durch Vorbereitung und Durchführung.",
         related: ["funkuebung-planen", "funksprueche", "meldevordruck"],
         label: "Funkübung für den Dienstabend",
         hubCategory: "uebungen",
@@ -333,6 +342,7 @@ export const SITE_PAGES = [
     },
     {
         slug: "funkuebung-vorlage", source: "pages/funkuebung-vorlage.html", sources: ["src/pages/funkuebung-vorlage.html"],
+        kurzGesagt: "Eine feste PDF-Vorlage ist nach wenigen Einsätzen verbraucht, weil alle in der Einheit die Funksprüche kennen. Der Generator erzeugt aus über 1.800 Übungstexten jedes Mal eine neue, vollständige Sprechfunkübung, zugeschnitten auf Teilnehmerzahl und Rufnamen. Enthalten sind die verteilten Funksprüche, Vordrucke und die Unterlagen für die Übungsleitung.",
         related: ["funksprueche", "funkuebung-planen", "meldevordruck"],
         label: "Funkübung Vorlage",
         hubCategory: "uebungen",
@@ -359,6 +369,7 @@ export const SITE_PAGES = [
     },
     {
         slug: "funkuebung-planen", source: "pages/funkuebung-planen.html", sources: ["src/pages/funkuebung-planen.html"],
+        kurzGesagt: "Eine Funkübung entsteht in sieben Schritten, von Übungsziel und Rahmen über Teilnehmer, Funksprüche und Nachrichtenplan bis zur Nachbesprechung. Der Generator übernimmt die Verteilung der Übungstexte und die Druckunterlagen. Für den Rahmen haben sich 60 bis 90 Minuten Übungsbetrieb bewährt. Die Auswertung liefert das Debrief-PDF.",
         related: ["funkuebung-dienstabend", "funkuebung-szenarien", "regiebuch-funkuebung"],
         label: "Funkübung planen",
         hubCategory: "uebungen",
@@ -399,6 +410,7 @@ export const SITE_PAGES = [
     },
     {
         slug: "funkuebung-szenarien", source: "pages/funkuebung-szenarien.html", sources: ["src/pages/funkuebung-szenarien.html"],
+        kurzGesagt: "Eine Einkleidung macht aus zusammenhanglosen Übungstexten eine zusammenhängende Lage. Unten stehen zwölf erprobte Szenarien mit Angabe, was jedes übt und für welche Gruppe es passt. Flächenlagen erzeugen viele Meldungen von vielen Stellen, Einsatzlagen viele Meldungen von einer Stelle. Die Umsetzung ist immer gleich: Teilnehmer und passende Funksprüche eintragen.",
         related: ["funksprueche", "funkuebung-planen", "funkuebung-katastrophenschutz"],
         label: "Szenarien für die Funkübung",
         hubCategory: "uebungen",
@@ -425,6 +437,7 @@ export const SITE_PAGES = [
     },
     {
         slug: "sprechfunk-regeln", source: "pages/sprechfunk-regeln.html", sources: ["src/pages/sprechfunk-regeln.html"],
+        kurzGesagt: "Der Sprechfunkbetrieb der BOS folgt der PDV/DV 810.3 „Sprechfunkdienst“, einem Auszug aus der PDV/DV 810. Jede Verbindung beginnt mit Anruf und Anrufantwort, die Betriebsworte regeln den Wechsel zwischen den Funkstellen. Geschrieben wird, was gesendet wird, nicht was man verstanden zu haben glaubt. Die Regeln gelten organisationsübergreifend.",
         related: ["betriebsworte", "buchstabiertafel", "uebungsfunkverkehr"],
         label: "Sprechfunk-Regeln",
         hubCategory: "grundlagen",
@@ -451,6 +464,7 @@ export const SITE_PAGES = [
     },
     {
         slug: "betriebsworte", source: "pages/betriebsworte.html", sources: ["src/pages/betriebsworte.html"],
+        kurzGesagt: "Betriebsworte sind festgelegte Wörter mit exakt definierter Bedeutung, die einen offenen Funkkanal für viele Teilnehmer nutzbar machen. Grundlage ist die PDV/DV 810.3 „Sprechfunkdienst“. Wer sie kennt, weiß jederzeit, ob eine Antwort erwartet wird und ob eine Nachricht angekommen ist. Die Tabelle unten führt alle Betriebsworte mit Bedeutung und Beispiel.",
         related: ["sprechfunk-regeln", "verkehrsarten", "uebungsfunkverkehr"],
         label: "Betriebsworte",
         hubCategory: "grundlagen",
@@ -478,6 +492,7 @@ export const SITE_PAGES = [
     },
     {
         slug: "uebungsfunkverkehr", source: "pages/uebungsfunkverkehr.html", sources: ["src/pages/uebungsfunkverkehr.html"],
+        kurzGesagt: "Eine Sprechfunkbetriebsübung läuft auf denselben Netzen wie der Einsatzbetrieb, deshalb muss sie gekennzeichnet werden. Der Vermerk „Übung“ macht Übungsnachrichten erkennbar, das Stichwort „Tatsache“ bringt eine echte Meldung mitten in der Übung durch. Die PDV/DV 810.3 regelt beides ausdrücklich. Dazu kommen Vorrangstufen und Aufbewahrungsfristen.",
         related: ["sprechfunk-regeln", "betriebsworte", "funkuebung-planen"],
         label: "Übungsfunkverkehr",
         hubCategory: "uebungen",
@@ -504,6 +519,7 @@ export const SITE_PAGES = [
     },
     {
         slug: "bos-funk", source: "pages/bos-funk.html", sources: ["src/pages/bos-funk.html"],
+        kurzGesagt: "BOS steht für Behörden und Organisationen mit Sicherheitsaufgaben. Sie funken über ein gemeinsames, verschlüsseltes TETRA-Netz, den Digitalfunk BOS. Statt Kanälen gibt es Rufgruppen als logische Gesprächskreise; TMO läuft über das Netz, DMO direkt zwischen den Geräten. Die Endgeräte heißen HRT, MRT und FRT und senden ihre OPTA mit.",
         related: ["funkrufnamen", "verkehrsarten", "funkmeldesystem"],
         label: "BOS-Funk Grundlagen",
         hubCategory: "grundlagen",
@@ -530,6 +546,7 @@ export const SITE_PAGES = [
     },
     {
         slug: "funkreichweite", source: "pages/funkreichweite.html", sources: ["src/pages/funkreichweite.html"],
+        kurzGesagt: "Meterwellen laufen im Wesentlichen geradeaus, deshalb endet der Funk meist dort, wo die Sicht endet. Hindernisse zwischen den Funkstellen kosten unmittelbar Reichweite, Reflexion und Beugung helfen nur begrenzt. Wirksam ist die Wahl des Standorts, nicht lauteres Sprechen. Die Grundlagen stammen aus dem THW-Handbuch Sprechfunk im THW.",
         related: ["antennen", "verkehrsarten", "bos-funk"],
         label: "Reichweite von Funkwellen",
         hubCategory: "technik",
@@ -556,6 +573,7 @@ export const SITE_PAGES = [
     },
     {
         slug: "verkehrsarten", source: "pages/verkehrsarten.html", sources: ["src/pages/verkehrsarten.html"],
+        kurzGesagt: "Die Verkehrsarten beschreiben laut DV 810.3 die von der Technik abhängigen Verfahren des Nachrichtenaustauschs: Richtungs-, Wechsel-, Gegen- und Relaisverkehr. Nicht zu verwechseln mit den Verkehrsformen, die das organisatorische Zusammenwirken der Funkstellen bezeichnen. Im Relaisverkehr regeln die Schaltungen RS-1 bis RS-4 die Betriebsart.",
         related: ["betriebsworte", "funkreichweite", "bos-funk"],
         label: "Verkehrsarten",
         hubCategory: "grundlagen",
@@ -583,6 +601,7 @@ export const SITE_PAGES = [
     },
     {
         slug: "antennen", source: "pages/antennen.html", sources: ["src/pages/antennen.html"],
+        kurzGesagt: "Ein Funkgerät ist nur so gut wie das, was hinten dranhängt: Fehler in Antenne oder Kabel kosten unmittelbar Reichweite. Die Antennenlänge muss zur Frequenz passen, Leitungen haben Impedanz, Dämpfung und einen zulässigen Biegeradius. Auf Fahrzeugen werden Antennen senkrecht montiert. Beim Aufbau gelten Schutzabstände zu Freileitungen.",
         related: ["funkreichweite", "bos-funk", "verkehrsarten"],
         label: "Antennen",
         hubCategory: "technik",
@@ -609,6 +628,7 @@ export const SITE_PAGES = [
     },
     {
         slug: "funkrufnamen", source: "pages/funkrufnamen.html", sources: ["src/pages/funkrufnamen.html"],
+        kurzGesagt: "Im BOS-Funk werden keine Personen angesprochen, sondern Funkstellen. Der Funkrufname ist die taktische Adresse eines Fahrzeugs, einer Führungsstelle oder eines Trupps und bleibt gleich, auch wenn die Besatzung wechselt. Er besteht aus Kennwort, Ort und Kennzahlen. Am Kennwort erkennt man die Organisation, etwa Florian für die Feuerwehr.",
         related: ["funkrufnamen-thw", "bos-funk", "funkmeldesystem"],
         label: "Funkrufnamen",
         hubCategory: "rufnamen",
@@ -635,6 +655,7 @@ export const SITE_PAGES = [
     },
     {
         slug: "funkrufnamen-thw", source: "pages/funkrufnamen-thw.html", sources: ["src/pages/funkrufnamen-thw.html"],
+        kurzGesagt: "Das THW hat eine bundesweit einheitliche Funkrufnamenregelung. Das Kennwort ist immer HEROS, dahinter steht eine vierstellige Ziffernfolge. An ihr sind Einheit, Teileinheit, Feststation, Fahrzeug oder Führungskraft taktisch erkennbar. Die Ziffern 91 bis 99 kennzeichnen Personenrufnamen.",
         related: ["funkrufnamen", "funkuebung-thw", "bos-funk"],
         label: "Funkrufnamen im THW",
         hubCategory: "rufnamen",
@@ -661,6 +682,7 @@ export const SITE_PAGES = [
     },
     {
         slug: "funkmeldesystem", source: "pages/funkmeldesystem.html", sources: ["src/pages/funkmeldesystem.html"],
+        kurzGesagt: "Das Funkmeldesystem ist die stille Hälfte des BOS-Funks: Statt eine Lageänderung zu sprechen, drückt die Besatzung eine Zifferntaste, und die Leitstelle sieht den neuen Status im Einsatzleitsystem. Das hält den Kanal frei und dokumentiert den Verlauf mit Zeitstempel. Die Statusmeldungen 0 bis 9 gehen vom Fahrzeug zur Leitstelle.",
         related: ["funkrufnamen", "bos-funk", "sprechfunk-regeln"],
         label: "Funkmeldesystem (FMS)",
         hubCategory: "rufnamen",
@@ -688,6 +710,7 @@ export const SITE_PAGES = [
     },
     {
         slug: "open-source", source: "pages/open-source.html", sources: ["src/pages/open-source.html"],
+        kurzGesagt: "Der Sprechfunk Übungsgenerator ist kostenlos und quelloffen unter der EUPL-1.2. Es gibt keine Preisstufen, keine Teilnehmergrenzen, kein Benutzerkonto und keine Werbe-Cookies. Der Quellcode liegt öffentlich auf GitHub und ist damit nachprüfbar statt nur versprochen. Entstanden ist das Projekt aus dem Ehrenamt.",
         related: ["faq", "funktionen", "anleitung"],
         label: "Kostenlos und Open Source",
         hubCategory: "anwendung",
@@ -714,6 +737,7 @@ export const SITE_PAGES = [
     },
     {
         slug: "digitale-funkuebung", source: "pages/digitale-funkuebung.html", sources: ["src/pages/digitale-funkuebung.html"],
+        kurzGesagt: "Gefunkt wird weiter über echte Funkgeräte, nur die Übungsunterlagen wandern vom Papier in den Browser. Jede Funkstelle bekommt einen persönlichen Link, aufrufbar am Smartphone, Tablet oder Laptop, ohne App und ohne Anmeldung. Dort stehen die eigenen Funksprüche und werden abgehakt. Die Übungsleitung sieht den Fortschritt live.",
         related: ["regiebuch-funkuebung", "funkuebung-dienstabend", "funktionen"],
         label: "Digitale Funkübung",
         hubCategory: "uebungen",
@@ -741,6 +765,7 @@ export const SITE_PAGES = [
     },
     {
         slug: "regiebuch-funkuebung", source: "pages/regiebuch-funkuebung.html", sources: ["src/pages/regiebuch-funkuebung.html"],
+        kurzGesagt: "Das Regiebuch ist die vollständige Übersicht, welche Funkstelle wann welche Nachricht an wen absetzt. Der Generator erzeugt es als Nachrichtenplan automatisch aus Teilnehmerliste und Funkspruch-Vorlage. Während der Übung wird daraus ein Live-Cockpit mit Status, Fortschritt und Funklast. Für die Nachbesprechung bleibt der Verlauf als Debrief-PDF erhalten.",
         related: ["funkuebung-planen", "digitale-funkuebung", "meldevordruck"],
         label: "Regiebuch Funkübung",
         hubCategory: "uebungen",
@@ -768,6 +793,7 @@ export const SITE_PAGES = [
     },
     {
         slug: "wissen", source: "pages/wissen.html", sources: ["src/pages/wissen.html"],
+        kurzGesagt: "Sprechfunk lernt man im Lehrgang und behält es durch regelmäßiges Üben. Diese Übersicht bündelt beides: die fachlichen Grundlagen des BOS-Sprechfunks und die praktische Arbeit mit Funkübungen. Die Betriebsabwicklung folgt organisationsübergreifend der PDV/DV 810.3. Für die Praxis erzeugt der Generator vollständige Übungen.",
         related: ["funkuebung-planen", "sprechfunk-regeln", "funksprueche"],
         label: "Wissen",
         schemaType: "CollectionPage", datePublished: "2026-08-03",
@@ -795,6 +821,7 @@ export const SITE_PAGES = [
     },
     {
         slug: "faq", source: "pages/faq.html", sources: ["src/pages/faq.html"],
+        kurzGesagt: "Der Sprechfunk Übungsgenerator erstellt vollständige BOS-Sprechfunkübungen: er verteilt Funksprüche, erzeugt Druckunterlagen als PDF und begleitet die Übung live. Die Nutzung ist kostenlos, ohne Konto und ohne Installation. Unten stehen die häufigsten Fragen zu Ablauf, Daten, Vorlagen und Lizenz.",
         related: ["anleitung", "funkuebung-planen", "open-source"],
         label: "FAQ",
         hubCategory: "anwendung",
