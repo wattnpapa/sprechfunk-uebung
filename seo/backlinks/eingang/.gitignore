@@ -1,0 +1,3 @@
+# Rohexporte der Search Console bleiben lokal.
+*.csv
+!.gitignore
