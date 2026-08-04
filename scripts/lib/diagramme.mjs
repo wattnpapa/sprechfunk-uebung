@@ -302,6 +302,24 @@ export const DIAGRAMME = {
             { text: "selbst betreiben", betont: true }
         ])
     },
+    "autor": {
+        titel: "Woher die Inhalte kommen",
+        beschreibung: "Von der Ausbildungspraxis über echte Übungen bis zu den Seiten dieser Website.",
+        alt: "Vier Schritte: Ausbildungspraxis im THW, tatsächlich gefunkte Übungen, gesammelter Funkspruch-Bestand und die Inhalte dieser Website",
+        bauen: () => kette([
+            "Ausbildung im THW", "gefunkte Übungen", "Funkspruch-Bestand",
+            { text: "Inhalte hier", betont: true }
+        ])
+    },
+    "ueber-das-projekt": {
+        titel: "Wie eine Angabe geprüft wird",
+        beschreibung: "Jede fachliche Aussage durchläuft dieselben vier Stationen, bevor sie stehen bleibt.",
+        alt: "Vier Schritte der Prüfung: Aussage formulieren, Quelle am Dokument prüfen, Fundstelle nennen und bei fehlendem Beleg kennzeichnen",
+        bauen: () => kette([
+            "Aussage", "Quelle prüfen", "Fundstelle nennen",
+            { text: "ohne Beleg: kennzeichnen", betont: true }
+        ])
+    },
     "digitale-funkuebung": {
         titel: "Papier gegen Teilnehmer-Link",
         beschreibung: "Die Übungsunterlagen liegen entweder gedruckt vor oder im Browser hinter einem Link.",

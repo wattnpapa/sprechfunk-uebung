@@ -49,6 +49,7 @@ const SCHEMA: Record<string, { pflicht: string[] }> = {
     HowTo: { pflicht: ["@id", "name", "step", "mainEntityOfPage"] },
     FAQPage: { pflicht: ["@id", "mainEntity"] },
     CollectionPage: { pflicht: ["@id", "name", "mainEntity", "mainEntityOfPage"] },
+    ProfilePage: { pflicht: ["@id", "name", "url", "mainEntity", "mainEntityOfPage"] },
     DefinedTermSet: { pflicht: ["@id", "name", "hasDefinedTerm"] },
     SoftwareApplication: { pflicht: ["@id", "name", "applicationCategory", "operatingSystem", "offers", "license"] }
 };
@@ -95,7 +96,7 @@ function alleSchluessel(wert: unknown, treffer: string[] = []): string[] {
 
 describe("Schema-Graph je Seite", () => {
     it("die Registry deckt alle 30 ausgelieferten URLs ab", () => {
-        expect(SITE_PAGES).toHaveLength(39);
+        expect(SITE_PAGES).toHaveLength(41);
     });
 
     for (const page of SITE_PAGES) {
