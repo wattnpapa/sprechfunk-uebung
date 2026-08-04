@@ -792,6 +792,33 @@ export const SITE_PAGES = [
         ]
     },
     {
+        slug: "x-zeit", source: "pages/x-zeit.html", sources: ["src/pages/x-zeit.html"],
+        kurzGesagt: "X-Zeit ist eine relative Zeitangabe ab Übungsbeginn: X+15 heißt fünfzehn Minuten nach dem Start. Der Übungsgenerator legt im X-Zeit-Modus jede Nachricht auf einen solchen Slot, berechnet aus Start-Offset und Intervall. Die Funkstellen sehen einen Countdown bis zur nächsten fälligen Nachricht, die Übungsleitung den Vergleich von Soll und Ist. Das Intervall gilt für die ganze Übung, nicht für die einzelne Funkstelle.",
+        related: ["regiebuch-funkuebung", "funkuebung-planen", "digitale-funkuebung"],
+        label: "X-Zeit",
+        hubCategory: "uebungen",
+        schemaType: "Article", datePublished: "2026-08-04",
+        about: ["X-Zeit", "Übungszeitplan", "Funkübung"],
+        faq: [
+            {
+                q: "Was bedeutet X-Zeit im Sprechfunk?",
+                a: "Eine relative Zeitangabe ab einem Bezugszeitpunkt, der beim Planen noch offen ist. X+15 bedeutet fünfzehn Minuten nach dem festgelegten Beginn. Verschiebt sich der Start, verschiebt sich der ganze Plan mit."
+            },
+            {
+                q: "Wie berechnet der Generator die X-Zeiten?",
+                a: "Nach der Formel Start-Offset plus Position mal Intervall. Die Position zählt über die ganze Übung, nicht je Funkstelle; die Anmeldungs-Funksprüche liegen alle auf X+0."
+            },
+            {
+                q: "Welches Intervall ist für einen Dienstabend sinnvoll?",
+                a: "Es ergibt sich aus dem Zeitrahmen geteilt durch die Zahl der Nachrichten. Bei acht Funkstellen mit je sechs Sprüchen und 90 Minuten Rahmen sind das etwa 2 Minuten. Unter einer Minute entstehen Wartezeiten, weil ein Verkehr 45 bis 90 Sekunden braucht."
+            },
+            {
+                q: "Sehen die Teilnehmer alle Nachrichten im Voraus?",
+                a: "Im Fokus-Modus nicht. Er zeigt allein die aktuell fällige Nachricht und hält künftige Texte bis zu ihrer Fälligkeit verborgen. Ohne Fokus-Modus bleibt die vollständige Tabelle sichtbar."
+            }
+        ]
+    },
+    {
         slug: "wissen", source: "pages/wissen.html", sources: ["src/pages/wissen.html"],
         kurzGesagt: "Sprechfunk lernt man im Lehrgang und behält es durch regelmäßiges Üben. Diese Übersicht bündelt beides: die fachlichen Grundlagen des BOS-Sprechfunks und die praktische Arbeit mit Funkübungen. Die Betriebsabwicklung folgt organisationsübergreifend der PDV/DV 810.3. Für die Praxis erzeugt der Generator vollständige Übungen.",
         related: ["funkuebung-planen", "sprechfunk-regeln", "funksprueche"],
