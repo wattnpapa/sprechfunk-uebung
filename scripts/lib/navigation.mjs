@@ -155,6 +155,70 @@ ${gruppen}
 `;
 }
 
+/** Anzahl der Ziele im Weiterlesen-Block. Drei ist die Vorgabe aus AP-05. */
+export const WEITERLESEN_ANZAHL = 3;
+
+/**
+ * Ziele des Weiterlesen-Blocks (AP-05).
+ *
+ * `related` wird redaktionell gepflegt – automatisch aus Textähnlichkeit
+ * berechnete Empfehlungen wären beliebig und würden bei jeder Textänderung
+ * springen. Reicht die Liste nicht, füllt der Build aus demselben Cluster auf,
+ * damit keine Seite ohne Block bleibt.
+ */
+export function verwandteSeiten(page, alleSeiten) {
+    const kandidaten = [];
+    const aufnehmen = slug => {
+        if (slug === page.slug) return;
+        if (kandidaten.some(seite => seite.slug === slug)) return;
+        const ziel = alleSeiten.find(seite => seite.slug === slug);
+        // Rechtstexte und die SPA-Startseite sind keine Lesetipps.
+        if (!ziel || ziel.slug === "" || ziel.inSitemap === false) return;
+        kandidaten.push(ziel);
+    };
+
+    for (const slug of page.related ?? []) aufnehmen(slug);
+
+    if (kandidaten.length < WEITERLESEN_ANZAHL && page.hubCategory) {
+        for (const seite of hubSeiten(page.hubCategory)) {
+            if (kandidaten.length >= WEITERLESEN_ANZAHL) break;
+            aufnehmen(seite.slug);
+        }
+    }
+    // Letzte Reserve: der Hub selbst, damit der Block nie unvollständig ist.
+    if (kandidaten.length < WEITERLESEN_ANZAHL) aufnehmen(HUB_SLUG);
+
+    return kandidaten.slice(0, WEITERLESEN_ANZAHL);
+}
+
+/**
+ * Weiterlesen-Block am Ende einer Inhaltsseite. Statisches Markup, damit er
+ * ohne JavaScript funktioniert.
+ */
+export function renderWeiterlesen(page, alleSeiten, beschreibungen = {}) {
+    const ziele = verwandteSeiten(page, alleSeiten);
+    if (ziele.length === 0) return "";
+
+    const karten = ziele.map(ziel => `                <li class="col">
+                    <a class="card h-100 text-decoration-none hub-karte" href="${relativerPfad(page.slug, ziel.slug)}" data-testid="weiterlesen-${ziel.slug}">
+                        <div class="card-body">
+                            <h3 class="h6 card-title">${escapeHtml(ziel.label ?? ziel.slug)}</h3>
+                            <p class="card-text small mb-0">${escapeHtml(beschreibungen[ziel.slug] ?? "")}</p>
+                        </div>
+                    </a>
+                </li>`).join("\n");
+
+    return `        <section class="card shadow-sm my-4" id="weiterlesen" aria-labelledby="weiterlesen-titel" data-testid="weiterlesen">
+            <div class="card-header"><h2 class="h4 mb-0" id="weiterlesen-titel">Weiterlesen</h2></div>
+            <div class="card-body">
+                <ul class="row row-cols-1 row-cols-sm-3 g-3 list-unstyled mb-0">
+${karten}
+                </ul>
+            </div>
+        </section>
+`;
+}
+
 /** Eine Karte je Seite. `beschreibung` ist der erste Satz ihrer meta description. */
 export function renderHubKarte(page, aktuellerSlug, beschreibung) {
     const href = relativerPfad(aktuellerSlug, page.slug);

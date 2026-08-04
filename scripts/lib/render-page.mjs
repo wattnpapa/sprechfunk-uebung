@@ -5,7 +5,7 @@
 // Damit prüft der Vitest-Test genau den Code, der auch den Build erzeugt – eine
 // zweite Nachbildung im Test würde irgendwann auseinanderlaufen.
 
-import { HUB_CATEGORIES, HUB_SLUG } from "../site-pages.mjs";
+import { HUB_CATEGORIES, HUB_SLUG, SITE_PAGES } from "../site-pages.mjs";
 import { deutschesDatum, nurDatum } from "./lastmod.mjs";
 import { buildGraph, escapeHtml, renderFaqHtml } from "./schema-graph.mjs";
 import {
@@ -14,6 +14,7 @@ import {
     renderFooter,
     renderHauptnavigation,
     renderHubKategorie,
+    renderWeiterlesen,
     renderWissenSidebar
 } from "./navigation.mjs";
 import {
@@ -33,7 +34,7 @@ export const FAQ_PLATZHALTER = "<!-- AP-02:FAQ -->";
  * FAQ-Fragen oder fehlender Description darf nicht durchlaufen.
  */
 export function renderPageWithStructuredData({
-    page, html: quelle, dateModified = null, beschreibungen = {}
+    page, html: quelle, dateModified = null, beschreibungen = {}, alleSeiten = SITE_PAGES
 }) {
     const title = extractTitle(quelle);
     const description = extractMetaDescription(quelle);
@@ -83,14 +84,31 @@ export function renderPageWithStructuredData({
         terme
     });
 
-    // Erst nach dem FAQ-Block: der hängt sich an </main>, und die Seitenleiste
-    // verschiebt dieses Ende.
+    // Nach dem FAQ-Block, damit "Weiterlesen" der letzte Abschnitt vor dem
+    // Footer ist – und vor der Seitenleiste, die </main> verschiebt.
+    html = setzeWeiterlesen(html, page, alleSeiten, beschreibungen);
     html = setzeWissenSidebar(html, page);
     html = setzeArtikelZeitstempel(html, page, dateModified);
     html = setzeSichtbaresDatum(html, dateModified);
     html = ersetzeJsonLd(html, graph);
     pruefeFaqSichtbar(page, faq, html);
     return { html, graph, faq, terme, title, description, breadcrumb };
+}
+
+/**
+ * Setzt den Weiterlesen-Block als letzten Abschnitt vor dem Footer (AP-05).
+ * Startseite und Rechtstexte bekommen keinen: die SPA-Hülle hat kein
+ * redaktionelles Ende, und Rechtstexte sind keine Lesestrecke.
+ */
+export function setzeWeiterlesen(html, page, alleSeiten, beschreibungen) {
+    if (page.slug === "" || page.inSitemap === false) return html;
+
+    const block = renderWeiterlesen(page, alleSeiten, beschreibungen);
+    if (block === "") return html;
+    if (!html.includes("</main>")) {
+        throw new Error(`Seite "${page.slug}": kein </main> für den Weiterlesen-Block gefunden.`);
+    }
+    return html.replace("</main>", `${block}</main>`);
 }
 
 /**

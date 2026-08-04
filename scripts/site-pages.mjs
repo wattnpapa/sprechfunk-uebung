@@ -70,6 +70,7 @@ export const SITE_PAGES = [
     },
     {
         slug: "anleitung", source: "pages/anleitung.html", sources: ["src/pages/anleitung.html"],
+        related: ["funktionen", "funkuebung-planen", "faq"],
         label: "Anleitung",
         hubCategory: "anwendung",
         schemaType: "HowTo", datePublished: "2026-07-26",
@@ -108,6 +109,7 @@ export const SITE_PAGES = [
     },
     {
         slug: "funktionen", source: "pages/funktionen.html", sources: ["src/pages/funktionen.html"],
+        related: ["anleitung", "funksprueche", "regiebuch-funkuebung"],
         label: "Funktionen im Überblick",
         hubCategory: "anwendung",
         schemaType: "Article", datePublished: "2026-07-30",
@@ -133,6 +135,7 @@ export const SITE_PAGES = [
     },
     {
         slug: "buchstabiertafel", source: "pages/buchstabiertafel.html", sources: ["src/pages/buchstabiertafel.html"],
+        related: ["sprechfunk-regeln", "meldevordruck", "funksprueche"],
         label: "Buchstabiertafel",
         hubCategory: "grundlagen",
         schemaType: "Article", datePublished: "2026-07-26",
@@ -159,6 +162,7 @@ export const SITE_PAGES = [
     },
     {
         slug: "meldevordruck", source: "pages/meldevordruck.html", sources: ["src/pages/meldevordruck.html"],
+        related: ["buchstabiertafel", "sprechfunk-regeln", "funksprueche"],
         label: "Meldevordruck",
         hubCategory: "anwendung",
         schemaType: "Article", datePublished: "2026-07-26",
@@ -184,6 +188,7 @@ export const SITE_PAGES = [
     },
     {
         slug: "funksprueche", source: "pages/funksprueche.html", sources: ["src/pages/funksprueche.html"],
+        related: ["funkuebung-szenarien", "buchstabiertafel", "funkuebung-vorlage"],
         label: "Funksprüche",
         hubCategory: "anwendung",
         schemaType: "CollectionPage", datePublished: "2026-07-26",
@@ -213,6 +218,7 @@ export const SITE_PAGES = [
     },
     {
         slug: "funkuebung-feuerwehr", source: "pages/funkuebung-feuerwehr.html", sources: ["src/pages/funkuebung-feuerwehr.html"],
+        related: ["funkuebung-dienstabend", "funksprueche", "funkrufnamen"],
         label: "Funkübung Feuerwehr",
         hubCategory: "uebungen",
         schemaType: "Article", datePublished: "2026-07-28",
@@ -238,6 +244,7 @@ export const SITE_PAGES = [
     },
     {
         slug: "funkuebung-thw", source: "pages/funkuebung-thw.html", sources: ["src/pages/funkuebung-thw.html"],
+        related: ["funkrufnamen-thw", "funkuebung-dienstabend", "funksprueche"],
         label: "Funkübung THW",
         hubCategory: "uebungen",
         schemaType: "Article", datePublished: "2026-07-28",
@@ -263,6 +270,7 @@ export const SITE_PAGES = [
     },
     {
         slug: "funkuebung-katastrophenschutz", source: "pages/funkuebung-katastrophenschutz.html", sources: ["src/pages/funkuebung-katastrophenschutz.html"],
+        related: ["funkuebung-thw", "funkuebung-feuerwehr", "uebungsfunkverkehr"],
         label: "Funkübung Katastrophenschutz",
         hubCategory: "uebungen",
         schemaType: "Article", datePublished: "2026-07-28",
@@ -288,6 +296,7 @@ export const SITE_PAGES = [
     },
     {
         slug: "funkuebung-dienstabend", source: "pages/funkuebung-dienstabend.html", sources: ["src/pages/funkuebung-dienstabend.html"],
+        related: ["funkuebung-planen", "funksprueche", "meldevordruck"],
         label: "Funkübung für den Dienstabend",
         hubCategory: "uebungen",
         schemaType: "Article", datePublished: "2026-07-28",
@@ -324,6 +333,7 @@ export const SITE_PAGES = [
     },
     {
         slug: "funkuebung-vorlage", source: "pages/funkuebung-vorlage.html", sources: ["src/pages/funkuebung-vorlage.html"],
+        related: ["funksprueche", "funkuebung-planen", "meldevordruck"],
         label: "Funkübung Vorlage",
         hubCategory: "uebungen",
         schemaType: "Article", datePublished: "2026-07-26",
@@ -349,6 +359,7 @@ export const SITE_PAGES = [
     },
     {
         slug: "funkuebung-planen", source: "pages/funkuebung-planen.html", sources: ["src/pages/funkuebung-planen.html"],
+        related: ["funkuebung-dienstabend", "funkuebung-szenarien", "regiebuch-funkuebung"],
         label: "Funkübung planen",
         hubCategory: "uebungen",
         schemaType: "HowTo", datePublished: "2026-07-29",
@@ -388,6 +399,7 @@ export const SITE_PAGES = [
     },
     {
         slug: "funkuebung-szenarien", source: "pages/funkuebung-szenarien.html", sources: ["src/pages/funkuebung-szenarien.html"],
+        related: ["funksprueche", "funkuebung-planen", "funkuebung-katastrophenschutz"],
         label: "Szenarien für die Funkübung",
         hubCategory: "uebungen",
         schemaType: "Article", datePublished: "2026-07-29",
@@ -413,6 +425,7 @@ export const SITE_PAGES = [
     },
     {
         slug: "sprechfunk-regeln", source: "pages/sprechfunk-regeln.html", sources: ["src/pages/sprechfunk-regeln.html"],
+        related: ["betriebsworte", "buchstabiertafel", "uebungsfunkverkehr"],
         label: "Sprechfunk-Regeln",
         hubCategory: "grundlagen",
         schemaType: "Article", datePublished: "2026-07-29",
@@ -438,6 +451,7 @@ export const SITE_PAGES = [
     },
     {
         slug: "betriebsworte", source: "pages/betriebsworte.html", sources: ["src/pages/betriebsworte.html"],
+        related: ["sprechfunk-regeln", "verkehrsarten", "uebungsfunkverkehr"],
         label: "Betriebsworte",
         hubCategory: "grundlagen",
         schemaType: "Article", datePublished: "2026-08-01",
@@ -464,6 +478,7 @@ export const SITE_PAGES = [
     },
     {
         slug: "uebungsfunkverkehr", source: "pages/uebungsfunkverkehr.html", sources: ["src/pages/uebungsfunkverkehr.html"],
+        related: ["sprechfunk-regeln", "betriebsworte", "funkuebung-planen"],
         label: "Übungsfunkverkehr",
         hubCategory: "uebungen",
         schemaType: "Article", datePublished: "2026-08-01",
@@ -489,6 +504,7 @@ export const SITE_PAGES = [
     },
     {
         slug: "bos-funk", source: "pages/bos-funk.html", sources: ["src/pages/bos-funk.html"],
+        related: ["funkrufnamen", "verkehrsarten", "funkmeldesystem"],
         label: "BOS-Funk Grundlagen",
         hubCategory: "grundlagen",
         schemaType: "Article", datePublished: "2026-07-30",
@@ -514,6 +530,7 @@ export const SITE_PAGES = [
     },
     {
         slug: "funkreichweite", source: "pages/funkreichweite.html", sources: ["src/pages/funkreichweite.html"],
+        related: ["antennen", "verkehrsarten", "bos-funk"],
         label: "Reichweite von Funkwellen",
         hubCategory: "technik",
         schemaType: "Article", datePublished: "2026-08-01",
@@ -539,6 +556,7 @@ export const SITE_PAGES = [
     },
     {
         slug: "verkehrsarten", source: "pages/verkehrsarten.html", sources: ["src/pages/verkehrsarten.html"],
+        related: ["betriebsworte", "funkreichweite", "bos-funk"],
         label: "Verkehrsarten",
         hubCategory: "grundlagen",
         schemaType: "Article", datePublished: "2026-08-01",
@@ -565,6 +583,7 @@ export const SITE_PAGES = [
     },
     {
         slug: "antennen", source: "pages/antennen.html", sources: ["src/pages/antennen.html"],
+        related: ["funkreichweite", "bos-funk", "verkehrsarten"],
         label: "Antennen",
         hubCategory: "technik",
         schemaType: "Article", datePublished: "2026-08-01",
@@ -590,6 +609,7 @@ export const SITE_PAGES = [
     },
     {
         slug: "funkrufnamen", source: "pages/funkrufnamen.html", sources: ["src/pages/funkrufnamen.html"],
+        related: ["funkrufnamen-thw", "bos-funk", "funkmeldesystem"],
         label: "Funkrufnamen",
         hubCategory: "rufnamen",
         schemaType: "Article", datePublished: "2026-07-30",
@@ -615,6 +635,7 @@ export const SITE_PAGES = [
     },
     {
         slug: "funkrufnamen-thw", source: "pages/funkrufnamen-thw.html", sources: ["src/pages/funkrufnamen-thw.html"],
+        related: ["funkrufnamen", "funkuebung-thw", "bos-funk"],
         label: "Funkrufnamen im THW",
         hubCategory: "rufnamen",
         schemaType: "Article", datePublished: "2026-08-01",
@@ -640,6 +661,7 @@ export const SITE_PAGES = [
     },
     {
         slug: "funkmeldesystem", source: "pages/funkmeldesystem.html", sources: ["src/pages/funkmeldesystem.html"],
+        related: ["funkrufnamen", "bos-funk", "sprechfunk-regeln"],
         label: "Funkmeldesystem (FMS)",
         hubCategory: "rufnamen",
         schemaType: "Article", datePublished: "2026-08-01",
@@ -666,6 +688,7 @@ export const SITE_PAGES = [
     },
     {
         slug: "open-source", source: "pages/open-source.html", sources: ["src/pages/open-source.html"],
+        related: ["faq", "funktionen", "anleitung"],
         label: "Kostenlos und Open Source",
         hubCategory: "anwendung",
         schemaType: "Article", datePublished: "2026-07-29",
@@ -691,6 +714,7 @@ export const SITE_PAGES = [
     },
     {
         slug: "digitale-funkuebung", source: "pages/digitale-funkuebung.html", sources: ["src/pages/digitale-funkuebung.html"],
+        related: ["regiebuch-funkuebung", "funkuebung-dienstabend", "funktionen"],
         label: "Digitale Funkübung",
         hubCategory: "uebungen",
         schemaType: "Article", datePublished: "2026-07-28",
@@ -717,6 +741,7 @@ export const SITE_PAGES = [
     },
     {
         slug: "regiebuch-funkuebung", source: "pages/regiebuch-funkuebung.html", sources: ["src/pages/regiebuch-funkuebung.html"],
+        related: ["funkuebung-planen", "digitale-funkuebung", "meldevordruck"],
         label: "Regiebuch Funkübung",
         hubCategory: "uebungen",
         schemaType: "Article", datePublished: "2026-07-28",
@@ -743,6 +768,7 @@ export const SITE_PAGES = [
     },
     {
         slug: "wissen", source: "pages/wissen.html", sources: ["src/pages/wissen.html"],
+        related: ["funkuebung-planen", "sprechfunk-regeln", "funksprueche"],
         label: "Wissen",
         schemaType: "CollectionPage", datePublished: "2026-08-03",
         about: ["Sprechfunk", "BOS-Funk", "Funkübung", "Wissensübersicht"],
@@ -769,6 +795,7 @@ export const SITE_PAGES = [
     },
     {
         slug: "faq", source: "pages/faq.html", sources: ["src/pages/faq.html"],
+        related: ["anleitung", "funkuebung-planen", "open-source"],
         label: "FAQ",
         hubCategory: "anwendung",
         schemaType: "FAQPage", datePublished: "2026-07-26",

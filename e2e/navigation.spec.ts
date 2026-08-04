@@ -152,6 +152,60 @@ test.describe("@seo Themen-Seitenleiste", () => {
     });
 });
 
+test.describe("@seo Weiterlesen-Block", () => {
+    for (const seite of hubZiele) {
+        test(`${pfadVon(seite.slug)} bietet genau drei Lesetipps`, async ({ page }) => {
+            await page.goto(pfadVon(seite.slug));
+
+            const block = page.getByTestId("weiterlesen");
+            await expect(block).toBeVisible();
+            await expect(block.getByRole("heading", { name: "Weiterlesen" })).toBeVisible();
+
+            const karten = block.locator("[data-testid^='weiterlesen-']");
+            await expect(karten).toHaveCount(3);
+
+            // Kein Selbstverweis, jedes Ziel nur einmal, jede Karte mit Text.
+            const ziele: string[] = [];
+            for (let i = 0; i < 3; i += 1) {
+                const karte = karten.nth(i);
+                const href = await karte.getAttribute("href");
+                expect(href).not.toBe(`../${seite.slug}/`);
+                ziele.push(href ?? "");
+                expect((await karte.innerText()).trim().length).toBeGreaterThan(10);
+            }
+            expect(new Set(ziele).size, "Ziele müssen verschieden sein").toBe(3);
+        });
+    }
+
+    test("fehlt auf Startseite und Rechtstexten", async ({ page }) => {
+        for (const pfad of ["/", "/impressum/", "/datenschutz/"]) {
+            await page.goto(pfad);
+            await expect(page.getByTestId("weiterlesen"), `${pfad} braucht keinen Block`)
+                .toHaveCount(0);
+        }
+    });
+
+    test("steht als letzter Abschnitt vor dem Footer", async ({ page }) => {
+        await page.goto("/funkuebung-feuerwehr/");
+        const blockOben = (await page.getByTestId("weiterlesen").boundingBox())!.y;
+        const footerOben = (await page.getByTestId("site-footer").boundingBox())!.y;
+        expect(blockOben).toBeLessThan(footerOben);
+    });
+
+    test("funktioniert ohne JavaScript", async ({ browser }) => {
+        const kontext = await browser.newContext({ javaScriptEnabled: false });
+        const seite = await kontext.newPage();
+        await seite.goto("/buchstabiertafel/");
+
+        await expect(seite.getByTestId("weiterlesen")).toBeVisible();
+        const karten = seite.locator("[data-testid^='weiterlesen-']");
+        await expect(karten).toHaveCount(3);
+        // Die Karten sind echte Links, kein per Skript nachgerüstetes Verhalten.
+        await expect(karten.first()).toHaveAttribute("href", /^\.\.\/[a-z-]+\/$/);
+        await kontext.close();
+    });
+});
+
 test.describe("@seo Klicktiefe", () => {
     test("erreicht jede Content-Seite in höchstens zwei Klicks von der Startseite", async ({ page }) => {
         const slugsVon = async (pfad: string, prefix: RegExp) => {
