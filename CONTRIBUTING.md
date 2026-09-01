@@ -113,7 +113,10 @@ Konventionen im Überblick (ausführlich in [`CLAUDE.md`](CLAUDE.md)):
   `feat(admin):`, `test(e2e):`
 - **TypeScript** im Strict Mode, kein implizites `any`
 - **Firestore**: keine `undefined`-Felder schreiben, fehlende Indizes abfangen;
-  neue persistierte Felder gehören in die Allowlists in `firestore.rules`
+  neue persistierte Felder gehören in die Allowlists in `firestore.rules`. Die Regeln
+  werden getrennt von der Website deployt – das übernimmt nach dem Merge ein eigener
+  Workflow, notfalls `npm run rules:deploy`
+  ([Details](docs/entwicklung.md#firestore-regeln-deployen))
 - **Neue Seite?** Ein Eintrag in `scripts/site-pages.mjs` plus die HTML-Datei unter
   `src/pages/` – es gibt bewusst nur diese eine Registry
 - **Keine neuen Laufzeit-Abhängigkeiten** ohne Begründung im PR-Text. Das

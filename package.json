@@ -64,7 +64,8 @@
     "pdfs": "node scripts/generate-pdfs.mjs",
     "embed": "node scripts/generate-embed.mjs",
     "backlinks:report": "node scripts/seo-backlinks.mjs",
-    "outreach:check": "node scripts/check-outreach.mjs"
+    "outreach:check": "node scripts/check-outreach.mjs",
+    "rules:deploy": "npx --yes firebase-tools@15 deploy --only firestore:rules"
   },
   "devDependencies": {
     "@axe-core/playwright": "^4.13.0",

@@ -127,6 +127,15 @@ deshalb nicht in der CI).
   `status`; new persisted fields must be added to the allowlists there, or
   Firestore rejects the write in production (guarded by
   `tests/services/FirestoreRules.contract.test.ts`)
+  - **Editing the file is only half the job — the rules ship separately from the website.**
+    `main.yml` uploads `dist/` to GitHub Pages and nothing else, so a merged rules change stays
+    inert until it is pushed to Firebase. `.github/workflows/firestore-rules.yml` does that on
+    every push to `main` that touches `firestore.rules`; without the repository secret
+    `FIREBASE_SERVICE_ACCOUNT` that job fails on purpose and the deploy has to be repeated by
+    hand with `npm run rules:deploy`. Details and one-time setup: `docs/entwicklung.md`,
+    section „Firestore-Regeln deployen“; rationale in
+    `docs/adr/0007-firestore-regeln-deploy.md`. Guarded by
+    `tests/repo/FirestoreRulesDeploy.test.ts`.
 - **`localStorage` seed paths** support mock/E2E mode; don't break them when refactoring storage logic
 
 ## SEO-Arbeitspakete (AP-XX)

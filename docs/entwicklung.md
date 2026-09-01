@@ -48,6 +48,60 @@ setzbar und damit fälschbar.
 Was du dagegen **nie** committen darfst: *Server*-Credentials – Service-Account-JSONs,
 Admin-SDK-Schlüssel oder CI-Tokens.
 
+## Firestore-Regeln deployen
+
+`firestore.rules` wird **nicht** mit der Website ausgeliefert. `main.yml` bringt ausschließlich
+`dist/` auf GitHub Pages; Firebase stellt hier nur die Datenbank. Eine gemergte Regeländerung
+bleibt deshalb so lange wirkungslos, bis sie zusätzlich an Firebase geschickt wurde – und das
+fällt erst auf, wenn Firestore Schreibzugriffe ablehnt („Übung konnte nicht gespeichert werden“).
+Genau so lief es am 2026-09-01 nach dem Szenario-Modus: Das neue Feld `szenarioSlug` stand in
+`erlaubteFelder()` im Repository, aber nicht in den Regeln, die Firestore tatsächlich auswertete.
+
+Automatisch: `.github/workflows/firestore-rules.yml` läuft bei jedem Push auf `main`, der
+`firestore.rules` anfasst, und deployt die Regeln. Zusätzlich weist `ci.yml` schon im Pull Request
+darauf hin, dass ein Deploy fällig wird.
+
+Manuell – jederzeit, idempotent, auch ohne CI:
+
+```bash
+npm run rules:deploy
+```
+
+Das entspricht `firebase deploy --only firestore:rules`; das Projekt kommt aus `.firebaserc`.
+
+### Zugangsdaten für den Workflow
+
+Der Job braucht ein **Repository-Secret** `FIREBASE_SERVICE_ACCOUNT` mit dem JSON-Schlüssel eines
+Service Accounts. Fehlt es, schlägt der Job bewusst fehl, statt still zu überspringen: Ein grüner,
+übersprungener Job wäre von der Lücke nicht zu unterscheiden, die er schließen soll.
+
+Achtung, das ist die häufigste Verwechslung: Die vorhandenen `FIREBASE_*`-Secrets sind
+**Environment**-Secrets des Environments `github-pages` und enthalten die öffentliche
+Web-Konfiguration, keine Deploy-Berechtigung. Für diesen Job sind sie nicht sichtbar. Das neue
+Secret gehört auf Repository-Ebene.
+
+Einmalige Einrichtung im Google-Cloud-Projekt `sprechfunk-uebung`:
+
+1. Service Account anlegen, zum Beispiel `github-actions-rules`.
+2. Rollen zuweisen: **Firebase Rules Admin** (`roles/firebaserules.admin`) zum Schreiben der Regeln
+   und **Firebase Viewer** (`roles/firebase.viewer`), damit die CLI das Projekt auflösen kann.
+3. JSON-Schlüssel erzeugen und den vollständigen Inhalt als Repository-Secret
+   `FIREBASE_SERVICE_ACCOUNT` hinterlegen.
+
+Der Schlüssel gehört nie ins Repository (siehe [CONTRIBUTING.md](../CONTRIBUTING.md)).
+
+### Indizes
+
+`firestore.indexes.json` deployt der Workflow bewusst nicht. Ein Index-Deploy kann vorschlagen,
+in Produktion vorhandene Indizes zu löschen, die in der Datei fehlen – das gehört nicht in einen
+Lauf ohne Rückfrage. Nach Änderungen an der Datei von Hand:
+
+```bash
+npx --yes firebase-tools@15 deploy --only firestore:indexes
+```
+
+Hintergrund und verworfene Alternativen: [adr/0007-firestore-regeln-deploy.md](adr/0007-firestore-regeln-deploy.md)
+
 ## Tests und Qualität
 
 - Lint: `npm run lint`
@@ -79,7 +133,9 @@ Workflow: `.github/workflows/main.yml`
 - Pro E2E-Suite werden Artefakte hochgeladen:
 - `test-results`, `playwright-report`
 - E2E JUnit-Resultate werden zu Codecov hochgeladen
-- Deployment auf GitHub Pages nach erfolgreichen Jobs
+- Deployment auf GitHub Pages nach erfolgreichen Jobs – **nur die Website**, nicht die
+  Firestore-Regeln (dafür `.github/workflows/firestore-rules.yml`, siehe
+  [Firestore-Regeln deployen](#firestore-regeln-deployen))
 - Nightly Full E2E: `.github/workflows/e2e-nightly.yml`
 - PR-Validierung: `.github/workflows/ci.yml`
 - Empfohlene Required Checks (Branch Protection):
@@ -94,8 +150,10 @@ Workflow: `.github/workflows/main.yml`
 
 ## Sicherheit / Dependencies
 
-- Firestore-Zugriffsregeln: `firestore.rules` (Deploy: `firebase deploy --only firestore`)
+- Firestore-Zugriffsregeln: `firestore.rules` (Deploy: `npm run rules:deploy`, siehe
+  [Firestore-Regeln deployen](#firestore-regeln-deployen))
 - Zugriffsmodell und bekannte Restrisiken: [adr/0005-firestore-sicherheitsregeln.md](adr/0005-firestore-sicherheitsregeln.md)
+- Deploy-Weg der Regeln: [adr/0007-firestore-regeln-deploy.md](adr/0007-firestore-regeln-deploy.md)
 - Sicherheitsupdates regelmäßig über Dependabot/NPM Audit
 - `jspdf`/`jspdf-autotable` auf aktuellem Stand
 - Dependabot Konfiguration: `.github/dependabot.yml`

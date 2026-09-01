@@ -1,0 +1,92 @@
+name: Firestore-Regeln deployen
+
+# firestore.rules wird sonst nirgends deployt: main.yml veröffentlicht ausschließlich
+# dist/ auf GitHub Pages, Firebase liefert hier nur die Datenbank. Eine gemergte
+# Regeländerung bleibt deshalb wirkungslos, bis sie zusätzlich zu Firebase geht — und
+# das fällt erst auf, wenn Firestore Schreibzugriffe ablehnt. Siehe
+# docs/adr/0007-firestore-regeln-deploy.md.
+
+on:
+  push:
+    branches: ["main"]
+    # Bewusst nur die Regeldatei. Nähme man .firebaserc, firebase.json oder diesen
+    # Workflow dazu, liefe der Job schon beim Einführen dieser Dateien los und wäre
+    # rot, bevor das Secret überhaupt existieren kann. Für alles andere: dispatch.
+    paths:
+      - 'firestore.rules'
+
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: firestore-rules
+  cancel-in-progress: false
+
+jobs:
+  deploy-rules:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v7
+        with:
+          node-version: '24'
+
+      # Kein npm ci: der Deploy braucht keine Projekt-Abhängigkeiten, nur die
+      # Firebase-CLI, die `npm run rules:deploy` per npx zieht.
+
+      - name: Secret prüfen
+        env:
+          FIREBASE_SERVICE_ACCOUNT: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
+        run: |
+          if [ -n "$FIREBASE_SERVICE_ACCOUNT" ]; then
+            exit 0
+          fi
+          # Bewusst ein Fehlschlag statt eines stillen Skips wie in seo-snapshot.yml:
+          # ein grüner, übersprungener Job sähe exakt so aus wie die Lücke, die dieser
+          # Workflow schließen soll.
+          {
+            echo "### Firestore-Regeln NICHT deployt"
+            echo ""
+            echo "Das Repository-Secret \`FIREBASE_SERVICE_ACCOUNT\` fehlt."
+            echo "Produktion arbeitet weiter mit den alten Regeln — neu erlaubte Felder"
+            echo "werden dort abgelehnt, jedes Speichern scheitert."
+            echo ""
+            echo "Jetzt lokal nachholen:"
+            echo ""
+            echo '```bash'
+            echo "npm run rules:deploy"
+            echo '```'
+            echo ""
+            echo "Dauerhaft lösen: docs/entwicklung.md, Abschnitt „Firestore-Regeln deployen“."
+          } >> "$GITHUB_STEP_SUMMARY"
+          echo "::error file=firestore.rules::Regeländerung ohne Deploy: Secret FIREBASE_SERVICE_ACCOUNT fehlt (Repository-Secret, nicht Environment — die FIREBASE_*-Werte im Environment github-pages sind Web-Konfiguration und hier nicht sichtbar). Bis zum manuellen 'npm run rules:deploy' gelten in Produktion die alten Regeln."
+          exit 1
+
+      - name: Zugangsdaten bereitstellen
+        env:
+          FIREBASE_SERVICE_ACCOUNT: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
+        run: |
+          schluessel="$RUNNER_TEMP/firebase-service-account.json"
+          printf '%s' "$FIREBASE_SERVICE_ACCOUNT" > "$schluessel"
+          chmod 600 "$schluessel"
+          echo "GOOGLE_APPLICATION_CREDENTIALS=$schluessel" >> "$GITHUB_ENV"
+
+      - name: Regeln deployen
+        run: npm run rules:deploy
+
+      - name: Zugangsdaten entfernen
+        if: always()
+        run: rm -f "$RUNNER_TEMP/firebase-service-account.json"
+
+      - name: Ergebnis vermerken
+        run: |
+          {
+            echo "### Firestore-Regeln deployt"
+            echo ""
+            echo "\`firestore.rules\` aus \`${GITHUB_SHA:0:7}\` ist in Produktion aktiv."
+          } >> "$GITHUB_STEP_SUMMARY"

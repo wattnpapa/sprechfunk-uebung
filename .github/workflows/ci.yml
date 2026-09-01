@@ -9,6 +9,44 @@ permissions:
   contents: read
 
 jobs:
+  firestore-rules-hinweis:
+    # Reiner Hinweis, schlägt nie fehl. Regeln werden erst nach dem Merge deployt
+    # (.github/workflows/firestore-rules.yml); wer den Hinweis im PR sieht, weiß
+    # vorher, dass danach ein Deploy fällig ist.
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: read
+    steps:
+      - name: Auf Änderungen an firestore.rules hinweisen
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PR_NUMMER: ${{ github.event.pull_request.number }}
+        run: |
+          # Über die API statt über einen Checkout: der Job braucht sonst nichts
+          # aus dem Repository.
+          dateien=$(gh api "repos/${{ github.repository }}/pulls/$PR_NUMMER/files" \
+            --paginate --jq '.[].filename')
+          if ! grep -qx 'firestore.rules' <<< "$dateien"; then
+            echo "firestore.rules unverändert – nichts zu tun."
+            exit 0
+          fi
+          echo "::notice file=firestore.rules::Dieser PR ändert firestore.rules. Die Regeln gelten erst in Produktion, wenn nach dem Merge der Workflow 'Firestore-Regeln deployen' durchgelaufen ist — schlägt er fehl, erst nach einem manuellen 'npm run rules:deploy'."
+          {
+            echo "### Dieser PR ändert \`firestore.rules\`"
+            echo ""
+            echo "Regeln werden **nicht** mit der Website ausgeliefert. Nach dem Merge läuft"
+            echo "\`.github/workflows/firestore-rules.yml\`."
+            echo ""
+            echo "Schlägt der Job fehl (z. B. weil das Secret \`FIREBASE_SERVICE_ACCOUNT\` fehlt),"
+            echo "gelten in Produktion weiter die alten Regeln, bis das hier lief:"
+            echo ""
+            echo '```bash'
+            echo "npm run rules:deploy"
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"
+
   validate:
     runs-on: ubuntu-latest
     steps:
