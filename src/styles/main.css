@@ -23,6 +23,31 @@
    1. Token-System
    ========================================================================== */
 
+/*
+ * Ersatzschrift mit angepassten Metriken gegen Layout Shift.
+ *
+ * @fontsource liefert Archivo mit font-display: swap. Beim Wechsel von der
+ * Ersatz- zur Webschrift brach der Text neu um: gemessen am 2026-08-04 ergab
+ * das einen Cumulative Layout Shift von bis zu 0,3599 – die Einleitungskarte
+ * verlor eine Zeile, alles darunter rutschte 22 Pixel nach oben.
+ *
+ * Gemessen ist Arial nur 0,15 Prozent schmaler als Archivo (2607 gegen 2611
+ * Pixel für dieselbe Zeile bei 100px). Mit size-adjust und den Metriken der
+ * Webschrift bricht der Ersatz praktisch identisch um, und der Wechsel
+ * verschiebt nichts mehr.
+ */
+@font-face {
+    font-family: "Archivo Ersatz";
+    src: local("Arial"), local("Helvetica Neue"), local("Liberation Sans"), local("Nimbus Sans");
+    size-adjust: 100.15%;
+    /* Gemessen an Archivo selbst: Ascent 88 %, Descent 21 % der Schriftgröße.
+       Ohne diese Angaben übernimmt der Ersatz die Metriken von Arial (91/21)
+       und die Zeilenhöhe wechselt beim Laden. */
+    ascent-override: 88%;
+    descent-override: 21%;
+    line-gap-override: 0%;
+}
+
 :root {
     color-scheme: light;
 
@@ -83,7 +108,7 @@
     --ziel: 0rem;
 
     /* Schrift */
-    --schrift: "Archivo Variable", Archivo, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    --schrift: "Archivo Variable", Archivo, "Archivo Ersatz", Arial, Helvetica, sans-serif;
     --schrift-daten: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace;
 
     --t-xs: 0.75rem;
@@ -1696,10 +1721,209 @@ select option {
    7. Fußbereich
    ========================================================================== */
 
+/* ==========================================================================
+   Globale Hauptnavigation (AP-04)
+   Statisches Markup, keine JavaScript-Abhängigkeit. Das <details> wird offen
+   ausgeliefert; auf kleinen Bildschirmen dient die Zusammenfassung als
+   Umschalter, auf großen ist sie ausgeblendet und die Liste liegt waagerecht.
+   ========================================================================== */
+
+.site-nav {
+    background: var(--flaeche);
+    border-bottom: var(--strich) solid var(--linie);
+    font-size: var(--t-s);
+}
+
+.site-nav-summary {
+    cursor: pointer;
+    padding: 0.5rem 0;
+    font-weight: 600;
+    color: var(--text);
+    list-style: none;
+}
+
+.site-nav-summary::-webkit-details-marker {
+    display: none;
+}
+
+.site-nav-summary::before {
+    content: "☰";
+    margin-right: 0.5rem;
+}
+
+/* Sichtbarer Fokusring: die Zusammenfassung ist der Umschalter und muss
+   per Tastatur erkennbar erreichbar sein. */
+.site-nav-summary:focus-visible {
+    outline: var(--strich-stark, 2px) solid var(--fokus, currentcolor);
+    outline-offset: 2px;
+}
+
+/* Auch auf kleinen Bildschirmen waagerecht und umbrechend: als senkrechte
+   Liste bräuchten sieben Einträge sieben Zeilen und schöben den Inhalt aus dem
+   Bild. Zuklappen bleibt über die Zusammenfassung möglich. */
+.site-nav-list {
+    display: flex;
+    flex-flow: row wrap;
+    gap: 0.15rem 0.4rem;
+    margin: 0 0 0.4rem;
+    padding: 0;
+    list-style: none;
+}
+
+.site-nav-list .nav-link {
+    display: block;
+    padding: 0.4rem 0.6rem;
+    color: var(--text-2);
+    border-radius: 0.35rem;
+    text-decoration: none;
+}
+
+.site-nav-list .nav-link:hover {
+    color: var(--text);
+    background: var(--flaeche-2, rgb(0 0 0 / 6%));
+}
+
+.site-nav-list .nav-link.active,
+.site-nav-list .nav-link[aria-current="page"] {
+    color: var(--text);
+    font-weight: 600;
+    background: var(--flaeche-2, rgb(0 0 0 / 8%));
+}
+
+@media (min-width: 768px) {
+    .site-nav-summary {
+        display: none;
+    }
+
+    .site-nav-list {
+        gap: 0.25rem 0.5rem;
+        margin-bottom: 0;
+        padding: 0.25rem 0;
+    }
+}
+
+/* ==========================================================================
+   Wissensbereich: Inhalt mit Themen-Seitenleiste
+   Einspaltig auf kleinen Bildschirmen (Leiste über dem Inhalt), ab 992px
+   zweispaltig mit mitlaufender Leiste links.
+   ========================================================================== */
+
+.wissen-layout {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 1rem;
+    align-items: start;
+}
+
+.wissen-sidebar {
+    font-size: var(--t-s);
+    /* Auf kleinen Bildschirmen steht die Leiste über dem Inhalt. Ohne
+       Höhenbegrenzung schöbe die aufgeklappte Kategorie den Text weit nach
+       unten; begrenzt und scrollbar bleibt beides erreichbar. */
+    max-height: 13rem;
+    overflow-y: auto;
+    padding: 0.5rem 0.6rem;
+    border: var(--strich) solid var(--linie);
+    border-radius: 0.4rem;
+    background: var(--flaeche);
+}
+
+.wissen-sidebar-kopf {
+    margin: 0 0 0.5rem;
+    font-weight: 600;
+}
+
+.wissen-sidebar-kopf a {
+    color: var(--text);
+    text-decoration: none;
+}
+
+.wissen-sidebar-gruppe + .wissen-sidebar-gruppe {
+    margin-top: 0.25rem;
+}
+
+.wissen-sidebar-titel {
+    cursor: pointer;
+    padding: 0.35rem 0;
+    font-weight: 600;
+    color: var(--text-2);
+}
+
+.wissen-sidebar-titel:focus-visible {
+    outline: 2px solid currentcolor;
+    outline-offset: 2px;
+}
+
+.wissen-sidebar-liste {
+    margin: 0.15rem 0 0.5rem;
+    padding-left: 0.6rem;
+    border-left: var(--strich) solid var(--linie);
+}
+
+.wissen-sidebar-link {
+    display: block;
+    padding: 0.25rem 0.4rem;
+    color: var(--text-2);
+    border-radius: 0.3rem;
+    text-decoration: none;
+}
+
+.wissen-sidebar-link:hover {
+    color: var(--text);
+    background: var(--flaeche-2, rgb(0 0 0 / 6%));
+}
+
+.wissen-sidebar-link.active,
+.wissen-sidebar-link[aria-current="page"] {
+    color: var(--text);
+    font-weight: 600;
+    background: var(--flaeche-2, rgb(0 0 0 / 8%));
+}
+
+@media (min-width: 992px) {
+    .wissen-layout {
+        grid-template-columns: 16rem minmax(0, 1fr);
+        gap: 1.5rem;
+    }
+
+    .wissen-sidebar {
+        position: sticky;
+        /* Etwas Abstand zur Navigationsleiste über dem Inhalt. */
+        top: 1rem;
+        max-height: calc(100vh - 2rem);
+        padding: 0;
+        border: 0;
+        background: none;
+    }
+
+    /* Verhindert, dass breite Tabellen die Inhaltsspalte aufblähen. */
+    .wissen-inhalt {
+        min-width: 0;
+    }
+}
+
+/* Hub-Karten auf /wissen/: der ganze Kartenkörper ist der Link. */
+.hub-karte {
+    color: inherit;
+    transition: border-color 0.15s ease;
+}
+
+.hub-karte:hover,
+.hub-karte:focus-visible {
+    border-color: var(--linie-stark);
+}
+
+.hub-karte .card-title {
+    color: var(--text);
+}
+
+.hub-karte .card-text {
+    color: var(--text-2);
+}
+
+/* Seit AP-04 vierspaltig und damit zu hoch für einen klebenden Footer:
+   position: sticky würde bei sechs Links je Spalte den Inhalt verdecken. */
 .main-footer {
-    position: sticky;
-    bottom: 0;
-    z-index: 4000;
     margin-top: auto;
     flex-shrink: 0;
     background: var(--flaeche);
@@ -1707,11 +1931,16 @@ select option {
     border-top: var(--strich) solid var(--linie);
     box-shadow: none;
     font-size: var(--t-s);
-    padding: 0.6rem 1.25rem;
-    display: flex;
-    flex-wrap: wrap;
-    align-items: center;
-    gap: 0.55rem 0.9rem;
+    padding: 1.25rem;
+}
+
+.main-footer .footer-spalten-titel {
+    color: var(--text);
+    margin-bottom: 0.5rem;
+}
+
+.main-footer .footer-links-liste li + li {
+    margin-top: 0.3rem;
 }
 
 .main-footer b {
@@ -2847,4 +3076,28 @@ html:has(> body[data-theme="startrek"]) {
 [data-theme="startrek"] .main-footer a {
     color: var(--lcars-himmel);
     text-decoration-color: var(--lcars-himmel);
+}
+
+/*
+ * Diagramme der Inhaltsseiten (AP-10).
+ *
+ * width und height stehen am SVG, damit der Browser das Seitenverhältnis vor
+ * dem Layout kennt. Ohne max-width würde ein 784 Pixel breites Diagramm auf
+ * dem Smartphone über den Rand laufen und den Text umbrechen – gemessen als
+ * Layout Shift von 0,119 auf /funkuebung-szenarien/.
+ */
+.seiten-diagramm {
+    display: block;
+    max-width: 100%;
+    height: auto;
+    margin: 0 auto;
+    color: var(--bs-body-color, currentColor);
+}
+
+.seiten-diagramm-rahmen {
+    margin-inline: 0;
+}
+
+.seiten-diagramm-rahmen figcaption {
+    text-align: center;
 }

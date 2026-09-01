@@ -4,17 +4,17 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Funkübung Vorlage: fertige Sprechfunkübungen als PDF erstellen | Sprechfunk Übungsgenerator</title>
+    <title>Funkübung Vorlage: Sprechfunkübung als PDF erstellen</title>
     <link rel="icon" type="image/png" href="../assets/favicon.png">
     <link rel="canonical" href="https://sprechfunk-uebung.de/funkuebung-vorlage/">
     <meta name="robots" content="index,follow,max-image-preview:large,max-snippet:-1">
     <meta name="theme-color" content="#0d6efd">
 
-    <meta name="description" content="Vorlage für die Funkübung gesucht? Der Generator erstellt kostenlos komplette Sprechfunkübungen als PDF: verteilte Funksprüche, Meldevordrucke und Übungsleitungs-Unterlagen – ohne Anmeldung, immer neu gemischt.">
+    <meta name="description" content="Statt starrer Vorlage: der Generator erstellt komplette Sprechfunkübungen als PDF mit verteilten Funksprüchen und Vordrucken – jedes Mal neu gemischt.">
     <meta name="author" content="Johannes Rudolph">
 
-    <meta property="og:title" content="Funkübung Vorlage: fertige Sprechfunkübungen als PDF erstellen">
-    <meta property="og:description" content="Komplette Sprechfunkübungen als PDF: verteilte Funksprüche, Meldevordrucke und Übungsleitungs-Unterlagen – kostenlos und immer neu gemischt.">
+    <meta property="og:title" content="Funkübung Vorlage: Sprechfunkübung als PDF erstellen">
+    <meta property="og:description" content="Statt starrer Vorlage: der Generator erstellt komplette Sprechfunkübungen als PDF mit verteilten Funksprüchen und Vordrucken – jedes Mal neu gemischt.">
     <meta property="og:url" content="https://sprechfunk-uebung.de/funkuebung-vorlage/">
     <meta property="og:type" content="article">
     <meta property="og:locale" content="de_DE">
@@ -25,8 +25,8 @@
     <meta property="og:image:alt" content="Sprechfunk Übungsgenerator – Übungen für den BOS-Sprechfunk erstellen">
 
     <meta name="twitter:card" content="summary_large_image">
-    <meta name="twitter:title" content="Funkübung Vorlage: fertige Sprechfunkübungen als PDF erstellen">
-    <meta name="twitter:description" content="Komplette Sprechfunkübungen als PDF: verteilte Funksprüche, Meldevordrucke und Übungsleitungs-Unterlagen.">
+    <meta name="twitter:title" content="Funkübung Vorlage: Sprechfunkübung als PDF erstellen">
+    <meta name="twitter:description" content="Statt starrer Vorlage: der Generator erstellt komplette Sprechfunkübungen als PDF mit verteilten Funksprüchen und Vordrucken – jedes Mal neu gemischt.">
     <meta name="twitter:image" content="https://sprechfunk-uebung.de/assets/og-image.png">
 
     <link rel="stylesheet" href="../bundle.css">
@@ -36,56 +36,6 @@
     <script data-goatcounter="https://sprechfunk-uebung.goatcounter.com/count"
             async src="//gc.zgo.at/count.js"></script>
 
-    <script type="application/ld+json">
-        {
-            "@context": "https://schema.org",
-            "@type": "Article",
-            "headline": "Funkübung Vorlage: fertige Sprechfunkübungen als PDF erstellen",
-            "description": "Komplette Sprechfunkübungen als PDF statt starrer Vorlage: verteilte Funksprüche, Meldevordrucke und Übungsleitungs-Unterlagen – kostenlos und immer neu gemischt.",
-            "inLanguage": "de",
-            "url": "https://sprechfunk-uebung.de/funkuebung-vorlage/",
-            "image": "https://sprechfunk-uebung.de/assets/og-image.png",
-            "author": {
-                "@type": "Person",
-                "name": "Johannes Rudolph",
-                "url": "https://github.com/wattnpapa"
-            },
-            "publisher": {
-                "@type": "Person",
-                "name": "Johannes Rudolph"
-            },
-            "isPartOf": {
-                "@type": "WebSite",
-                "name": "Sprechfunk Übungsgenerator",
-                "url": "https://sprechfunk-uebung.de/"
-            },
-            "about": [
-                { "@type": "Thing", "name": "Funkübung" },
-                { "@type": "Thing", "name": "Vorlage" },
-                { "@type": "Thing", "name": "Sprechfunkübung" }
-            ]
-        }
-    </script>
-    <script type="application/ld+json">
-        {
-            "@context": "https://schema.org",
-            "@type": "BreadcrumbList",
-            "itemListElement": [
-                {
-                    "@type": "ListItem",
-                    "position": 1,
-                    "name": "Startseite",
-                    "item": "https://sprechfunk-uebung.de/"
-                },
-                {
-                    "@type": "ListItem",
-                    "position": 2,
-                    "name": "Funkübung Vorlage",
-                    "item": "https://sprechfunk-uebung.de/funkuebung-vorlage/"
-                }
-            ]
-        }
-    </script>
     <script>
         // Gleiche Theme-Auswahl wie in der App anwenden (statische Seiten laden kein Bundle).
         document.addEventListener("DOMContentLoaded", function () {
@@ -136,7 +86,7 @@
                     meist starre PDFs: einmal heruntergeladen, dreimal verwendet, dann kennt
                     jeder in der Einheit die Funksprüche auswendig. Der
                     <strong>Sprechfunk Übungsgenerator</strong> geht einen Schritt weiter: Er
-                    erzeugt aus über 1.800 Übungstexten <strong>jedes Mal eine neue, komplette
+                    erzeugt aus {{FUNKSPRUECHE_GESAMT}} Übungstexten <strong>jedes Mal eine neue, komplette
                     Sprechfunkübung als PDF</strong> – zugeschnitten auf deine Teilnehmerzahl
                     und deine Rufnamen. Kostenlos, ohne Anmeldung, ohne Installation.
                 </p>
@@ -144,7 +94,7 @@
         </div>
 
         <div class="card mb-3">
-            <div class="card-header"><h2 class="h4 mb-0" id="inhalt">Was die fertige Übung enthält</h2></div>
+            <div class="card-header"><h2 class="h4 mb-0" id="umfang-uebungssatz">Was die fertige Übung enthält</h2></div>
             <div class="card-body">
                 <p>Aus deinen Angaben entsteht ein vollständiger Übungssatz:</p>
                 <ul>
@@ -230,7 +180,68 @@
         </div>
 
         <div class="card">
+                    <section class="card shadow-sm mb-4">
+            <div class="card-header"><h2 class="h4 mb-0" id="grenzen-vorlage">Was eine starre Vorlage nicht leisten kann</h2></div>
             <div class="card-body">
+                <p>Eine PDF-Vorlage enthält feste Texte in fester Reihenfolge. Beim zweiten Einsatz erkennen die Teilnehmer die Sprüche wieder, beim dritten kennen sie die Reihenfolge. Damit übt die Übung das Erinnern statt das Aufnehmen.</p>
+                <p>Dazu kommt die Zuordnung. Eine Vorlage für acht Funkstellen passt nicht auf sechs, und sie kennt die Rufnamen des Ortsverbands nicht. Wer sie anpasst, schreibt sie halb neu.</p>
+                <p>Der Generator dreht das um: Die Verteilung entsteht aus der Teilnehmerliste, die Texte aus einer Vorlage mit {{FUNKSPRUECHE_GESAMT}} Sprüchen. Zwei Übungen mit denselben Einstellungen sind trotzdem verschieden.</p>
+            </div>
+        </section>
+
+        <section class="card shadow-sm mb-4">
+            <div class="card-header"><h2 class="h4 mb-0" id="seed">Wenn dieselbe Übung reproduzierbar sein soll</h2></div>
+            <div class="card-body">
+                <p>Manchmal ist Wiederholbarkeit gewünscht, etwa wenn zwei Gruppen an verschiedenen Abenden denselben Stoff üben sollen. Dafür hinterlegt der Generator einen Seed, aus dem die Verteilung berechnet wird.</p>
+                <p>Mit demselben Seed entsteht dieselbe Übung, mit einem anderen eine neue. Der Seed steht bei den Übungsdaten und lässt sich notieren, wenn eine Übung noch einmal gebraucht wird.</p>
+                <p>Für die Ausbildung heißt das: Vergleichbarkeit, wo sie hilft, und Abwechslung, wo sie nötig ist.</p>
+            </div>
+        </section>
+
+        <section class="card shadow-sm mb-4">
+            <div class="card-header"><h2 class="h4 mb-0" id="umfang">Was im Übungssatz enthalten ist</h2></div>
+            <div class="card-body">
+                <p>Aus den Angaben entsteht ein vollständiger Satz Unterlagen. Für jede Funkstelle gibt es eine Liste der eigenen Nachrichten mit Nummer, Empfänger und Text, dazu befüllte Vordrucke für die aufzunehmenden Meldungen.</p>
+                <p>Die Übungsleitung erhält den Nachrichtenplan über alle Stellen sowie die Übersicht der Lösungswörter. Alles lässt sich einzeln herunterladen oder gesammelt als ZIP, was bei zehn Funkstellen den Unterschied zwischen einem und zehn Vorgängen macht.</p>
+                <p>Nach der Übung kommt das Debrief-PDF hinzu. Es hält fest, welche Nachrichten abgesetzt wurden und welche offen blieben.</p>
+            </div>
+        </section>
+
+        <section class="card shadow-sm mb-4">
+            <div class="card-header"><h2 class="h4 mb-0" id="anpassen">Vorlage anpassen statt neu bauen</h2></div>
+            <div class="card-body">
+                <p>Die Einstellungen einer Übung lassen sich wiederverwenden. Teilnehmerzahl, Spruchzahl, Quelle und Lösungswort-Variante bleiben gleich, nur die Verteilung wird neu berechnet.</p>
+                <p>Damit entsteht für die zweite Gruppe eine gleichwertige, aber andere Übung. Vergleichbar bleibt der Schwierigkeitsgrad, verschieden sind die Texte und Empfänger.</p>
+            </div>
+        </section>
+
+        <section class="card shadow-sm mb-4">
+        <section class="card shadow-sm mb-4">
+            <div class="card-header"><h2 class="h4 mb-0" id="archiv-durchblaettern">Die Vorlagen vorher durchblättern</h2></div>
+            <div class="card-body">
+                <p>Wer wissen will, was in einer Vorlage steht, muss keine Übung erzeugen. Der Bestand liegt vollständig offen und ist durchsuchbar.</p>
+                <p>Für den Einstieg eignet sich die <a href="../funksprueche/vorlage/grundausbildung-einfach/">Sammlung kurzer Meldungen aus der Grundausbildung</a>, für Führungskräfte die <a href="../funksprueche/vorlage/thw-melle/">fachdichte Lage aus Melle</a>.</p>
+                <p class="mb-0">Jede Vorlage lässt sich als Textdatei herunterladen und unverändert wieder hochladen. Damit ist auch nachvollziehbar, was der Generator verteilt.</p>
+            </div>
+        </section>
+
+        <section class="card shadow-sm mb-4">
+            <div class="card-header"><h2 class="h4 mb-0" id="welcher-weg">Welcher Weg für welche Einheit</h2></div>
+            <div class="card-body">
+                <p>Eine Vorlage ist nicht der einzige Weg. Von Hand mit Vordrucken, mit einer Tabelle aus dem Ortsverband, mit diesem Generator oder mit einer kommerziellen Web-Anwendung – <a href="../alternative/">die vier Wege im Vergleich</a> stellt sie nach denselben Merkmalen gegenüber.</p>
+                <p>Die Aufstellung benennt für jeden Weg, wann er passt, und für zwei Bedarfe ausdrücklich, wann eine kostenpflichtige Lösung die bessere Wahl ist.</p>
+                <p class="mb-0">Dass die Nutzung hier nichts kostet und kein Konto verlangt, ist unter <a href="../kostenlos-ohne-anmeldung/">kostenlos und ohne Anmeldung</a> im Einzelnen beschrieben – samt der Grenzen, die das mit sich bringt.</p>
+            </div>
+        </section>
+
+            <div class="card-header"><h2 class="h4 mb-0" id="drucken">Unterlagen rechtzeitig drucken</h2></div>
+            <div class="card-body">
+                <p>Der Druck der Unterlagen dauert bei zehn Funkstellen einige Minuten. Wer die ZIP-Datei erst am Übungsabend öffnet, verliert diese Zeit vor der Einweisung.</p>
+                <p>Praktisch bewährt hat sich, die Unterlagen am Vortag zu erzeugen und die Links erst am Übungstag zu verteilen.</p>
+            </div>
+        </section>
+
+<div class="card-body">
                 <h2 class="h4">Jetzt Übung aus Vorlage erstellen</h2>
                 <p>
                     Teilnehmer eintragen, Vorlage wählen, PDFs herunterladen – die komplette

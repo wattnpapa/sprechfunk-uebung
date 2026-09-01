@@ -4,17 +4,17 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Antennen und Antennenleitungen im BOS-Funk: Aufbau, Dämpfung, Schutzabstände | Sprechfunk Übungsgenerator</title>
+    <title>Antennen und Leitungen im BOS-Funk: Aufbau und Dämpfung</title>
     <link rel="icon" type="image/png" href="../assets/favicon.png">
     <link rel="canonical" href="https://sprechfunk-uebung.de/antennen/">
     <meta name="robots" content="index,follow,max-image-preview:large,max-snippet:-1">
     <meta name="theme-color" content="#0d6efd">
 
-    <meta name="description" content="Antennen und Antennenleitungen im BOS-Sprechfunk: warum die Antennenlänge zur Frequenz passen muss, Dämpfung und Impedanz von Antennenleitungen, senkrechte Montage auf Fahrzeugen, Entkopplung mehrerer Antennen sowie Schutzabstände zu Freileitungen und Verhalten bei Gewitter.">
+    <meta name="description" content="Antennen im BOS-Sprechfunk: warum die Länge zur Frequenz passt, Dämpfung und Impedanz der Leitungen, Montage auf Fahrzeugen und Schutzabstände beim Aufbau.">
     <meta name="author" content="Johannes Rudolph">
 
-    <meta property="og:title" content="Antennen und Antennenleitungen im BOS-Funk: Aufbau, Dämpfung, Schutzabstände">
-    <meta property="og:description" content="Antennenlänge und Frequenz, Impedanz und Dämpfung, senkrechte Montage, Entkopplung – und die Schutzabstände beim Aufbau von Funkanlagen.">
+    <meta property="og:title" content="Antennen und Leitungen im BOS-Funk: Aufbau und Dämpfung">
+    <meta property="og:description" content="Antennen im BOS-Sprechfunk: warum die Länge zur Frequenz passt, Dämpfung und Impedanz der Leitungen, Montage auf Fahrzeugen und Schutzabstände beim Aufbau.">
     <meta property="og:url" content="https://sprechfunk-uebung.de/antennen/">
     <meta property="og:type" content="article">
     <meta property="og:locale" content="de_DE">
@@ -25,8 +25,8 @@
     <meta property="og:image:alt" content="Sprechfunk Übungsgenerator – Übungen für den BOS-Sprechfunk erstellen">
 
     <meta name="twitter:card" content="summary_large_image">
-    <meta name="twitter:title" content="Antennen und Antennenleitungen im BOS-Funk: Aufbau, Dämpfung, Schutzabstände">
-    <meta name="twitter:description" content="Antennenlänge und Frequenz, Impedanz und Dämpfung, senkrechte Montage, Entkopplung und Schutzabstände beim Antennenaufbau.">
+    <meta name="twitter:title" content="Antennen und Leitungen im BOS-Funk: Aufbau und Dämpfung">
+    <meta name="twitter:description" content="Antennen im BOS-Sprechfunk: warum die Länge zur Frequenz passt, Dämpfung und Impedanz der Leitungen, Montage auf Fahrzeugen und Schutzabstände beim Aufbau.">
     <meta name="twitter:image" content="https://sprechfunk-uebung.de/assets/og-image.png">
 
     <link rel="stylesheet" href="../bundle.css">
@@ -36,56 +36,6 @@
     <script data-goatcounter="https://sprechfunk-uebung.goatcounter.com/count"
             async src="//gc.zgo.at/count.js"></script>
 
-    <script type="application/ld+json">
-        {
-            "@context": "https://schema.org",
-            "@type": "Article",
-            "headline": "Antennen und Antennenleitungen im BOS-Funk: Aufbau, Dämpfung, Schutzabstände",
-            "description": "Antennentechnik im BOS-Sprechfunk: Anpassung an die Frequenz, Impedanz und Dämpfung der Antennenleitungen, Montage auf Fahrzeugen, Entkopplung mehrerer Antennen sowie Schutzabstände beim Aufbau von Funkanlagen.",
-            "inLanguage": "de",
-            "url": "https://sprechfunk-uebung.de/antennen/",
-            "image": "https://sprechfunk-uebung.de/assets/og-image.png",
-            "author": {
-                "@type": "Person",
-                "name": "Johannes Rudolph",
-                "url": "https://github.com/wattnpapa"
-            },
-            "publisher": {
-                "@type": "Person",
-                "name": "Johannes Rudolph"
-            },
-            "isPartOf": {
-                "@type": "WebSite",
-                "name": "Sprechfunk Übungsgenerator",
-                "url": "https://sprechfunk-uebung.de/"
-            },
-            "about": [
-                { "@type": "Thing", "name": "Antenne" },
-                { "@type": "Thing", "name": "Antennenleitung" },
-                { "@type": "Thing", "name": "BOS-Funk" }
-            ]
-        }
-    </script>
-    <script type="application/ld+json">
-        {
-            "@context": "https://schema.org",
-            "@type": "BreadcrumbList",
-            "itemListElement": [
-                {
-                    "@type": "ListItem",
-                    "position": 1,
-                    "name": "Startseite",
-                    "item": "https://sprechfunk-uebung.de/"
-                },
-                {
-                    "@type": "ListItem",
-                    "position": 2,
-                    "name": "Antennen",
-                    "item": "https://sprechfunk-uebung.de/antennen/"
-                }
-            ]
-        }
-    </script>
     <script>
         // Gleiche Theme-Auswahl wie in der App anwenden (statische Seiten laden kein Bundle).
         document.addEventListener("DOMContentLoaded", function () {
@@ -140,7 +90,7 @@
                 </p>
                 <p class="mb-0">
                     Diese Seite fasst die Antennentechnik aus dem THW-Handbuch
-                    <em>Sprechfunk im THW</em> (Kapitel 2.5 und 3.2) zusammen: Anpassung,
+                    <em>Sprechfunk im THW</em> zusammen: Anpassung,
                     Leitungen, Montage, Entkopplung – und die Schutzabstände, die beim Aufbau
                     einer Funkanlage einzuhalten sind.
                 </p>

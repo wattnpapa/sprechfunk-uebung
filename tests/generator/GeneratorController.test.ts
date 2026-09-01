@@ -38,6 +38,7 @@ vi.mock("../../src/generator/GeneratorView", () => ({
         resetBindings() {}
         bindDistributionInputs() {}
         bindSourceToggle() {}
+        bindSzenarioChange() {}
         bindLoesungswortOptionChange() {}
         bindTeilnehmerEvents() {}
         bindAnmeldungToggle() {}
@@ -46,6 +47,10 @@ vi.mock("../../src/generator/GeneratorView", () => ({
         bindQuickJoin() {}
         setVersionInfo() {}
         populateTemplateSelect() {}
+        populateSzenarioSelect() {}
+        setSelectedSource() {}
+        getSelectedSzenario() { return ""; }
+        renderSzenarioInfo() {}
         setFormData() {}
         toggleSourceView() {}
         renderTeilnehmerSection() {}
@@ -107,6 +112,7 @@ describe("GeneratorController", () => {
             resetBindings: vi.fn(),
             bindDistributionInputs: vi.fn(),
             bindSourceToggle: vi.fn(),
+            bindSzenarioChange: vi.fn(),
             bindLoesungswortOptionChange: vi.fn(),
             bindTeilnehmerEvents: vi.fn(),
             bindAnmeldungToggle: vi.fn(),
@@ -116,6 +122,10 @@ describe("GeneratorController", () => {
             bindQuickJoin: vi.fn(),
             setVersionInfo: vi.fn(),
             populateTemplateSelect: vi.fn(),
+            populateSzenarioSelect: vi.fn(),
+            setSelectedSource: vi.fn(),
+            getSelectedSzenario: vi.fn().mockReturnValue(""),
+            renderSzenarioInfo: vi.fn(),
             setFormData: vi.fn(),
             toggleSourceView: vi.fn()
         };
@@ -651,6 +661,7 @@ describe("GeneratorController", () => {
         const view = {
             bindDistributionInputs: vi.fn(),
             bindSourceToggle: vi.fn(),
+            bindSzenarioChange: vi.fn(),
             bindLoesungswortOptionChange,
             bindTeilnehmerEvents: vi.fn(),
             bindAnmeldungToggle: vi.fn(),
@@ -696,6 +707,7 @@ describe("GeneratorController", () => {
         const view = {
             bindDistributionInputs,
             bindSourceToggle: vi.fn(),
+            bindSzenarioChange: vi.fn(),
             bindLoesungswortOptionChange,
             bindTeilnehmerEvents,
             bindAnmeldungToggle,

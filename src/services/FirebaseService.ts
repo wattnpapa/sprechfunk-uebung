@@ -385,6 +385,12 @@ export class FirebaseService {
             if (obj["art"] === "spruch" || obj["art"] === "durchsage") {
                 base.art = obj["art"];
             }
+            const szenarioNr = typeof obj["szenarioNr"] === "number" && Number.isFinite(obj["szenarioNr"])
+                ? obj["szenarioNr"]
+                : undefined;
+            if (szenarioNr !== undefined) {
+                base.szenarioNr = szenarioNr;
+            }
             return base;
         };
 
@@ -435,7 +441,10 @@ export class FirebaseService {
             istStandardKonfiguration: typeof data.istStandardKonfiguration === "boolean" ? data.istStandardKonfiguration : false,
             spielModus: data.spielModus === "xZeit" ? "xZeit" : undefined,
             xZeitIntervallMinuten: typeof data.xZeitIntervallMinuten === "number" ? data.xZeitIntervallMinuten : undefined,
-            xZeitStartOffsetMinuten: typeof data.xZeitStartOffsetMinuten === "number" ? data.xZeitStartOffsetMinuten : undefined
+            xZeitStartOffsetMinuten: typeof data.xZeitStartOffsetMinuten === "number" ? data.xZeitStartOffsetMinuten : undefined,
+            szenarioSlug: typeof data.szenarioSlug === "string" && data.szenarioSlug.trim() !== ""
+                ? data.szenarioSlug
+                : undefined
         });
 
         // Legacy-Daten kompatibel machen: "Alle" immer in explizite Empfängerliste auflösen.

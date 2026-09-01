@@ -4,17 +4,17 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Funkübung THW: Sprechfunkübungen für Ortsverband und Fachgruppen | Sprechfunk Übungsgenerator</title>
+    <title>Funkübung THW: Sprechfunkübungen für den Ortsverband</title>
     <link rel="icon" type="image/png" href="../assets/favicon.png">
     <link rel="canonical" href="https://sprechfunk-uebung.de/funkuebung-thw/">
     <meta name="robots" content="index,follow,max-image-preview:large,max-snippet:-1">
     <meta name="theme-color" content="#0d6efd">
 
-    <meta name="description" content="Funkübung für den THW-Ortsverband online erstellen: Sprechfunkübungen mit echten THW-Funksprüchen, Stärkemeldungen und PDF-Vordrucken für die Standortausbildung – kostenlos, ohne Anmeldung.">
+    <meta name="description" content="Funkübung für den THW-Ortsverband erstellen: echte THW-Funksprüche, Stärkemeldungen und PDF-Vordrucke für die Standortausbildung. Kostenlos, ohne Anmeldung.">
     <meta name="author" content="Johannes Rudolph">
 
-    <meta property="og:title" content="Funkübung THW: Sprechfunkübungen für Ortsverband und Fachgruppen">
-    <meta property="og:description" content="Funkübung für den THW-Ortsverband online erstellen: Sprechfunkübungen mit echten THW-Funksprüchen, Stärkemeldungen und PDF-Vordrucken für die Standortausbildung.">
+    <meta property="og:title" content="Funkübung THW: Sprechfunkübungen für den Ortsverband">
+    <meta property="og:description" content="Funkübung für den THW-Ortsverband erstellen: echte THW-Funksprüche, Stärkemeldungen und PDF-Vordrucke für die Standortausbildung. Kostenlos, ohne Anmeldung.">
     <meta property="og:url" content="https://sprechfunk-uebung.de/funkuebung-thw/">
     <meta property="og:type" content="article">
     <meta property="og:locale" content="de_DE">
@@ -25,8 +25,8 @@
     <meta property="og:image:alt" content="Sprechfunk Übungsgenerator – Übungen für den BOS-Sprechfunk erstellen">
 
     <meta name="twitter:card" content="summary_large_image">
-    <meta name="twitter:title" content="Funkübung THW: Sprechfunkübungen für Ortsverband und Fachgruppen">
-    <meta name="twitter:description" content="Sprechfunkübungen mit echten THW-Funksprüchen, Stärkemeldungen und PDF-Vordrucken für die Standortausbildung.">
+    <meta name="twitter:title" content="Funkübung THW: Sprechfunkübungen für den Ortsverband">
+    <meta name="twitter:description" content="Funkübung für den THW-Ortsverband erstellen: echte THW-Funksprüche, Stärkemeldungen und PDF-Vordrucke für die Standortausbildung. Kostenlos, ohne Anmeldung.">
     <meta name="twitter:image" content="https://sprechfunk-uebung.de/assets/og-image.png">
 
     <link rel="stylesheet" href="../bundle.css">
@@ -36,56 +36,6 @@
     <script data-goatcounter="https://sprechfunk-uebung.goatcounter.com/count"
             async src="//gc.zgo.at/count.js"></script>
 
-    <script type="application/ld+json">
-        {
-            "@context": "https://schema.org",
-            "@type": "Article",
-            "headline": "Funkübung THW: Sprechfunkübungen für Ortsverband und Fachgruppen",
-            "description": "Funkübungen für den THW-Ortsverband online erstellen: Sprechfunkübungen mit echten THW-Funksprüchen, Stärkemeldungen und PDF-Vordrucken für die Standortausbildung.",
-            "inLanguage": "de",
-            "url": "https://sprechfunk-uebung.de/funkuebung-thw/",
-            "image": "https://sprechfunk-uebung.de/assets/og-image.png",
-            "author": {
-                "@type": "Person",
-                "name": "Johannes Rudolph",
-                "url": "https://github.com/wattnpapa"
-            },
-            "publisher": {
-                "@type": "Person",
-                "name": "Johannes Rudolph"
-            },
-            "isPartOf": {
-                "@type": "WebSite",
-                "name": "Sprechfunk Übungsgenerator",
-                "url": "https://sprechfunk-uebung.de/"
-            },
-            "about": [
-                { "@type": "Thing", "name": "Funkübung" },
-                { "@type": "Thing", "name": "Technisches Hilfswerk" },
-                { "@type": "Thing", "name": "Sprechfunkausbildung" }
-            ]
-        }
-    </script>
-    <script type="application/ld+json">
-        {
-            "@context": "https://schema.org",
-            "@type": "BreadcrumbList",
-            "itemListElement": [
-                {
-                    "@type": "ListItem",
-                    "position": 1,
-                    "name": "Startseite",
-                    "item": "https://sprechfunk-uebung.de/"
-                },
-                {
-                    "@type": "ListItem",
-                    "position": 2,
-                    "name": "Funkübung THW",
-                    "item": "https://sprechfunk-uebung.de/funkuebung-thw/"
-                }
-            ]
-        }
-    </script>
     <script>
         // Gleiche Theme-Auswahl wie in der App anwenden (statische Seiten laden kein Bundle).
         document.addEventListener("DOMContentLoaded", function () {
@@ -240,7 +190,7 @@
             <div class="card-header"><h2 class="h4 mb-0" id="vorlagen">THW-Funksprüche aus echten Übungen</h2></div>
             <div class="card-body">
                 <p>
-                    Die Anwendung bringt <strong>über 1.800 fertige Funksprüche</strong> mit,
+                    Die Anwendung bringt <strong>{{FUNKSPRUECHE_GESAMT}} fertige Funksprüche</strong> mit,
                     darunter mehrere Vorlagen, die in THW-Ortsverbänden für
                     Standortübungen geschrieben wurden. Typische Texte:
                 </p>
@@ -294,7 +244,43 @@
         </div>
 
         <div class="card">
+                    <section class="card shadow-sm mb-4">
+            <div class="card-header"><h2 class="h4 mb-0" id="standortausbildung">Was die Standortausbildung leisten muss</h2></div>
             <div class="card-body">
+                <p>Die Grundausbildung Sprechfunk vermittelt das Verfahren, die Standortausbildung hält es wach. Zwischen zwei Lehrgängen liegen oft Monate, in denen niemand ans Gerät geht. Genau in dieser Zeit entsteht die Unsicherheit, die im Einsatz stört.</p>
+                <p>Praktisch heißt das: kurze Einheiten in regelmäßigen Abständen. Zwanzig Minuten Funkbetrieb im Rahmen eines Dienstabends bringen mehr als eine Übung im Jahr, weil sie wiederholt werden können.</p>
+                <p>Die Sprechfunkausbildung für Führungskräfte baut darauf auf. Wer den Verkehrskreis führen soll, muss die Betriebsworte kennen und ihre Wirkung auf den Kanal einschätzen können.</p>
+            </div>
+        </section>
+
+        <section class="card shadow-sm mb-4">
+            <div class="card-header"><h2 class="h4 mb-0" id="heros-rufnamen">Mit HEROS-Rufnamen üben</h2></div>
+            <div class="card-body">
+                <p>Die Funkrufnamen des Ortsverbands gehören in die Übung, nicht erfundene Namen. Ein Teilnehmer, der ein halbes Jahr mit HEROS Musterstadt 25 geübt hat, meldet sich im Einsatz ohne Nachdenken.</p>
+                <p>Praktisch trägt man die Rufnamen der tatsächlich vorhandenen Einheiten und Fahrzeuge ein. Die vierstellige Systematik macht dabei die Zuordnung sichtbar: An der Ziffernfolge erkennen die Teilnehmer, mit welcher Teileinheit sie sprechen.</p>
+                <p>Für Führungskräfte sind die Personenrufnamen mit den Ziffern 91 bis 99 vorgesehen. Wer sie in die Übung nimmt, übt gleich die Unterscheidung zwischen Funkstelle und Person.</p>
+            </div>
+        </section>
+
+        <section class="card shadow-sm mb-4">
+        <section class="card shadow-sm mb-4">
+            <div class="card-header"><h2 class="h4 mb-0" id="vorlagen-ortsverbaende">Aus welchen Ortsverbänden die Vorlagen stammen</h2></div>
+            <div class="card-body">
+                <p>Die mitgelieferten THW-Vorlagen sind keine Redaktionsarbeit, sondern gefunkte Übungen. Fünf Ortsverbände haben ihre Lagen beigesteuert, und jede lässt sich vollständig durchblättern.</p>
+                <p>Zur Auswahl stehen <a href="../funksprueche/vorlage/thw-lehrte/">752 Nachrichten aus Lehrte</a> als große Unwetterlage, <a href="../funksprueche/vorlage/thw-melle/">400 Nachrichten aus Melle</a> mit Stabsrahmen und Pegelmeldungen sowie <a href="../funksprueche/vorlage/thw-saarstedt/">200 Standortmeldungen aus Saarstedt</a> zum Buchstabieren.</p>
+                <p class="mb-0">Kleiner, aber zugeschnitten sind <a href="../funksprueche/vorlage/thw-essen/">92 Nachrichten aus Essen</a> zu einem Deichbruch an der Emscher und <a href="../funksprueche/vorlage/thw-leer/">118 Nachrichten aus Leer</a> zu einer Sturmlage in Ostfriesland. Wer eigene Lagen beisteuern will, schickt sie als Textdatei an das Projekt.</p>
+            </div>
+        </section>
+
+            <div class="card-header"><h2 class="h4 mb-0" id="staerkemeldungen">Stärkemeldungen als Zahlenübung</h2></div>
+            <div class="card-body">
+                <p>Die Stärkemeldung ist die dankbarste Zahlenübung im THW, weil sie im Einsatz ständig vorkommt. Aus den Vorlagen stammt etwa: „Unsere Stärke ist 1/2/9//12.“</p>
+                <p>Die Ansage folgt festen Regeln. Die Ziffern werden einzeln gesprochen, die Zwei als „zwo“, und die Gesamtzahl nach dem doppelten Schrägstrich wird mitgesprochen. Wer das zum ersten Mal aufnimmt, verwechselt regelmäßig Führungskräfte und Unterführer.</p>
+                <p>Als Gegenprobe eignet sich die Frageform aus derselben Vorlage: „Frage: Wie ist Ihre Stärke?“ Damit entsteht ein vollständiger Verkehr aus Frage, Antwort und Bestätigung.</p>
+            </div>
+        </section>
+
+<div class="card-body">
                 <h2 class="h4">Jetzt Funkübung für deinen Ortsverband erstellen</h2>
                 <p>
                     In wenigen Minuten steht die komplette Sprechfunkübung: Verteilung,

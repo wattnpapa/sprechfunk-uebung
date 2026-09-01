@@ -15,8 +15,13 @@ Diese Datei definiert Arbeitsregeln für AI-/Automations-Agents in diesem Reposi
 
 ## Projekt-Setup
 1. `npm ci`
-2. `cp src/firebase-config.template.js src/firebase-config.js` (für lokale Tests ohne Secrets)
-3. `npm run build`
+2. `npm run build`
+
+`src/firebase-config.js` ist bewusst eingecheckt und enthält bereits eine funktionierende
+Konfiguration – du brauchst keinen Kopierschritt. Überschreibe die Datei nur, wenn du
+absichtlich Platzhalter willst; das macht deinen Working Tree dirty, also setze sie danach
+mit `git checkout -- src/firebase-config.js` zurück. Hintergrund in `CLAUDE.md`
+unter „Conventions“.
 
 ## Wichtige Befehle
 - `npm run build` – Web-Build
@@ -47,6 +52,12 @@ Diese Datei definiert Arbeitsregeln für AI-/Automations-Agents in diesem Reposi
 - Queries so bauen, dass fehlende Indizes robust behandelt werden (Fallback-Strategie).
 - Daten beim Speichern sanitizen (keine leeren Keys, keine `undefined` Felder).
 - Mock-/E2E-Modus nicht kaputtmachen (`localStorage`-Seed-Pfade beachten).
+- Neue persistierte Felder gehören in die Allowlists in `firestore.rules`.
+- **`firestore.rules` zu ändern reicht nicht** – die Regeln werden getrennt von der Website
+  deployt. `.github/workflows/firestore-rules.yml` erledigt das beim Push auf `main`; ohne das
+  Repository-Secret `FIREBASE_SERVICE_ACCOUNT` schlägt der Job absichtlich fehl und der Deploy
+  muss lokal mit `npm run rules:deploy` nachgeholt werden. Sonst lehnt Firestore in Produktion
+  jedes Speichern ab, das die neuen Felder nutzt. Einzelheiten: `docs/entwicklung.md`.
 
 ## UX/Produktregeln
 - Teilnehmer-/Übungs-Codes und Join-Flows dürfen nicht regressieren.

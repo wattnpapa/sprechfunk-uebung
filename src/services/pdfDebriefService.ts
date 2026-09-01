@@ -71,17 +71,26 @@ function buildDebriefSentRows(
 }
 
 function buildDebriefReceivedRows(funkUebung: FunkUebung, teilnehmer: string): [string, string, string][] {
-    const rows: [string, string, string][] = [];
+    const gesammelt: { szenarioNr?: number; row: [string, string, string] }[] = [];
     Object.entries(funkUebung.nachrichten).forEach(([sender, list]) => {
         if (sender === teilnehmer) {
             return;
         }
         list.forEach(msg => {
             if (msg.empfaenger.includes("Alle") || msg.empfaenger.includes(teilnehmer)) {
-                rows.push([String(msg.id), sender, msg.nachricht]);
+                gesammelt.push({
+                    ...(msg.szenarioNr !== undefined ? { szenarioNr: msg.szenarioNr } : {}),
+                    row: [String(msg.id), sender, msg.nachricht]
+                });
             }
         });
     });
+    // Szenario-Übungen: empfangene Nachrichten in der globalen Erzählreihenfolge.
+    // Klassische Übungen behalten die bisherige Gruppierung nach Absender.
+    if (gesammelt.length > 0 && gesammelt.every(eintrag => eintrag.szenarioNr !== undefined)) {
+        gesammelt.sort((a, b) => (a.szenarioNr as number) - (b.szenarioNr as number));
+    }
+    const rows = gesammelt.map(eintrag => eintrag.row);
     return rows.length ? rows : [["–", "–", "Keine empfangenen Nachrichten"]];
 }
 

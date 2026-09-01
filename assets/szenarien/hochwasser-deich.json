@@ -1,0 +1,374 @@
+{
+  "slug": "hochwasser-deich",
+  "titel": "Hochwasser und Deichverteidigung",
+  "beschreibung": "Dauerregen und steigende Pegel an der Lohne: Sandsackfüllstation, Deichläufer, Sickerstellen, Quellkade, Pumpeneinsätze und die Vorbereitung einer Evakuierung fordern alle Einsatzstellen gleichzeitig.",
+  "lage": "Nach 36 Stunden Dauerregen steigt der Pegel der Lohne stetig an und steht am Nachmittag bei 4,80 Metern, für Mitternacht werden 5,20 Meter erwartet. Der Deich zwischen den Deichkilometern 3 und 10 ist durchweicht, erste Sickerstellen sind gemeldet. Auf dem Bauhof läuft eine Sandsackfüllstation, Transporte bringen die Säcke an den Deich. Im Ortskern stehen mehrere Keller unter Wasser, und der tief liegende Ortsteil Wiesengrund bereitet sich auf eine mögliche Evakuierung vor. Alle Einsatzstellen arbeiten gleichzeitig und melden ihre Lage fortlaufend über Funk.",
+  "minTeilnehmer": 3,
+  "einleitung": [
+    {
+      "empfaenger": "alle",
+      "text": "Dauerregen seit den frühen Morgenstunden, der Pegel der Lohne steht bei 4,80 Metern und steigt weiter. Alle Einsatzstellen halten Funkdisziplin und melden Lageänderungen unaufgefordert."
+    },
+    {
+      "empfaenger": "alle",
+      "text": "Sind auf der eingeteilten Rufgruppe erreichbar, Übernahme der zugewiesenen Einsatzstelle läuft. Beginnen mit der Erkundung und melden das Ergebnis unaufgefordert."
+    }
+  ],
+  "straenge": [
+    {
+      "titel": "Sandsackfüllstation Bauhof",
+      "sprueche": [
+        {
+          "absender": "ich",
+          "empfaenger": "gegenstelle",
+          "text": "Übernehmen die Sandsackfüllstation auf dem Bauhof an der Straße HOLTKAMP. Füllbetrieb läuft an, derzeit sind vier Füllplätze besetzt."
+        },
+        {
+          "absender": "ich",
+          "empfaenger": "gegenstelle",
+          "text": "Sand geht zur Neige, der Vorrat reicht noch für etwa 600 Sandsäcke. Benötigen bis 15:00 Uhr eine weitere Lieferung Füllsand, mindestens zehn Kubikmeter."
+        },
+        {
+          "absender": "partner",
+          "empfaenger": "ich",
+          "text": "Haben den Auftrag zur Unterstützung der Füllstation erhalten. Sind mit sechs Kräften und zwei Schaufeln auf Anfahrt, Ankunft gegen 14:20 Uhr."
+        },
+        {
+          "absender": "ich",
+          "empfaenger": "partner",
+          "text": "Verstanden. Melden Sie sich beim Eintreffen am Füllplatz zwei, dort werden Sie eingewiesen. Bitte die Einfahrt über das Nordtor benutzen."
+        },
+        {
+          "absender": "ich",
+          "empfaenger": "gegenstelle",
+          "text": "Füllstation läuft mit voller Leistung, rund 500 Sandsäcke je Stunde. Aktuelle Stärke an der Füllstation 1/2/9/12."
+        }
+      ]
+    },
+    {
+      "titel": "Deichläufer Abschnitt Nord",
+      "sprueche": [
+        {
+          "absender": "ich",
+          "empfaenger": "gegenstelle",
+          "text": "Haben die Deichläuferstrecke im Abschnitt Nord zwischen Deichkilometer 3,0 und 5,5 übernommen. Kontrollgang alle 30 Minuten, erste Runde läuft."
+        },
+        {
+          "absender": "ich",
+          "empfaenger": "gegenstelle",
+          "text": "Erkundungsergebnis: Bei Deichkilometer 4,2 landseitig eine Sickerstelle, das austretende Wasser ist klar, Durchmesser etwa ein halber Meter. Beobachten weiter."
+        },
+        {
+          "absender": "ich",
+          "empfaenger": "gegenstelle",
+          "text": "Das austretende Wasser bei Deichkilometer 4,2 wird trüb und führt Bodenteilchen mit. Fordern eine Fachberatung Deichverteidigung und Material für den Verbau an."
+        },
+        {
+          "absender": "ich",
+          "empfaenger": "gegenstelle",
+          "text": "Die Sickerstelle ist markiert und mit einer Warnleuchte gekennzeichnet. Deichläufer bleiben bis zum Eintreffen des Materials vor Ort."
+        },
+        {
+          "absender": "ich",
+          "empfaenger": "gegenstelle",
+          "text": "Zwischenstand vom Kontrollgang 16:00 Uhr: Keine weiteren Auffälligkeiten zwischen Deichkilometer 3,0 und 5,5. Der Wasseraustritt an der bekannten Stelle ist wieder klar."
+        }
+      ]
+    },
+    {
+      "titel": "Sandsacklogistik zum Deich",
+      "sprueche": [
+        {
+          "absender": "ich",
+          "empfaenger": "gegenstelle",
+          "text": "Übernehmen den Sandsacktransport vom Bereitstellungsraum zu den Verladepunkten am Deich. Zwei Fahrzeuge mit Anhänger stehen bereit."
+        },
+        {
+          "absender": "ich",
+          "empfaenger": "gegenstelle",
+          "text": "Erster Transport mit 400 Sandsäcken ist unterwegs. Die Zufahrt über den MÜHLENKAMP ist wegen Hochwasser gesperrt, weichen auf die Kreisstraße aus."
+        },
+        {
+          "absender": "ich",
+          "empfaenger": "partner",
+          "text": "Benötigen Unterstützung beim Entladen am Verladepunkt zwei. Können Sie mit vier Kräften gegen 15:30 Uhr dort sein?"
+        },
+        {
+          "absender": "partner",
+          "empfaenger": "ich",
+          "text": "Verstanden, übernehmen das Entladen am Verladepunkt zwei. Sind um 15:25 Uhr mit vier Kräften und einem Förderband vor Ort."
+        },
+        {
+          "absender": "ich",
+          "empfaenger": "gegenstelle",
+          "text": "Zwischenmeldung Transport: Bislang 1.200 Sandsäcke an den Deich gefahren. Umlaufzeit je Fahrt etwa 25 Minuten, der Betrieb läuft störungsfrei."
+        }
+      ]
+    },
+    {
+      "titel": "Keller unter Wasser im Ortskern",
+      "sprueche": [
+        {
+          "absender": "ich",
+          "empfaenger": "gegenstelle",
+          "text": "Übernehmen die Einsatzstelle Wasser im Keller in der Straße LERCHENWEG 8. Der Keller steht etwa 40 Zentimeter unter Wasser, die Bewohner sind wohlauf."
+        },
+        {
+          "absender": "ich",
+          "empfaenger": "gegenstelle",
+          "text": "Tauchpumpe ist gesetzt, Förderleistung rund 400 Liter je Minute. Ablauf über den Regenwasserkanal auf der Rückseite des Gebäudes."
+        },
+        {
+          "absender": "ich",
+          "empfaenger": "gegenstelle",
+          "text": "Im Nachbargebäude ebenfalls Wasser im Keller festgestellt. Setzen dort die zweite Tauchpumpe ein, Stromversorgung über den Generator unseres Fahrzeugs."
+        },
+        {
+          "absender": "ich",
+          "empfaenger": "gegenstelle",
+          "text": "Beide Keller sind leergepumpt, der Nachlauf wird kontrolliert. Eine Pumpe bleibt vorsorglich bis 18:00 Uhr gesetzt, die Bewohner sind eingewiesen."
+        }
+      ]
+    },
+    {
+      "titel": "Quellkade im Abschnitt Süd",
+      "sprueche": [
+        {
+          "absender": "ich",
+          "empfaenger": "gegenstelle",
+          "text": "Übernehmen die Sickerstelle bei Deichkilometer 7,8 im Abschnitt Süd nahe der Hofstelle VOSSBERG. Wasseraustritt landseitig führt Bodenteilchen mit, beginnen mit dem Bau einer Quellkade."
+        },
+        {
+          "absender": "ich",
+          "empfaenger": "partner",
+          "text": "Für den Kadenbau benötigen wir weitere 150 Sandsäcke und zwei Kräfte zum Anreichen. Bitte über die Deichrampe Süd anfahren."
+        },
+        {
+          "absender": "partner",
+          "empfaenger": "ich",
+          "text": "Sind mit 150 Sandsäcken auf dem Anhänger unterwegs zur Deichrampe Süd, Ankunft gegen 16:10 Uhr. Bringen zusätzlich vier Kräfte mit."
+        },
+        {
+          "absender": "ich",
+          "empfaenger": "gegenstelle",
+          "text": "Quellkade bei Deichkilometer 7,8 ist gemeinsam mit {{partner}} fertiggestellt, das Wasser läuft klar über die Kadenkrone ab. Richten eine Wache mit zwei Kräften ein."
+        },
+        {
+          "absender": "ich",
+          "empfaenger": "gegenstelle",
+          "text": "Stärke an der Quellkade nach der Ablösung 0/1/5/6. Nächste Kontrolle der Kade um 17:45 Uhr, Material für eine Erhöhung liegt bereit."
+        }
+      ]
+    },
+    {
+      "titel": "Pegelbeobachtung an der Lohne",
+      "sprueche": [
+        {
+          "absender": "ich",
+          "empfaenger": "gegenstelle",
+          "text": "Übernehmen die Pegelbeobachtung an der Brücke der L24. Ablesung erfolgt alle 30 Minuten, Meldung jeweils zur vollen und zur halben Stunde."
+        },
+        {
+          "absender": "ich",
+          "empfaenger": "alle",
+          "text": "Pegelstand um 14:30 Uhr: 4,85 Meter, Tendenz steigend um etwa fünf Zentimeter je Stunde. Das Treibgutaufkommen nimmt zu."
+        },
+        {
+          "absender": "ich",
+          "empfaenger": "gegenstelle",
+          "text": "Pegelstand um 16:00 Uhr: 4,95 Meter. Die Vorhersage von 5,20 Metern für Mitternacht bleibt nach unserer Ablesung realistisch."
+        },
+        {
+          "absender": "ich",
+          "empfaenger": "gegenstelle",
+          "text": "Messstelle wird bei Dunkelheit ausgeleuchtet, die Stromversorgung über Akkuleuchten ist sichergestellt. Die Ablesung ist weiterhin ohne Einschränkung möglich."
+        }
+      ]
+    },
+    {
+      "titel": "Evakuierungsvorbereitung Wiesengrund",
+      "sprueche": [
+        {
+          "absender": "ich",
+          "empfaenger": "gegenstelle",
+          "text": "Übernehmen die Vorbereitung der Evakuierung für den tief liegenden Ortsteil WIESENGRUND. Beginnen mit der Erfassung der betroffenen Haushalte."
+        },
+        {
+          "absender": "ich",
+          "empfaenger": "gegenstelle",
+          "text": "Erfassung abgeschlossen: 46 Haushalte mit 102 Personen betroffen, davon zwölf Personen mit Unterstützungsbedarf. Die Listen liegen an der Einsatzstelle vor."
+        },
+        {
+          "absender": "ich",
+          "empfaenger": "partner",
+          "text": "Bitten um Unterstützung bei der Information der Anwohner. Übernehmen Sie die Haushalte westlich der Kirche, wir gehen den östlichen Teil ab."
+        },
+        {
+          "absender": "partner",
+          "empfaenger": "ich",
+          "text": "Verstanden, übernehmen die Haushalte westlich der Kirche mit zwei Trupps. Handzettel und Lautsprecher haben wir dabei."
+        },
+        {
+          "absender": "partner",
+          "empfaenger": "ich",
+          "text": "Information westlich der Kirche abgeschlossen, 21 Haushalte erreicht. Drei Haushalte nicht angetroffen, Hinweise stecken in den Briefkästen."
+        },
+        {
+          "absender": "ich",
+          "empfaenger": "gegenstelle",
+          "text": "Anwohnerinformation im Ortsteil ist abgeschlossen. Alle Haushalte sind informiert oder haben schriftliche Hinweise erhalten. Die Räumung kann auf Anordnung binnen zwei Stunden beginnen."
+        }
+      ]
+    },
+    {
+      "titel": "Sperrung der Kreisstraße",
+      "sprueche": [
+        {
+          "absender": "ich",
+          "empfaenger": "gegenstelle",
+          "text": "Übernehmen die Verkehrsabsicherung am überfluteten Abschnitt der Kreisstraße K12 zwischen Ortsausgang und Deichrampe."
+        },
+        {
+          "absender": "ich",
+          "empfaenger": "alle",
+          "text": "Die Absperrung am überfluteten Abschnitt ist aufgebaut, die Umleitung über den FENNWEG ist ausgeschildert. Faltsignale und Warnleuchten sind gesetzt."
+        },
+        {
+          "absender": "ich",
+          "empfaenger": "gegenstelle",
+          "text": "Ein Lieferwagen hat die Absperrung umfahren und steht nun im Wasser fest. Der Fahrer ist unverletzt und in Sicherheit, das Fahrzeug blockiert die Fahrbahn."
+        },
+        {
+          "absender": "ich",
+          "empfaenger": "gegenstelle",
+          "text": "Fordern ein Rüstfahrzeug mit Seilwinde zum Bergen des Lieferwagens an. Bis dahin bleibt die Sperrstelle mit zwei Kräften besetzt."
+        },
+        {
+          "absender": "ich",
+          "empfaenger": "gegenstelle",
+          "text": "Der Lieferwagen ist geborgen und von der Fahrbahn entfernt. Die Sperrstelle ist wieder regulär besetzt, die Umleitung läuft ohne weitere Vorkommnisse."
+        }
+      ]
+    },
+    {
+      "titel": "Auflast bei Deichkilometer 9,6",
+      "sprueche": [
+        {
+          "absender": "ich",
+          "empfaenger": "gegenstelle",
+          "text": "Übernehmen die Deichverteidigung bei Deichkilometer 9,6. Die Böschung zeigt auf zehn Metern Länge Aufweichungen, beginnen mit dem Aufbau einer Auflast aus Sandsäcken."
+        },
+        {
+          "absender": "ich",
+          "empfaenger": "gegenstelle",
+          "text": "Benötigen für die Auflast weitere 800 Sandsäcke sowie zwei Rollen Baufolie. Anlieferung über den Deichverteidigungsweg ist möglich."
+        },
+        {
+          "absender": "partner",
+          "empfaenger": "ich",
+          "text": "Sind auf Anfahrt mit 400 Sandsäcken als Erstlieferung, der Rest folgt in einer zweiten Fahrt. Bringen zwei Rollen Baufolie mit, Ankunft gegen 17:00 Uhr."
+        },
+        {
+          "absender": "ich",
+          "empfaenger": "partner",
+          "text": "Verstanden. Bitte entladen Sie direkt auf dem Deichverteidigungsweg auf Höhe der Markierungsfahne, wir übernehmen den Einbau."
+        },
+        {
+          "absender": "ich",
+          "empfaenger": "gegenstelle",
+          "text": "Auflast bei Deichkilometer 9,6 ist auf voller Länge eingebaut und mit Folie gegen den Regen gesichert. Die Böschung wird stündlich kontrolliert, derzeit keine weitere Veränderung erkennbar."
+        }
+      ]
+    },
+    {
+      "titel": "Betreuungsstelle Turnhalle",
+      "sprueche": [
+        {
+          "absender": "ich",
+          "empfaenger": "gegenstelle",
+          "text": "Übernehmen den Aufbau der Betreuungsstelle in der Turnhalle der Grundschule am ROSENKAMP. Die Halle ist aufgeschlossen, der Hausmeister ist vor Ort."
+        },
+        {
+          "absender": "ich",
+          "empfaenger": "gegenstelle",
+          "text": "Betreuungsstelle ist eingerichtet: 80 Plätze mit Feldbetten und Decken, getrennter Ruhebereich, Verpflegungsausgabe ab 18:00 Uhr möglich."
+        },
+        {
+          "absender": "ich",
+          "empfaenger": "gegenstelle",
+          "text": "Benötigen für die Registrierung 200 weitere Registrierkarten sowie eine zusätzliche Kraft mit Ortskenntnis für die Auskunftsstelle."
+        },
+        {
+          "absender": "ich",
+          "empfaenger": "gegenstelle",
+          "text": "Stärke an der Betreuungsstelle 0/2/7/9. Die Betreuungsstelle ist ab sofort aufnahmebereit, die Beschilderung vom Parkplatz zur Halle ist angebracht."
+        }
+      ]
+    },
+    {
+      "titel": "Treibgut am Durchlass",
+      "sprueche": [
+        {
+          "absender": "ich",
+          "empfaenger": "gegenstelle",
+          "text": "Übernehmen die Einsatzstelle am Durchlass des Mühlenbachs am KIEBITZWEG. Treibgut hat den Einlauf zugesetzt, das Wasser staut sich etwa 30 Zentimeter auf."
+        },
+        {
+          "absender": "ich",
+          "empfaenger": "gegenstelle",
+          "text": "Erkundung abgeschlossen: Überwiegend Äste und ein Weidezaunelement im Einlauf. Die Entnahme ist nur mit Sicherung gegen Absturz ins Wasser möglich."
+        },
+        {
+          "absender": "ich",
+          "empfaenger": "partner",
+          "text": "Benötigen zur Sicherung zwei Kräfte mit Auffanggurten und eine Steckleiter. Können Sie uns am Durchlass unterstützen?"
+        },
+        {
+          "absender": "partner",
+          "empfaenger": "ich",
+          "text": "Sind mit drei Kräften, Auffanggurten und Steckleiter zu Ihnen unterwegs, Ankunft gegen 15:45 Uhr."
+        },
+        {
+          "absender": "ich",
+          "empfaenger": "gegenstelle",
+          "text": "Treibgut ist entnommen, der Durchlass läuft wieder frei ab. Der Aufstau hat sich um 20 Zentimeter verringert, erneute Kontrolle um 17:30 Uhr."
+        }
+      ]
+    },
+    {
+      "titel": "Ausleuchtung für den Nachtbetrieb",
+      "sprueche": [
+        {
+          "absender": "ich",
+          "empfaenger": "gegenstelle",
+          "text": "Übernehmen die Ausleuchtung der Deichrampe Süd und des Verladepunkts eins für den Nachtbetrieb. Beginnen mit dem Aufbau von zwei Lichtmasten."
+        },
+        {
+          "absender": "ich",
+          "empfaenger": "gegenstelle",
+          "text": "Für den Betrieb über Nacht werden zusätzlich 60 Liter Kraftstoff für die Stromerzeuger benötigt. Bitte Nachschub bis 20:00 Uhr veranlassen."
+        },
+        {
+          "absender": "ich",
+          "empfaenger": "gegenstelle",
+          "text": "Beide Lichtmasten sind in Betrieb, die Ausleuchtung der Rampe und des Verladepunkts ist blendfrei eingerichtet. Kabelwege sind gegen Überfahren gesichert."
+        },
+        {
+          "absender": "ich",
+          "empfaenger": "gegenstelle",
+          "text": "Anwohner BRAKMANN vom Grundstück neben der Rampe hat Fragen zur nächtlichen Lärmbelastung gestellt. Haben auf die Einsatzlage verwiesen und um Verständnis gebeten."
+        }
+      ]
+    }
+  ],
+  "abschluss": [
+    {
+      "empfaenger": "alle",
+      "text": "Alle Aufträge an unserer Einsatzstelle sind abgearbeitet, das Gerät ist gereinigt und verlastet. Rücken zum Bereitstellungsraum ab und melden dort Einsatzbereitschaft."
+    },
+    {
+      "empfaenger": "alle",
+      "text": "Übergabe der Einsatzstelle ist dokumentiert, keine verletzten Einsatzkräfte, kein Geräteverlust. Bitten um Entlassung aus dem Einsatz."
+    }
+  ]
+}

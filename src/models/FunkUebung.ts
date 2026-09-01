@@ -37,6 +37,7 @@ export class FunkUebung implements Uebung {
     spielModus?: "klassisch" | "xZeit";
     xZeitIntervallMinuten?: number;
     xZeitStartOffsetMinuten?: number;
+    szenarioSlug?: string | undefined;
 
     constructor(buildVersion: string) {
         this.id = this.generateId();
@@ -107,7 +108,10 @@ export class FunkUebung implements Uebung {
             buchstabierenAn: this.buchstabierenAn,
             loesungswoerter: this.loesungswoerter,
             teilnehmerListe: this.teilnehmerListe,
-            nachrichten: this.nachrichten
+            nachrichten: this.nachrichten,
+            // undefined fällt bei JSON.stringify weg — Checksummen alter
+            // Übungen ohne Szenario bleiben dadurch unverändert.
+            szenarioSlug: this.szenarioSlug
         });
 
         this.checksumme = MD5(data).toString();
@@ -143,7 +147,8 @@ export class FunkUebung implements Uebung {
             istStandardKonfiguration: this.istStandardKonfiguration,
             spielModus: this.spielModus,
             xZeitIntervallMinuten: this.xZeitIntervallMinuten,
-            xZeitStartOffsetMinuten: this.xZeitStartOffsetMinuten
+            xZeitStartOffsetMinuten: this.xZeitStartOffsetMinuten,
+            szenarioSlug: this.szenarioSlug
         }, null, 2); // Pretty Print
     }
 }

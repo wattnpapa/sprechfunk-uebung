@@ -33,6 +33,7 @@ interface FlattenedNachricht {
     text: string;
     xZeitSlot?: number;
     art?: NachrichtArt;
+    szenarioNr?: number;
 }
 
 interface SentNachricht {
@@ -385,11 +386,14 @@ export class UebungsleitungController {
                     empfaenger: msg.empfaenger,
                     text: msg.nachricht,
                     ...(msg.xZeitSlot !== undefined ? { xZeitSlot: msg.xZeitSlot } : {}),
-                    ...(msg.art !== undefined ? { art: msg.art } : {})
+                    ...(msg.art !== undefined ? { art: msg.art } : {}),
+                    ...(msg.szenarioNr !== undefined ? { szenarioNr: msg.szenarioNr } : {})
                 });
             });
         });
-        nachrichten.sort((a, b) => a.nr - b.nr);
+        // Szenario-Übungen tragen mit szenarioNr eine globale Erzählreihenfolge;
+        // ohne sie gilt wie bisher die Rundenlogik über die Nachrichtennummern.
+        nachrichten.sort((a, b) => (a.szenarioNr ?? a.nr) - (b.szenarioNr ?? b.nr));
 
         const storage = this.storage;
         if (!storage) {

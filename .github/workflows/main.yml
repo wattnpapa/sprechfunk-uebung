@@ -4,6 +4,10 @@ name: Deploy static content to Pages
 on:
   push:
     branches: ["main"]
+    # Der wöchentliche Rang-Snapshot (seo-snapshot.yml) committet nach seo/.
+    # Diese Dateien landen nicht in dist/, ein Deploy wäre folgenlos.
+    paths-ignore:
+      - 'seo/**'
 
   workflow_dispatch:
 
@@ -24,6 +28,12 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v7
+        with:
+          # Vollständige Historie: der Build leitet sitemap-lastmod und
+          # schema.org/dateModified je Seite aus dem letzten inhaltlichen Commit
+          # ab. Bei fetch-depth 1 existiert nur der Tip-Commit, dann tragen alle
+          # Seiten dasselbe Datum (AP-03).
+          fetch-depth: 0
       - name: Detect relevant changes
         id: filter
         uses: dorny/paths-filter@v4
@@ -45,10 +55,16 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        suite: [smoke, generator, admin, teilnehmer, uebungsleitung, routing]
+        suite: [smoke, generator, admin, teilnehmer, uebungsleitung, routing, seo]
     steps:
       - name: Checkout
         uses: actions/checkout@v7
+        with:
+          # Vollständige Historie: der Build leitet sitemap-lastmod und
+          # schema.org/dateModified je Seite aus dem letzten inhaltlichen Commit
+          # ab. Bei fetch-depth 1 existiert nur der Tip-Commit, dann tragen alle
+          # Seiten dasselbe Datum (AP-03).
+          fetch-depth: 0
 
       - name: Setup Node.js
         uses: actions/setup-node@v7
@@ -67,7 +83,8 @@ jobs:
           sed "s|\${FIREBASE_PROJECT_ID}|${{ secrets.FIREBASE_PROJECT_ID }}|g" | \
           sed "s|\${FIREBASE_STORAGE_BUCKET}|${{ secrets.FIREBASE_STORAGE_BUCKET }}|g" | \
           sed "s|\${FIREBASE_MESSAGING_SENDER_ID}|${{ secrets.FIREBASE_MESSAGING_SENDER_ID }}|g" | \
-          sed "s|\${FIREBASE_APP_ID}|${{ secrets.FIREBASE_APP_ID }}|g" \
+          sed "s|\${FIREBASE_APP_ID}|${{ secrets.FIREBASE_APP_ID }}|g" | \
+          sed "s|\${FIREBASE_MEASUREMENT_ID}|${{ secrets.FIREBASE_MEASUREMENT_ID }}|g" \
           > src/firebase-config.js
 
       - name: Install Playwright browsers
@@ -105,6 +122,12 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v7
+        with:
+          # Vollständige Historie: postbuild-copy.mjs liest je Seite das Datum des
+          # letzten Commits für sitemap-lastmod und schema.org/dateModified. Mit
+          # dem Standard fetch-depth 1 existiert nur der Tip-Commit – dann bekommen
+          # ALLE Seiten das Deploy-Datum statt ihres echten Änderungsdatums.
+          fetch-depth: 0
 
       - name: Setup Node.js
         uses: actions/setup-node@v7
@@ -123,7 +146,8 @@ jobs:
           sed "s|\${FIREBASE_PROJECT_ID}|${{ secrets.FIREBASE_PROJECT_ID }}|g" | \
           sed "s|\${FIREBASE_STORAGE_BUCKET}|${{ secrets.FIREBASE_STORAGE_BUCKET }}|g" | \
           sed "s|\${FIREBASE_MESSAGING_SENDER_ID}|${{ secrets.FIREBASE_MESSAGING_SENDER_ID }}|g" | \
-          sed "s|\${FIREBASE_APP_ID}|${{ secrets.FIREBASE_APP_ID }}|g" \
+          sed "s|\${FIREBASE_APP_ID}|${{ secrets.FIREBASE_APP_ID }}|g" | \
+          sed "s|\${FIREBASE_MEASUREMENT_ID}|${{ secrets.FIREBASE_MEASUREMENT_ID }}|g" \
           > src/firebase-config.js
 
       - name: Update coverage report link in README
@@ -154,6 +178,12 @@ jobs:
       
       - name: Build project
         run: npm run build
+
+      - name: Check internal links
+        run: npm run links:check
+
+      - name: Check content quality
+        run: npm run content:check
 
       - name: Check performance budget
         run: npm run perf:budget

@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="de">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Buchstabiertafel einbetten und Aushänge zum Ausdrucken</title>
+    <link rel="icon" type="image/png" href="../assets/favicon.png">
+    <link rel="canonical" href="https://sprechfunk-uebung.de/einbetten/">
+    <meta name="robots" content="index,follow,max-image-preview:large,max-snippet:-1">
+    <meta name="theme-color" content="#0d6efd">
+
+    <meta name="description" content="Buchstabiertafel als Widget in die eigene Seite einbinden und vier druckfertige A4-Aushänge herunterladen: kostenlos, ohne Tracking, unter EUPL-1.2.">
+    <meta name="author" content="Johannes Rudolph">
+
+    <meta property="og:title" content="Buchstabiertafel einbetten und Aushänge zum Ausdrucken">
+    <meta property="og:description" content="Buchstabiertafel als Widget in die eigene Seite einbinden und vier druckfertige A4-Aushänge herunterladen: kostenlos, ohne Tracking, unter EUPL-1.2.">
+    <meta property="og:url" content="https://sprechfunk-uebung.de/einbetten/">
+    <meta property="og:type" content="article">
+    <meta property="og:locale" content="de_DE">
+    <meta property="og:site_name" content="Sprechfunk Übungsgenerator">
+    <meta property="og:image" content="https://sprechfunk-uebung.de/assets/og-image.png">
+    <meta property="og:image:width" content="1200">
+    <meta property="og:image:height" content="630">
+    <meta property="og:image:alt" content="Sprechfunk Übungsgenerator">
+
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="Buchstabiertafel einbetten und Aushänge zum Ausdrucken">
+    <meta name="twitter:description" content="Buchstabiertafel als Widget in die eigene Seite einbinden und vier druckfertige A4-Aushänge herunterladen: kostenlos, ohne Tracking, unter EUPL-1.2.">
+    <meta name="twitter:image" content="https://sprechfunk-uebung.de/assets/og-image.png">
+
+    <link rel="stylesheet" href="../bundle.css">
+    <link rel="stylesheet" href="../style.css">
+
+    <!-- GoatCounter: cookielose, anonyme Reichweitenmessung -->
+    <script data-goatcounter="https://sprechfunk-uebung.goatcounter.com/count"
+            async src="//gc.zgo.at/count.js"></script>
+
+    <script>
+        // Gleiche Theme-Auswahl wie in der App anwenden (statische Seiten laden kein Bundle).
+        document.addEventListener("DOMContentLoaded", function () {
+            var stored = localStorage.getItem("theme");
+            if (stored) {
+                document.body.setAttribute("data-theme", stored);
+            }
+        });
+    </script>
+</head>
+
+<body data-theme="light">
+<header class="app-header">
+    <div class="container app-header-grid">
+        <div class="app-header-title">
+            <p class="h2 mb-0">
+                <i class="fas fa-broadcast-tower"></i> Sprechfunk Übungsgenerator
+            </p>
+        </div>
+        <div class="app-header-actions d-none d-md-flex">
+            <a href="../" class="btn btn-primary">
+                <i class="fas fa-arrow-left"></i> Zur Anwendung
+            </a>
+            <a href="../anleitung/" class="btn btn-info">
+                <i class="fas fa-book"></i> Anleitung
+            </a>
+            <a href="https://github.com/wattnpapa/sprechfunk-uebung" class="btn btn-dark">
+                <i class="fab fa-github"></i> GitHub
+            </a>
+        </div>
+    </div>
+</header>
+
+<main class="container my-4 app-view-shell">
+    <nav aria-label="Brotkrumennavigation" class="mb-3">
+        <ol class="breadcrumb mb-0">
+            <li class="breadcrumb-item"><a href="../">Startseite</a></li>
+            <li class="breadcrumb-item active" aria-current="page">Einbetten und weitergeben</li>
+        </ol>
+    </nav>
+
+    <article>
+        <div class="card mb-3">
+            <div class="card-body">
+                <h1 class="h3">Einbetten und weitergeben</h1>
+                <p class="mb-0">
+                    Die Inhalte dieser Seite stehen unter der <strong>EUPL-1.2</strong> und
+                    dürfen weitergegeben werden. Hier stehen die zwei Wege dafür: die
+                    Buchstabiertafel als <strong>Widget</strong> für die eigene Website und vier
+                    <strong>druckfertige A4-Aushänge</strong> für Pinnwand und Ausbildungsordner.
+                </p>
+            </div>
+        </div>
+
+        <section class="card shadow-sm mb-4">
+            <div class="card-header"><h2 class="h4 mb-0" id="widget">Die Buchstabiertafel einbinden</h2></div>
+            <div class="card-body">
+                <p>
+                    Wer auf der eigenen Ausbildungsseite oder im Intranet eine Buchstabiertafel
+                    braucht, muss sie nicht abtippen. Der folgende Code bindet sie als Widget
+                    ein. Er funktioniert in jedem Redaktionssystem, das HTML zulässt,
+                    und braucht keine Installation.
+                </p>
+                <p>
+                    Der Code besteht aus zwei Teilen, und beide sind Absicht. Der
+                    <code>iframe</code> zeigt die Tabelle. Die Zeile darunter nennt die Quelle
+                    auf der eigenen Seite – ohne sie wäre die Herkunft nur im eingebetteten
+                    Rahmen sichtbar, nicht im Text der Seite selbst.
+                </p>
+
+                <div class="mb-3">
+                    <label for="einbetten-code" class="form-label fw-bold">Code zum Kopieren</label>
+                    <textarea id="einbetten-code" class="form-control font-monospace" rows="8"
+                              readonly spellcheck="false" data-testid="embed-code"><!-- EMBED_CODE --></textarea>
+                </div>
+
+                <h3 class="h5">Was das Widget tut – und was nicht</h3>
+                <p>
+                    Es lädt <strong>nichts nach</strong>: kein Skript, keine Schrift von einem
+                    fremden Server, kein Zählpixel. Damit setzt es keine Cookies und misst keine
+                    Reichweite. Für eine Behörde oder Hilfsorganisation ist das meist die
+                    entscheidende Frage, bevor überhaupt etwas eingebunden werden darf.
+                </p>
+                <p>
+                    Das bleibt keine bloße Zusage: Das <code>sandbox</code>-Attribut
+                    im Code oben enthält bewusst kein <code>allow-scripts</code>. Der Browser der
+                    einbettenden Seite verhindert damit selbst dann die Ausführung von
+                    JavaScript, wenn hier später versehentlich welches landen würde.
+                </p>
+                <p>
+                    Das Widget passt sich der Breite des umgebenden Bereichs an und folgt der
+                    hellen oder dunklen Darstellung des Systems. Die Höhe ist im Code fest
+                    vorgegeben und lässt sich ändern.
+                </p>
+
+                <h3 class="h5">Was ein eingebettetes Widget leistet</h3>
+                <p>
+                    Eine Einschränkung gehört dazu, weil sie oft verschwiegen wird: Ein
+                    <code>iframe</code> bringt der eingebundenen Seite keinen Verweis im Sinne
+                    einer Verlinkung. Der Link im Rahmen steht auf unserer Seite, nicht auf der
+                    fremden. Genau deshalb gehört die Quellenzeile mit zum Code – sie steht im
+                    Text der einbettenden Seite und ist der eigentliche Verweis.
+                </p>
+                <p>
+                    Wer das nicht möchte, lässt sie weg. Das Widget funktioniert trotzdem, und
+                    die Lizenz verlangt die Nennung der Quelle ohnehin – erzwungen wird sie
+                    technisch aber nicht.
+                </p>
+                <p>
+                    Sinnvoll ist die Einbindung überall dort, wo eine Tabelle gebraucht wird,
+                    die jemand pflegen muss: auf der Lehrgangsseite eines Kreisfeuerwehrverbands,
+                    im Ausbildungsbereich eines Ortsverbands, in einem Wiki. Eine abgetippte
+                    Tabelle veraltet still; die eingebundene ändert sich mit.
+                </p>
+
+                <h3 class="h5">Vorschau</h3>
+                <p>So sieht das eingebundene Widget aus:</p>
+                <div class="mb-0" data-testid="embed-vorschau"><!-- EMBED_VORSCHAU --></div>
+            </div>
+        </section>
+
+        <section class="card shadow-sm mb-4">
+            <div class="card-header"><h2 class="h4 mb-0" id="aushaenge">Druckfertige Aushänge</h2></div>
+            <div class="card-body">
+                <p>
+                    Vier Blätter im Format DIN A4, erzeugt aus denselben Inhalten wie die
+                    Website. Sie sind zum Ausdrucken, Aufhängen und Weitergeben gedacht: an der
+                    Funkstelle, im Ausbildungsordner, als Anlage zur Lehrgangsunterlage.
+                </p>
+                <div class="mb-3"><!-- AUSHAENGE_LISTE --></div>
+                <p>
+                    Jedes Blatt trägt unten die Herkunft, den Lizenzhinweis und einen QR-Code
+                    auf die zugehörige Seite. Das ist kein Werbeaufdruck, sondern
+                    Bedienbarkeit: Ein kopiertes Blatt an einer Pinnwand verliert sonst jede
+                    Spur dorthin, wo die aktuelle Fassung steht.
+                </p>
+                <p>
+                    Die Dateien entstehen beim Erzeugen der Website neu. Wer also die
+                    Buchstabiertafel auf der Website korrigiert, ändert damit auch den Aushang –
+                    es gibt keine zweite, langsam veraltende Fassung.
+                </p>
+            </div>
+        </section>
+
+        <section class="card shadow-sm mb-4">
+            <div class="card-header"><h2 class="h4 mb-0" id="lizenz">Was die Lizenz erlaubt</h2></div>
+            <div class="card-body">
+                <p>
+                    Das Projekt steht unter der <strong>EUPL-1.2</strong>, der Open-Source-Lizenz
+                    der Europäischen Union. Sie ist in deutschen Behörden anerkannt und in
+                    mehreren Sprachfassungen gleichwertig veröffentlicht – für eine Dienststelle
+                    ist das ein praktischer Unterschied zu einer nur englischsprachigen Lizenz.
+                </p>
+                <p>
+                    Für die Nutzung heißt das: Ausdrucken, kopieren, im Intranet ablegen, in
+                    eigene Ausbildungsunterlagen übernehmen und verändern ist erlaubt. Erwartet
+                    wird dabei die Nennung der Quelle. Wer eine veränderte Fassung
+                    weitergibt, gibt sie unter derselben Lizenz weiter.
+                </p>
+                <p class="mb-0">
+                    Die Einzelheiten stehen unter
+                    <a href="../open-source/">Kostenlos und Open Source</a> und im
+                    <a href="https://github.com/wattnpapa/sprechfunk-uebung/blob/main/LICENSE" target="_blank" rel="noopener noreferrer">Lizenztext</a>.
+                </p>
+            </div>
+        </section>
+
+        <section class="card shadow-sm mb-4">
+            <div class="card-header"><h2 class="h4 mb-0" id="beitragen">Eigene Funksprüche beisteuern</h2></div>
+            <div class="card-body">
+                <p>
+                    Der Weg geht auch in die andere Richtung. Der mitgelieferte Bestand an
+                    Übungsfunksprüchen stammt aus Übungen mehrerer Ortsverbände – jeder
+                    weitere Bestand macht die Übungen für alle abwechslungsreicher.
+                </p>
+                <p>
+                    Wer eine eigene Sammlung hat, kann sie beisteuern: als Pull Request oder,
+                    wenn das zu technisch ist, als Textdatei über ein Issue. Der Ablauf steht in
+                    <a href="https://github.com/wattnpapa/sprechfunk-uebung/blob/main/CONTRIBUTING.md" target="_blank" rel="noopener noreferrer">CONTRIBUTING.md</a>;
+                    beitragende Einheiten werden auf Wunsch namentlich genannt.
+                </p>
+                <p class="mb-0">
+                    Was bereits im Bestand ist, zeigt das
+                    <a href="../funksprueche/">Funkspruch-Archiv</a>, und wie das Projekt
+                    insgesamt arbeitet, steht unter
+                    <a href="../ueber-das-projekt/">Über das Projekt</a>.
+                </p>
+            </div>
+        </section>
+
+        <div class="card">
+            <div class="card-body">
+                <h2 class="h4">Übung erstellen</h2>
+                <p>
+                    Teilnehmer eintragen, Umfang festlegen, Unterlagen herunterladen – ohne
+                    Konto und ohne Installation.
+                </p>
+                <p class="mb-0">
+                    <a href="../" class="btn btn-primary">Übung erstellen</a>
+                    <a href="../buchstabiertafel/" class="btn btn-outline-primary">Zur Buchstabiertafel</a>
+                    <a href="../open-source/" class="btn btn-outline-primary">Open Source</a>
+                </p>
+            </div>
+        </div>
+    </article>
+</main>
+
+<footer class="main-footer">
+    <span class="footer-links">
+        <a href="../">Anwendung</a>
+        <a href="../anleitung/">Anleitung</a>
+        <a href="../buchstabiertafel/">Buchstabiertafel</a>
+        <a href="../meldevordruck/">Meldevordruck</a>
+        <a href="../funksprueche/">Funksprüche</a>
+        <a href="../faq/">FAQ</a>
+    </span>
+    <span class="footer-links">
+        <a href="../impressum/">Impressum</a>
+        <a href="../datenschutz/">Datenschutz</a>
+        <a href="mailto:johannes.rudolph@thw-oldenburg.de">Kontakt</a>
+        <a href="https://github.com/wattnpapa/sprechfunk-uebung" target="_blank" rel="noopener noreferrer">GitHub</a>
+        <a href="https://github.com/wattnpapa/sprechfunk-uebung/blob/main/LICENSE" target="_blank" rel="noopener noreferrer">EUPL-1.2-Lizenz</a>
+    </span>
+</footer>
+
+</body>
+
+</html>

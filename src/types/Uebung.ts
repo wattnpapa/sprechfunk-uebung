@@ -50,4 +50,10 @@ export interface Uebung {
     spielModus?: "klassisch" | "xZeit";
     xZeitIntervallMinuten?: number;
     xZeitStartOffsetMinuten?: number;
+    /**
+     * Slug des Szenarios (assets/szenarien/<slug>.json), wenn die Nachrichten
+     * nicht zufällig verteilt, sondern aus einem zusammenhängenden Szenario
+     * erzeugt wurden. Optional für Rückwärtskompatibilität.
+     */
+    szenarioSlug?: string | undefined;
 }

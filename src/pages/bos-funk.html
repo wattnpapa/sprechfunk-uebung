@@ -4,17 +4,17 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>BOS-Funk Grundlagen: Digitalfunk, TETRA, Rufgruppen und Betriebsmodi | Sprechfunk Übungsgenerator</title>
+    <title>BOS-Funk Grundlagen: TETRA, Rufgruppen, TMO und DMO</title>
     <link rel="icon" type="image/png" href="../assets/favicon.png">
     <link rel="canonical" href="https://sprechfunk-uebung.de/bos-funk/">
     <meta name="robots" content="index,follow,max-image-preview:large,max-snippet:-1">
     <meta name="theme-color" content="#0d6efd">
 
-    <meta name="description" content="BOS-Funk verständlich erklärt: Was hinter dem Digitalfunk BOS steckt – TETRA-Netz, Rufgruppen statt Kanäle, die Betriebsmodi TMO und DMO, Endgeräte (HRT, MRT, FRT) und was der Digitalfunk besser kann als der Analogfunk. Grundlagen für die Sprechfunkausbildung.">
+    <meta name="description" content="BOS-Funk verständlich erklärt: das TETRA-Netz, Rufgruppen statt Kanäle, die Betriebsmodi TMO und DMO sowie die Endgeräte HRT, MRT und FRT mit ihrer OPTA.">
     <meta name="author" content="Johannes Rudolph">
 
-    <meta property="og:title" content="BOS-Funk Grundlagen: Digitalfunk, TETRA, Rufgruppen und Betriebsmodi">
-    <meta property="og:description" content="TETRA-Netz, Rufgruppen, TMO und DMO, Endgeräte und die Unterschiede zum Analogfunk – die Grundlagen des Digitalfunks BOS für die Sprechfunkausbildung.">
+    <meta property="og:title" content="BOS-Funk Grundlagen: TETRA, Rufgruppen, TMO und DMO">
+    <meta property="og:description" content="BOS-Funk verständlich erklärt: das TETRA-Netz, Rufgruppen statt Kanäle, die Betriebsmodi TMO und DMO sowie die Endgeräte HRT, MRT und FRT mit ihrer OPTA.">
     <meta property="og:url" content="https://sprechfunk-uebung.de/bos-funk/">
     <meta property="og:type" content="article">
     <meta property="og:locale" content="de_DE">
@@ -25,8 +25,8 @@
     <meta property="og:image:alt" content="Sprechfunk Übungsgenerator – Übungen für den BOS-Sprechfunk erstellen">
 
     <meta name="twitter:card" content="summary_large_image">
-    <meta name="twitter:title" content="BOS-Funk Grundlagen: Digitalfunk, TETRA, Rufgruppen und Betriebsmodi">
-    <meta name="twitter:description" content="TETRA-Netz, Rufgruppen, TMO und DMO, Endgeräte und die Unterschiede zum Analogfunk – kompakt erklärt.">
+    <meta name="twitter:title" content="BOS-Funk Grundlagen: TETRA, Rufgruppen, TMO und DMO">
+    <meta name="twitter:description" content="BOS-Funk verständlich erklärt: das TETRA-Netz, Rufgruppen statt Kanäle, die Betriebsmodi TMO und DMO sowie die Endgeräte HRT, MRT und FRT mit ihrer OPTA.">
     <meta name="twitter:image" content="https://sprechfunk-uebung.de/assets/og-image.png">
 
     <link rel="stylesheet" href="../bundle.css">
@@ -36,56 +36,6 @@
     <script data-goatcounter="https://sprechfunk-uebung.goatcounter.com/count"
             async src="//gc.zgo.at/count.js"></script>
 
-    <script type="application/ld+json">
-        {
-            "@context": "https://schema.org",
-            "@type": "Article",
-            "headline": "BOS-Funk Grundlagen: Digitalfunk, TETRA, Rufgruppen und Betriebsmodi",
-            "description": "Die Grundlagen des Digitalfunks BOS verständlich erklärt: TETRA-Netz, Rufgruppen statt Kanäle, die Betriebsmodi TMO und DMO, Endgeräte und die Unterschiede zum Analogfunk.",
-            "inLanguage": "de",
-            "url": "https://sprechfunk-uebung.de/bos-funk/",
-            "image": "https://sprechfunk-uebung.de/assets/og-image.png",
-            "author": {
-                "@type": "Person",
-                "name": "Johannes Rudolph",
-                "url": "https://github.com/wattnpapa"
-            },
-            "publisher": {
-                "@type": "Person",
-                "name": "Johannes Rudolph"
-            },
-            "isPartOf": {
-                "@type": "WebSite",
-                "name": "Sprechfunk Übungsgenerator",
-                "url": "https://sprechfunk-uebung.de/"
-            },
-            "about": [
-                { "@type": "Thing", "name": "BOS-Funk" },
-                { "@type": "Thing", "name": "Digitalfunk" },
-                { "@type": "Thing", "name": "TETRA" }
-            ]
-        }
-    </script>
-    <script type="application/ld+json">
-        {
-            "@context": "https://schema.org",
-            "@type": "BreadcrumbList",
-            "itemListElement": [
-                {
-                    "@type": "ListItem",
-                    "position": 1,
-                    "name": "Startseite",
-                    "item": "https://sprechfunk-uebung.de/"
-                },
-                {
-                    "@type": "ListItem",
-                    "position": 2,
-                    "name": "BOS-Funk Grundlagen",
-                    "item": "https://sprechfunk-uebung.de/bos-funk/"
-                }
-            ]
-        }
-    </script>
     <script>
         // Gleiche Theme-Auswahl wie in der App anwenden (statische Seiten laden kein Bundle).
         document.addEventListener("DOMContentLoaded", function () {
@@ -316,7 +266,9 @@
                     <strong>HRT</strong> (Handheld Radio Terminal, das Handfunkgerät),
                     <strong>MRT</strong> (Mobile Radio Terminal, fest im Fahrzeug verbaut)
                     und <strong>FRT</strong> (Fixed Radio Terminal, die Feststation etwa in
-                    der Unterkunft oder Leitstelle).
+                    der Unterkunft oder Leitstelle). Über die Zifferntasten setzen die
+                    Besatzungen ihre <a href="../funkmeldesystem/">Statusmeldungen nach dem
+                    Funkmeldesystem</a> ab, ohne dafür zu sprechen.
                 </p>
                 <p class="mb-0">
                     Jedes Gerät sendet seine <strong>OPTA</strong> mit – die
@@ -360,7 +312,7 @@
                     Rufgruppe schalten kann jeder nach fünf Minuten Einweisung – sicheres,
                     diszipliniertes Funken kommt nur durch Übung. Der Sprechfunk
                     Übungsgenerator erstellt dafür komplette Übungen mit
-                    <a href="../funksprueche/">über 1.800 Funksprüchen</a>,
+                    <a href="../funksprueche/">{{FUNKSPRUECHE_GESAMT}} Funksprüchen</a>,
                     PDF-Vordrucken und <a href="../regiebuch-funkuebung/">Live-Übungsleitung</a> –
                     passende Übungsideen liefern die
                     <a href="../funkuebung-szenarien/">12 Szenarien für die Funkübung</a>.

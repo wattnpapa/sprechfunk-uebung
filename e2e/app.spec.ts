@@ -274,6 +274,24 @@ test("@generator generates exercise with extended custom participant list", asyn
     await expect(page.locator("#links-teilnehmer-container")).toContainText("Teilnehmer Code:");
 });
 
+test("@generator generates exercise from szenario source", async ({ page }) => {
+    await page.goto("/");
+
+    await page.locator("#optionSzenario").check();
+    await expect(page.locator("#szenarioContainer")).toBeVisible();
+    // Im Szenario-Modus bestimmen Drehbuch statt Regler die Verteilung.
+    await expect(page.locator("#verteilungSection")).toBeHidden();
+    await expect(page.locator("#loesungswortSection")).toBeHidden();
+
+    await page.selectOption("#szenarioAuswahl", "unwetter-sturm");
+    await expect(page.locator("#szenarioInfo")).toContainText("Teilnehmer");
+
+    await page.locator("#startUebungBtn").click();
+
+    await expect(page.locator("#uebung-links")).toBeVisible();
+    await expect(page.locator("#links-teilnehmer-container .generator-link-row[data-link-type='teilnehmer']")).toHaveCount(7);
+});
+
 test("@generator blocks generation when participant names are duplicates", async ({ page }) => {
     await page.goto("/");
 
@@ -366,16 +384,25 @@ test("@smoke loads howto markdown into modal content", async ({ page }) => {
     await expect(page.locator("#howtoContent")).toContainText("Sprechfunk");
 });
 
+/**
+ * Liefert die Knoten der strukturierten Daten. Seit AP-02 steht je Seite genau
+ * ein ld+json-Block mit einem @graph; die Knoten daraus werden flach
+ * zurückgegeben, damit hier nach @type gesucht werden kann.
+ */
 const readJsonLd = (page: Page) =>
     page.$$eval("script[type='application/ld+json']", nodes =>
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        nodes.map(node => JSON.parse(node.textContent ?? "{}") as any)
+        nodes.flatMap(node => {
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            const daten = JSON.parse(node.textContent ?? "{}") as any;
+            return Array.isArray(daten["@graph"]) ? daten["@graph"] : [daten];
+        })
     );
 
 test("@smoke start page exposes SoftwareApplication schema and links the content pages", async ({ page }) => {
     await page.goto("/");
 
-    const [software] = await readJsonLd(page);
+    const software = (await readJsonLd(page))
+        .find(entry => [entry["@type"]].flat().includes("SoftwareApplication"));
     expect(software["@type"]).toContain("SoftwareApplication");
     expect(software.applicationCategory).toContain("EmergencyApplication");
     expect(software.license).toContain("EUPL-1.2");
@@ -389,8 +416,14 @@ test("@smoke start page exposes SoftwareApplication schema and links the content
     await expect(page.getByTestId("footer-link-impressum")).toHaveAttribute("href", "impressum/");
     await expect(page.getByTestId("footer-link-datenschutz")).toHaveAttribute("href", "datenschutz/");
 
-    const website = (await readJsonLd(page)).find(entry => entry["@type"] === "WebSite");
-    expect(website.publisher.sameAs).toContain("https://github.com/wattnpapa");
+    // publisher ist seit AP-02 eine @id-Referenz statt eines eingebetteten
+    // Objekts. Der Test löst sie auf und prüft damit gleich mit, dass die
+    // Referenz im Graphen wirklich ankommt.
+    const knoten = await readJsonLd(page);
+    const website = knoten.find(entry => entry["@type"] === "WebSite");
+    const organisation = knoten.find(entry => entry["@id"] === website.publisher["@id"]);
+    expect(organisation["@type"]).toBe("Organization");
+    expect(organisation.sameAs).toContain("https://github.com/wattnpapa");
 });
 
 test("@smoke start page shows the intro text only in generator mode", async ({ page }) => {
@@ -434,7 +467,10 @@ test("@smoke funksprueche page explains the template format", async ({ page }) =
     await page.goto("/funksprueche/");
 
     await expect(page).toHaveTitle(/Funksprüche/);
-    await expect(page.getByRole("heading", { name: /Buchstabieraufgaben einbauen/ })).toBeVisible();
+    // Auf Ebene 2 festgelegt: der FAQ-Block (AP-02) enthält die Frage
+    // "Lassen sich Buchstabieraufgaben einbauen?" als h3, sonst wäre der
+    // Treffer nicht mehr eindeutig.
+    await expect(page.getByRole("heading", { level: 2, name: /Buchstabieraufgaben einbauen/ })).toBeVisible();
     await expect(page.locator("link[rel='canonical']")).toHaveAttribute(
         "href",
         "https://sprechfunk-uebung.de/funksprueche/"

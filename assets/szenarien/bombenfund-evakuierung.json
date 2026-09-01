@@ -1,0 +1,394 @@
+{
+  "slug": "bombenfund-evakuierung",
+  "titel": "Bombenfund und Evakuierung",
+  "beschreibung": "Blindgängerfund bei Tiefbauarbeiten: Absperrung, Evakuierung von rund 600 Anwohnern, Betreuungsstelle in der Grundschule und Warten auf die Freigabe durch den Kampfmittelräumdienst. Zwölf organisatorische Einsatzaufträge rund um die Evakuierung.",
+  "lage": "Bei Tiefbauarbeiten für eine neue Regenwasserleitung am Moorkamp ist am Vormittag ein Blindgänger aus dem Zweiten Weltkrieg gefunden worden. Die Fundstelle ist gesichert, um sie herum gilt ein Absperrradius von 500 Metern. Rund 600 Anwohner, darunter mehrere pflegebedürftige Personen, müssen das Gebiet bis zur Freigabe verlassen. In der Grundschule wird eine Betreuungsstelle mit Registrierung und Verpflegung eingerichtet; die Einsatzkräfte besetzen Absperr- und Lotsenpunkte, übernehmen Transportaufgaben und halten Kräfte im Bereitstellungsraum vor. Der Kampfmittelräumdienst ist auf Anfahrt, mit der Freigabe wird erst am Abend gerechnet.",
+  "minTeilnehmer": 3,
+  "einleitung": [
+    {
+      "empfaenger": "alle",
+      "text": "Lage: Bei Tiefbauarbeiten am Moorkamp wurde um 09:15 Uhr ein Blindgänger aus dem Zweiten Weltkrieg gefunden. Absperrradius 500 Meter, rund 600 Anwohner werden evakuiert. Der Kampfmittelräumdienst ist auf Anfahrt, die Betreuungsstelle entsteht in der Grundschule."
+    },
+    {
+      "empfaenger": "alle",
+      "text": "Sind mit Fahrzeug und sechs Einsatzkräften eingetroffen und auf der Rufgruppe erreichbar. Beginnen mit dem zugewiesenen Auftrag im Evakuierungseinsatz."
+    }
+  ],
+  "straenge": [
+    {
+      "titel": "Absperrpunkt Nord",
+      "sprueche": [
+        {
+          "absender": "ich",
+          "empfaenger": "gegenstelle",
+          "text": "Übernehmen den Absperrpunkt Nord an der Kreuzung MOORKAMP Ecke Birkenweg. Sperrmaterial ist verbaut, Durchlass nur für Einsatzfahrzeuge."
+        },
+        {
+          "absender": "ich",
+          "empfaenger": "gegenstelle",
+          "text": "Am Absperrpunkt Nord stauen sich etwa 15 Fahrzeuge. Benötigen eine zweite Kraft zur Verkehrsregelung."
+        },
+        {
+          "absender": "partner",
+          "empfaenger": "ich",
+          "text": "Sind mit zwei Helfern auf Anfahrt zum Absperrpunkt Nord, Ankunft gegen 10:20 Uhr."
+        },
+        {
+          "absender": "ich",
+          "empfaenger": "partner",
+          "text": "Verstanden. Stellen Sie Ihr Fahrzeug hinter der Absperrung ab und übernehmen Sie die Umleitung in Richtung Bahnhofstraße."
+        },
+        {
+          "absender": "ich",
+          "empfaenger": "gegenstelle",
+          "text": "Absperrpunkt Nord ist gemeinsam mit {{partner}} besetzt, der Verkehr läuft über die Umleitung ab. Keine besonderen Vorkommnisse."
+        }
+      ]
+    },
+    {
+      "titel": "Absperrpunkt Süd",
+      "sprueche": [
+        {
+          "absender": "ich",
+          "empfaenger": "gegenstelle",
+          "text": "Haben den Absperrpunkt Süd am Ortseingang eingerichtet. Umleitungsempfehlung über die Landesstraße ist ausgeschildert."
+        },
+        {
+          "absender": "ich",
+          "empfaenger": "gegenstelle",
+          "text": "Ein Anlieferverkehr für den Wochenmarkt bittet um Durchfahrt. Weisen alle Fahrzeuge ohne Einsatzauftrag ab, erbitten Bestätigung."
+        },
+        {
+          "absender": "ich",
+          "empfaenger": "gegenstelle",
+          "text": "Verstanden, keine Durchfahrt für Lieferverkehr. Die Marktbeschicker wurden auf den Parkplatz an der FESTWIESE verwiesen."
+        },
+        {
+          "absender": "ich",
+          "empfaenger": "gegenstelle",
+          "text": "Stärke am Absperrpunkt Süd: 0/1/5/6. Ablösung wird ab 14:00 Uhr erforderlich."
+        },
+        {
+          "absender": "ich",
+          "empfaenger": "gegenstelle",
+          "text": "Absperrpunkt Süd weiterhin besetzt, Verkehrslage ruhig. Seit 11:00 Uhr wurden etwa 40 Fahrzeuge umgeleitet."
+        }
+      ]
+    },
+    {
+      "titel": "Aufbau Betreuungsstelle",
+      "sprueche": [
+        {
+          "absender": "ich",
+          "empfaenger": "gegenstelle",
+          "text": "Übernehmen den Aufbau der Betreuungsstelle in der Turnhalle der GEESTLANDSCHULE. Beginnen mit dem Aufbau von 80 Sitzplätzen."
+        },
+        {
+          "absender": "ich",
+          "empfaenger": "gegenstelle",
+          "text": "Für die Betreuungsstelle werden zusätzlich 30 Feldbetten und 100 Decken für die Nacht benötigt."
+        },
+        {
+          "absender": "partner",
+          "empfaenger": "ich",
+          "text": "Bringen Ihnen 30 Feldbetten und die Decken aus dem Lager mit, Ankunft an der Schule gegen 11:45 Uhr."
+        },
+        {
+          "absender": "ich",
+          "empfaenger": "partner",
+          "text": "Danke, Anlieferung bitte über den Lehrerparkplatz an der Rückseite, das Hallentor ist geöffnet."
+        },
+        {
+          "absender": "ich",
+          "empfaenger": "gegenstelle",
+          "text": "Betreuungsstelle ist ab sofort aufnahmebereit. Kapazität 120 Personen, davon 30 Liegeplätze."
+        }
+      ]
+    },
+    {
+      "titel": "Transport immobiler Personen",
+      "sprueche": [
+        {
+          "absender": "ich",
+          "empfaenger": "gegenstelle",
+          "text": "Übernehmen den Transport nicht gehfähiger Personen aus dem Evakuierungsgebiet. Liste mit neun Adressen liegt vor."
+        },
+        {
+          "absender": "ich",
+          "empfaenger": "gegenstelle",
+          "text": "Im FLIEDERWEG 7 wohnt eine bettlägerige Person, Treppentransport aus dem zweiten Obergeschoss erforderlich. Benötigen einen Tragetrupp."
+        },
+        {
+          "absender": "partner",
+          "empfaenger": "ich",
+          "text": "Tragetrupp mit vier Helfern und Tragestuhl ist auf Anfahrt zu Ihnen, sind in etwa zehn Minuten vor Ort."
+        },
+        {
+          "absender": "ich",
+          "empfaenger": "partner",
+          "text": "Verstanden. Zufahrt bitte von der Gartenstraße aus, wir weisen Sie am Hauseingang ein."
+        },
+        {
+          "absender": "ich",
+          "empfaenger": "gegenstelle",
+          "text": "Sechs von neun Transporten abgeschlossen, drei weitere laufen. Voraussichtlich fertig gegen 13:30 Uhr."
+        },
+        {
+          "absender": "ich",
+          "empfaenger": "gegenstelle",
+          "text": "Alle nicht gehfähigen Personen sind aus dem Evakuierungsgebiet gebracht und an der Betreuungsstelle übergeben worden."
+        }
+      ]
+    },
+    {
+      "titel": "Lotsenpunkt Feuerwehrhaus",
+      "sprueche": [
+        {
+          "absender": "ich",
+          "empfaenger": "gegenstelle",
+          "text": "Lotsenpunkt am Feuerwehrhaus ist besetzt. Nehmen anrückende Kräfte auf und weisen sie in den Einsatzraum ein."
+        },
+        {
+          "absender": "ich",
+          "empfaenger": "gegenstelle",
+          "text": "Zwei Busse für den Evakuierungstransport sind am Lotsenpunkt eingetroffen und werden eingewiesen."
+        },
+        {
+          "absender": "ich",
+          "empfaenger": "alle",
+          "text": "Anfahrt zum Lotsenpunkt ausschließlich über die Bahnhofstraße, die Zufahrt über den EICHENDAMM ist gesperrt."
+        },
+        {
+          "absender": "ich",
+          "empfaenger": "gegenstelle",
+          "text": "Bisher zwölf Fahrzeuge über den Lotsenpunkt in den Einsatzraum geführt. Betrieb läuft störungsfrei."
+        },
+        {
+          "absender": "ich",
+          "empfaenger": "gegenstelle",
+          "text": "Stärke am Lotsenpunkt: 1/1/4/6. Ablösung ist derzeit nicht erforderlich."
+        }
+      ]
+    },
+    {
+      "titel": "Evakuierungsabschnitt Wohngebiet",
+      "sprueche": [
+        {
+          "absender": "ich",
+          "empfaenger": "gegenstelle",
+          "text": "Übernehmen den Evakuierungsabschnitt zwischen ROSENSTIEG und Kanalweg. Beginnen mit dem Abgehen der Hausnummern 1 bis 28."
+        },
+        {
+          "absender": "ich",
+          "empfaenger": "gegenstelle",
+          "text": "In drei Wohnungen öffnet niemand. Kennzeichnen die Türen und übermitteln die Anschriften im Anschluss."
+        },
+        {
+          "absender": "partner",
+          "empfaenger": "ich",
+          "text": "Übernehmen zur Unterstützung die geraden Hausnummern, beginnen bei Nummer 2 und arbeiten uns zu Ihnen vor."
+        },
+        {
+          "absender": "ich",
+          "empfaenger": "partner",
+          "text": "Einverstanden, wir nehmen die ungeraden Hausnummern. Treffpunkt nach Abschluss an der Ecke Kanalweg."
+        },
+        {
+          "absender": "ich",
+          "empfaenger": "gegenstelle",
+          "text": "Abschnitt gemeinsam mit {{partner}} vollständig abgegangen, 64 Personen haben das Gebiet verlassen. Drei Haushalte nicht angetroffen, Anschriften folgen per Boten."
+        }
+      ]
+    },
+    {
+      "titel": "Registrierung der Evakuierten",
+      "sprueche": [
+        {
+          "absender": "ich",
+          "empfaenger": "gegenstelle",
+          "text": "Registrierung an der Betreuungsstelle ist eingerichtet, zwei Aufnahmeplätze sind besetzt."
+        },
+        {
+          "absender": "ich",
+          "empfaenger": "gegenstelle",
+          "text": "Bis 12:00 Uhr sind 85 Personen registriert. Vier Personen suchen Angehörige, Abgleich der Listen läuft."
+        },
+        {
+          "absender": "ich",
+          "empfaenger": "gegenstelle",
+          "text": "Eine vermisste Person mit dem Nachnamen KRUSEMANN wird von Angehörigen gesucht. Erbitten Rückfrage bei den anderen Anlaufstellen."
+        },
+        {
+          "absender": "ich",
+          "empfaenger": "gegenstelle",
+          "text": "Die gesuchte Person hat sich an der Registrierung gemeldet, die Familie ist wieder zusammengeführt."
+        },
+        {
+          "absender": "ich",
+          "empfaenger": "gegenstelle",
+          "text": "Stand 14:30 Uhr: 132 Personen registriert, davon 21 in der Turnhalle untergebracht, die übrigen sind privat untergekommen."
+        }
+      ]
+    },
+    {
+      "titel": "Verpflegung Betreuungsstelle",
+      "sprueche": [
+        {
+          "absender": "ich",
+          "empfaenger": "gegenstelle",
+          "text": "Übernehmen die Verpflegung an der Betreuungsstelle. Die Feldküche wird auf dem Schulhof aufgebaut."
+        },
+        {
+          "absender": "ich",
+          "empfaenger": "gegenstelle",
+          "text": "Benötigen für die Mittagsausgabe zusätzlich 150 Portionen Eintopf sowie 200 Liter Trinkwasser."
+        },
+        {
+          "absender": "ich",
+          "empfaenger": "gegenstelle",
+          "text": "Warmverpflegung ab 12:30 Uhr sichergestellt. Ausgabe erfolgt in zwei Schichten über die Essenausgabe der Schulmensa."
+        },
+        {
+          "absender": "ich",
+          "empfaenger": "gegenstelle",
+          "text": "Stärke des Verpflegungstrupps: 0/2/8/10. Verpflegung für die Kräfte an den Absperrpunkten ist ebenfalls vorbereitet."
+        },
+        {
+          "absender": "ich",
+          "empfaenger": "gegenstelle",
+          "text": "Bis 15:00 Uhr wurden 260 Portionen ausgegeben. Der Restbestand reicht für weitere 100 Personen."
+        }
+      ]
+    },
+    {
+      "titel": "Bereitstellungsraum",
+      "sprueche": [
+        {
+          "absender": "ich",
+          "empfaenger": "gegenstelle",
+          "text": "Übernehmen den Bereitstellungsraum auf dem Festplatz an der LINDENSTRASSE. Platz für etwa 25 Einsatzfahrzeuge vorhanden."
+        },
+        {
+          "absender": "ich",
+          "empfaenger": "gegenstelle",
+          "text": "Acht Fahrzeuge sind im Bereitstellungsraum eingetroffen und abgestellt, die Kräfte bleiben abmarschbereit."
+        },
+        {
+          "absender": "partner",
+          "empfaenger": "ich",
+          "text": "Sind mit zwei Fahrzeugen auf Anfahrt in den Bereitstellungsraum, treffen gegen 12:10 Uhr ein."
+        },
+        {
+          "absender": "ich",
+          "empfaenger": "partner",
+          "text": "Verstanden, bei Ankunft bitte am Einweiser an der Zufahrt melden, Aufstellung in Reihe zwei."
+        },
+        {
+          "absender": "ich",
+          "empfaenger": "gegenstelle",
+          "text": "Bereitstellungsraum meldet zwölf Fahrzeuge und 58 Einsatzkräfte in Wartestellung. Verpflegungsbedarf besteht ab 13:00 Uhr."
+        }
+      ]
+    },
+    {
+      "titel": "Stromversorgung und Ausleuchtung",
+      "sprueche": [
+        {
+          "absender": "ich",
+          "empfaenger": "gegenstelle",
+          "text": "Übernehmen die Stromversorgung der Betreuungsstelle. Die Netzersatzanlage wird am Nebeneingang der Turnhalle in Stellung gebracht."
+        },
+        {
+          "absender": "ich",
+          "empfaenger": "gegenstelle",
+          "text": "Benötigen für die Ausleuchtung des Vorplatzes zwei zusätzliche Stativleuchten und 100 Meter Kabel."
+        },
+        {
+          "absender": "partner",
+          "empfaenger": "ich",
+          "text": "Bringen Ihnen zwei Stativleuchten und drei Kabeltrommeln mit, sind gegen 16:15 Uhr bei Ihnen."
+        },
+        {
+          "absender": "ich",
+          "empfaenger": "partner",
+          "text": "Verstanden, Abladestelle ist der Nebeneingang der Turnhalle. Ein Helfer nimmt Sie dort in Empfang."
+        },
+        {
+          "absender": "ich",
+          "empfaenger": "gegenstelle",
+          "text": "Stromversorgung und Ausleuchtung der Betreuungsstelle stehen, Probelauf ohne Störung abgeschlossen."
+        }
+      ]
+    },
+    {
+      "titel": "Bestreifung der Absperrung",
+      "sprueche": [
+        {
+          "absender": "ich",
+          "empfaenger": "gegenstelle",
+          "text": "Übernehmen die Bestreifung des Absperrradius auf der Westseite zwischen Kanalweg und Bahndamm."
+        },
+        {
+          "absender": "ich",
+          "empfaenger": "gegenstelle",
+          "text": "Am Fußweg zum Sportplatz haben zwei Personen die Absperrung überstiegen. Beide wurden angesprochen und aus dem Bereich begleitet."
+        },
+        {
+          "absender": "ich",
+          "empfaenger": "gegenstelle",
+          "text": "Eine Anwohnerin bittet darum, dringend benötigte Medikamente aus ihrer Wohnung im WACHOLDERWEG holen zu dürfen. Erbitten Entscheidung."
+        },
+        {
+          "absender": "ich",
+          "empfaenger": "gegenstelle",
+          "text": "Verstanden, Begleitung durch zwei Kräfte ist genehmigt. Führen die Anwohnerin kurz zur Wohnung und zurück zur Absperrung."
+        },
+        {
+          "absender": "ich",
+          "empfaenger": "gegenstelle",
+          "text": "Bestreifung ohne weitere Feststellungen. Die Absperrung auf der Westseite ist durchgehend geschlossen."
+        }
+      ]
+    },
+    {
+      "titel": "Lautsprecherdurchsagen",
+      "sprueche": [
+        {
+          "absender": "ich",
+          "empfaenger": "gegenstelle",
+          "text": "Übernehmen die Lautsprecherdurchsagen im Evakuierungsgebiet. Beginnen im Ortsteil WESTERFELDE mit der ersten Runde."
+        },
+        {
+          "absender": "ich",
+          "empfaenger": "gegenstelle",
+          "text": "Erste Durchsagenrunde abgeschlossen. Viele Anwohner fragen nach der voraussichtlichen Dauer der Maßnahme."
+        },
+        {
+          "absender": "ich",
+          "empfaenger": "gegenstelle",
+          "text": "Geben auf Weisung bekannt, dass die Rückkehr frühestens am Abend möglich ist. Zweite Runde beginnt um 13:15 Uhr."
+        },
+        {
+          "absender": "ich",
+          "empfaenger": "gegenstelle",
+          "text": "Durchsagen sind abgeschlossen, das Gebiet macht einen verlassenen Eindruck. Einzelne Nachzügler wurden zur Sammelstelle am Rathaus verwiesen."
+        },
+        {
+          "absender": "ich",
+          "empfaenger": "gegenstelle",
+          "text": "Fahrzeug steht für weitere Durchsagen auf Abruf bereit, warten am Rathaus."
+        }
+      ]
+    }
+  ],
+  "abschluss": [
+    {
+      "empfaenger": "alle",
+      "text": "Die Freigabe durch den Kampfmittelräumdienst liegt seit 17:20 Uhr vor. Die Absperrung ist aufgehoben, die Anwohner kehren zurück. Alle Kräfte haben ihre Aufträge abgeschlossen und rücken geschlossen ab."
+    },
+    {
+      "empfaenger": "alle",
+      "text": "Die Evakuierungsmaßnahme ist beendet, alle Absperr- und Lotsenpunkte sind zurückgebaut. Rückfahrt zu den Standorten kann angetreten werden."
+    }
+  ]
+}

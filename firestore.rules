@@ -83,7 +83,7 @@ function erlaubteFelder() {
     'buchstabierenAn', 'anmeldungAktiv', 'nachrichtenArtAktiv',
     'spruchAnteilProzent', 'verwendeteVorlagen',
     'istStandardKonfiguration', 'spielModus', 'xZeitIntervallMinuten',
-    'xZeitStartOffsetMinuten', 'seed', 'statTeilnehmerAnzahl', 'statNachrichtenAnzahl',
+    'xZeitStartOffsetMinuten', 'szenarioSlug', 'seed', 'statTeilnehmerAnzahl', 'statNachrichtenAnzahl',
     'statBytes', 'statMonat', 'statJahr', 'statHatLoesungswoerter',
     'statHatLoesungsStaerken', 'statHatBuchstabieren'
   ];
@@ -152,7 +152,10 @@ function istOptionalesGueltig(daten) {
          && optionalOk(daten, 'spruecheAnMehrere', istZahlImBereich(daten.spruecheAnMehrere, 0, 1000))
          && optionalOk(daten, 'buchstabierenAn', istZahlImBereich(daten.buchstabierenAn, 0, 1000))
          && optionalOk(daten, 'xZeitIntervallMinuten', istZahlImBereich(daten.xZeitIntervallMinuten, 0, 1440))
-         && optionalOk(daten, 'xZeitStartOffsetMinuten', istZahlImBereich(daten.xZeitStartOffsetMinuten, 0, 1440));
+         && optionalOk(daten, 'xZeitStartOffsetMinuten', istZahlImBereich(daten.xZeitStartOffsetMinuten, 0, 1440))
+         // Slug des Szenarios (Szenario-Modus); Inhalte liegen als statisches
+         // JSON im Deployment, im Dokument steht nur die Referenz.
+         && optionalOk(daten, 'szenarioSlug', istText(daten.szenarioSlug, 64));
 }
 
 // Die stat*-Felder speisen die Aggregations-Queries des Admin-Dashboards.

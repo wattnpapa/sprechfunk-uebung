@@ -1,0 +1,369 @@
+{
+  "slug": "waldbrand-unterstuetzung",
+  "titel": "Vegetationsbrand am Stadtrand",
+  "beschreibung": "Ausgedehnter Vegetationsbrand an einem trockenen Sommertag: Riegelstellung, Wasserförderung über lange Wegstrecke, Pendelverkehr der Tanklöschfahrzeuge, drehender Wind und Brandwache in der Nacht.",
+  "lage": "An einem trockenen, heißen Sommertag ist am Stadtrand von Eichenbrück ein ausgedehnter Vegetationsbrand ausgebrochen. Betroffen sind rund acht Hektar Gras- und Buschland zwischen dem Ortsteil Heidkamp und dem Waldstück Tannengrund; der böige Südwestwind treibt die Feuerfront auf den Wald und einzelne Aussiedlerhöfe zu. Die Wasserversorgung an der Einsatzstelle ist unzureichend, Löschwasser muss über lange Wegstrecke gefördert und im Pendelverkehr mit Tanklöschfahrzeugen herangeführt werden. Im Laufe des Nachmittags dreht der Wind, am Abend und in der Nacht sind Glutnester abzulöschen und eine Brandwache zu stellen. Die Einsatzleitung ist am Feuerwehrhaus Eichenbrück eingerichtet, der Bereitstellungsraum befindet sich am Sportplatz am Osterfeldweg.",
+  "minTeilnehmer": 3,
+  "einleitung": [
+    {
+      "empfaenger": "alle",
+      "text": "Lageeinweisung für alle Einheiten: Ausgedehnter Vegetationsbrand am Stadtrand von Eichenbrück, betroffen sind rund acht Hektar zwischen dem Ortsteil HEIDKAMP und dem Waldstück Tannengrund. Böiger Wind aus Südwest, weitere Ausbreitung droht."
+    },
+    {
+      "empfaenger": "alle",
+      "text": "Einsatzleitung ist am Feuerwehrhaus Eichenbrück eingerichtet, Bereitstellungsraum ist der Sportplatz am Osterfeldweg. Anfahrt nur über die Kreisstraße K7 aus Norden, die Südzufahrt ist wegen starker Rauchentwicklung gesperrt."
+    }
+  ],
+  "straenge": [
+    {
+      "titel": "Riegelstellung Nordflanke",
+      "sprueche": [
+        {
+          "absender": "ich",
+          "empfaenger": "gegenstelle",
+          "text": "Übernehmen die Riegelstellung an der Nordflanke entlang des Waldweges. Beginnen mit dem Aufbau von zwei C-Rohren gegen die Feuerfront."
+        },
+        {
+          "absender": "ich",
+          "empfaenger": "gegenstelle",
+          "text": "Erkundung Nordflanke abgeschlossen: Feuerfront auf rund 200 Meter Breite, Laufrichtung auf den Wirtschaftsweg zu. Erbitten Unterstützung durch {{partner}} für die Riegelstellung."
+        },
+        {
+          "absender": "partner",
+          "empfaenger": "ich",
+          "text": "Sind mit einem Löschgruppenfahrzeug auf Anfahrt zur Nordflanke, Eintreffen gegen 14:30 Uhr. Bringen 600 Liter Wasser und vier Feuerpatschen mit."
+        },
+        {
+          "absender": "ich",
+          "empfaenger": "partner",
+          "text": "Verstanden. Nehmen Sie Aufstellung östlich von uns am Wirtschaftsweg und übernehmen Sie den Abschnitt bis zur Wegkreuzung."
+        },
+        {
+          "absender": "ich",
+          "empfaenger": "gegenstelle",
+          "text": "Riegelstellung Nordflanke steht mit drei C-Rohren. Feuerfront kommt vor dem Wirtschaftsweg zum Stehen. Stärke 1/2/9/12."
+        }
+      ]
+    },
+    {
+      "titel": "Wasserförderung über lange Wegstrecke",
+      "sprueche": [
+        {
+          "absender": "ich",
+          "empfaenger": "gegenstelle",
+          "text": "Übernehmen den Aufbau der Wasserförderung über lange Wegstrecke vom Löschteich am MOORWEG bis zur Einsatzstelle. Benötigte Strecke etwa 1.200 Meter."
+        },
+        {
+          "absender": "ich",
+          "empfaenger": "gegenstelle",
+          "text": "Erkundung der Förderstrecke abgeschlossen. Benötigen zusätzlich 20 B-Schläuche und eine weitere Tragkraftspritze als Verstärkerpumpe auf halber Strecke."
+        },
+        {
+          "absender": "partner",
+          "empfaenger": "ich",
+          "text": "Kommen mit Schlauchmaterial und einer Tragkraftspritze zu Ihnen. Bauen die Verstärkerpumpe am Abzweig Feldscheune auf, Eintreffen in etwa 15 Minuten."
+        },
+        {
+          "absender": "ich",
+          "empfaenger": "partner",
+          "text": "Einverstanden. Kuppeln Sie Ihre Pumpe bei Schlauchnummer 26 ein, wir geben Wasser auf Ihr Zeichen frei."
+        },
+        {
+          "absender": "ich",
+          "empfaenger": "gegenstelle",
+          "text": "Wasserförderung über lange Wegstrecke steht. Förderleistung etwa 800 Liter pro Minute, Übergabe an der Einsatzstelle läuft stabil."
+        }
+      ]
+    },
+    {
+      "titel": "Pendelverkehr der Tanklöschfahrzeuge",
+      "sprueche": [
+        {
+          "absender": "ich",
+          "empfaenger": "gegenstelle",
+          "text": "Übernehmen die Organisation des Pendelverkehrs der Tanklöschfahrzeuge zwischen dem Hydranten am Ortsrand und der Einsatzstelle."
+        },
+        {
+          "absender": "ich",
+          "empfaenger": "gegenstelle",
+          "text": "Pendelverkehr läuft an mit drei Tanklöschfahrzeugen. Umlaufzeit je Fahrzeug etwa 20 Minuten, je Umlauf werden rund 2.400 Liter Wasser abgegeben."
+        },
+        {
+          "absender": "ich",
+          "empfaenger": "alle",
+          "text": "An alle Fahrzeuge im Pendelverkehr: Befüllstelle ist ab sofort der Hydrant am LERCHENWEG, die Zufahrt erfolgt als Einbahnverkehr über den Feldweg."
+        },
+        {
+          "absender": "ich",
+          "empfaenger": "gegenstelle",
+          "text": "Ein Tanklöschfahrzeug fällt wegen Reifenschaden aus. Umlaufzeit steigt auf 30 Minuten, erbitten ein Ersatzfahrzeug für den Pendelverkehr."
+        },
+        {
+          "absender": "ich",
+          "empfaenger": "gegenstelle",
+          "text": "Ersatzfahrzeug eingetroffen, Pendelverkehr wieder mit drei Fahrzeugen im Umlauf. Wasserabgabe an der Einsatzstelle ist durchgehend gesichert."
+        }
+      ]
+    },
+    {
+      "titel": "Erkundung Ostflanke",
+      "sprueche": [
+        {
+          "absender": "ich",
+          "empfaenger": "gegenstelle",
+          "text": "Übernehmen die Erkundung der Ostflanke des Vegetationsbrandes. Rücken mit zwei Trupps zu Fuß entlang des Entwässerungsgrabens vor."
+        },
+        {
+          "absender": "ich",
+          "empfaenger": "gegenstelle",
+          "text": "Wind dreht auf Nordwest und frischt auf. Feuer läuft jetzt in Richtung des Ortsteils BRINKHAUSEN, Ausbreitungsgeschwindigkeit deutlich erhöht."
+        },
+        {
+          "absender": "ich",
+          "empfaenger": "gegenstelle",
+          "text": "An der Ostflanke drei Glutnester im Bereich einer alten Strohmiete festgestellt. Bekämpfen die Glutnester mit Feuerpatschen und einem D-Rohr."
+        },
+        {
+          "absender": "ich",
+          "empfaenger": "gegenstelle",
+          "text": "Ostflanke unter Kontrolle, keine offene Flammenbildung mehr. Ziehen uns zur K7 zurück und bleiben als Sicherungstrupp vor Ort. Stärke 0/1/5/6."
+        }
+      ]
+    },
+    {
+      "titel": "Bereitstellungsraum",
+      "sprueche": [
+        {
+          "absender": "ich",
+          "empfaenger": "gegenstelle",
+          "text": "Übernehmen die Führung des Bereitstellungsraumes am Sportplatz OSTERFELDWEG. Richten Aufstellung und Registratur der eintreffenden Einheiten ein."
+        },
+        {
+          "absender": "ich",
+          "empfaenger": "gegenstelle",
+          "text": "Im Bereitstellungsraum stehen aktuell vier Fahrzeuge mit 22 Einsatzkräften bereit. Alle Einheiten sind einsatzbereit und abrufbar."
+        },
+        {
+          "absender": "ich",
+          "empfaenger": "gegenstelle",
+          "text": "Anfahrt zum Bereitstellungsraum ist frei, Parkordnung ist eingerichtet. Erbitten Information, welche Einheit als nächste abgerufen wird."
+        },
+        {
+          "absender": "ich",
+          "empfaenger": "gegenstelle",
+          "text": "Zwei Fahrzeuge aus dem Bereitstellungsraum zur Einsatzstelle abgerückt. Verbleiben mit zwei Fahrzeugen und zehn Einsatzkräften in Bereitstellung."
+        }
+      ]
+    },
+    {
+      "titel": "Wasserentnahmestelle Löschteich",
+      "sprueche": [
+        {
+          "absender": "ich",
+          "empfaenger": "gegenstelle",
+          "text": "Übernehmen die Einrichtung der Wasserentnahmestelle am Löschteich hinter dem Hof WESSELMANN. Setzen zwei Saugleitungen ein."
+        },
+        {
+          "absender": "ich",
+          "empfaenger": "gegenstelle",
+          "text": "Zufahrt zur Wasserentnahmestelle ist für Fahrzeuge über 12 Tonnen nicht befahrbar, der Weg ist aufgeweicht. Erbitten Unterstützung durch ein geländegängiges Fahrzeug."
+        },
+        {
+          "absender": "partner",
+          "empfaenger": "ich",
+          "text": "Sind mit einem geländegängigen Fahrzeug auf Anfahrt zu Ihrer Wasserentnahmestelle, Ankunft gegen 15:10 Uhr. Bringen zusätzlich zwei Saugkörbe mit."
+        },
+        {
+          "absender": "ich",
+          "empfaenger": "partner",
+          "text": "Danke, richten Sie die Aufstellung direkt an der Teichböschung aus. Wir haben die Entnahmestelle mit Flatterband markiert."
+        },
+        {
+          "absender": "partner",
+          "empfaenger": "ich",
+          "text": "Aufstellung an der Böschung bezogen, Saugleitung ist gekuppelt. Können Wasser aufnehmen, sobald Ihre Pumpe bereit ist."
+        },
+        {
+          "absender": "ich",
+          "empfaenger": "gegenstelle",
+          "text": "Wasserentnahmestelle am Löschteich in Betrieb, Abgabe von rund 1.000 Litern pro Minute in den Pendelverkehr ist möglich."
+        }
+      ]
+    },
+    {
+      "titel": "Objektschutz Aussiedlerhof",
+      "sprueche": [
+        {
+          "absender": "ich",
+          "empfaenger": "gegenstelle",
+          "text": "Übernehmen den Objektschutz am Aussiedlerhof an der Straße FUHRENKAMP. Feuer läuft aus südwestlicher Richtung auf die Scheune zu."
+        },
+        {
+          "absender": "ich",
+          "empfaenger": "gegenstelle",
+          "text": "Die Bewohner, Familie BRAMKAMP, haben den Hof verlassen. Der Landwirt treibt rund 40 Rinder auf die Weide nördlich des Hofes. Erbitten Unterstützung durch {{partner}} beim Schutz des Wohnhauses."
+        },
+        {
+          "absender": "partner",
+          "empfaenger": "ich",
+          "text": "Kommen mit einem Tanklöschfahrzeug zur Unterstützung des Objektschutzes, Eintreffen in rund zehn Minuten. Wo sollen wir Aufstellung nehmen?"
+        },
+        {
+          "absender": "ich",
+          "empfaenger": "partner",
+          "text": "Nehmen Sie Aufstellung an der Hofeinfahrt und schützen Sie das Wohnhaus mit einem C-Rohr. Wir halten die Scheunenseite."
+        },
+        {
+          "absender": "ich",
+          "empfaenger": "gegenstelle",
+          "text": "Objektschutz am Aussiedlerhof erfolgreich, Feuer 30 Meter vor der Scheune zum Stehen gekommen. Gebäude sind nicht mehr gefährdet."
+        }
+      ]
+    },
+    {
+      "titel": "Verpflegung der Einsatzkräfte",
+      "sprueche": [
+        {
+          "absender": "ich",
+          "empfaenger": "gegenstelle",
+          "text": "Übernehmen die Versorgung der Einsatzkräfte. Bauen die Verpflegungsstelle am Feuerwehrhaus Eichenbrück auf."
+        },
+        {
+          "absender": "ich",
+          "empfaenger": "gegenstelle",
+          "text": "Verpflegungsstelle ist eingerichtet. Ab 17:00 Uhr stehen warme Verpflegung für 80 Einsatzkräfte sowie 200 Flaschen Mineralwasser bereit."
+        },
+        {
+          "absender": "ich",
+          "empfaenger": "gegenstelle",
+          "text": "Erbitten Meldung der Kopfstärken aller Abschnitte bis 16:30 Uhr, damit die Ausgabe der Verpflegung eingeteilt werden kann."
+        },
+        {
+          "absender": "ich",
+          "empfaenger": "gegenstelle",
+          "text": "Getränkeversorgung an den Abschnitten läuft, zweite Fahrt mit Wasserkisten ist unterwegs. Stärke 1/1/7/9."
+        }
+      ]
+    },
+    {
+      "titel": "Glutnester Südfläche",
+      "sprueche": [
+        {
+          "absender": "ich",
+          "empfaenger": "gegenstelle",
+          "text": "Übernehmen das Ablöschen der Glutnester auf der abgebrannten Fläche südlich des Wanderparkplatzes. Arbeiten mit zwei Trupps und Handwerkzeug."
+        },
+        {
+          "absender": "ich",
+          "empfaenger": "gegenstelle",
+          "text": "Auf der Fläche flammen einzelne Glutnester immer wieder auf, der Boden ist tief durchglüht. Benötigen ein Tanklöschfahrzeug zum Durchfeuchten des Bodens."
+        },
+        {
+          "absender": "partner",
+          "empfaenger": "ich",
+          "text": "Sind mit 2.500 Litern Wasser zu Ihnen unterwegs und bringen zwei zusätzliche Dunghacken mit. Wo ist Ihre Übergabestelle?"
+        },
+        {
+          "absender": "ich",
+          "empfaenger": "partner",
+          "text": "Übergabestelle ist der Wanderparkplatz am TANNENGRUND. Ein Einweiser mit Warnweste steht an der Zufahrt."
+        },
+        {
+          "absender": "ich",
+          "empfaenger": "gegenstelle",
+          "text": "Glutnester auf der Südfläche abgelöscht, Fläche wird mit Wärmebildkamera kontrolliert. Keine auffälligen Temperaturen mehr feststellbar."
+        }
+      ]
+    },
+    {
+      "titel": "Brandwache in der Nacht",
+      "sprueche": [
+        {
+          "absender": "ich",
+          "empfaenger": "gegenstelle",
+          "text": "Übernehmen die Brandwache für die Nacht auf der abgebrannten Fläche. Teilen zwei Streifen zu je zwei Einsatzkräften ein."
+        },
+        {
+          "absender": "ich",
+          "empfaenger": "gegenstelle",
+          "text": "Erste Kontrollrunde abgeschlossen, gegen 23:15 Uhr zwei kleine Glutnester am Waldrand abgelöscht. Lage sonst ruhig."
+        },
+        {
+          "absender": "ich",
+          "empfaenger": "gegenstelle",
+          "text": "Ablösung der Brandwache für 02:00 Uhr erbeten, die eingesetzten Kräfte sind seit dem Nachmittag im Einsatz."
+        },
+        {
+          "absender": "ich",
+          "empfaenger": "gegenstelle",
+          "text": "Kontrollrunde um 04:30 Uhr ohne Feststellung, keine Rauchentwicklung mehr sichtbar. Brandwache wird bei Tagesanbruch beendet."
+        }
+      ]
+    },
+    {
+      "titel": "Absperrung Kreisstraße",
+      "sprueche": [
+        {
+          "absender": "ich",
+          "empfaenger": "gegenstelle",
+          "text": "Übernehmen die Absperrung der Kreisstraße K7 zwischen dem Ortseingang Eichenbrück und dem Abzweig BUCHENHOLT."
+        },
+        {
+          "absender": "ich",
+          "empfaenger": "gegenstelle",
+          "text": "Absperrstellen sind besetzt, Umleitung über die Landesstraße L24 ist ausgeschildert. Verkehr läuft ohne Störung ab."
+        },
+        {
+          "absender": "ich",
+          "empfaenger": "gegenstelle",
+          "text": "Mehrere Schaulustige versuchen, über den Radweg an die Einsatzstelle zu gelangen. Haben den Radweg zusätzlich mit einer Absperrstelle gesichert."
+        },
+        {
+          "absender": "ich",
+          "empfaenger": "gegenstelle",
+          "text": "Rauch zieht in dichten Schwaden über die Kreisstraße. Sicht unter 50 Meter, die Vollsperrung bleibt bis auf Weiteres bestehen."
+        }
+      ]
+    },
+    {
+      "titel": "Ablösung der Einsatzkräfte",
+      "sprueche": [
+        {
+          "absender": "ich",
+          "empfaenger": "gegenstelle",
+          "text": "Übernehmen die Organisation der Ablösung der eingesetzten Kräfte. Erfassen Einsatzzeiten und Pausen der Gruppen an allen Abschnitten."
+        },
+        {
+          "absender": "ich",
+          "empfaenger": "gegenstelle",
+          "text": "An zwei Abschnitten sind Kräfte seit über vier Stunden ohne Pause eingesetzt. Ablösung durch frische Gruppen ist ab 18:00 Uhr erforderlich."
+        },
+        {
+          "absender": "partner",
+          "empfaenger": "ich",
+          "text": "Stellen eine frische Gruppe mit neun Einsatzkräften für die Ablösung. Sind ab 17:45 Uhr abrufbereit, erbitten den Zielort für die Übergabe."
+        },
+        {
+          "absender": "ich",
+          "empfaenger": "partner",
+          "text": "Melden Sie sich um 18:00 Uhr beim Abschnittsleiter Süd. Die abgelösten Kräfte rücken danach geschlossen zum Feuerwehrhaus ab."
+        },
+        {
+          "absender": "ich",
+          "empfaenger": "gegenstelle",
+          "text": "Ablösung an beiden Abschnitten vollzogen, alle abgelösten Kräfte sind wohlauf. Übergabe der Lage an die frischen Gruppen ist erfolgt."
+        }
+      ]
+    }
+  ],
+  "abschluss": [
+    {
+      "empfaenger": "alle",
+      "text": "Abschlussmeldung: Der Vegetationsbrand ist unter Kontrolle, alle Glutnester sind abgelöscht und die Brandfläche ist an den Revierförster übergeben. Alle Einheiten rücken ein und melden die Einsatzbereitschaft nach dem Aufrüsten wieder."
+    },
+    {
+      "empfaenger": "alle",
+      "text": "An alle Einheiten: Übungsende. Rückbau von Absperrungen und Schlauchleitungen ist abgeschlossen, der Funkverkehr auf dieser Rufgruppe wird eingestellt."
+    }
+  ]
+}

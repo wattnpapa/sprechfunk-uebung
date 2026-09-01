@@ -123,6 +123,10 @@ export class Uebungsleitung extends BasePDF {
 
         this.pdf.addPage();
         let lastNrValue: number | null = null;
+        // Die dicke Trennlinie markiert Rundengrenzen (alle Nr. 1, dann Nr. 2, …).
+        // In Szenario-Übungen ist die Tabelle nach Erzählreihenfolge sortiert,
+        // die Nr wechselt dann fast jede Zeile — die Linie entfällt dort.
+        const istSzenario = !!this.funkUebung.szenarioSlug;
 
         (this.pdf as any).autoTable({
             head: [["Nr", "Empfänger", "Sender", "Nachricht", "Zeit"]],
@@ -147,7 +151,7 @@ export class Uebungsleitung extends BasePDF {
             },
             headStyles: { fillColor: [200, 200, 200] },
             didDrawCell: (data: any) => {
-                if (data.section !== "body" || data.column.index !== 0) {
+                if (istSzenario || data.section !== "body" || data.column.index !== 0) {
                     return;
                 }
                 const currentNr = data.cell.raw as number;
@@ -161,7 +165,9 @@ export class Uebungsleitung extends BasePDF {
     }
 
     private collectNachrichtenRows(): Array<[number, string, string, string, string]> {
-        const allMessages: { nr: number; empfaenger: string; sender: string; nachricht: string; zeit: string }[] = [];
+        const allMessages: {
+            nr: number; empfaenger: string; sender: string; nachricht: string; zeit: string; szenarioNr?: number
+        }[] = [];
 
         this.funkUebung.teilnehmerListe.forEach(sender => {
             const nachrichten = this.funkUebung.nachrichten[sender];
@@ -173,7 +179,11 @@ export class Uebungsleitung extends BasePDF {
             });
         });
 
-        allMessages.sort((a, b) => a.nr - b.nr || a.sender.localeCompare(b.sender));
+        // Szenario-Übungen sortieren nach der globalen Erzählreihenfolge,
+        // klassische wie bisher rundenweise nach Nachrichtennummer.
+        allMessages.sort((a, b) =>
+            (a.szenarioNr ?? a.nr) - (b.szenarioNr ?? b.nr) || a.sender.localeCompare(b.sender)
+        );
         return allMessages.map(n => [n.nr, n.empfaenger, n.sender, n.nachricht, n.zeit]);
     }
 
@@ -183,8 +193,12 @@ export class Uebungsleitung extends BasePDF {
         sender: string;
         nachricht: string;
         zeit: string;
+        szenarioNr?: number;
     } {
-        const key = `${sender}__${index + 1}`;
+        // Statuskeys und Nummern hängen an der Nachrichten-id; der Index dient
+        // nur als Fallback für Altbestände ohne id (dort gilt id == index + 1).
+        const nr = typeof nachricht.id === "number" ? nachricht.id : index + 1;
+        const key = `${sender}__${nr}`;
         const zeit = this.localData?.nachrichten?.[key]?.abgesetztUm
             ? formatNatoDate(this.localData.nachrichten[key].abgesetztUm)
             : "";
@@ -193,11 +207,12 @@ export class Uebungsleitung extends BasePDF {
             : "";
 
         return {
-            nr: index + 1,
+            nr,
             empfaenger: nachricht.empfaenger.join("\n"),
             sender,
             nachricht: nachricht.nachricht + notiz,
-            zeit
+            zeit,
+            ...(typeof nachricht.szenarioNr === "number" ? { szenarioNr: nachricht.szenarioNr } : {})
         };
     }
 

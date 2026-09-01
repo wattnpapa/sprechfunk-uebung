@@ -1,0 +1,54 @@
+{
+  "responseAggregationType": "byPage",
+  "rows": [
+    {
+      "keys": ["funkübung", "https://sprechfunk-uebung.de/"],
+      "clicks": 12,
+      "impressions": 300,
+      "ctr": 0.04,
+      "position": 8.4
+    },
+    {
+      "keys": ["funkübung", "https://sprechfunk-uebung.de/funkuebung-planen/"],
+      "clicks": 3,
+      "impressions": 100,
+      "ctr": 0.03,
+      "position": 5.1
+    },
+    {
+      "keys": ["funkübung thw", "https://sprechfunk-uebung.de/funkuebung-thw/"],
+      "clicks": 7,
+      "impressions": 90,
+      "ctr": 0.0778,
+      "position": 3.2
+    },
+    {
+      "keys": ["buchstabiertafel", "https://sprechfunk-uebung.de/buchstabiertafel/"],
+      "clicks": 40,
+      "impressions": 1200,
+      "ctr": 0.0333,
+      "position": 6.9
+    },
+    {
+      "keys": ["beispiel-anbieter.example", "https://sprechfunk-uebung.de/"],
+      "clicks": 1,
+      "impressions": 25,
+      "ctr": 0.04,
+      "position": 12.7
+    },
+    {
+      "keys": ["nicht verfolgter begriff", "https://sprechfunk-uebung.de/faq/"],
+      "clicks": 0,
+      "impressions": 4,
+      "ctr": 0,
+      "position": 44.0
+    },
+    {
+      "keys": [],
+      "clicks": 0,
+      "impressions": 1,
+      "ctr": 0,
+      "position": 90.0
+    }
+  ]
+}

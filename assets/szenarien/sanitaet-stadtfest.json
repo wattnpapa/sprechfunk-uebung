@@ -1,0 +1,380 @@
+{
+  "slug": "sanitaet-stadtfest",
+  "titel": "Sanitätswachdienst Stadtfest",
+  "beschreibung": "Sanitätswachdienst auf einem sommerlichen Stadtfest: Unfallhilfsstelle, Fußstreifen, Kreislaufpatienten bei Hitze, eine Schnittverletzung, ein vermisstes Kind, Materialnachschub und Transportbegleitung als zwölf verzahnte Einsatzstellen.",
+  "lage": "Die Stadt Falkenbrück richtet ihr großes Stadtfest rund um den Festplatz aus, erwartet werden über den Tag etwa 25.000 Besucher. Der Sanitätswachdienst betreibt eine Unfallhilfsstelle am Rande des Festgeländes, mehrere Fußstreifen und einen Fahrzeugtrupp für Nachschub und Transporte; Anlaufpunkt aller Kräfte ist die Wache am Festplatz. Bei Temperaturen um 31 Grad ist vor allem mit Kreislaufbeschwerden zu rechnen, dazu kommen kleinere Verletzungen an Ständen und Fahrgeschäften. Alle Trupps sind über eine gemeinsame Rufgruppe miteinander verbunden und melden Lage, Patientenzahlen und Materialbedarf über Funk. Personenbezogene Daten von Patienten werden nicht über Funk übermittelt, gemeldet werden nur Anzahl, Ort und Zustand.",
+  "minTeilnehmer": 3,
+  "einleitung": [
+    {
+      "empfaenger": "alle",
+      "text": "Beginn des Sanitätswachdienstes auf dem Stadtfest Falkenbrück. Alle Trupps rüsten sich aus, besetzen die zugewiesenen Bereiche und melden ihre Einsatzbereitschaft. Über Funk keine Namen von Patienten, nur Anzahl, Ort und Zustand."
+    },
+    {
+      "empfaenger": "alle",
+      "text": "Lageeinweisung: Erwartet werden heute etwa 25.000 Besucher bei Temperaturen um 31 Grad. Schwerpunkt sind Kreislaufbeschwerden und kleinere Verletzungen. Die Wasserausgabe an den Ständen läuft ab 12:00 Uhr."
+    }
+  ],
+  "straenge": [
+    {
+      "titel": "Unfallhilfsstelle in Betrieb nehmen",
+      "sprueche": [
+        {
+          "absender": "ich",
+          "empfaenger": "gegenstelle",
+          "text": "Übernehmen die Unfallhilfsstelle am LINDENPLATZ, Eingang Nordseite. Aufbau der Behandlungsplätze läuft, Inbetriebnahme voraussichtlich um 13:15 Uhr."
+        },
+        {
+          "absender": "ich",
+          "empfaenger": "gegenstelle",
+          "text": "Unfallhilfsstelle ist ab sofort in Betrieb. Zwei Behandlungsplätze und vier Ruheliegen stehen bereit. Stärke 1/2/9/12."
+        },
+        {
+          "absender": "ich",
+          "empfaenger": "gegenstelle",
+          "text": "Zwischenbilanz der Unfallhilfsstelle: Bis 15:00 Uhr sechs Patienten versorgt, davon vier mit Kreislaufbeschwerden. Alle nach Betreuung entlassen."
+        },
+        {
+          "absender": "ich",
+          "empfaenger": "gegenstelle",
+          "text": "Melden Engpass an Kühlpacks in der Unfallhilfsstelle, Restbestand acht Stück. Erbitten Nachschub bis 16:00 Uhr."
+        },
+        {
+          "absender": "ich",
+          "empfaenger": "gegenstelle",
+          "text": "Unfallhilfsstelle weiter arbeitsfähig, Kühlpacks sind eingetroffen. Aktuell zwei Patienten in Betreuung, keine besonderen Vorkommnisse."
+        }
+      ]
+    },
+    {
+      "titel": "Fußstreife Nord mit Kreislaufpatientin",
+      "sprueche": [
+        {
+          "absender": "ich",
+          "empfaenger": "gegenstelle",
+          "text": "Fußstreife Nord nimmt den Dienst auf und übernimmt den Bereich zwischen Hauptbühne und Festzelt. Beginnen Streifengang entlang der MARKTALLEE in Richtung Norden."
+        },
+        {
+          "absender": "ich",
+          "empfaenger": "gegenstelle",
+          "text": "Auf Höhe des Festzeltes Person mit Kreislaufschwäche angetroffen, weiblich, etwa 60 Jahre, ansprechbar. Erstversorgung eingeleitet, fordern einen Tragetrupp zur Abholung an."
+        },
+        {
+          "absender": "ich",
+          "empfaenger": "partner",
+          "text": "Benötigen Ihren Tragetrupp auf Höhe Festzelt, Zugang über den Wirtschaftsweg hinter den Ständen. Transport liegend erforderlich."
+        },
+        {
+          "absender": "partner",
+          "empfaenger": "ich",
+          "text": "Verstanden, Tragetrupp mit Trage und Decke ist auf dem Weg zu Ihnen, Ankunft in etwa fünf Minuten. Halten Sie den Zugang bitte frei."
+        },
+        {
+          "absender": "ich",
+          "empfaenger": "gegenstelle",
+          "text": "Patientin an den Tragetrupp übergeben, Transport zur Unfallhilfsstelle läuft. Fußstreife Nord setzt den Streifengang fort."
+        }
+      ]
+    },
+    {
+      "titel": "Hitzebeschwerden vor der Hauptbühne",
+      "sprueche": [
+        {
+          "absender": "ich",
+          "empfaenger": "gegenstelle",
+          "text": "Vor der Hauptbühne mehrere Personen mit Hitzebeschwerden, aktuell drei Betroffene. Richten einen Betreuungspunkt im Schatten neben dem Mischpult ein."
+        },
+        {
+          "absender": "ich",
+          "empfaenger": "gegenstelle",
+          "text": "Zwischenmeldung vom Betreuungspunkt: jetzt fünf Betroffene, davon eine Person liegend. Erbitten Unterstützung durch {{partner}} sowie 20 Liter Trinkwasser."
+        },
+        {
+          "absender": "partner",
+          "empfaenger": "ich",
+          "text": "Sind mit zwei Helfern und 20 Litern Trinkwasser auf dem Weg zu Ihnen, kommen von der Südseite. Eintreffen gegen 15:40 Uhr."
+        },
+        {
+          "absender": "ich",
+          "empfaenger": "partner",
+          "text": "Verstanden. Nehmen Sie den Durchgang links neben dem BÜHNENTURM, der Ordnungsdienst hält dort eine Gasse frei."
+        },
+        {
+          "absender": "partner",
+          "empfaenger": "ich",
+          "text": "Am Betreuungspunkt eingetroffen, übernehmen zwei der Betroffenen. Wasserausgabe an Umstehende läuft."
+        },
+        {
+          "absender": "ich",
+          "empfaenger": "gegenstelle",
+          "text": "Lage vor der Hauptbühne entspannt sich: vier Personen wieder wohlauf, eine Person wird zur Beobachtung zur Unfallhilfsstelle gebracht. Betreuungspunkt bleibt bis Konzertende besetzt."
+        }
+      ]
+    },
+    {
+      "titel": "Schnittverletzung am Imbissstand",
+      "sprueche": [
+        {
+          "absender": "ich",
+          "empfaenger": "gegenstelle",
+          "text": "Am Imbissstand in der BLEICHERGASSE Person mit Schnittverletzung an der linken Hand, männlich, etwa 35 Jahre. Wunde wird versorgt, keine starke Blutung."
+        },
+        {
+          "absender": "ich",
+          "empfaenger": "gegenstelle",
+          "text": "Nachmeldung zur Schnittverletzung: Druckverband angelegt, Kreislauf stabil. Person wird zu Fuß zur Unfallhilfsstelle begleitet."
+        },
+        {
+          "absender": "ich",
+          "empfaenger": "gegenstelle",
+          "text": "Übergabe an der Unfallhilfsstelle erfolgt. Der Standbetreiber wurde auf die sichere Aufbewahrung der Schneidgeräte hingewiesen."
+        },
+        {
+          "absender": "ich",
+          "empfaenger": "gegenstelle",
+          "text": "Sind zurück im Streifenbereich und wieder einsatzbereit. Die Einsatzstelle am Imbissstand ist abgeschlossen, keine weiteren Maßnahmen erforderlich."
+        }
+      ]
+    },
+    {
+      "titel": "Vermisstes Kind am Kinderkarussell",
+      "sprueche": [
+        {
+          "absender": "ich",
+          "empfaenger": "gegenstelle",
+          "text": "Am Kinderkarussell meldet eine Mutter ihr Kind als vermisst: Junge, 6 Jahre, rote Kappe, blaues Oberteil, zuletzt gesehen gegen 14:50 Uhr. Beginnen die Absuche im Nahbereich."
+        },
+        {
+          "absender": "ich",
+          "empfaenger": "alle",
+          "text": "Rundspruch an alle Trupps: Vermisst wird ein Junge, 6 Jahre, rote Kappe, blaues Oberteil, dunkle Haare, zuletzt am Kinderkarussell gesehen. Hinweise bitte an diese Stelle."
+        },
+        {
+          "absender": "ich",
+          "empfaenger": "partner",
+          "text": "Übernehmen Sie bitte die Absuche zwischen Losbude und Riesenrad, wir suchen den Bereich um die SPIELINSEL ab. Rückmeldung in zehn Minuten."
+        },
+        {
+          "absender": "partner",
+          "empfaenger": "ich",
+          "text": "Verstanden, suchen den Bereich von der Losbude bis zum Riesenrad ab und melden uns mit Zwischenstand."
+        },
+        {
+          "absender": "partner",
+          "empfaenger": "ich",
+          "text": "Der Junge ist wohlbehalten bei uns an der Losbude, die Beschreibung passt vollständig. Bringen ihn zum Kinderkarussell zur Übergabe."
+        },
+        {
+          "absender": "ich",
+          "empfaenger": "gegenstelle",
+          "text": "Vermisstenlage beendet, Kind um 15:12 Uhr wohlbehalten an die Mutter übergeben. Alle eingesetzten Kräfte sind wieder frei und einsatzbereit."
+        }
+      ]
+    },
+    {
+      "titel": "Materialnachschub vom Lager",
+      "sprueche": [
+        {
+          "absender": "ich",
+          "empfaenger": "gegenstelle",
+          "text": "Materialbestand nach den ersten Stunden deutlich reduziert: Verbandmittel bei etwa 40 Prozent, Einmalhandschuhe knapp. Organisieren Nachschub vom Lager."
+        },
+        {
+          "absender": "ich",
+          "empfaenger": "partner",
+          "text": "Bitte holen Sie Nachschub am Lager im Gerätehaus MOORWEG ab: zwei Kisten Verbandmittel, 200 Paar Handschuhe und 24 Flaschen Wasser. Anlieferung an die Materialausgabe am Festplatz."
+        },
+        {
+          "absender": "partner",
+          "empfaenger": "ich",
+          "text": "Nachschub ist geladen, insgesamt vier Kisten. Anfahrt über die Umgehungsstraße, Ankunft an der Materialausgabe gegen 16:10 Uhr."
+        },
+        {
+          "absender": "partner",
+          "empfaenger": "ich",
+          "text": "An der Materialausgabe eingetroffen, beginnen mit dem Entladen. Benötigen zwei Helfer zum Tragen der Kisten."
+        },
+        {
+          "absender": "ich",
+          "empfaenger": "gegenstelle",
+          "text": "Materialnachschub eingetroffen und verteilt. Alle Trupps sind wieder voll ausgestattet, der Bestand reicht bis zum Veranstaltungsende."
+        }
+      ]
+    },
+    {
+      "titel": "Transportbegleitung Rettungsdienst",
+      "sprueche": [
+        {
+          "absender": "ich",
+          "empfaenger": "gegenstelle",
+          "text": "Rettungsdienst kündigt einen Rettungswagen zur Übernahme eines Patienten mit anhaltenden Kreislaufbeschwerden an. Stellen einen Lotsen an der Zufahrt WIESENGRUND, Eintreffen in etwa acht Minuten."
+        },
+        {
+          "absender": "ich",
+          "empfaenger": "gegenstelle",
+          "text": "Rettungswagen an der Zufahrt eingetroffen und wird zur Übergabestelle gelotst. Die Übergabe des Patienten wird vorbereitet."
+        },
+        {
+          "absender": "ich",
+          "empfaenger": "gegenstelle",
+          "text": "Übergabe an den Rettungsdienst abgeschlossen, der Patient wird in die Klinik gefahren. Eine Begleitperson wurde über den Zielort informiert."
+        },
+        {
+          "absender": "ich",
+          "empfaenger": "gegenstelle",
+          "text": "Lotsenstelle an der Zufahrt aufgehoben. Trupp meldet sich zurück im Wachbereich und ist bereit für weitere Aufträge."
+        }
+      ]
+    },
+    {
+      "titel": "Fußstreife Süd",
+      "sprueche": [
+        {
+          "absender": "ich",
+          "empfaenger": "gegenstelle",
+          "text": "Fußstreife Süd nimmt den Dienst auf, Bereich vom Riesenrad bis zur FESTWIESE. Stärke 0/1/3/4."
+        },
+        {
+          "absender": "ich",
+          "empfaenger": "gegenstelle",
+          "text": "Erster Streifengang ohne besondere Vorkommnisse, hohes Besucheraufkommen im Südbereich. Die Wasserausgabe der Stände wird gut angenommen."
+        },
+        {
+          "absender": "ich",
+          "empfaenger": "gegenstelle",
+          "text": "Am Rand der Festwiese Person mit Verdacht auf Sonnenstich, männlich, etwa 45 Jahre. Person sitzt im Schatten und wird betreut, Zustand stabil."
+        },
+        {
+          "absender": "ich",
+          "empfaenger": "gegenstelle",
+          "text": "Person mit Sonnenstichverdacht nach 30 Minuten Betreuung beschwerdefrei entlassen. Setzen den Streifengang in Richtung Riesenrad fort."
+        },
+        {
+          "absender": "ich",
+          "empfaenger": "gegenstelle",
+          "text": "Fußstreife Süd meldet das planmäßige Ende des ersten Durchgangs um 17:00 Uhr. Nach kurzer Pause an der Wache folgt der zweite Durchgang."
+        }
+      ]
+    },
+    {
+      "titel": "Allergische Reaktion nach Wespenstich",
+      "sprueche": [
+        {
+          "absender": "ich",
+          "empfaenger": "gegenstelle",
+          "text": "An der Kuchentafel im ROSENGARTEN Person nach Wespenstich mit Schwellung im Halsbereich, weiblich, etwa 50 Jahre. Erstmaßnahmen laufen, Lage wird beobachtet."
+        },
+        {
+          "absender": "ich",
+          "empfaenger": "gegenstelle",
+          "text": "Zustand der Patientin verschlechtert sich, Atmung erschwert. Notarzt ist über die Leitstelle angefordert, benötigen Unterstützung mit Notfallrucksack und Sauerstoff."
+        },
+        {
+          "absender": "partner",
+          "empfaenger": "ich",
+          "text": "Kommen mit Notfallrucksack und Sauerstoff zu Ihnen, sind in etwa drei Minuten vor Ort. Bitte Zugang für uns freihalten."
+        },
+        {
+          "absender": "partner",
+          "empfaenger": "ich",
+          "text": "Bei Ihnen eingetroffen, unterstützen bei der Versorgung. Sauerstoffgabe läuft, Werte werden dokumentiert."
+        },
+        {
+          "absender": "ich",
+          "empfaenger": "gegenstelle",
+          "text": "Der Notarzt hat die Patientin übernommen, Transport in die Klinik läuft. Einsatzstelle Kuchentafel aufgelöst, beide Trupps wieder einsatzbereit."
+        }
+      ]
+    },
+    {
+      "titel": "Blockierter Rettungsweg",
+      "sprueche": [
+        {
+          "absender": "ich",
+          "empfaenger": "gegenstelle",
+          "text": "Der Rettungsweg an der Ostzufahrt ist durch zwei abgestellte Personenwagen blockiert, Durchfahrt für Einsatzfahrzeuge derzeit nicht möglich. Ordnungsdienst ist verständigt."
+        },
+        {
+          "absender": "ich",
+          "empfaenger": "gegenstelle",
+          "text": "Das Ordnungsamt kündigt einen Abschleppwagen für 16:20 Uhr an. Bis dahin weisen wir Einsatzfahrzeuge über die Zufahrt KIRCHGASSE ein."
+        },
+        {
+          "absender": "ich",
+          "empfaenger": "gegenstelle",
+          "text": "Ein Fahrzeughalter wurde ausfindig gemacht und fährt seinen Wagen selbst weg, der zweite Personenwagen wird abgeschleppt."
+        },
+        {
+          "absender": "ich",
+          "empfaenger": "gegenstelle",
+          "text": "Rettungsweg Ostzufahrt seit 16:45 Uhr wieder vollständig frei. Die Umleitung über die Nebenzufahrt ist aufgehoben."
+        }
+      ]
+    },
+    {
+      "titel": "Sturz an der Kabelbrücke",
+      "sprueche": [
+        {
+          "absender": "ich",
+          "empfaenger": "gegenstelle",
+          "text": "Vor der Getränkeausgabe am EULENSTEG ist eine Person über eine Kabelbrücke gestürzt. Verdacht auf Knöchelverletzung rechts, weiblich, etwa 25 Jahre."
+        },
+        {
+          "absender": "ich",
+          "empfaenger": "gegenstelle",
+          "text": "Verletzte wird mit Kühlung und Schiene versorgt, Schmerzen erträglich. Planen den Transport mit Tragestuhl zur Unfallhilfsstelle."
+        },
+        {
+          "absender": "ich",
+          "empfaenger": "gegenstelle",
+          "text": "Melden zusätzlich eine Gefahrenstelle: Die Kabelbrücke steht an einer Kante hoch und wackelt. Der Veranstalter wurde zur Sicherung aufgefordert."
+        },
+        {
+          "absender": "ich",
+          "empfaenger": "gegenstelle",
+          "text": "Transport der Verletzten mit dem Tragestuhl läuft, Übergabe zur weiteren Versorgung in etwa zehn Minuten."
+        },
+        {
+          "absender": "ich",
+          "empfaenger": "gegenstelle",
+          "text": "Die Gefahrenstelle an der Kabelbrücke wurde vom Veranstalter mit Warnmarkierung gesichert. Einsatzstelle abgeschlossen, Trupp wieder frei."
+        }
+      ]
+    },
+    {
+      "titel": "Ablösung für den Abenddienst",
+      "sprueche": [
+        {
+          "absender": "ich",
+          "empfaenger": "gegenstelle",
+          "text": "Bereiten die Ablösung durch {{partner}} für den Abenddienst vor. Übergabepunkt ist die Wache am Festplatz, geplanter Wechsel um 18:00 Uhr."
+        },
+        {
+          "absender": "ich",
+          "empfaenger": "partner",
+          "text": "Bitte kommen Sie um 17:45 Uhr zur Übergabe an die Wache. Übergeben werden Funkgeräte, Materialliste und die Dokumentation der bisherigen Einsätze."
+        },
+        {
+          "absender": "partner",
+          "empfaenger": "ich",
+          "text": "Verstanden, treffen um 17:45 Uhr an der Wache ein und bringen zwei zusätzliche Einsatzkräfte für den Abenddienst mit."
+        },
+        {
+          "absender": "partner",
+          "empfaenger": "ich",
+          "text": "An der Wache eingetroffen, Übernahme läuft. Funkgeräte geprüft, Material gezählt, Dokumentation vollständig übernommen."
+        },
+        {
+          "absender": "ich",
+          "empfaenger": "gegenstelle",
+          "text": "Ablösung vollzogen, der Tagesdienst hat an den Abenddienst übergeben. Stärke des Abenddienstes 0/1/5/6. Tagesschicht rückt ab."
+        }
+      ]
+    }
+  ],
+  "abschluss": [
+    {
+      "empfaenger": "alle",
+      "text": "Abschlussmeldung des Sanitätswachdienstes: Alle Einsatzstellen auf dem Festgelände sind abgearbeitet, alle Patienten versorgt oder übergeben. Material wird gereinigt und aufgefüllt, die Trupps rücken ab. Ende des Übungsfunkverkehrs."
+    }
+  ]
+}
