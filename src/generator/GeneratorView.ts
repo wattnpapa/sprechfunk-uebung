@@ -53,6 +53,7 @@ export class GeneratorView {
             datum: datumVal ? new Date(datumVal) : new Date(),
             anmeldungAktiv: (document.getElementById("anmeldungAktiv") as HTMLInputElement).checked,
             autoStaerkeErgaenzen: (document.getElementById("autoStaerkeErgaenzen") as HTMLInputElement).checked,
+            ...this.getNachrichtenArtFormData(),
             ...(spielModus !== undefined ? { spielModus } : {}),
             xZeitIntervallMinuten: Number((document.getElementById("xZeitIntervallMinuten") as HTMLInputElement)?.value) || 3,
             xZeitStartOffsetMinuten: Number((document.getElementById("xZeitStartOffsetMinuten") as HTMLInputElement)?.value) || 0
@@ -73,6 +74,8 @@ export class GeneratorView {
 
         (document.getElementById("anmeldungAktiv") as HTMLInputElement).checked = uebung.anmeldungAktiv;
         (document.getElementById("autoStaerkeErgaenzen") as HTMLInputElement).checked = uebung.autoStaerkeErgaenzen;
+
+        this.setNachrichtenArtFormData(uebung);
 
         // Spiel-Modus setzen
         const modusVal = uebung.spielModus === "xZeit" ? "xZeit" : "klassisch";
@@ -103,6 +106,43 @@ export class GeneratorView {
         if (container) {
             container.style.display = radio?.value === "xZeit" ? "block" : "none";
         }
+    }
+
+    private getNachrichtenArtFormData(): Pick<FunkUebung, "nachrichtenArtAktiv" | "spruchAnteilProzent"> {
+        const checkbox = document.getElementById("nachrichtenArtAktiv") as HTMLInputElement | null;
+        const anteil = document.getElementById("prozentSprueche") as HTMLInputElement | null;
+        return {
+            nachrichtenArtAktiv: checkbox?.checked ?? false,
+            spruchAnteilProzent: Number(anteil?.value ?? 50)
+        };
+    }
+
+    private setNachrichtenArtFormData(uebung: FunkUebung): void {
+        const checkbox = document.getElementById("nachrichtenArtAktiv") as HTMLInputElement | null;
+        if (checkbox) {
+            checkbox.checked = uebung.nachrichtenArtAktiv ?? false;
+        }
+        const anteil = document.getElementById("prozentSprueche") as HTMLInputElement | null;
+        if (anteil) {
+            anteil.value = String(uebung.spruchAnteilProzent ?? 50);
+        }
+        this.updateNachrichtenArtOptionsVisibility();
+    }
+
+    public updateNachrichtenArtOptionsVisibility(): void {
+        const checkbox = document.getElementById("nachrichtenArtAktiv") as HTMLInputElement | null;
+        const container = document.getElementById("nachrichtenArtOptionsContainer");
+        if (container) {
+            container.style.display = checkbox?.checked ? "block" : "none";
+        }
+    }
+
+    public bindNachrichtenArtToggle(onChange: (aktiv: boolean) => void): void {
+        const checkbox = document.getElementById("nachrichtenArtAktiv") as HTMLInputElement | null;
+        checkbox?.addEventListener("change", () => {
+            this.updateNachrichtenArtOptionsVisibility();
+            onChange(checkbox.checked);
+        }, { signal: this.bindingController.signal });
     }
 
     public bindSpielModusToggle(): void {

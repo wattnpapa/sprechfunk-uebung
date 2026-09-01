@@ -1,4 +1,5 @@
 import { FunkUebung } from "../models/FunkUebung";
+import { FUNKSPRUCH_VORLAGEN } from "../data/funkspruchVorlagen";
 import { store } from "../state/store";
 import { FirebaseService } from "../services/FirebaseService";
 import { GenerationService } from "../services/GenerationService";
@@ -62,15 +63,7 @@ export class GeneratorController {
             "Wellenlänge", "Übertragung", "Ausfallsicherheit", "Rescue", "Einsatzwagen"
         ].map(word => word.toUpperCase());
 
-        this.templatesFunksprueche = {
-            grundausbildung: { text: "Einfache Funksprüche für die Grundausbildung", filename: "assets/funksprueche/funksprueche_grundausbildung_einfach.txt" },
-            thwleer: { text: "Funksprüche THW Leer", filename: "assets/funksprueche/nachrichten_thw_leer.txt" },
-            thwmelle: { text: "Funksprüche THW Melle", filename: "assets/funksprueche/nachrichten_thw_melle.txt" },
-            thwessen: { text: "Funksprüche THW Essen", filename: "assets/funksprueche/nachrichten_thw_essen.txt" },
-            thwlehrte: { text: "Funksprüche THW Lehrte", filename: "assets/funksprueche/nachrichten_thw_lehrte.txt" },
-            thwsaarstedt: { text: "Funksprüche THW Saarstedt", filename: "assets/funksprueche/nachrichten_thw_saarstedt.txt" },
-            vorlageLustig: { text: "Lustige Funksprüche (Chat GPT)", filename: "assets/funksprueche/funksprueche_lustig_kreativ.txt" }
-        };
+        this.templatesFunksprueche = { ...FUNKSPRUCH_VORLAGEN };
 
         this.fetchBuildInfo();
         // Initial placeholder
@@ -152,6 +145,9 @@ export class GeneratorController {
         );
         this.view.bindAnmeldungToggle(checked => {
             this.funkUebung.anmeldungAktiv = checked;
+        });
+        this.view.bindNachrichtenArtToggle(aktiv => {
+            this.funkUebung.nachrichtenArtAktiv = aktiv;
         });
         this.view.bindSpielModusToggle();
         this.view.bindPrimaryActions({
@@ -602,6 +598,8 @@ export class GeneratorController {
             spruecheAnMehrere: uebung.spruecheAnMehrere,
             buchstabierenAn: uebung.buchstabierenAn,
             anmeldungAktiv: uebung.anmeldungAktiv,
+            nachrichtenArtAktiv: uebung.nachrichtenArtAktiv ?? false,
+            spruchAnteilProzent: uebung.spruchAnteilProzent ?? 50,
             loesungswoerter: uebung.loesungswoerter || {},
             loesungsStaerken: uebung.loesungsStaerken || {},
             szenarioSlug: uebung.szenarioSlug ?? null

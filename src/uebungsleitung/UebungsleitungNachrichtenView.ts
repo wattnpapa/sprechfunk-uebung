@@ -3,6 +3,8 @@ import { formatNatoDate } from "../utils/date";
 import type { LiveSyncState } from "../types/LiveStatus";
 import type { EffektiverNachrichtenStatus } from "../services/liveStatusMerge";
 import { escapeHtml } from "../utils/html";
+import type { NachrichtArt } from "../types/Nachricht";
+import { nachrichtenArtBadgeClass, nachrichtenArtLabel } from "../utils/nachrichtenArt";
 
 export interface FlattenedNachricht {
     nr: number;
@@ -10,6 +12,7 @@ export interface FlattenedNachricht {
     empfaenger: string[];
     text: string;
     xZeitSlot?: number;
+    art?: NachrichtArt;
 }
 
 export interface HeatmapBin {
@@ -318,7 +321,7 @@ export class UebungsleitungNachrichtenView {
                   <td>${nachricht.empfaenger.map(e => `<div>${e}</div>`).join("")}</td>
                   <td>${nachricht.sender}</td>
                   <td class="nachricht-text">
-                      ${escapeHtml(nachricht.text).replace(/\\n/g, "<br>").replace(/\n/g, "<br>")}
+                      ${nachricht.art ? `<span class="${nachrichtenArtBadgeClass(nachricht.art)} me-2">${nachrichtenArtLabel(nachricht.art)}</span>` : ""}${escapeHtml(nachricht.text).replace(/\\n/g, "<br>").replace(/\n/g, "<br>")}
                       <textarea
                         class="form-control form-control-sm mt-2 nachricht-notiz"
                         data-nr="${nachricht.nr}"

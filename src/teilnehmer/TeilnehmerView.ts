@@ -5,6 +5,7 @@ import { TeilnehmerStorage } from "../types/Storage";
 import { Nachricht } from "../types/Nachricht";
 import type { LeitungBestaetigung, LiveSyncState } from "../types/LiveStatus";
 import { formatCountdown, parseHHMMtoMs } from "../utils/xzeit";
+import { nachrichtenArtBadgeClass, nachrichtenArtLabel } from "../utils/nachrichtenArt";
 
 interface PdfPage {
     getViewport: (options: { scale: number; rotation?: number }) => { width: number; height: number };
@@ -349,7 +350,7 @@ export class TeilnehmerView {
             <tr class="${isUebertragen ? "status-ok-row" : "status-pending-row"}">
                 <td>${n.id}</td>
                 <td>${escapeHtml(n.empfaenger.join(", "))}</td>
-                <td>${escapeHtml(n.nachricht).replace(/\\n/g, "<br>").replace(/\n/g, "<br>")}</td>
+                <td>${this.renderArtBadge(n)}${escapeHtml(n.nachricht).replace(/\\n/g, "<br>").replace(/\n/g, "<br>")}</td>
                 ${xZeitCell}
                 <td>
                     <div class="form-check form-switch d-flex align-items-center gap-2">
@@ -521,7 +522,7 @@ export class TeilnehmerView {
                             <span class="text-muted small">noch ${zustand.offen} offen</span>
                         </div>
                         <div class="text-muted small mt-2">an: ${escapeHtml(n.empfaenger.join(", "))}</div>
-                        <p class="fs-5 mt-1 mb-3">${escapeHtml(n.nachricht).replace(/\\n/g, "<br>").replace(/\n/g, "<br>")}</p>
+                        <p class="fs-5 mt-1 mb-3">${this.renderArtBadge(n)}${escapeHtml(n.nachricht).replace(/\\n/g, "<br>").replace(/\n/g, "<br>")}</p>
                         <button class="btn btn-success btn-lg w-100" data-fokus-uebertragen="${n.id}">
                             ✓ Als übertragen markieren
                         </button>
@@ -552,6 +553,17 @@ export class TeilnehmerView {
     }
 
     /** Zeigt an, ob die Übungsleitung den Spruch bereits als abgesetzt bestätigt hat. */
+    /**
+     * Kennzeichnet die Übermittlungsart. Bleibt leer, wenn die Übung ohne
+     * Kennzeichnung generiert wurde.
+     */
+    private renderArtBadge(nachricht: Nachricht): string {
+        if (!nachricht.art) {
+            return "";
+        }
+        return `<span class="${nachrichtenArtBadgeClass(nachricht.art)} me-2">${nachrichtenArtLabel(nachricht.art)}</span>`;
+    }
+
     private renderBestaetigungCell(bestaetigung?: LeitungBestaetigung): string {
         if (!bestaetigung?.abgesetztUm) {
             return "<span class=\"text-muted small\">–</span>";

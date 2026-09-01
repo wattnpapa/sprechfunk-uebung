@@ -40,6 +40,7 @@ vi.mock("../../src/generator/GeneratorView", () => ({
         bindLoesungswortOptionChange() {}
         bindTeilnehmerEvents() {}
         bindAnmeldungToggle() {}
+        bindNachrichtenArtToggle() {}
         bindPrimaryActions() {}
         setVersionInfo() {}
         populateTemplateSelect() {}

@@ -2,6 +2,7 @@
 import { BasePDFTeilnehmer } from "./BasePDFTeilnehmer";
 import { formatNatoDate } from "../utils/date";
 import { Nachricht } from "../types/Nachricht";
+import { nachrichtenArtLabel } from "../utils/nachrichtenArt";
 
 export class Teilnehmer extends BasePDFTeilnehmer {
     private readonly pageMarginTop = 25;
@@ -111,17 +112,34 @@ export class Teilnehmer extends BasePDFTeilnehmer {
     }
 
     private drawNachrichtenTable(nachrichten: Nachricht[], startY: number): void {
+        // Die Spalte entfällt bei Übungen ohne gekennzeichnete Übermittlungsart,
+        // damit dort die volle Breite für den Nachrichtentext bleibt.
+        const zeigeArt = nachrichten.some((n: Nachricht) => !!n.art);
+        const artWidth = zeigeArt ? 22 : 0;
         const empfaengerWidth = this.contentWidth * 0.20;
         const lfdnrWidth = 12;
-        const columnWidths = [lfdnrWidth, empfaengerWidth, this.contentWidth - lfdnrWidth - empfaengerWidth];
+        const columnWidths = [
+            lfdnrWidth,
+            empfaengerWidth,
+            this.contentWidth - lfdnrWidth - artWidth - empfaengerWidth,
+            artWidth
+        ];
 
         (this.pdf as any).autoTable({
-            head: [["Nr.", "Empfänger", "Nachrichtentext"]],
-            body: nachrichten.map((n: Nachricht) => [
-                n.id,
-                n.empfaenger.join("\n"),
-                String(n.nachricht ?? "").replace(/\\n/g, "\n")
-            ]),
+            head: [zeigeArt
+                ? ["Nr.", "Empfänger", "Nachrichtentext", "Art"]
+                : ["Nr.", "Empfänger", "Nachrichtentext"]],
+            body: nachrichten.map((n: Nachricht) => {
+                const zeile: (string | number)[] = [
+                    n.id,
+                    n.empfaenger.join("\n"),
+                    String(n.nachricht ?? "").replace(/\\n/g, "\n")
+                ];
+                if (zeigeArt) {
+                    zeile.push(nachrichtenArtLabel(n.art));
+                }
+                return zeile;
+            }),
             startY,
             theme: "grid",
             margin: {
@@ -133,7 +151,8 @@ export class Teilnehmer extends BasePDFTeilnehmer {
             columnStyles: {
                 0: { cellWidth: columnWidths[0] },
                 1: { cellWidth: columnWidths[1] },
-                2: { cellWidth: columnWidths[2] }
+                2: { cellWidth: columnWidths[2] },
+                ...(zeigeArt ? { 3: { cellWidth: columnWidths[3] } } : {})
             },
             styles: { fontSize: 10, cellPadding: 1.5, lineWidth: 0.1, lineColor: [0, 0, 0], overflow: "linebreak" },
             headStyles: { fillColor: [200, 200, 200] }
