@@ -274,6 +274,24 @@ test("@generator generates exercise with extended custom participant list", asyn
     await expect(page.locator("#links-teilnehmer-container")).toContainText("Teilnehmer Code:");
 });
 
+test("@generator generates exercise from szenario source", async ({ page }) => {
+    await page.goto("/");
+
+    await page.locator("#optionSzenario").check();
+    await expect(page.locator("#szenarioContainer")).toBeVisible();
+    // Im Szenario-Modus bestimmen Drehbuch statt Regler die Verteilung.
+    await expect(page.locator("#verteilungSection")).toBeHidden();
+    await expect(page.locator("#loesungswortSection")).toBeHidden();
+
+    await page.selectOption("#szenarioAuswahl", "unwetter-sturm");
+    await expect(page.locator("#szenarioInfo")).toContainText("Teilnehmer");
+
+    await page.locator("#startUebungBtn").click();
+
+    await expect(page.locator("#uebung-links")).toBeVisible();
+    await expect(page.locator("#links-teilnehmer-container .generator-link-row[data-link-type='teilnehmer']")).toHaveCount(7);
+});
+
 test("@generator blocks generation when participant names are duplicates", async ({ page }) => {
     await page.goto("/");
 

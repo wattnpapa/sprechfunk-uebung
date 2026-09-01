@@ -1,0 +1,404 @@
+{
+  "slug": "vermisstensuche-wald",
+  "titel": "Vermisstensuche im Waldgebiet",
+  "beschreibung": "Eine 78-jährige, orientierungslose Frau wird seit dem Vormittag vermisst, zuletzt gesehen am Waldrand. Suchketten, Drohnentrupp und Rettungshundestaffel durchkämmen das Waldgebiet, bis die Vermisste gefunden und an den Rettungsdienst übergeben wird.",
+  "lage": "Seit dem Vormittag wird die 78-jährige Margarete Laubrink aus dem Ortsteil Hollenbrook vermisst. Die orientierungslose Frau hat gegen 09:30 Uhr ihr Wohnhaus verlassen und wurde zuletzt am Waldrand nahe des Wanderparkplatzes Hollenbrook gesehen. Sie ist ohne Jacke und ohne Mobiltelefon unterwegs und auf regelmäßige Medikamente angewiesen; bei den kühlen Temperaturen droht eine Unterkühlung. Die Polizei hat um Unterstützung bei der Absuche des Waldgebiets Hollenbrooker Holz gebeten. Mehrere Einheiten mit Suchketten, einem Drohnentrupp und einer Rettungshundestaffel treffen am Bereitstellungsraum ein; die Einsatzleitung weist die Suchabschnitte zu.",
+  "minTeilnehmer": 3,
+  "einleitung": [
+    {
+      "empfaenger": "alle",
+      "text": "Lageeinweisung für alle Einheiten: Seit 09:30 Uhr wird eine 78-jährige orientierungslose Frau vermisst, zuletzt gesehen am Waldrand nahe des Wanderparkplatzes Hollenbrook. Suchgebiet ist das Hollenbrooker Holz. Anfahrt zum Bereitstellungsraum über die Kreisstraße K7."
+    },
+    {
+      "empfaenger": "leitung",
+      "text": "Sind mit unserer Einheit im Bereitstellungsraum am Wanderparkplatz eingetroffen und einsatzbereit. Erbitten Zuweisung eines Suchauftrags."
+    }
+  ],
+  "straenge": [
+    {
+      "titel": "Suchkette Abschnitt Nord",
+      "sprueche": [
+        {
+          "absender": "ich",
+          "empfaenger": "leitung",
+          "text": "Übernehmen Suchabschnitt Nord zwischen Moorweg und Bachlauf. Suchkette mit zwölf Einsatzkräften ist eingeteilt, beginnen in westlicher Richtung. Stärke 1/2/9/12."
+        },
+        {
+          "absender": "ich",
+          "empfaenger": "leitung",
+          "text": "Suchkette hat den querenden Waldweg erreicht, bisher keine Feststellung. Dichtes Unterholz verlangsamt das Vorankommen, rechnen mit etwa 45 Minuten Verzögerung."
+        },
+        {
+          "absender": "ich",
+          "empfaenger": "partner",
+          "text": "Unsere Kette hat am Steilhang eine Lücke. Erbitten Unterstützung mit drei Einsatzkräften für den Streifen am VOSSBARG. Treffpunkt am umgestürzten Hochsitz."
+        },
+        {
+          "absender": "partner",
+          "empfaenger": "ich",
+          "text": "Verstanden, sind mit drei Einsatzkräften zu Fuß unterwegs zum umgestürzten Hochsitz. Sind in etwa zehn Minuten bei Ihnen."
+        },
+        {
+          "absender": "partner",
+          "empfaenger": "leitung",
+          "text": "Unterstützen die Suchkette im Abschnitt Nord am Steilhang mit drei Einsatzkräften. Die Lücke in der Kette ist geschlossen."
+        },
+        {
+          "absender": "ich",
+          "empfaenger": "leitung",
+          "text": "Abschnitt Nord vollständig abgesucht, keine Feststellung. Trupp von {{partner}} ist wieder abgerückt. Lösen die Suchkette auf und kehren zum Bereitstellungsraum zurück."
+        }
+      ]
+    },
+    {
+      "titel": "Suchkette Abschnitt Süd",
+      "sprueche": [
+        {
+          "absender": "ich",
+          "empfaenger": "leitung",
+          "text": "Übernehmen Suchabschnitt Süd vom Wanderparkplatz bis zur Kreisstraße K7. Suchkette mit zehn Einsatzkräften steht, beginnen jetzt mit der Absuche."
+        },
+        {
+          "absender": "ich",
+          "empfaenger": "leitung",
+          "text": "Feststellung im Abschnitt Süd: Am Wegrand liegt ein einzelner brauner Damenschuh. Fundstelle mit Trassierband markiert. Erbitten Abgleich mit der Bekleidung der Vermissten."
+        },
+        {
+          "absender": "ich",
+          "empfaenger": "leitung",
+          "text": "Verstanden, der Schuh gehört nicht zur vermissten Person. Setzen die Suchkette in Richtung Kreisstraße fort."
+        },
+        {
+          "absender": "ich",
+          "empfaenger": "leitung",
+          "text": "Suchkette hat die Kreisstraße erreicht. Abschnitt Süd ohne weitere Feststellung abgesucht. Erbitten Folgeauftrag oder Freigabe zur Rückkehr."
+        },
+        {
+          "absender": "ich",
+          "empfaenger": "leitung",
+          "text": "Kehren zum Bereitstellungsraum zurück. Zwei Einsatzkräfte benötigen trockenes Schuhwerk, sonst alle wohlauf."
+        }
+      ]
+    },
+    {
+      "titel": "Drohnentrupp",
+      "sprueche": [
+        {
+          "absender": "ich",
+          "empfaenger": "leitung",
+          "text": "Drohnentrupp einsatzbereit auf der Wiese östlich des Wanderparkplatzes. Beginnen den ersten Erkundungsflug über der Schneise in Richtung TANNENHOF."
+        },
+        {
+          "absender": "ich",
+          "empfaenger": "leitung",
+          "text": "Erster Flug abgeschlossen. Wärmebildkamera zeigt einen Verdachtspunkt etwa 400 Meter nordöstlich des Startplatzes im dichten Bewuchs. Koordinaten sind notiert."
+        },
+        {
+          "absender": "ich",
+          "empfaenger": "partner",
+          "text": "Erbitten Bodenkontrolle unseres Verdachtspunkts 400 Meter nordöstlich des Drohnenstartplatzes im Brombeergestrüpp. Können Sie die Stelle mit einem Trupp anlaufen?"
+        },
+        {
+          "absender": "partner",
+          "empfaenger": "ich",
+          "text": "Verstanden, laufen den Verdachtspunkt mit zwei Einsatzkräften an. Melden uns, sobald wir die Stelle erreicht haben."
+        },
+        {
+          "absender": "partner",
+          "empfaenger": "ich",
+          "text": "Verdachtspunkt kontrolliert: Im Gestrüpp lag ein Reh, keine vermisste Person. Kehren zum Waldweg zurück."
+        },
+        {
+          "absender": "ich",
+          "empfaenger": "leitung",
+          "text": "Verdachtspunkt durch den Trupp von {{partner}} negativ aufgeklärt. Setzen die Flüge im nächsten Planquadrat fort, Akkuwechsel in fünf Minuten."
+        }
+      ]
+    },
+    {
+      "titel": "Rettungshundestaffel",
+      "sprueche": [
+        {
+          "absender": "ich",
+          "empfaenger": "leitung",
+          "text": "Rettungshundestaffel mit zwei Flächensuchhunden eingetroffen. Übernehmen das Waldstück zwischen Bachlauf und EICHENGRUND. Stärke 0/1/4/5."
+        },
+        {
+          "absender": "ich",
+          "empfaenger": "leitung",
+          "text": "Der erste Hund zeigt Anzeigeverhalten an einer Geländekante. Hundeführer kontrolliert die Stelle jetzt."
+        },
+        {
+          "absender": "ich",
+          "empfaenger": "leitung",
+          "text": "Anzeige aufgeklärt: An der Geländekante lag eine graue Wolldecke, vermutlich von Waldbesuchern zurückgelassen. Nehmen sie als möglichen Hinweis mit, Suche läuft weiter."
+        },
+        {
+          "absender": "ich",
+          "empfaenger": "partner",
+          "text": "Unsere Hunde benötigen eine Trink- und Ruhepause. Erbitten zwei Kanister Wasser an den Weg südlich der Geländekante."
+        },
+        {
+          "absender": "partner",
+          "empfaenger": "ich",
+          "text": "Wasser ist unterwegs, bringen zwei Kanister mit je zehn Litern an den Weg. Ankunft in etwa einer Viertelstunde."
+        },
+        {
+          "absender": "ich",
+          "empfaenger": "leitung",
+          "text": "Suchgebiet der Hundestaffel vollständig abgearbeitet, keine Person gefunden. Hunde werden versorgt und sind danach wieder einsatzbereit."
+        }
+      ]
+    },
+    {
+      "titel": "Bereitstellungsraum und Registrierung",
+      "sprueche": [
+        {
+          "absender": "ich",
+          "empfaenger": "leitung",
+          "text": "Haben den Bereitstellungsraum auf dem Wanderparkplatz HOLLENBROOK eingerichtet. Zufahrt ist frei, Stellflächen für zwölf Fahrzeuge sind ausgewiesen."
+        },
+        {
+          "absender": "ich",
+          "empfaenger": "leitung",
+          "text": "Registrierung läuft: Bisher sechs Einheiten mit zusammen 41 Einsatzkräften erfasst. Führen die Übersicht über die zugewiesenen Suchabschnitte."
+        },
+        {
+          "absender": "ich",
+          "empfaenger": "leitung",
+          "text": "Im Bereitstellungsraum wird der Platz knapp. Erbitten Freigabe, den Seitenstreifen des Forstwegs als zusätzliche Stellfläche zu nutzen."
+        },
+        {
+          "absender": "ich",
+          "empfaenger": "leitung",
+          "text": "Verstanden, Seitenstreifen ist freigegeben. Zwei nachrückende Fahrzeuge wurden dort bereits eingewiesen."
+        },
+        {
+          "absender": "ich",
+          "empfaenger": "leitung",
+          "text": "Meldung aus dem Bereitstellungsraum: Alle gemeldeten Einheiten sind registriert, aktuelle Gesamtstärke 4/8/39/51."
+        }
+      ]
+    },
+    {
+      "titel": "Befragung der Angehörigen",
+      "sprueche": [
+        {
+          "absender": "ich",
+          "empfaenger": "leitung",
+          "text": "Sind am Wohnhaus der Angehörigen im BUCHENWINKEL eingetroffen. Beginnen mit der Befragung zur vermissten Person."
+        },
+        {
+          "absender": "ich",
+          "empfaenger": "alle",
+          "text": "Personenbeschreibung: Vermisst wird Margarete LAUBRINK, 78 Jahre, etwa 1,60 Meter groß, schlank, kurze graue Haare, dunkelblaue Strickjacke, beige Hose, schwarze Halbschuhe. Feststellungen unmittelbar an {{leitung}} melden."
+        },
+        {
+          "absender": "ich",
+          "empfaenger": "leitung",
+          "text": "Ergänzung aus der Befragung: Die Vermisste ist gehbeeinträchtigt, ihr Rollator steht noch im Hausflur. Sie ist demnach ohne Hilfsmittel zu Fuß unterwegs, vermutlich langsam."
+        },
+        {
+          "absender": "ich",
+          "empfaenger": "leitung",
+          "text": "Weitere Erkenntnis: Die Vermisste hat früher regelmäßig den alten Schützenplatz am Waldrand besucht. Empfehlen, diesen Bereich verstärkt zu berücksichtigen."
+        },
+        {
+          "absender": "ich",
+          "empfaenger": "leitung",
+          "text": "Befragung abgeschlossen, ein Angehöriger bleibt telefonisch erreichbar. Rücken vom Wohnhaus ab und stehen für weitere Aufträge zur Verfügung."
+        }
+      ]
+    },
+    {
+      "titel": "Absuche Bachlauf",
+      "sprueche": [
+        {
+          "absender": "ich",
+          "empfaenger": "leitung",
+          "text": "Übernehmen die Absuche des Bachlaufs STEENBEEKE von der Brücke bis zum Wehr. Gehen beidseitig mit je drei Einsatzkräften vor."
+        },
+        {
+          "absender": "ich",
+          "empfaenger": "leitung",
+          "text": "Bachlauf bis zur alten Furt abgesucht, keine Feststellung. Die Uferböschung ist stellenweise abgerutscht, gehen dort nur gesichert vor."
+        },
+        {
+          "absender": "ich",
+          "empfaenger": "partner",
+          "text": "Für die Kontrolle unter der Brücke benötigen wir eine Steckleiter und zusätzliche Beleuchtung. Können Sie uns das Material an die Furt bringen?"
+        },
+        {
+          "absender": "partner",
+          "empfaenger": "ich",
+          "text": "Sind auf Anfahrt zur Furt, bringen Steckleiter und zwei Handscheinwerfer mit. Eintreffen in rund zehn Minuten."
+        },
+        {
+          "absender": "ich",
+          "empfaenger": "leitung",
+          "text": "Bereich unter der Brücke kontrolliert, keine Feststellung. Absuche des Bachlaufs bis zum Wehr abgeschlossen, beide Trupps sind zurück auf dem Weg."
+        }
+      ]
+    },
+    {
+      "titel": "Verpflegungsstelle",
+      "sprueche": [
+        {
+          "absender": "ich",
+          "empfaenger": "leitung",
+          "text": "Verpflegungsstelle am Rand des Bereitstellungsraums aufgebaut. Ausgabe warmer Getränke ab sofort, warmes Essen ab 13:00 Uhr für 60 Personen möglich."
+        },
+        {
+          "absender": "ich",
+          "empfaenger": "leitung",
+          "text": "Bestandsmeldung Verpflegung: 80 Liter Heißgetränke, 100 belegte Brötchen und 60 Portionen Eintopf vorhanden. Nachschub an Trinkwasser ist bestellt."
+        },
+        {
+          "absender": "ich",
+          "empfaenger": "leitung",
+          "text": "Trinkwassernachschub eingetroffen: zwölf Kisten mit je sechs Flaschen. Getränke werden gestaffelt an die zurückkehrenden Trupps ausgegeben."
+        },
+        {
+          "absender": "ich",
+          "empfaenger": "leitung",
+          "text": "Verpflegungsausgabe läuft störungsfrei, bisher 45 Einsatzkräfte versorgt. Ausgabe wird bis auf Weiteres aufrechterhalten."
+        },
+        {
+          "absender": "ich",
+          "empfaenger": "leitung",
+          "text": "Rückbau der Verpflegungsstelle abgeschlossen, Material vollständig verlastet. Stärke 1/0/5/6, sind wieder einsatzbereit."
+        }
+      ]
+    },
+    {
+      "titel": "Sperrung der Waldzufahrten",
+      "sprueche": [
+        {
+          "absender": "ich",
+          "empfaenger": "leitung",
+          "text": "Übernehmen die Sperrung der Waldzufahrten. Die Schranke am Forstweg ist geschlossen, der Posten an der Zufahrt KREUZBUCHE ist besetzt."
+        },
+        {
+          "absender": "ich",
+          "empfaenger": "leitung",
+          "text": "An der Sperrstelle stauen sich fünf Fahrzeuge mit Schaulustigen. Fahrzeuge werden zurückgewiesen, die Lage ist unter Kontrolle."
+        },
+        {
+          "absender": "ich",
+          "empfaenger": "leitung",
+          "text": "Das Fahrzeug des Revierförsters wurde nach Rücksprache an der Sperrstelle durchgelassen. Sonst keine besonderen Vorkommnisse."
+        },
+        {
+          "absender": "ich",
+          "empfaenger": "leitung",
+          "text": "Sperrstellen werden auf Weisung zurückgebaut. Schilder und Absperrmaterial sind eingesammelt, die Posten rücken ein."
+        }
+      ]
+    },
+    {
+      "titel": "Kontrolle Schutzhütten und Hochsitze",
+      "sprueche": [
+        {
+          "absender": "ich",
+          "empfaenger": "leitung",
+          "text": "Übernehmen die Kontrolle der Schutzhütten und Hochsitze im Suchgebiet. Beginnen an der Grillhütte am Parkplatz und arbeiten uns nach Norden vor."
+        },
+        {
+          "absender": "ich",
+          "empfaenger": "leitung",
+          "text": "Grillhütte und zwei Hochsitze kontrolliert, keine Feststellung. An der Hütte frische Fußspuren, Laufrichtung nicht eindeutig erkennbar."
+        },
+        {
+          "absender": "ich",
+          "empfaenger": "partner",
+          "text": "Der Hochsitz am WIENKAMP ist nur über eine defekte Leiter erreichbar. Können Sie mit Leitermaterial zu uns stoßen? Anfahrt über den Forstweg möglich."
+        },
+        {
+          "absender": "partner",
+          "empfaenger": "ich",
+          "text": "Verstanden, kommen mit einer vierteiligen Steckleiter zum Hochsitz am Wienkamp. Sind in wenigen Minuten bei Ihnen."
+        },
+        {
+          "absender": "ich",
+          "empfaenger": "leitung",
+          "text": "Alle sieben Schutzhütten und Hochsitze im zugewiesenen Bereich kontrolliert, keine vermisste Person angetroffen. Auftrag ist abgeschlossen."
+        }
+      ]
+    },
+    {
+      "titel": "Fundstelle und Übergabe",
+      "sprueche": [
+        {
+          "absender": "ich",
+          "empfaenger": "leitung",
+          "text": "Fundmeldung: Vermisste Person in einer Bodensenke nahe der alten SANDKUHLE angetroffen. Sie ist ansprechbar und leicht unterkühlt. Beginnen mit Betreuung und Wärmeerhalt."
+        },
+        {
+          "absender": "ich",
+          "empfaenger": "leitung",
+          "text": "Erbitten Rettungsdienst an den Forstweg zur Sandkuhle. Der Zuweg ist nicht befahrbar, die letzten 300 Meter sind nur zu Fuß möglich. Stellen einen Lotsen an den Forstweg."
+        },
+        {
+          "absender": "ich",
+          "empfaenger": "partner",
+          "text": "Benötigen für den Transport eine Schleifkorbtrage und zwei Wolldecken. Können Sie das Material an den Lotsenpunkt am Forstweg bringen?"
+        },
+        {
+          "absender": "partner",
+          "empfaenger": "ich",
+          "text": "Sind mit Schleifkorbtrage und Decken auf dem Weg zum Lotsenpunkt. Eintreffen in etwa acht Minuten, bringen vier Einsatzkräfte zum Tragen mit."
+        },
+        {
+          "absender": "partner",
+          "empfaenger": "leitung",
+          "text": "Unterstützen an der Fundstelle mit vier Einsatzkräften beim Tragen. Die Person wird jetzt zum Forstweg gebracht."
+        },
+        {
+          "absender": "ich",
+          "empfaenger": "leitung",
+          "text": "Übergabe an den Rettungsdienst um 15:42 Uhr erfolgt. Die Person ist stabil und wird zur Kontrolle in ein Krankenhaus gefahren. Fundstelle ist dokumentiert, Trupp ist wieder einsatzbereit."
+        }
+      ]
+    },
+    {
+      "titel": "Einsatzstellenbeleuchtung",
+      "sprueche": [
+        {
+          "absender": "ich",
+          "empfaenger": "leitung",
+          "text": "Übernehmen den Aufbau der Beleuchtung für den Bereitstellungsraum und die Hauptwege. Lichtmast und drei Stative werden jetzt in Stellung gebracht."
+        },
+        {
+          "absender": "ich",
+          "empfaenger": "leitung",
+          "text": "Beleuchtung am Bereitstellungsraum steht, der Stromerzeuger läuft. Zwei Stative leuchten zusätzlich die Wegkreuzung am Forstweg aus."
+        },
+        {
+          "absender": "ich",
+          "empfaenger": "leitung",
+          "text": "Der Kraftstoffvorrat für den Stromerzeuger reicht noch für etwa vier Stunden. Erbitten 20 Liter Kraftstoff als Reserve an den Bereitstellungsraum."
+        },
+        {
+          "absender": "ich",
+          "empfaenger": "leitung",
+          "text": "Kraftstoffreserve ist eingetroffen und eingelagert. Die Beleuchtung läuft störungsfrei, der Betrieb ist bis in die Abendstunden gesichert."
+        },
+        {
+          "absender": "ich",
+          "empfaenger": "leitung",
+          "text": "Beleuchtung wird auf Weisung zurückgebaut. Material ist geprüft und verlastet, sind abmarschbereit."
+        }
+      ]
+    }
+  ],
+  "abschluss": [
+    {
+      "empfaenger": "leitung",
+      "text": "Alle zugewiesenen Aufträge sind abgearbeitet. Einheit ist vollzählig, Material geprüft und verlastet. Rücken auf Weisung zum Standort ab."
+    },
+    {
+      "empfaenger": "alle",
+      "text": "An alle Einheiten: Die Suchmaßnahmen im Hollenbrooker Holz sind beendet. Die vermisste Person wurde wohlbehalten dem Rettungsdienst übergeben. Allen Einsatzkräften Dank für die Zusammenarbeit."
+    }
+  ]
+}

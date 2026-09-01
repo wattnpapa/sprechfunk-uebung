@@ -44,6 +44,7 @@ function baueVollstaendigeUebung(): FunkUebung {
     u.spielModus = "xZeit";
     u.xZeitIntervallMinuten = 3;
     u.xZeitStartOffsetMinuten = 0;
+    u.szenarioSlug = "unwetter-sturm";
     u.seed = "vergleichslauf-2026";
     return u;
 }

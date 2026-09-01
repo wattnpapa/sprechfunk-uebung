@@ -1,0 +1,360 @@
+{
+  "slug": "bereitstellungsraum-manv",
+  "titel": "Bereitstellungsraum bei MANV",
+  "beschreibung": "Busunglück mit vielen Betroffenen: Ein Bereitstellungsraum wird eingerichtet und betrieben. Die Stränge umfassen Einweisung und Registrierung ankommender Einheiten, Lotsendienst, Verpflegung, Materialtransporte und Pendelverkehr zur Einsatzstelle.",
+  "lage": "Auf der L24 zwischen Eschendorf und Steenfelde ist gegen 13:40 Uhr ein Reisebus verunglückt, es gibt eine Vielzahl Betroffener. Die Einsatzleitung hat für nachrückende Kräfte einen Bereitstellungsraum auf dem Festplatz am Moorkamp angeordnet. Dort werden ankommende Einheiten eingewiesen und registriert, Verpflegung und Material bereitgestellt sowie Transporte zur Einsatzstelle geführt. Über Funk werden keine Angaben zu einzelnen Patienten übermittelt, sondern nur Anzahlen und Aufträge. Alle Einheiten arbeiten auf der zugewiesenen Rufgruppe und halten Funkdisziplin ein.",
+  "minTeilnehmer": 3,
+  "einleitung": [
+    {
+      "empfaenger": "alle",
+      "text": "Lageeinweisung für alle Einheiten: Auf der L24 ist ein Reisebus mit einer Vielzahl Betroffener verunglückt. Für nachrückende Kräfte wird ein Bereitstellungsraum auf dem Festplatz eingerichtet. Alle Einheiten melden sich vor Einfahrt beim Meldekopf an."
+    },
+    {
+      "empfaenger": "alle",
+      "text": "Anfahrt zum Bereitstellungsraum ausschließlich über die B213 und die Abfahrt Gewerbegebiet. Die L24 bleibt für die Rettungskette frei. Über Funk keine Angaben zu einzelnen Patienten, nur Anzahlen und Aufträge."
+    }
+  ],
+  "straenge": [
+    {
+      "titel": "Bereitstellungsraum einrichten",
+      "sprueche": [
+        {
+          "absender": "ich",
+          "empfaenger": "leitung",
+          "text": "Übernehmen die Einrichtung des Bereitstellungsraums auf dem Festplatz am MOORKAMP. Beginnen mit der Erkundung der Flächen."
+        },
+        {
+          "absender": "ich",
+          "empfaenger": "leitung",
+          "text": "Erkundungsergebnis: Festplatz bietet Stellflächen für etwa 25 Einsatzfahrzeuge, Untergrund geschottert und tragfähig. Ein- und Ausfahrt getrennt möglich."
+        },
+        {
+          "absender": "ich",
+          "empfaenger": "partner",
+          "text": "Benötigen Unterstützung beim Ausschildern der Fahrgassen. Bringen Sie 20 Leitkegel und zwei Rollen Absperrband mit."
+        },
+        {
+          "absender": "partner",
+          "empfaenger": "ich",
+          "text": "Verstanden, sind mit 20 Leitkegeln und dem Absperrband auf Anfahrt. Ankunft bei Ihnen gegen 14:20 Uhr."
+        },
+        {
+          "absender": "ich",
+          "empfaenger": "alle",
+          "text": "Bereitstellungsraum Festplatz ist eingerichtet, Fahrgassen ausgeschildert, Ein- und Ausfahrt getrennt geführt. Ab sofort aufnahmebereit für ankommende Einheiten."
+        }
+      ]
+    },
+    {
+      "titel": "Lotsendienst an der Zufahrt",
+      "sprueche": [
+        {
+          "absender": "ich",
+          "empfaenger": "leitung",
+          "text": "Übernehmen den Lotsenpunkt an der Abfahrt Gewerbegebiet. Stärke 0/1/5/6. Lotsen ab sofort ankommende Einheiten zum Bereitstellungsraum."
+        },
+        {
+          "absender": "ich",
+          "empfaenger": "leitung",
+          "text": "Am Lotsenpunkt stauen sich fünf Fahrzeuge, weil die Beschilderung zur Einfahrt fehlt. Weisen die Fahrzeuge einzeln ein."
+        },
+        {
+          "absender": "ich",
+          "empfaenger": "partner",
+          "text": "Bitten um Unterstützung: Stellen Sie zwei zusätzliche Hinweisschilder an der Kreuzung TANNENKAMP auf."
+        },
+        {
+          "absender": "partner",
+          "empfaenger": "ich",
+          "text": "Schilder an der Kreuzung sind aufgestellt, die Anfahrt ist jetzt durchgehend ausgeschildert. Stehen weiter am Lotsenpunkt bereit."
+        },
+        {
+          "absender": "ich",
+          "empfaenger": "leitung",
+          "text": "Lotsenpunkt meldet: Verkehrsfluss läuft wieder, keine Wartezeiten mehr. Bisher 14 Fahrzeuge zum Bereitstellungsraum gelotst."
+        }
+      ]
+    },
+    {
+      "titel": "Registrierung am Meldekopf",
+      "sprueche": [
+        {
+          "absender": "ich",
+          "empfaenger": "leitung",
+          "text": "Übernehmen den Meldekopf an der Einfahrt des Bereitstellungsraums. Registrieren alle ankommenden Einheiten mit Stärke und Einsatzmitteln."
+        },
+        {
+          "absender": "ich",
+          "empfaenger": "leitung",
+          "text": "Zwischenmeldung vom Meldekopf: Bis 14:45 Uhr sind 9 Einheiten mit insgesamt 17 Fahrzeugen registriert und eingewiesen."
+        },
+        {
+          "absender": "ich",
+          "empfaenger": "leitung",
+          "text": "Ein Gerätewagen ohne Marschbefehl eingetroffen, Einheitsführer DALLMANN. Nehmen das Fahrzeug vorläufig in die Reserve und tragen es in die Übersicht ein."
+        },
+        {
+          "absender": "ich",
+          "empfaenger": "leitung",
+          "text": "Meldekopf aktuell: 12 Einheiten mit 23 Fahrzeugen und 96 Einsatzkräften registriert. Übersicht liegt beim Meldekopf für {{leitung}} bereit."
+        }
+      ]
+    },
+    {
+      "titel": "Verpflegungsstelle aufbauen",
+      "sprueche": [
+        {
+          "absender": "ich",
+          "empfaenger": "leitung",
+          "text": "Übernehmen Aufbau und Betrieb der Verpflegungsstelle im Bereitstellungsraum. Stärke 1/2/9/12. Aufbau läuft an der Nordseite des Platzes."
+        },
+        {
+          "absender": "ich",
+          "empfaenger": "leitung",
+          "text": "Verpflegungsstelle betriebsbereit ab 15:30 Uhr. Kapazität 250 Portionen warme Verpflegung sowie Heißgetränke."
+        },
+        {
+          "absender": "ich",
+          "empfaenger": "partner",
+          "text": "Trinkwasser geht zur Neige. Bitten um Transport von 400 Litern Trinkwasser vom Feuerwehrhaus ESCHENDORF zur Verpflegungsstelle."
+        },
+        {
+          "absender": "partner",
+          "empfaenger": "ich",
+          "text": "Haben 400 Liter Trinkwasser in Kanistern geladen und sind auf Anfahrt. Ankunft bei Ihnen gegen 15:50 Uhr."
+        },
+        {
+          "absender": "partner",
+          "empfaenger": "ich",
+          "text": "Trinkwasser ist übergeben. Können bei Bedarf gegen 18:00 Uhr eine zweite Fuhre bringen, dafür bitte bis 17:00 Uhr anmelden."
+        },
+        {
+          "absender": "ich",
+          "empfaenger": "leitung",
+          "text": "Verpflegungsstelle meldet: 180 Portionen ausgegeben, Trinkwasservorrat wieder aufgefüllt. Betrieb läuft ohne Störungen."
+        }
+      ]
+    },
+    {
+      "titel": "Materialtransport zur Einsatzstelle",
+      "sprueche": [
+        {
+          "absender": "ich",
+          "empfaenger": "leitung",
+          "text": "Übernehmen den Materialtransport vom Bereitstellungsraum zur Einsatzstelle. Erstes Fahrzeug wird mit Tragen und Decken beladen."
+        },
+        {
+          "absender": "ich",
+          "empfaenger": "leitung",
+          "text": "Erster Transport unterwegs: 20 Krankentragen und 60 Wolldecken. Fahrzeit zur Einsatzstelle etwa 10 Minuten über die Ortsumgehung STEENFELDE."
+        },
+        {
+          "absender": "ich",
+          "empfaenger": "leitung",
+          "text": "Zweiter Transport von der Einsatzstelle angefordert: 4 Rollcontainer Sanitätsmaterial und 8 Beleuchtungssätze. Beladung läuft."
+        },
+        {
+          "absender": "ich",
+          "empfaenger": "leitung",
+          "text": "Materialtransport abgeschlossen, beide Fahrten ohne besondere Vorkommnisse. Fahrzeug steht wieder abrufbereit im Bereitstellungsraum."
+        }
+      ]
+    },
+    {
+      "titel": "Stromversorgung und Beleuchtung",
+      "sprueche": [
+        {
+          "absender": "ich",
+          "empfaenger": "leitung",
+          "text": "Übernehmen die Beleuchtung des Bereitstellungsraums für die Nachtstunden. Erkunden Standorte für Lichtmast und Stromerzeuger entlang des Weges am KIEBITZMOOR."
+        },
+        {
+          "absender": "ich",
+          "empfaenger": "partner",
+          "text": "Unser Stromerzeuger fällt mit Motorschaden aus. Erbitten Ihr Ersatzaggregat mit 50 Meter Leitungstrommel an die Südseite des Platzes."
+        },
+        {
+          "absender": "partner",
+          "empfaenger": "ich",
+          "text": "Ersatzaggregat ist verladen, sind auf Anfahrt, Ankunft in etwa 15 Minuten. Bringen zusätzlich zwei Flutlichtstrahler mit."
+        },
+        {
+          "absender": "partner",
+          "empfaenger": "ich",
+          "text": "Aggregat läuft, Flutlichtstrahler sind aufgebaut und ausgerichtet. Übergeben die Anlage an Ihre Kräfte."
+        },
+        {
+          "absender": "ich",
+          "empfaenger": "leitung",
+          "text": "Beleuchtung des Bereitstellungsraums steht: vier Flutlichtstrahler und ein Lichtmast in Betrieb, Kraftstoffvorrat reicht für 8 Stunden."
+        }
+      ]
+    },
+    {
+      "titel": "Verkehrslenkung am Kreisverkehr",
+      "sprueche": [
+        {
+          "absender": "ich",
+          "empfaenger": "leitung",
+          "text": "Übernehmen die Verkehrslenkung am Kreisverkehr LINDENHOF. Sperren die Zufahrt zur Unglücksstelle für den privaten Verkehr ab."
+        },
+        {
+          "absender": "ich",
+          "empfaenger": "leitung",
+          "text": "Absperrung steht, die Umleitung über die Ortsdurchfahrt ist ausgeschildert. Einsatzfahrzeuge werden gesondert durchgelassen."
+        },
+        {
+          "absender": "ich",
+          "empfaenger": "leitung",
+          "text": "Zwei Pressefahrzeuge an der Absperrung eingetroffen. Verweisen die Vertreter an die Pressestelle, Absperrung bleibt geschlossen."
+        },
+        {
+          "absender": "ich",
+          "empfaenger": "leitung",
+          "text": "Verkehrslenkung meldet: Verkehr läuft störungsfrei über die Umleitung, keine Rückstaus. Posten bleibt bis auf Widerruf besetzt."
+        }
+      ]
+    },
+    {
+      "titel": "Sanitärstelle und Hygiene",
+      "sprueche": [
+        {
+          "absender": "ich",
+          "empfaenger": "leitung",
+          "text": "Übernehmen den Aufbau der Sanitärstelle im Bereitstellungsraum. Vier Toilettenkabinen und zwei Handwaschplätze sind bestellt."
+        },
+        {
+          "absender": "ich",
+          "empfaenger": "leitung",
+          "text": "Anlieferung der Toilettenkabinen ist für 16:15 Uhr angekündigt. Aufstellfläche an der Südwestecke des Platzes ist vorbereitet."
+        },
+        {
+          "absender": "ich",
+          "empfaenger": "leitung",
+          "text": "Hygienemittel reichen nicht aus, fordern zusätzlich 10 Kanister Handdesinfektionsmittel und 20 Rollen Papierhandtücher nach."
+        },
+        {
+          "absender": "ich",
+          "empfaenger": "leitung",
+          "text": "Sanitärstelle ist vollständig betriebsbereit, der Nachschub an Hygienemitteln ist eingetroffen. Standort ist im Lageplan eingetragen und ausgeschildert."
+        }
+      ]
+    },
+    {
+      "titel": "Vorhaltung der Rettungsmittel",
+      "sprueche": [
+        {
+          "absender": "ich",
+          "empfaenger": "leitung",
+          "text": "Übernehmen die Vorhaltung der Rettungsmittel im Bereitstellungsraum. Aktuell stehen 6 Rettungswagen und 2 Krankentransportwagen bereit."
+        },
+        {
+          "absender": "ich",
+          "empfaenger": "leitung",
+          "text": "Abruf durch die Einsatzstelle: 3 Rettungswagen sind zur Verletztenablage abgerückt. Verbleiben 3 Rettungswagen und 2 Krankentransportwagen."
+        },
+        {
+          "absender": "ich",
+          "empfaenger": "leitung",
+          "text": "Nachrückend eingetroffen: 4 Rettungswagen aus dem Landkreis WESERMOOR. Vorhaltung damit wieder auf 7 Rettungswagen aufgefüllt."
+        },
+        {
+          "absender": "ich",
+          "empfaenger": "leitung",
+          "text": "Bestandsmeldung Rettungsmittel um 17:00 Uhr: 7 Rettungswagen, 2 Krankentransportwagen, alle Fahrzeuge abrufbereit und vollgetankt."
+        }
+      ]
+    },
+    {
+      "titel": "Fernmeldebetrieb im Bereitstellungsraum",
+      "sprueche": [
+        {
+          "absender": "ich",
+          "empfaenger": "leitung",
+          "text": "Übernehmen den Fernmeldebetrieb im Bereitstellungsraum und besetzen die Funkstelle am Meldekopf. Stärke 0/2/4/6."
+        },
+        {
+          "absender": "ich",
+          "empfaenger": "partner",
+          "text": "Führen mit Ihnen eine Funkprobe auf der Ausweichrufgruppe durch. Bitte wechseln Sie jetzt und melden Sie sich dort."
+        },
+        {
+          "absender": "partner",
+          "empfaenger": "ich",
+          "text": "Funkprobe auf der Ausweichrufgruppe abgeschlossen, Verständigung einwandfrei. Wechseln zurück auf die Betriebsrufgruppe."
+        },
+        {
+          "absender": "ich",
+          "empfaenger": "leitung",
+          "text": "Funkprobe mit der Nachbarstelle abgeschlossen, beide Rufgruppen betriebsbereit. Erreichbarkeit der Funkstelle rund um die Uhr sichergestellt."
+        },
+        {
+          "absender": "ich",
+          "empfaenger": "leitung",
+          "text": "Fernmeldebetrieb meldet: Handsprechfunkgeräte an alle Abschnitte im Bereitstellungsraum ausgegeben, Geräteliste wird geführt."
+        }
+      ]
+    },
+    {
+      "titel": "Erweiterung der Stellflächen",
+      "sprueche": [
+        {
+          "absender": "ich",
+          "empfaenger": "leitung",
+          "text": "Stellflächen im Bereitstellungsraum sind zu 80 Prozent belegt. Erkunden eine Erweiterungsfläche auf der Wiese am HEIDBLICK."
+        },
+        {
+          "absender": "ich",
+          "empfaenger": "leitung",
+          "text": "Erkundung abgeschlossen: Wiese ist ausreichend tragfähig für Fahrzeuge bis 7,5 Tonnen, Zufahrt über den Wirtschaftsweg möglich."
+        },
+        {
+          "absender": "ich",
+          "empfaenger": "leitung",
+          "text": "Für schwere Fahrzeuge legen wir 30 Meter Fahrbahnplatten aus. Material kommt vom Baubetriebshof, Eintreffen gegen 16:40 Uhr."
+        },
+        {
+          "absender": "ich",
+          "empfaenger": "leitung",
+          "text": "Erweiterungsfläche ist freigegeben: zusätzlich 15 Stellplätze verfügbar. Beschilderung und Einweisung sind eingerichtet."
+        }
+      ]
+    },
+    {
+      "titel": "Pendelverkehr zur Einsatzstelle",
+      "sprueche": [
+        {
+          "absender": "ich",
+          "empfaenger": "leitung",
+          "text": "Übernehmen den Pendelverkehr für Einsatzkräfte zwischen Bereitstellungsraum und Einsatzstelle. Zwei Mannschaftstransportwagen stehen bereit."
+        },
+        {
+          "absender": "ich",
+          "empfaenger": "partner",
+          "text": "Erbitten Ihren Mannschaftstransportwagen als drittes Pendelfahrzeug. Abfahrt jeweils zur vollen und halben Stunde ab Platzausfahrt."
+        },
+        {
+          "absender": "partner",
+          "empfaenger": "ich",
+          "text": "Unser Mannschaftstransportwagen steht ab sofort an der Platzausfahrt bereit. Fahrer ist eingewiesen, Funk auf Ihrer Rufgruppe."
+        },
+        {
+          "absender": "ich",
+          "empfaenger": "leitung",
+          "text": "Pendelverkehr läuft mit drei Fahrzeugen im Takt von 30 Minuten. Bisher 45 Einsatzkräfte zur Einsatzstelle gebracht."
+        },
+        {
+          "absender": "ich",
+          "empfaenger": "leitung",
+          "text": "Pendelverkehr wird auf zwei Fahrzeuge verringert, der Bedarf geht zurück. Drittes Fahrzeug wird an {{partner}} zurückgegeben."
+        }
+      ]
+    }
+  ],
+  "abschluss": [
+    {
+      "empfaenger": "leitung",
+      "text": "Abschlussmeldung Bereitstellungsraum: Alle Aufträge sind abgearbeitet, alle Einheiten sind entlassen oder zur Einsatzstelle verlegt. Der Festplatz ist geräumt und an den Eigentümer übergeben. Rücken mit den eigenen Fahrzeugen ab."
+    }
+  ]
+}

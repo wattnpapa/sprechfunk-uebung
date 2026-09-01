@@ -6,6 +6,11 @@ import {
     erzeugeBuchstabierAufgabe
 } from "../utils/buchstabieren";
 import { createRandomSeed, createSeededRng, randomInt, randomIntBetween, shuffle, type Rng } from "../utils/random";
+import {
+    szenarioMaxTeilnehmer,
+    type Szenario,
+    type SzenarioEmpfaenger
+} from "../types/Szenario";
 
 export class GenerationService {
     private static readonly SHORT_CODE_ALPHABET = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
@@ -21,11 +26,28 @@ export class GenerationService {
     /**
      * Hauptfunktion zum Erstellen einer Übung.
      * Füllt die Nachrichten, Lösungswörter und Stärken.
+     *
+     * Mit `szenario` werden die Nachrichten nicht zufällig verteilt, sondern
+     * aus dem Drehbuch des Szenarios erzeugt. Lösungswörter, Buchstabier-
+     * Balancierung und Auto-Stärkemeldungen entfallen dann bewusst: Sie
+     * schreiben Nachrichtentexte um bzw. hängen Inhalte an, was kuratierte
+     * Szenariotexte zerstören würde.
      */
-    public generate(uebung: FunkUebung): void {
+    public generate(uebung: FunkUebung, szenario?: Szenario): void {
         uebung.createDate = new Date();
         this.rng = this.erzeugeZufallsquelle(uebung);
-        uebung.nachrichten = this.verteileNachrichtenFair(uebung);
+        if (szenario) {
+            uebung.szenarioSlug = szenario.slug;
+            uebung.loesungswoerter = {};
+            uebung.autoStaerkeErgaenzen = false;
+            // Ohne Balancierung entstehen keine gezielten Buchstabier-Aufgaben;
+            // ein Restwert aus dem Formular würde statHatBuchstabieren verfälschen.
+            uebung.buchstabierenAn = 0;
+            uebung.nachrichten = this.verteileNachrichtenNachSzenario(uebung, szenario);
+        } else {
+            uebung.szenarioSlug = undefined;
+            uebung.nachrichten = this.verteileNachrichtenFair(uebung);
+        }
         this.assignXZeitSlots(uebung);
         this.verteileLoesungswoerterMitIndex(uebung);
         this.ensureJoinCodes(uebung);
@@ -76,7 +98,9 @@ export class GenerationService {
                 pool.push(m);
             }
         }
-        pool.sort((a, b) => a.id - b.id);
+        // Im Szenario-Modus bestimmt die globale Erzählreihenfolge die Slots,
+        // im Zufallsmodus wie bisher die Runden-Reihenfolge über die ids.
+        pool.sort((a, b) => (a.szenarioNr ?? a.id) - (b.szenarioNr ?? b.id));
 
         pool.forEach((m, globalIndex) => {
             m.xZeitSlot = startOffset + (globalIndex + 1) * intervall;
@@ -310,6 +334,150 @@ export class GenerationService {
         this.balanciereBuchstabierAufgaben(uebung, nachrichtenVerteilung);
 
         return nachrichtenVerteilung;
+    }
+
+    /**
+     * Erzeugt die Nachrichten aus einem Szenario-Drehbuch statt aus dem
+     * Zufallspool.
+     *
+     * Skalierung auf die variable Teilnehmerzahl: Die Handlungsstränge des
+     * Szenarios werden (seeded) gemischt und reihum an die Teilnehmer
+     * vergeben — bei wenigen Teilnehmern übernimmt jeder mehrere Stränge,
+     * höchstens gibt es so viele Teilnehmer wie Stränge. Je Strang wird ein
+     * Partner zugelost. Die Stränge laufen anschließend zeitlich verzahnt
+     * (seeded gemischte globale Reihenfolge, die die Reihenfolge innerhalb
+     * jedes Strangs bewahrt) — wie parallele Einsatzstellen derselben Lage.
+     *
+     * `id` bleibt wie im Zufallsmodus die lückenlose Sende-Reihenfolge je
+     * Absender (Anmeldung = 1); zusätzlich erhält jede Nachricht mit
+     * `szenarioNr` die global eindeutige Erzählposition, nach der die
+     * senderübergreifenden Ansichten sortieren.
+     */
+    private verteileNachrichtenNachSzenario(
+        uebung: FunkUebung,
+        szenario: Szenario
+    ): Record<string, Nachricht[]> {
+        const teilnehmer = uebung.teilnehmerListe;
+        const anzahl = teilnehmer.length;
+        const minTeilnehmer = Math.max(2, szenario.minTeilnehmer);
+        const maxTeilnehmer = szenarioMaxTeilnehmer(szenario);
+        if (anzahl < minTeilnehmer || anzahl > maxTeilnehmer) {
+            throw new Error(
+                `Szenario "${szenario.titel}" ist für ${minTeilnehmer} bis ${maxTeilnehmer} ` +
+                `Teilnehmer ausgelegt, die Übung hat ${anzahl}.`
+            );
+        }
+
+        // Stränge seeded mischen und reihum an die Teilnehmer vergeben; die
+        // Teilnehmer-Reihenfolge wird ebenfalls gemischt, damit nicht immer
+        // die ersten Namen der Liste die meisten Stränge bekommen.
+        const rotation = this.shuffle(teilnehmer);
+        const instanzen = this.shuffle(szenario.straenge).map((strang, index) => {
+            const ich = rotation[index % anzahl] as string;
+            const andere = teilnehmer.filter(t => t !== ich);
+            const partner = andere[randomInt(andere.length, this.rng)] ?? ich;
+            return { ich, partner, sprueche: strang.sprueche };
+        });
+
+        const aufloesenEmpfaenger = (
+            empfaenger: SzenarioEmpfaenger,
+            sender: string,
+            ich: string,
+            partner: string
+        ): string[] => {
+            switch (empfaenger) {
+                case "leitung":
+                    return [uebung.leitung];
+                case "alle":
+                    return teilnehmer.filter(t => t !== sender);
+                case "ich":
+                    return [ich];
+                case "partner":
+                    return [partner];
+            }
+        };
+        const aufloesenText = (text: string, ich: string, partner: string): string =>
+            text
+                .replace(/\{\{ich\}\}/g, ich)
+                .replace(/\{\{partner\}\}/g, partner)
+                .replace(/\{\{leitung\}\}/g, uebung.leitung);
+
+        const ereignisse: { sender: string; empfaenger: string[]; text: string }[] = [];
+
+        // Rahmensprüche: Absender rotieren über die gemischte Teilnehmerfolge.
+        szenario.einleitung.forEach((spruch, index) => {
+            const sender = rotation[index % anzahl] as string;
+            ereignisse.push({
+                sender,
+                empfaenger: aufloesenEmpfaenger(spruch.empfaenger, sender, sender, sender),
+                text: aufloesenText(spruch.text, sender, sender)
+            });
+        });
+
+        // Verzahnung: Multimenge der Strang-Indizes mischen — das ergibt eine
+        // gleichverteilte globale Reihenfolge, in der jeder Strang seine
+        // interne Spruch-Reihenfolge behält.
+        const folge = this.shuffle(
+            instanzen.flatMap((instanz, index) => instanz.sprueche.map(() => index))
+        );
+        const zeiger = instanzen.map(() => 0);
+        folge.forEach(index => {
+            const instanz = instanzen[index];
+            if (!instanz) {
+                return;
+            }
+            const spruch = instanz.sprueche[zeiger[index] ?? 0];
+            zeiger[index] = (zeiger[index] ?? 0) + 1;
+            if (!spruch) {
+                return;
+            }
+            const sender = spruch.absender === "partner" ? instanz.partner : instanz.ich;
+            ereignisse.push({
+                sender,
+                empfaenger: aufloesenEmpfaenger(spruch.empfaenger, sender, instanz.ich, instanz.partner),
+                text: aufloesenText(spruch.text, instanz.ich, instanz.partner)
+            });
+        });
+
+        szenario.abschluss.forEach((spruch, index) => {
+            const sender = rotation[(szenario.einleitung.length + index) % anzahl] as string;
+            ereignisse.push({
+                sender,
+                empfaenger: aufloesenEmpfaenger(spruch.empfaenger, sender, sender, sender),
+                text: aufloesenText(spruch.text, sender, sender)
+            });
+        });
+
+        const verteilung: Record<string, Nachricht[]> = {};
+        const zaehler: Record<string, number> = {};
+        let szenarioNr = 1;
+        teilnehmer.forEach(t => {
+            verteilung[t] = [];
+            zaehler[t] = 1;
+        });
+        if (uebung.anmeldungAktiv) {
+            teilnehmer.forEach(t => {
+                verteilung[t]?.push({
+                    id: 1,
+                    nachricht: "Ich melde mich in Ihrem Sprechfunkverkehrskreis an.",
+                    empfaenger: [uebung.leitung],
+                    szenarioNr: szenarioNr++
+                });
+                zaehler[t] = 2;
+            });
+        }
+        ereignisse.forEach(ereignis => {
+            const naechsteId = zaehler[ereignis.sender] ?? 1;
+            zaehler[ereignis.sender] = naechsteId + 1;
+            verteilung[ereignis.sender]?.push({
+                id: naechsteId,
+                nachricht: ereignis.text,
+                empfaenger: ereignis.empfaenger,
+                szenarioNr: szenarioNr++
+            });
+        });
+
+        return verteilung;
     }
 
     /**

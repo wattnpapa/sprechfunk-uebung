@@ -1,0 +1,399 @@
+{
+  "slug": "stromausfall-stadt",
+  "titel": "Flächiger Stromausfall",
+  "beschreibung": "Flächiger Stromausfall im Stadtgebiet: Netzersatzanlagen für Pflegeheim und Wasserwerk, dunkle Ampeln, besetzte Anlaufstellen für die Bevölkerung und Kraftstofflogistik fordern zwölf Einsatzstellen gleichzeitig.",
+  "lage": "Seit den frühen Morgenstunden ist das gesamte Stadtgebiet ohne elektrische Energie; der Netzbetreiber nennt noch keinen verbindlichen Zeitpunkt für die Wiederversorgung. Kritische Einrichtungen wie ein Pflegeheim und das Wasserwerk müssen mit Netzersatzanlagen versorgt werden, an mehreren Kreuzungen sind die Ampeln ausgefallen. Für die Bevölkerung werden besetzte Anlaufstellen eingerichtet, weil Festnetz und Mobilfunk nur eingeschränkt funktionieren. Die Feuerwache läuft auf Notstrom, die Kraftstoffversorgung der Aggregate wird über eine zentrale Ausgabestelle organisiert. Alle Einsatzstellen melden Lage, Bedarf und Zwischenstände über Sprechfunk an die Übungsleitung.",
+  "minTeilnehmer": 3,
+  "einleitung": [
+    {
+      "empfaenger": "alle",
+      "text": "Lage um 07:00 Uhr: flächiger Stromausfall im gesamten Stadtgebiet seit 06:40 Uhr. Alle Einheiten besetzen die zugewiesene Rufgruppe und melden Einsatzbereitschaft an {{leitung}}."
+    },
+    {
+      "empfaenger": "leitung",
+      "text": "Sind auf der Rufgruppe erreichbar und übernehmen die zugewiesenen Einsatzstellen, Ausrückeordnung ist hergestellt."
+    }
+  ],
+  "straenge": [
+    {
+      "titel": "Netzersatzanlage Pflegeheim",
+      "sprueche": [
+        {
+          "absender": "ich",
+          "empfaenger": "leitung",
+          "text": "Übernehmen Einsatzstelle Pflegeheim SONNENGARTEN, Fasanenweg 12. Hausnotstrom ist gegen 07:15 Uhr ausgefallen, 64 Bewohner im Haus."
+        },
+        {
+          "absender": "ich",
+          "empfaenger": "leitung",
+          "text": "Erkundung abgeschlossen: Einspeisepunkt am Hausanschlussraum vorhanden. Benötigen Netzersatzanlage 50 kVA und eine Elektrofachkraft."
+        },
+        {
+          "absender": "partner",
+          "empfaenger": "ich",
+          "text": "Sind mit Netzersatzanlage 50 kVA auf Anfahrt zum Fasanenweg, Ankunft gegen 08:05 Uhr. Elektrofachkraft ist an Bord."
+        },
+        {
+          "absender": "ich",
+          "empfaenger": "partner",
+          "text": "Verstanden. Nutzen Sie die Zufahrt über den Wirtschaftshof an der Rückseite, ein Einweiser steht am Tor bereit."
+        },
+        {
+          "absender": "ich",
+          "empfaenger": "leitung",
+          "text": "Netzersatzanlage eingespeist, Pflegeheim wird seit 08:30 Uhr versorgt. Verbrauch etwa 12 Liter Diesel je Stunde."
+        },
+        {
+          "absender": "ich",
+          "empfaenger": "leitung",
+          "text": "Einsatzstelle Pflegeheim läuft stabil, Betreiberwechsel alle vier Stunden eingeplant. Keine weiteren Kräfte erforderlich."
+        }
+      ]
+    },
+    {
+      "titel": "Wasserwerk sichern",
+      "sprueche": [
+        {
+          "absender": "ich",
+          "empfaenger": "leitung",
+          "text": "Übernehmen Einsatzstelle Wasserwerk am MÜHLENKAMP. Netzersatzanlage des Werks ist angelaufen, Druck im Leitungsnetz derzeit stabil."
+        },
+        {
+          "absender": "ich",
+          "empfaenger": "leitung",
+          "text": "Tankinhalt der werkseigenen Anlage reicht noch etwa sechs Stunden. Melden Kraftstoffbedarf von 600 Litern Diesel an."
+        },
+        {
+          "absender": "ich",
+          "empfaenger": "leitung",
+          "text": "Stärke an der Einsatzstelle Wasserwerk: 0/1/5/6. Ablösung erbeten ab 14:00 Uhr."
+        },
+        {
+          "absender": "ich",
+          "empfaenger": "leitung",
+          "text": "Kraftstoff ist eingetroffen, Tank wieder zu drei Vierteln gefüllt. Werkleiter bestätigt Betrieb bis in die Abendstunden."
+        },
+        {
+          "absender": "ich",
+          "empfaenger": "leitung",
+          "text": "Zwischenmeldung Wasserwerk: alle Pumpen laufen, Netzdruck 4,2 bar. Nächste Meldung gegen 16:00 Uhr."
+        }
+      ]
+    },
+    {
+      "titel": "Ampelausfall Kreuzung",
+      "sprueche": [
+        {
+          "absender": "ich",
+          "empfaenger": "leitung",
+          "text": "Übernehmen Verkehrssicherung an der Kreuzung BAHNHOFSTRASSE Ecke Ringstraße. Alle Ampeln dunkel, Rückstau in drei Richtungen."
+        },
+        {
+          "absender": "ich",
+          "empfaenger": "leitung",
+          "text": "Benötigen zur Absicherung acht Leitkegel, vier Warnleuchten und zwei weitere Einsatzkräfte mit Warnkleidung."
+        },
+        {
+          "absender": "partner",
+          "empfaenger": "ich",
+          "text": "Bringen Ihnen Absperrmaterial aus dem Gerätehaus mit, sind in etwa zehn Minuten bei Ihnen an der Kreuzung."
+        },
+        {
+          "absender": "ich",
+          "empfaenger": "partner",
+          "text": "Verstanden, stellen Sie das Fahrzeug auf dem Parkstreifen vor der Sparkasse ab, wir weisen Sie dort ein."
+        },
+        {
+          "absender": "ich",
+          "empfaenger": "leitung",
+          "text": "Verkehr läuft wieder, Polizei hat die Regelung der Kreuzung um 09:40 Uhr übernommen. Sind dort abkömmlich."
+        }
+      ]
+    },
+    {
+      "titel": "Anlaufstelle Grundschule",
+      "sprueche": [
+        {
+          "absender": "ich",
+          "empfaenger": "leitung",
+          "text": "Besetzen Anlaufstelle für die Bevölkerung in der Grundschule WESTERBECK, Schulstraße 3. Öffnung ab 09:00 Uhr."
+        },
+        {
+          "absender": "ich",
+          "empfaenger": "leitung",
+          "text": "Stärke an der Anlaufstelle Grundschule: 1/1/7/9. Notrufweiterleitung über Funk ist eingerichtet."
+        },
+        {
+          "absender": "ich",
+          "empfaenger": "leitung",
+          "text": "Bislang 37 Bürgeranfragen aufgenommen, davon zwei medizinische Hilfeersuchen an den Rettungsdienst weitergegeben."
+        },
+        {
+          "absender": "ich",
+          "empfaenger": "leitung",
+          "text": "Benötigen für die Anlaufstelle 100 Ausdrucke des Bürgerinformationsblatts und eine zusätzliche Handlampe."
+        },
+        {
+          "absender": "ich",
+          "empfaenger": "leitung",
+          "text": "Anlaufstelle Grundschule weiter geöffnet, Andrang rückläufig, aktuell etwa fünf Personen je Stunde."
+        }
+      ]
+    },
+    {
+      "titel": "Kraftstofflogistik Ausgabestelle",
+      "sprueche": [
+        {
+          "absender": "ich",
+          "empfaenger": "leitung",
+          "text": "Übernehmen Kraftstofflogistik für die Netzersatzanlagen im Stadtgebiet. Richten die Ausgabestelle am Bauhof, Gewerbering 7, ein."
+        },
+        {
+          "absender": "ich",
+          "empfaenger": "leitung",
+          "text": "Bestand an der Ausgabestelle: 1.200 Liter Diesel in Fässern, 80 Liter Benzin in Kanistern. Ausgabe nur gegen Quittung."
+        },
+        {
+          "absender": "partner",
+          "empfaenger": "ich",
+          "text": "Übernehmen für Sie die Pendelfahrten. Erste Tour mit 400 Litern Diesel startet um 10:20 Uhr am Bauhof."
+        },
+        {
+          "absender": "ich",
+          "empfaenger": "partner",
+          "text": "Verstanden. Beliefern Sie die Abnahmestellen in der Reihenfolge der ausgegebenen Liste, Quittungen bitte vollständig mitführen."
+        },
+        {
+          "absender": "partner",
+          "empfaenger": "ich",
+          "text": "Erste Tour abgeschlossen, alle drei Abnahmestellen laut Liste beliefert. Restmenge auf dem Fahrzeug: 60 Liter Diesel."
+        },
+        {
+          "absender": "ich",
+          "empfaenger": "leitung",
+          "text": "Kraftstoffversorgung läuft im Pendelverkehr, Nachschub über den Großhandel ist für 15:00 Uhr zugesagt."
+        }
+      ]
+    },
+    {
+      "titel": "Notstrom Feuerwache",
+      "sprueche": [
+        {
+          "absender": "ich",
+          "empfaenger": "leitung",
+          "text": "Feuerwache Süd auf Notstrom umgeschaltet, Einspeisung über das fest verbaute Aggregat läuft seit 07:05 Uhr."
+        },
+        {
+          "absender": "ich",
+          "empfaenger": "leitung",
+          "text": "Tor 2 lässt sich nur von Hand öffnen, Ausrückezeit verlängert sich um etwa zwei Minuten. Wache bleibt einsatzbereit."
+        },
+        {
+          "absender": "ich",
+          "empfaenger": "leitung",
+          "text": "Ladeerhaltung aller Handfunkgeräte an der Wache ist sichergestellt, zwölf Ersatzakkus sind geladen."
+        },
+        {
+          "absender": "ich",
+          "empfaenger": "leitung",
+          "text": "Aggregat der Feuerwache läuft stabil, Kraftstoffvorrat reicht für weitere 18 Stunden. Keine Unterstützung nötig."
+        }
+      ]
+    },
+    {
+      "titel": "Person im Aufzug",
+      "sprueche": [
+        {
+          "absender": "ich",
+          "empfaenger": "leitung",
+          "text": "Übernehmen Einsatzstelle Aufzug im Wohnhaus LERCHENBERG 24. Eine Person seit etwa 20 Minuten in der Kabine eingeschlossen."
+        },
+        {
+          "absender": "ich",
+          "empfaenger": "leitung",
+          "text": "Sprechkontakt zur eingeschlossenen Person besteht, Zustand ruhig. Kabine steht zwischen drittem und viertem Obergeschoss."
+        },
+        {
+          "absender": "partner",
+          "empfaenger": "ich",
+          "text": "Bringen Ihnen den Aufzugsnotschlüssel und eine Steckleiter, treffen in fünf Minuten am Hauseingang ein."
+        },
+        {
+          "absender": "ich",
+          "empfaenger": "partner",
+          "text": "Verstanden, kommen Sie in das dritte Obergeschoss, wir öffnen die Schachttür von dort gemeinsam."
+        },
+        {
+          "absender": "ich",
+          "empfaenger": "leitung",
+          "text": "Person um 09:25 Uhr unverletzt aus dem Aufzug befreit, Übergabe an Angehörige. Anlage bleibt außer Betrieb."
+        },
+        {
+          "absender": "ich",
+          "empfaenger": "leitung",
+          "text": "Einsatzstelle Lerchenberg beendet, Hausverwaltung ist verständigt, rücken ab und sind wieder frei für Aufträge."
+        }
+      ]
+    },
+    {
+      "titel": "Erkundung Umspannwerk",
+      "sprueche": [
+        {
+          "absender": "ich",
+          "empfaenger": "leitung",
+          "text": "Erkunden Umspannwerk an der DROSSELGASSE. Zaun und Tore unbeschädigt, kein Brandgeruch, keine Rauchentwicklung erkennbar."
+        },
+        {
+          "absender": "ich",
+          "empfaenger": "leitung",
+          "text": "Trupp des Netzbetreibers ist vor Ort eingetroffen, Schaltarbeiten laufen. Wir sichern den Bereich gegen unbefugtes Betreten."
+        },
+        {
+          "absender": "ich",
+          "empfaenger": "leitung",
+          "text": "Netzbetreiber rechnet mit Wiederversorgung erster Stadtteile ab etwa 17:00 Uhr, verbindliche Aussage folgt."
+        },
+        {
+          "absender": "ich",
+          "empfaenger": "leitung",
+          "text": "Stärke am Umspannwerk: 0/1/3/4. Verpflegung für die Kräfte bitte an die Drosselgasse nachführen."
+        },
+        {
+          "absender": "ich",
+          "empfaenger": "leitung",
+          "text": "Absicherung des Umspannwerks an den Netzbetreiber übergeben, unsere Kräfte sind dort abgezogen."
+        }
+      ]
+    },
+    {
+      "titel": "Haushalte mit Heimbeatmung",
+      "sprueche": [
+        {
+          "absender": "ich",
+          "empfaenger": "leitung",
+          "text": "Übernehmen Kontrolle der gemeldeten Haushalte mit Heimbeatmung und Dialysegeräten. Liste mit neun Adressen liegt vor."
+        },
+        {
+          "absender": "ich",
+          "empfaenger": "leitung",
+          "text": "Erste vier Adressen abgefahren: alle Geräte laufen über Akku, Angehörige informiert, Rückfallpunkt Anlaufstelle genannt."
+        },
+        {
+          "absender": "partner",
+          "empfaenger": "ich",
+          "text": "Übernehmen die fünf Adressen im Nordteil für Sie, beginnen am Kiefernstieg und melden uns nach jeder Adresse."
+        },
+        {
+          "absender": "ich",
+          "empfaenger": "partner",
+          "text": "Einverstanden. Beachten Sie am HASENPFAD 9: Zugang nur über den Hof, die Klingel ist ohne Strom außer Betrieb."
+        },
+        {
+          "absender": "partner",
+          "empfaenger": "ich",
+          "text": "Alle fünf Adressen im Nordteil kontrolliert, keine Gefährdung festgestellt. Ein Haushalt wurde zur Anlaufstelle begleitet."
+        },
+        {
+          "absender": "ich",
+          "empfaenger": "leitung",
+          "text": "Alle neun gemeldeten Haushalte sind kontrolliert und versorgt, keine akuten medizinischen Notfälle festgestellt."
+        }
+      ]
+    },
+    {
+      "titel": "Anlaufstelle Ortsteil",
+      "sprueche": [
+        {
+          "absender": "ich",
+          "empfaenger": "leitung",
+          "text": "Besetzen zweite Anlaufstelle im Feuerwehrgerätehaus des Ortsteils EICHENDORF, Dorfstraße 18, ab 09:30 Uhr."
+        },
+        {
+          "absender": "ich",
+          "empfaenger": "leitung",
+          "text": "Heizlüfter und Beleuchtung an der Anlaufstelle laufen über tragbares Aggregat, Kraftstoff für acht Stunden vorhanden."
+        },
+        {
+          "absender": "ich",
+          "empfaenger": "leitung",
+          "text": "Vor Ort bislang 14 Anfragen, überwiegend zur Dauer des Ausfalls und zur Erreichbarkeit des Notrufs. Lage ruhig."
+        },
+        {
+          "absender": "ich",
+          "empfaenger": "leitung",
+          "text": "Anlaufstelle Eichendorf bleibt bis 20:00 Uhr besetzt, danach Übergabe an die Nachtschicht mit drei Kräften."
+        }
+      ]
+    },
+    {
+      "titel": "Notunterkunft Turnhalle",
+      "sprueche": [
+        {
+          "absender": "ich",
+          "empfaenger": "leitung",
+          "text": "Übernehmen Aufbau der Notunterkunft in der Turnhalle am ROSENKAMP für bis zu 50 Personen. Beginnen mit der Beleuchtung."
+        },
+        {
+          "absender": "ich",
+          "empfaenger": "leitung",
+          "text": "Benötigen zusätzlich einen Beleuchtungssatz, 30 Feldbetten und 60 Decken aus dem Katastrophenschutzlager."
+        },
+        {
+          "absender": "partner",
+          "empfaenger": "ich",
+          "text": "Beladen gerade den Anhänger mit Beleuchtungssatz und Feldbetten, Abfahrt am Lager gegen 11:10 Uhr."
+        },
+        {
+          "absender": "partner",
+          "empfaenger": "ich",
+          "text": "Sind am Rosenkamp eingetroffen und unterstützen Sie beim Aufbau, unser Trupp umfasst drei Kräfte."
+        },
+        {
+          "absender": "ich",
+          "empfaenger": "leitung",
+          "text": "Notunterkunft Turnhalle ist ab 13:00 Uhr aufnahmebereit, Beleuchtung und 30 Betten stehen, Betreuung ist eingeteilt."
+        }
+      ]
+    },
+    {
+      "titel": "Lautsprecherfahrten Information",
+      "sprueche": [
+        {
+          "absender": "ich",
+          "empfaenger": "leitung",
+          "text": "Übernehmen Warn- und Informationsfahrten mit Lautsprecher im Stadtgebiet, beginnen im Bereich SÜDERFELD."
+        },
+        {
+          "absender": "ich",
+          "empfaenger": "leitung",
+          "text": "Durchsagetext liegt vor, Fahrtroute umfasst zwölf Straßenzüge, geplante Dauer je Runde etwa 45 Minuten."
+        },
+        {
+          "absender": "ich",
+          "empfaenger": "alle",
+          "text": "Hinweis an alle Einsatzstellen: Bevölkerung wird per Lautsprecher auf die Anlaufstellen und den Notruf über die Wachen hingewiesen."
+        },
+        {
+          "absender": "ich",
+          "empfaenger": "leitung",
+          "text": "Erste Runde abgeschlossen, gute Erreichbarkeit, viele Nachfragen an den Haltepunkten. Beginnen zweite Runde um 12:30 Uhr."
+        },
+        {
+          "absender": "ich",
+          "empfaenger": "leitung",
+          "text": "Fahrten abgeschlossen, letzte Durchsage um 15:45 Uhr. Fahrzeug tankt an der Ausgabestelle nach und ist danach wieder frei."
+        }
+      ]
+    }
+  ],
+  "abschluss": [
+    {
+      "empfaenger": "leitung",
+      "text": "Alle zugewiesenen Aufträge sind abgearbeitet, Einsatzstellen übergeben oder geräumt, rücken ein zum Standort."
+    },
+    {
+      "empfaenger": "leitung",
+      "text": "Fahrzeuge betankt, Gerät geprüft und verlastet, Einheit ist wieder einsatzbereit. Melden uns aus der Rufgruppe ab."
+    }
+  ]
+}

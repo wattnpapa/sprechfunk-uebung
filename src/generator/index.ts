@@ -8,6 +8,9 @@ import { GeneratorStatsService } from "./GeneratorStatsService";
 import { GeneratorPreviewService } from "./GeneratorPreviewService";
 import { ladePdfGenerator } from "../services/pdfGeneratorLazy";
 import { uiFeedback } from "../core/UiFeedback";
+import { SZENARIEN } from "../data/szenarien";
+import { parseSzenario } from "../services/SzenarioService";
+import { szenarioMaxTeilnehmer, szenarioSpruchAnzahl, type Szenario } from "../types/Szenario";
 
 export class GeneratorController {
     private static instance: GeneratorController;
@@ -15,6 +18,9 @@ export class GeneratorController {
     public funkUebung!: FunkUebung;
     private predefinedLoesungswoerter: string[] = [];
     private templatesFunksprueche: Record<string, { text: string; filename: string }> = {};
+    private szenarioCache = new Map<string, Szenario>();
+    /** Entwertet überholte Info-Fetches bei schnellem Szenario-Wechsel. */
+    private szenarioInfoToken = 0;
     private showStellenname = false;
     private firebaseService: FirebaseService;
     private generationService: GenerationService;
@@ -111,7 +117,20 @@ export class GeneratorController {
         this.view.bindDistributionInputs(data => {
             Object.assign(this.funkUebung, data);
         });
-        this.view.bindSourceToggle();
+        this.view.bindSourceToggle(source => {
+            if (source === "szenario") {
+                // Lösungswörter sind im Szenario-Modus deaktiviert — Auswahl,
+                // Shuffle-Button und die Spalte in der Teilnehmertabelle sollen
+                // das auch zeigen, nicht nur der Hinweistext.
+                this.view.selectLoesungswortOption("none");
+                this.stateService.resetLoesungswoerter(this.funkUebung);
+                this.renderTeilnehmer(false);
+                void this.updateSzenarioInfo();
+            }
+        });
+        this.view.bindSzenarioChange(() => {
+            void this.updateSzenarioInfo();
+        });
         this.view.bindLoesungswortOptionChange(() => {
             this.view.updateLoesungswortOptionUI();
             const option = this.view.getSelectedLoesungswortOption();
@@ -182,8 +201,13 @@ export class GeneratorController {
         this.funkUebung.buildVersion = this.buildInfo;
         this.view.setVersionInfo(this.funkUebung.id, this.buildInfo);
         this.view.populateTemplateSelect(this.templatesFunksprueche, this.funkUebung.verwendeteVorlagen);
+        this.view.populateSzenarioSelect(SZENARIEN, this.funkUebung.szenarioSlug);
         this.view.setFormData(this.funkUebung);
-        this.view.toggleSourceView("vorlagen");
+        const quelle = this.funkUebung.szenarioSlug ? "szenario" : "vorlagen";
+        this.view.setSelectedSource(quelle);
+        if (quelle === "szenario") {
+            void this.updateSzenarioInfo();
+        }
     }
 
     private renderResultIfAvailable() {
@@ -280,6 +304,10 @@ export class GeneratorController {
         const formData = this.view.getFormData();
         Object.assign(this.funkUebung, formData);
         this.readLoesungswoerterFromView();
+        const source = this.view.getSelectedSource();
+        this.funkUebung.szenarioSlug = source === "szenario"
+            ? (this.view.getSelectedSzenario() || undefined)
+            : undefined;
         this.funkUebung.istStandardKonfiguration =
             this.isFreshExercise && this.createConfigFingerprint(this.funkUebung) === this.initialConfigFingerprint;
 
@@ -287,18 +315,35 @@ export class GeneratorController {
             return;
         }
 
-        if (!this.validateSpruchVerteilung()) {
-            return;
-        }
+        if (source === "szenario") {
+            const szenario = await this.loadSelectedSzenario();
+            if (!szenario) {
+                return;
+            }
+            if (!this.validateSzenarioTeilnehmerzahl(szenario)) {
+                return;
+            }
+            // Drehbuch statt Pool: Lösungswörter und Spruchquellen entfallen.
+            this.stateService.resetLoesungswoerter(this.funkUebung);
+            this.funkUebung.funksprueche = [];
+            this.funkUebung.verwendeteVorlagen = [];
 
-        const funkspruecheLoaded = await this.loadFunkspruecheFromSelectedSource();
-        if (!funkspruecheLoaded) {
-            return;
-        }
-        this.warnIfSpruchPoolTooSmall();
+            // 3. Generieren
+            this.generationService.generate(this.funkUebung, szenario);
+        } else {
+            if (!this.validateSpruchVerteilung()) {
+                return;
+            }
 
-        // 3. Generieren
-        this.generationService.generate(this.funkUebung);
+            const funkspruecheLoaded = await this.loadFunkspruecheFromSelectedSource();
+            if (!funkspruecheLoaded) {
+                return;
+            }
+            this.warnIfSpruchPoolTooSmall();
+
+            // 3. Generieren
+            this.generationService.generate(this.funkUebung);
+        }
 
         // 4. Übungscode gegen den Bestand absichern und speichern
         try {
@@ -319,6 +364,81 @@ export class GeneratorController {
         
         // 5. Anzeigen
         this.renderUebungResult();
+    }
+
+    /** Lädt und validiert ein Szenario-JSON; Ergebnisse werden gecacht. */
+    private async fetchSzenario(slug: string): Promise<Szenario> {
+        const cached = this.szenarioCache.get(slug);
+        if (cached) {
+            return cached;
+        }
+        const eintrag = SZENARIEN[slug];
+        if (!eintrag) {
+            throw new Error(`Unbekanntes Szenario: ${slug}`);
+        }
+        const response = await fetch(eintrag.filename);
+        if (!response.ok) {
+            throw new Error(`Szenario ${slug} nicht ladbar (HTTP ${response.status})`);
+        }
+        const szenario = parseSzenario(slug, await response.json());
+        this.szenarioCache.set(slug, szenario);
+        return szenario;
+    }
+
+    private async loadSelectedSzenario(): Promise<Szenario | null> {
+        const slug = this.view.getSelectedSzenario();
+        if (!slug || !SZENARIEN[slug]) {
+            uiFeedback.error("Bitte ein Szenario auswählen.");
+            return null;
+        }
+        try {
+            return await this.fetchSzenario(slug);
+        } catch (error) {
+            console.error("Szenario konnte nicht geladen werden:", error);
+            uiFeedback.error("Szenario konnte nicht geladen werden. Bitte erneut versuchen.");
+            return null;
+        }
+    }
+
+    private validateSzenarioTeilnehmerzahl(szenario: Szenario): boolean {
+        const anzahl = this.funkUebung.teilnehmerListe.length;
+        const min = Math.max(2, szenario.minTeilnehmer);
+        const max = szenarioMaxTeilnehmer(szenario);
+        if (anzahl < min || anzahl > max) {
+            uiFeedback.error(
+                `Das Szenario "${szenario.titel}" ist für ${min} bis ${max} Teilnehmer ausgelegt ` +
+                `(aktuell: ${anzahl}). Bitte Teilnehmerliste anpassen oder anderes Szenario wählen.`
+            );
+            return false;
+        }
+        return true;
+    }
+
+    private async updateSzenarioInfo(): Promise<void> {
+        const token = ++this.szenarioInfoToken;
+        const slug = this.view.getSelectedSzenario();
+        if (!slug || !SZENARIEN[slug]) {
+            this.view.renderSzenarioInfo([]);
+            return;
+        }
+        try {
+            const szenario = await this.fetchSzenario(slug);
+            if (token !== this.szenarioInfoToken) {
+                return; // Inzwischen wurde ein anderes Szenario gewählt.
+            }
+            const min = Math.max(2, szenario.minTeilnehmer);
+            const max = szenarioMaxTeilnehmer(szenario);
+            this.view.renderSzenarioInfo([
+                szenario.beschreibung,
+                `Für ${min} bis ${max} Teilnehmer · ${szenarioSpruchAnzahl(szenario)} Funksprüche insgesamt.`
+            ]);
+        } catch (error) {
+            if (token !== this.szenarioInfoToken) {
+                return;
+            }
+            console.error("Szenario-Info konnte nicht geladen werden:", error);
+            this.view.renderSzenarioInfo(["Szenario konnte nicht geladen werden."]);
+        }
     }
 
     private async loadFunkspruecheFromSelectedSource(): Promise<boolean> {
@@ -483,7 +603,8 @@ export class GeneratorController {
             buchstabierenAn: uebung.buchstabierenAn,
             anmeldungAktiv: uebung.anmeldungAktiv,
             loesungswoerter: uebung.loesungswoerter || {},
-            loesungsStaerken: uebung.loesungsStaerken || {}
+            loesungsStaerken: uebung.loesungsStaerken || {},
+            szenarioSlug: uebung.szenarioSlug ?? null
         });
     }
 

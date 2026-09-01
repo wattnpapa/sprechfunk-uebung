@@ -1,0 +1,379 @@
+{
+  "slug": "schneelage-verkehr",
+  "titel": "Schneelage und Verkehrschaos",
+  "beschreibung": "Starker Schneefall legt den Verkehr lahm: Lkw stehen quer auf der Bundesstraße, Schneebruch auf Leitungen, ein Ortsteil ist zeitweise abgeschnitten. Die Einheiten räumen, betreuen festsitzende Autofahrer mit Wärmebus und heißen Getränken und sichern die Versorgung.",
+  "lage": "Seit den frühen Morgenstunden fällt anhaltend starker Schnee, kräftiger Ostwind sorgt für Verwehungen von örtlich über einem Meter Höhe. Auf der B213 stehen mehrere Lkw quer, der Verkehr staut sich in beiden Richtungen über mehrere Kilometer. Durch Schneebruch sind Bäume auf Straßen und eine Mittelspannungsleitung gestürzt, der Ortsteil Vossbarg ist zeitweise von der Außenwelt abgeschnitten. Räumdienste von Kreis und Gemeinde sind im Dauereinsatz und fordern Unterstützung an. Die eingesetzten Einheiten übernehmen Einsatzstellen, betreuen festsitzende Autofahrer, unterstützen bei der Räumung und stellen die Versorgung sicher.",
+  "minTeilnehmer": 3,
+  "einleitung": [
+    {
+      "empfaenger": "alle",
+      "text": "Lage seit den frühen Morgenstunden: anhaltender starker Schneefall mit Verwehungen im gesamten Gemeindegebiet. Auf der B213 stehen mehrere Lkw quer, einzelne Ortsteile sind zeitweise nicht erreichbar. Alle Einheiten stellen Einsatzbereitschaft her."
+    },
+    {
+      "empfaenger": "alle",
+      "text": "Für alle Fahrten gilt: Schneeglätte, Sichtweite örtlich unter 50 Meter. Fahrten nur mit Schneeketten oder geeigneter Bereifung, Lagemeldungen alle 30 Minuten an die Übungsleitung."
+    }
+  ],
+  "straenge": [
+    {
+      "titel": "Liegengebliebene Lkw auf der B213",
+      "sprueche": [
+        {
+          "absender": "ich",
+          "empfaenger": "leitung",
+          "text": "Übernehmen Einsatzstelle B213 Höhe Abzweig TANNENKAMP. Drei Lkw stehen quer, Fahrbahn in beide Richtungen blockiert, Rückstau etwa 2 Kilometer."
+        },
+        {
+          "absender": "ich",
+          "empfaenger": "leitung",
+          "text": "Erkundung abgeschlossen: Ein Sattelzug steht quer über beide Fahrspuren, zwei weitere Lkw dahinter festgefahren. Benötigen Unterstützung mit Schleppfahrzeug und Schneeketten."
+        },
+        {
+          "absender": "partner",
+          "empfaenger": "ich",
+          "text": "Sind mit Rüstwagen und Schleppgeschirr auf Anfahrt zu Ihrer Einsatzstelle, Ankunft gegen 10:45 Uhr. Bitte Einweiser an der Stauspitze bereitstellen."
+        },
+        {
+          "absender": "ich",
+          "empfaenger": "partner",
+          "text": "Verstanden, Einweiser steht an der Stauspitze bereit. Anfahrt nur aus Richtung Norden möglich, die Südseite ist durch den Rückstau blockiert."
+        },
+        {
+          "absender": "ich",
+          "empfaenger": "leitung",
+          "text": "Der querstehende Sattelzug ist freigezogen, Fahrbahn einspurig befahrbar. Polizei regelt den Verkehr wechselseitig, Einsatzstelle in etwa 30 Minuten geräumt."
+        }
+      ]
+    },
+    {
+      "titel": "Wärmebus für festsitzende Autofahrer",
+      "sprueche": [
+        {
+          "absender": "ich",
+          "empfaenger": "leitung",
+          "text": "Übernehmen Betreuung der festsitzenden Autofahrer auf der B213 zwischen Kilometer 12 und 14. Wärmebus ist besetzt und auf Anfahrt."
+        },
+        {
+          "absender": "ich",
+          "empfaenger": "leitung",
+          "text": "Wärmebus steht auf dem Parkplatz am Rasthof. Bislang 17 Personen aufgenommen, darunter zwei Kinder und eine unterkühlte Seniorin."
+        },
+        {
+          "absender": "ich",
+          "empfaenger": "leitung",
+          "text": "Die unterkühlte Seniorin wurde an den Rettungsdienst übergeben. Benötigen Nachschub: 30 Wolldecken und Warmgetränke für etwa 40 Personen."
+        },
+        {
+          "absender": "ich",
+          "empfaenger": "leitung",
+          "text": "Stärke an der Betreuungsstelle Wärmebus: 1/1/7/9. Der Betrieb ist bis auf Weiteres sichergestellt."
+        },
+        {
+          "absender": "ich",
+          "empfaenger": "leitung",
+          "text": "Betreuung im Wärmebus beendet, alle Personen konnten die Fahrt fortsetzen oder wurden abgeholt. Wärmebus wird gereinigt und ist ab 16:00 Uhr wieder einsatzbereit."
+        }
+      ]
+    },
+    {
+      "titel": "Schneebruch auf Mittelspannungsleitung",
+      "sprueche": [
+        {
+          "absender": "ich",
+          "empfaenger": "leitung",
+          "text": "Übernehmen Einsatzstelle am Ortsrand HOLTWIESEN: Mehrere Bäume unter Schneelast auf eine Mittelspannungsleitung gestürzt. Absperrung im Umkreis von 50 Metern eingerichtet."
+        },
+        {
+          "absender": "ich",
+          "empfaenger": "leitung",
+          "text": "Energieversorger ist verständigt, Entstördienst trifft gegen 11:15 Uhr ein. Bis zur Freischaltung sind keine Arbeiten an den Bäumen möglich."
+        },
+        {
+          "absender": "partner",
+          "empfaenger": "ich",
+          "text": "Kommen mit Motorsägentrupp und Hebekissen zur Unterstützung. Wo sollen wir den Bereitstellungsraum beziehen?"
+        },
+        {
+          "absender": "ich",
+          "empfaenger": "partner",
+          "text": "Beziehen Sie den Bereitstellungsraum auf dem Festplatz an der Mühlenstraße, Anfahrt über die Umgehungsstraße. Warten Sie dort auf die Freigabe der Leitung."
+        },
+        {
+          "absender": "partner",
+          "empfaenger": "ich",
+          "text": "Bereitstellungsraum Festplatz bezogen, Trupp ist einsatzbereit. Melden uns, sobald die Freischaltung bestätigt ist."
+        },
+        {
+          "absender": "ich",
+          "empfaenger": "leitung",
+          "text": "Leitung ist durch den Entstördienst freigeschaltet und geerdet. Beginnen mit dem Zerkleinern der Bäume, voraussichtliche Dauer zwei Stunden."
+        }
+      ]
+    },
+    {
+      "titel": "Abgeschnittener Ortsteil",
+      "sprueche": [
+        {
+          "absender": "ich",
+          "empfaenger": "leitung",
+          "text": "Übernehmen Erkundung zum Ortsteil VOSSBARG. Beide Zufahrten sind laut Anwohnern durch Verwehungen von über einem Meter Höhe unpassierbar."
+        },
+        {
+          "absender": "ich",
+          "empfaenger": "leitung",
+          "text": "Erkundungsergebnis: Zufahrt über den Heidedamm auf 400 Metern verweht, das Räumfahrzeug des Kreises steckt selbst fest. Kommen mit dem Radlader der Gemeinde voran."
+        },
+        {
+          "absender": "partner",
+          "empfaenger": "ich",
+          "text": "Unterstützen Sie mit unserem geländegängigen Fahrzeug. Bringen zusätzlich Kraftstoff und Verpflegung für die Räumtrupps mit."
+        },
+        {
+          "absender": "ich",
+          "empfaenger": "partner",
+          "text": "Verstanden, Treffpunkt am Ortseingangsschild, dort Übergabe der Ladung. Fahren Sie hinter dem Radlader in der geräumten Spur."
+        },
+        {
+          "absender": "ich",
+          "empfaenger": "leitung",
+          "text": "Der Ortsteil ist seit 13:20 Uhr über den Heidedamm wieder einspurig erreichbar. Etwa 60 Haushalte waren rund fünf Stunden abgeschnitten, keine Notfälle bekannt."
+        }
+      ]
+    },
+    {
+      "titel": "Heiße Getränke für den Stau",
+      "sprueche": [
+        {
+          "absender": "ich",
+          "empfaenger": "leitung",
+          "text": "Übernehmen Versorgung der wartenden Fahrzeugführer im Stau auf der B213 Süd. Feldkochherd wird am Gerätehaus aufgebaut."
+        },
+        {
+          "absender": "ich",
+          "empfaenger": "leitung",
+          "text": "Erste Ausgabe läuft: 120 Becher Tee und 80 Becher Brühe ausgegeben. Gehen die Fahrzeugreihe zu Fuß mit Thermoskannen ab."
+        },
+        {
+          "absender": "ich",
+          "empfaenger": "leitung",
+          "text": "Benötigen Nachschub bis 15:00 Uhr: 200 Einwegbecher, 10 Kilogramm Zucker und zwei Kisten Teebeutel aus dem Zentrallager."
+        },
+        {
+          "absender": "ich",
+          "empfaenger": "leitung",
+          "text": "Stärke des Verpflegungstrupps: 0/2/6/8. Zwei Helfer sind zusätzlich zur Ausgabestelle am Rasthof abgestellt."
+        },
+        {
+          "absender": "ich",
+          "empfaenger": "leitung",
+          "text": "Versorgung eingestellt, der Stau löst sich seit 16:30 Uhr auf. Feldkochherd wird zurückgebaut, das Material wird am Gerätehaus gereinigt."
+        }
+      ]
+    },
+    {
+      "titel": "Räumunterstützung für den Bauhof",
+      "sprueche": [
+        {
+          "absender": "ich",
+          "empfaenger": "leitung",
+          "text": "Übernehmen Räumunterstützung für den Bauhof im Bereich SCHMIEDEKAMP. Zwei Trupps mit Schneeschiebern und einer Schneefräse eingeteilt."
+        },
+        {
+          "absender": "ich",
+          "empfaenger": "leitung",
+          "text": "Gehwege an Schule und Kindergarten sind geräumt und abgestreut. Setzen die Arbeiten an den Bushaltestellen der Ortsdurchfahrt fort."
+        },
+        {
+          "absender": "ich",
+          "empfaenger": "leitung",
+          "text": "Die Schneefräse ist ausgefallen, Keilriemen gerissen. Ersatzteil ist im Bauhof vorhanden, Reparatur dauert etwa 45 Minuten."
+        },
+        {
+          "absender": "ich",
+          "empfaenger": "leitung",
+          "text": "Schneefräse wieder einsatzbereit. Alle zugewiesenen Flächen sind bis 17:00 Uhr geräumt, Restarbeiten übernimmt der Bauhof."
+        }
+      ]
+    },
+    {
+      "titel": "Betreuungsstelle im Gemeindehaus",
+      "sprueche": [
+        {
+          "absender": "ich",
+          "empfaenger": "leitung",
+          "text": "Übernehmen Einrichtung einer Betreuungsstelle im Gemeindehaus an der KIRCHWURT für gestrandete Reisende. Kapazität 50 Plätze."
+        },
+        {
+          "absender": "partner",
+          "empfaenger": "ich",
+          "text": "Bringen Ihnen 40 Feldbetten und 60 Decken aus dem Katastrophenschutzlager. Ankunft mit zwei Fahrzeugen gegen 12:30 Uhr."
+        },
+        {
+          "absender": "ich",
+          "empfaenger": "partner",
+          "text": "Verstanden, Entladung an der Rampe auf der Gebäuderückseite. Zwei Helfer unterstützen beim Ausladen und beim Aufbau."
+        },
+        {
+          "absender": "ich",
+          "empfaenger": "leitung",
+          "text": "Betreuungsstelle ist betriebsbereit, Aufbau erfolgte mit Unterstützung durch {{partner}}. Aktuell 23 Personen aufgenommen, Verpflegung übernimmt die Küche des Gemeindehauses."
+        },
+        {
+          "absender": "ich",
+          "empfaenger": "leitung",
+          "text": "Stärke in der Betreuungsstelle: 1/2/9/12. Die Nachtbereitschaft ist mit vier Helfern geplant."
+        }
+      ]
+    },
+    {
+      "titel": "Umgestürzter Baum auf der K7",
+      "sprueche": [
+        {
+          "absender": "ich",
+          "empfaenger": "leitung",
+          "text": "Übernehmen Einsatzstelle auf der K7 am WESTERBROOK: Eine etwa 20 Meter hohe Fichte liegt quer über der Fahrbahn, Straße ist voll gesperrt."
+        },
+        {
+          "absender": "ich",
+          "empfaenger": "alle",
+          "text": "An alle: Die K7 zwischen Ortsausgang und Wirtschaftsweg ist voll gesperrt, die Umleitung ist ausgeschildert. Bitte bei Fahrten im Abschnitt berücksichtigen."
+        },
+        {
+          "absender": "ich",
+          "empfaenger": "leitung",
+          "text": "Der Stamm ist zerlegt, die Fahrbahn wird vom Bauhof freigeschoben. Zwei weitere Bäume am Straßenrand hängen bedenklich unter Schneelast."
+        },
+        {
+          "absender": "ich",
+          "empfaenger": "leitung",
+          "text": "Die beiden gefährdeten Bäume wurden kontrolliert gefällt. K7 ist seit 14:50 Uhr wieder frei befahrbar, Einsatzstelle aufgehoben, rücken ab."
+        }
+      ]
+    },
+    {
+      "titel": "Dringender Patiententransport",
+      "sprueche": [
+        {
+          "absender": "ich",
+          "empfaenger": "leitung",
+          "text": "Übernehmen dringenden Transport: Eine Dialysepatientin vom Einzelgehöft BRAAKHOF muss bis 13:00 Uhr in der Klinik sein. Der Zufahrtsweg ist auf 200 Metern verweht."
+        },
+        {
+          "absender": "partner",
+          "empfaenger": "ich",
+          "text": "Sind mit Unimog und Schneeketten auf Anfahrt zu Ihnen, Ankunft in etwa 20 Minuten. Halten Sie die Patientin transportfertig."
+        },
+        {
+          "absender": "ich",
+          "empfaenger": "partner",
+          "text": "Patientin ist transportfertig und wird von einer Sanitäterin begleitet. Übergabepunkt ist die Hofeinfahrt, wir leuchten die Stelle aus."
+        },
+        {
+          "absender": "partner",
+          "empfaenger": "ich",
+          "text": "Patientin übernommen, Fahrt zur Klinik läuft. Straßenverhältnisse bis zur Hauptstraße schwierig, aber befahrbar."
+        },
+        {
+          "absender": "ich",
+          "empfaenger": "leitung",
+          "text": "Transport abgeschlossen: Die Patientin wurde um 12:40 Uhr an der Klinik übergeben. Die begleitende Sanitäterin fährt mit dem Rettungsdienst zurück."
+        }
+      ]
+    },
+    {
+      "titel": "Pendelverkehr vom Bahnhof",
+      "sprueche": [
+        {
+          "absender": "ich",
+          "empfaenger": "leitung",
+          "text": "Übernehmen Pendelverkehr zwischen Bahnhof und Ortsmitte. Der Schienenersatzverkehr fällt wegen der Schneelage aus, etwa 35 Reisende warten in der Bahnhofshalle."
+        },
+        {
+          "absender": "ich",
+          "empfaenger": "leitung",
+          "text": "Erste Fahrt mit neun Personen abgeschlossen. Fahrzeit pro Runde etwa 25 Minuten wegen Schneeglätte, fahren im Pendelbetrieb weiter."
+        },
+        {
+          "absender": "ich",
+          "empfaenger": "leitung",
+          "text": "Am Bahnhof warten noch 12 Reisende, darunter eine Person im Rollstuhl. Fordern für diese ein Fahrzeug mit Rampe an."
+        },
+        {
+          "absender": "ich",
+          "empfaenger": "leitung",
+          "text": "Fahrzeug mit Rampe hat den Fahrgast im Rollstuhl übernommen. Pendelverkehr läuft planmäßig weiter, keine besonderen Vorkommnisse."
+        },
+        {
+          "absender": "ich",
+          "empfaenger": "leitung",
+          "text": "Pendelverkehr beendet, alle Reisenden sind untergebracht oder abgeholt. Fahrzeug steht ab sofort wieder für andere Aufträge bereit."
+        }
+      ]
+    },
+    {
+      "titel": "Schneelast auf dem Sporthallendach",
+      "sprueche": [
+        {
+          "absender": "ich",
+          "empfaenger": "leitung",
+          "text": "Übernehmen Erkundung an der Sporthalle LOHBERGE: Der Hausmeister meldet Knackgeräusche aus der Dachkonstruktion bei etwa 40 Zentimetern Schneeauflage."
+        },
+        {
+          "absender": "ich",
+          "empfaenger": "leitung",
+          "text": "Halle ist geräumt und verschlossen, Absperrband gesetzt. Fordern einen Baufachberater zur Beurteilung der Dachkonstruktion an."
+        },
+        {
+          "absender": "partner",
+          "empfaenger": "ich",
+          "text": "Bringen Ihnen Schneeschieber, Leitern und Anschlagmittel für die Dachräumung. Sind in 15 Minuten bei Ihnen."
+        },
+        {
+          "absender": "ich",
+          "empfaenger": "partner",
+          "text": "Verstanden, Aufstellung der Leitern an der Giebelseite. Zugang zum Dach erst nach Freigabe durch den Baufachberater."
+        },
+        {
+          "absender": "ich",
+          "empfaenger": "leitung",
+          "text": "Baufachberater hat das Dach freigegeben, Räumung läuft gemeinsam mit {{partner}} unter Absturzsicherung. Voraussichtliches Ende gegen 18:00 Uhr."
+        }
+      ]
+    },
+    {
+      "titel": "Kraftstoffversorgung der Einsatzfahrzeuge",
+      "sprueche": [
+        {
+          "absender": "ich",
+          "empfaenger": "leitung",
+          "text": "Übernehmen den Nachschub an Kraftstoff für die eingesetzten Räum- und Einsatzfahrzeuge. Abholung der Kanister am Betriebshof in der DORNKUHLE."
+        },
+        {
+          "absender": "ich",
+          "empfaenger": "leitung",
+          "text": "Haben 400 Liter Diesel in Kanistern übernommen und dokumentiert. Beginnen mit der Ausgabe an den vereinbarten Haltepunkten."
+        },
+        {
+          "absender": "ich",
+          "empfaenger": "leitung",
+          "text": "Das Notstromaggregat am Gerätehaus ist für weitere zwölf Stunden betankt. Restbestand: 150 Liter Diesel und 40 Liter Ottokraftstoff."
+        },
+        {
+          "absender": "ich",
+          "empfaenger": "leitung",
+          "text": "Zweite Versorgungsfahrt abgeschlossen, alle gemeldeten Fahrzeuge sind betankt. Fordern für morgen 6:00 Uhr weitere 300 Liter Diesel an."
+        }
+      ]
+    }
+  ],
+  "abschluss": [
+    {
+      "empfaenger": "leitung",
+      "text": "Abschlussmeldung: Alle zugewiesenen Einsatzstellen sind abgearbeitet, die Bundesstraße ist einspurig befahrbar und alle Ortsteile sind wieder erreichbar. Die Einheiten kehren geschlossen zu ihren Standorten zurück."
+    },
+    {
+      "empfaenger": "leitung",
+      "text": "Materialerhaltung ist eingeleitet, Geräte werden gereinigt und geprüft. Ausfälle werden bis morgen 10:00 Uhr schriftlich gemeldet, danach wird die Einsatzbereitschaft wiederhergestellt."
+    }
+  ]
+}

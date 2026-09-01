@@ -8,6 +8,8 @@ import { GeneratorLinksRenderer } from "./GeneratorLinksRenderer";
 import { GeneratorTeilnehmerTableRenderer } from "./GeneratorTeilnehmerTableRenderer";
 import { GeneratorResultRenderer } from "./GeneratorResultRenderer";
 
+export type FunkspruchQuelle = "vorlagen" | "upload" | "szenario";
+
 export class GeneratorView {
     private bindingController = new AbortController();
     private linksRenderer = new GeneratorLinksRenderer();
@@ -217,6 +219,17 @@ export class GeneratorView {
         shuffleBtn.style.display = option === "none" ? "none" : "block";
     }
 
+    public selectLoesungswortOption(option: "none" | "central" | "individual") {
+        const radioId = option === "none"
+            ? "keineLoesungswoerter"
+            : option === "central" ? "zentralLoesungswort" : "individuelleLoesungswoerter";
+        const radio = document.getElementById(radioId) as HTMLInputElement | null;
+        if (radio) {
+            radio.checked = true;
+        }
+        this.updateLoesungswortOptionUI();
+    }
+
     public getSelectedLoesungswortOption(): "none" | "central" | "individual" {
         if ((document.getElementById("keineLoesungswoerter") as HTMLInputElement).checked) {
             return "none";
@@ -268,13 +281,16 @@ export class GeneratorView {
         sync("prozentAnBuchstabieren", "spruecheAnBuchstabieren");
     }
 
-    public bindSourceToggle() {
-        document.getElementById("optionVorlagen")?.addEventListener("change", () => {
-            this.toggleSourceView("vorlagen");
-        }, { signal: this.bindingController.signal });
-        document.getElementById("optionUpload")?.addEventListener("change", () => {
-            this.toggleSourceView("upload");
-        }, { signal: this.bindingController.signal });
+    public bindSourceToggle(onChange?: (source: FunkspruchQuelle) => void) {
+        const bind = (id: string, source: FunkspruchQuelle) => {
+            document.getElementById(id)?.addEventListener("change", () => {
+                this.toggleSourceView(source);
+                onChange?.(source);
+            }, { signal: this.bindingController.signal });
+        };
+        bind("optionVorlagen", "vorlagen");
+        bind("optionUpload", "upload");
+        bind("optionSzenario", "szenario");
     }
 
     public bindLoesungswortOptionChange(onChange: () => void) {
@@ -421,7 +437,10 @@ export class GeneratorView {
         return Array.from(selectBox.selectedOptions).map(option => option.value);
     }
 
-    public getSelectedSource(): "vorlagen" | "upload" {
+    public getSelectedSource(): FunkspruchQuelle {
+        if ((document.getElementById("optionSzenario") as HTMLInputElement | null)?.checked) {
+            return "szenario";
+        }
         if ((document.getElementById("optionVorlagen") as HTMLInputElement).checked) {
             return "vorlagen";
         }
@@ -432,21 +451,80 @@ export class GeneratorView {
         return (document.getElementById("funksprueche") as HTMLInputElement).files?.[0];
     }
 
-    public toggleSourceView(source: "vorlagen" | "upload") {
+    public setSelectedSource(source: FunkspruchQuelle) {
+        const radioId = source === "szenario"
+            ? "optionSzenario"
+            : source === "upload" ? "optionUpload" : "optionVorlagen";
+        const radio = document.getElementById(radioId) as HTMLInputElement | null;
+        if (radio) {
+            radio.checked = true;
+        }
+        this.toggleSourceView(source);
+    }
+
+    public toggleSourceView(source: FunkspruchQuelle) {
         const selectBoxContainer = document.getElementById("funkspruchVorlage")?.parentElement;
         const fileUploadContainer = document.getElementById("fileUploadContainer");
-        
+        const szenarioContainer = document.getElementById("szenarioContainer");
+
         if (!selectBoxContainer || !fileUploadContainer) {
             return;
         }
 
-        if (source === "vorlagen") {
-            selectBoxContainer.style.display = "block";
-            fileUploadContainer.style.display = "none";
-        } else {
-            selectBoxContainer.style.display = "none";
-            fileUploadContainer.style.display = "block";
+        selectBoxContainer.style.display = source === "vorlagen" ? "block" : "none";
+        fileUploadContainer.style.display = source === "upload" ? "block" : "none";
+        if (szenarioContainer) {
+            szenarioContainer.style.display = source === "szenario" ? "block" : "none";
         }
+
+        // Im Szenario-Modus bestimmen Drehbuch statt Regler die Verteilung;
+        // Lösungswörter und Auto-Stärken würden kuratierte Texte umschreiben.
+        const nichtImSzenario = ["verteilungSection", "loesungswortSection", "autoStaerkeContainer"];
+        nichtImSzenario.forEach(id => {
+            const el = document.getElementById(id);
+            if (el) {
+                el.style.display = source === "szenario" ? "none" : "";
+            }
+        });
+    }
+
+    public populateSzenarioSelect(szenarien: Record<string, { titel: string }>, selected?: string) {
+        const selectBox = document.getElementById("szenarioAuswahl") as HTMLSelectElement | null;
+        if (!selectBox) {
+            return;
+        }
+        selectBox.innerHTML = "";
+        for (const [slug, eintrag] of Object.entries(szenarien)) {
+            const option = document.createElement("option");
+            option.value = slug;
+            option.textContent = eintrag.titel;
+            option.selected = slug === selected;
+            selectBox.appendChild(option);
+        }
+    }
+
+    public getSelectedSzenario(): string {
+        const selectBox = document.getElementById("szenarioAuswahl") as HTMLSelectElement | null;
+        return selectBox?.value ?? "";
+    }
+
+    public bindSzenarioChange(onChange: () => void) {
+        document.getElementById("szenarioAuswahl")?.addEventListener("change", () => onChange(), {
+            signal: this.bindingController.signal
+        });
+    }
+
+    public renderSzenarioInfo(zeilen: string[]) {
+        const info = document.getElementById("szenarioInfo");
+        if (!info) {
+            return;
+        }
+        info.innerHTML = "";
+        zeilen.forEach(zeile => {
+            const div = document.createElement("div");
+            div.textContent = zeile;
+            info.appendChild(div);
+        });
     }
 
     public showOutputContainer() {
