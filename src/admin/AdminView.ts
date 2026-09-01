@@ -1,5 +1,6 @@
 import { Uebung } from "../types/Uebung";
 import { Chart } from "../core/chart";
+import { funkspruchQuelleMerkmal, spielModusMerkmal, UebungsMerkmal } from "./uebungsMerkmale";
 
 export interface AdminListHandlers {
     onView: (id: string) => void;
@@ -56,6 +57,8 @@ export class AdminView {
                 <td>${uebung.rufgruppe}</td>
                 <td>${uebung.leitung}</td>
                 <td title="${(uebung.teilnehmerListe || []).join("\n")}">${uebung.teilnehmerListe?.length ?? 0}</td>
+                ${AdminView.merkmalZelle(spielModusMerkmal(uebung))}
+                ${AdminView.merkmalZelle(funkspruchQuelleMerkmal(uebung))}
                 <td class="text-end text-nowrap">
                      <button class="btn btn-sm btn-outline-secondary" data-action="view" title="Übung öffnen" data-id="${uebung.id}">
                         <i class="fa-solid fa-magnifying-glass"></i>
@@ -70,6 +73,23 @@ export class AdminView {
             `;
             tbody.appendChild(tr);
         });
+    }
+
+    /** Zelle mit Kurzform; die Details (Vorlagennamen, Szenariotitel) erscheinen als Tooltip. */
+    private static merkmalZelle(merkmal: UebungsMerkmal): string {
+        const title = merkmal.detail ? ` title="${AdminView.escapeAttribute(merkmal.detail)}"` : "";
+        return `<td${title}>${AdminView.escapeHtml(merkmal.label)}</td>`;
+    }
+
+    private static escapeHtml(text: string): string {
+        return text
+            .replace(/&/g, "&amp;")
+            .replace(/</g, "&lt;")
+            .replace(/>/g, "&gt;");
+    }
+
+    private static escapeAttribute(text: string): string {
+        return AdminView.escapeHtml(text).replace(/"/g, "&quot;");
     }
 
     public renderPaginationInfo(currentPage: number, pageSize: number, currentCount: number, totalCount: number) {

@@ -85,11 +85,17 @@ describe("AdminView", () => {
         const onSearchChange = vi.fn();
         view.renderUebungsListe([
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            { id: "u1", name: "Alpha", rufgruppe: "R", leitung: "L", teilnehmerListe: ["A"], datum: new Date(), createDate: new Date(), istStandardKonfiguration: true } as any
+            { id: "u1", name: "Alpha", rufgruppe: "R", leitung: "L", teilnehmerListe: ["A"], datum: new Date(), createDate: new Date(), istStandardKonfiguration: true, spielModus: "xZeit", xZeitIntervallMinuten: 5, verwendeteVorlagen: ["thwleer"] } as any
         ]);
         view.bindListEvents({ onView, onMonitor, onDelete, onOnlyTestFilterChange: onOnlyTestChange, onSearchChange });
         const tbody = document.getElementById("adminUebungslisteBody") as HTMLElement;
         expect(tbody.innerHTML).toContain("admin-standard-uebung-row");
+
+        const zellen = Array.from(tbody.querySelectorAll("td"));
+        const modusZelle = zellen.find(td => td.textContent === "X-Zeit");
+        expect(modusZelle?.getAttribute("title")).toBe("Intervall: 5 Minuten");
+        const quelleZelle = zellen.find(td => td.textContent === "Vorlage");
+        expect(quelleZelle?.getAttribute("title")).toBe("Funksprüche THW Leer");
 
         (tbody.querySelector("button[data-action='view']") as HTMLButtonElement).click();
         (tbody.querySelector("button[data-action='monitor']") as HTMLButtonElement).click();
