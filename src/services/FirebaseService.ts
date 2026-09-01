@@ -703,13 +703,20 @@ export class FirebaseService {
         }
 
         const aktuellesJahr = new Date().getFullYear();
-        const fruehestes = await this.getFruehestesUebungsJahr();
-        if (fruehestes === undefined) {
+        const [fruehestes, spaetestes] = await Promise.all([
+            this.getRandUebungsJahr("asc"),
+            this.getRandUebungsJahr("desc")
+        ]);
+        if (fruehestes === undefined || spaetestes === undefined) {
             return [];
         }
-        // Ein verrutschtes Datum (etwa 1970) darf keine hundert Abfragen auslösen.
-        const von = Math.max(fruehestes, aktuellesJahr - (FirebaseService.MAX_STATISTIK_JAHRE - 1));
-        const bis = Math.max(von, aktuellesJahr);
+        // Vordatierte Übungen (Planung fürs nächste Jahr) gehören ins Diagramm,
+        // sonst weist der Abgleich sie fälschlich als "ohne Statistikfelder" aus.
+        // Ein verrutschtes Datum (etwa 1970 oder 2099) darf trotzdem keine
+        // hundert Abfragen auslösen: das Fenster bleibt auf MAX_STATISTIK_JAHRE
+        // begrenzt und endet frühestens im laufenden Jahr.
+        const bis = Math.min(Math.max(aktuellesJahr, spaetestes), aktuellesJahr + FirebaseService.MAX_STATISTIK_JAHRE - 1);
+        const von = Math.max(fruehestes, bis - (FirebaseService.MAX_STATISTIK_JAHRE - 1));
         const jahre = Array.from({ length: bis - von + 1 }, (_, i) => von + i);
 
         const counts = await Promise.all(jahre.map(async jahr => {
@@ -722,19 +729,19 @@ export class FirebaseService {
     }
 
     /**
-     * Älteste Übung mit `statJahr`. Dokumente ohne das Feld stehen nicht im
-     * Index und bleiben deshalb unberücksichtigt; fehlt der Index ganz, liefert
-     * die Methode `undefined` und der Jahresfilter bleibt leer.
+     * Älteste (`asc`) bzw. jüngste (`desc`) Übung mit `statJahr`. Dokumente ohne
+     * das Feld stehen nicht im Index und bleiben deshalb unberücksichtigt; fehlt
+     * der Index ganz, liefert die Methode `undefined` und der Jahresfilter bleibt leer.
      */
-    private async getFruehestesUebungsJahr(): Promise<number | undefined> {
+    private async getRandUebungsJahr(richtung: "asc" | "desc"): Promise<number | undefined> {
         try {
             const snapshot = await getDocs(
-                query(collection(this.db, "uebungen"), orderBy("statJahr", "asc"), limit(1))
+                query(collection(this.db, "uebungen"), orderBy("statJahr", richtung), limit(1))
             );
             const jahr = snapshot.docs[0]?.data()["statJahr"];
             return typeof jahr === "number" ? jahr : undefined;
         } catch (error) {
-            console.warn("Frühestes Übungsjahr konnte nicht ermittelt werden:", error);
+            console.warn(`${richtung === "asc" ? "Frühestes" : "Spätestes"} Übungsjahr konnte nicht ermittelt werden:`, error);
             return undefined;
         }
     }

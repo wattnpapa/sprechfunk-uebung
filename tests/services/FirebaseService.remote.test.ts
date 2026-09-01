@@ -248,9 +248,9 @@ describe("FirebaseService firestore path", () => {
         const { FirebaseService } = await import("../../src/services/FirebaseService");
         const s = new FirebaseService({} as never);
         const aktuellesJahr = new Date().getFullYear();
-        mocks.getDocs.mockResolvedValueOnce({
-            docs: [{ data: () => ({ statJahr: aktuellesJahr - 1 }) }]
-        });
+        mocks.getDocs
+            .mockResolvedValueOnce({ docs: [{ data: () => ({ statJahr: aktuellesJahr - 1 }) }] })
+            .mockResolvedValueOnce({ docs: [{ data: () => ({ statJahr: aktuellesJahr - 1 }) }] });
         // Vorjahr hat Übungen, das laufende Jahr nicht.
         mocks.getCountFromServer
             .mockResolvedValueOnce({ data: () => ({ count: 4 }) })
@@ -260,6 +260,42 @@ describe("FirebaseService firestore path", () => {
 
         expect(jahre).toEqual([{ jahr: aktuellesJahr - 1, anzahl: 4 }]);
         expect(mocks.orderBy).toHaveBeenCalledWith("statJahr", "asc");
+        expect(mocks.orderBy).toHaveBeenCalledWith("statJahr", "desc");
+    });
+
+    it("includes future years when an exercise is dated ahead", async () => {
+        const { FirebaseService } = await import("../../src/services/FirebaseService");
+        const s = new FirebaseService({} as never);
+        const aktuellesJahr = new Date().getFullYear();
+        mocks.getDocs
+            .mockResolvedValueOnce({ docs: [{ data: () => ({ statJahr: aktuellesJahr }) }] })
+            .mockResolvedValueOnce({ docs: [{ data: () => ({ statJahr: aktuellesJahr + 1 }) }] });
+        mocks.getCountFromServer
+            .mockResolvedValueOnce({ data: () => ({ count: 3 }) })
+            .mockResolvedValueOnce({ data: () => ({ count: 1 }) });
+
+        const jahre = await s.getUebungenJahresCounts();
+
+        expect(jahre).toEqual([
+            { jahr: aktuellesJahr, anzahl: 3 },
+            { jahr: aktuellesJahr + 1, anzahl: 1 }
+        ]);
+        expect(mocks.where).toHaveBeenCalledWith("statJahr", "==", aktuellesJahr + 1);
+    });
+
+    it("caps the year window even when a stored date is far in the future", async () => {
+        const { FirebaseService } = await import("../../src/services/FirebaseService");
+        const s = new FirebaseService({} as never);
+        const aktuellesJahr = new Date().getFullYear();
+        mocks.getDocs
+            .mockResolvedValueOnce({ docs: [{ data: () => ({ statJahr: 1970 }) }] })
+            .mockResolvedValueOnce({ docs: [{ data: () => ({ statJahr: 2099 }) }] });
+        mocks.getCountFromServer.mockImplementation(() => Promise.resolve({ data: () => ({ count: 1 }) }));
+
+        const jahre = await s.getUebungenJahresCounts();
+
+        expect(jahre).toHaveLength(15);
+        expect(jahre[0].jahr).toBe(aktuellesJahr);
     });
 
     it("keeps the year filter empty when the earliest year cannot be read", async () => {

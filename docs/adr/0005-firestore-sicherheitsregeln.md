@@ -40,7 +40,9 @@ Jede unbegrenzte `list`-Abfrage kostet einen Read pro Dokument und wächst linea
   Übungscode (z. B. `K7M4Q2`) schützt nicht den Zugriff, er macht eine Übung nur auffindbar.
   In Übungen gehören daher keine personenbezogenen oder sonst schützenswerten Daten.
 - Übungen aus der Zeit vor den `stat*`-Feldern fehlen in den Kennzahlen, bis
-  `scripts/backfill-stat-felder.mjs --apply` gelaufen ist.
+  `scripts/backfill-stat-felder.mjs --apply` gelaufen ist. Weil die Regeln beim Update das
+  ganze Dokument prüfen, trägt das Skript bei Altübungen ohne `uebungCode`/`teilnehmerIds`
+  auch diese Pflichtfelder nach – sonst würde Firestore jede Änderung an ihnen ablehnen.
 
 ## Nicht gewählt
 
