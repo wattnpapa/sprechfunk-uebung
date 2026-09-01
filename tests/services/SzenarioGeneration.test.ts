@@ -26,12 +26,12 @@ function baueSzenario(anzahlStraenge = 6, spruecheJeStrang = 4): Szenario {
             titel: `Strang ${strangIndex + 1}`,
             sprueche: Array.from({ length: spruecheJeStrang }, (_, spruchIndex) => ({
                 absender: (spruchIndex === 2 ? "partner" : "ich") as "ich" | "partner",
-                empfaenger: (spruchIndex === 2 ? "ich" : "leitung") as "ich" | "leitung",
+                empfaenger: (spruchIndex === 2 ? "ich" : "gegenstelle") as "ich" | "gegenstelle",
                 text: `Strang ${strangIndex + 1}, Schritt ${spruchIndex + 1}: Lagemeldung zur Einsatzstelle.`
             }))
         })),
         abschluss: [
-            { empfaenger: "leitung", text: "Abschluss: Alle Einsatzstellen abgearbeitet." }
+            { empfaenger: "alle", text: "Abschluss: Alle Einsatzstellen abgearbeitet." }
         ]
     };
 }
@@ -148,14 +148,32 @@ describe("GenerationService Szenario-Modus", () => {
         const szenario = baueSzenario(4, 4);
         const spruch = szenario.straenge[0]?.sprueche[0];
         if (spruch) {
-            spruch.text = "Unterstützen {{partner}} und melden an {{leitung}}.";
+            spruch.text = "Unterstützen {{partner}} und melden an {{gegenstelle}}.";
         }
         const uebung = baueUebung(3);
         new GenerationService().generate(uebung, szenario);
 
         const texte = alleNachrichten(uebung).map(n => n.nachricht.nachricht);
         expect(texte.some(t => t.includes("{{"))).toBe(false);
-        expect(texte.some(t => t.includes("Leitstelle Test"))).toBe(true);
+        expect(texte.some(t => /Unterstützen Teilnehmer \d und melden an Teilnehmer \d\./.test(t))).toBe(true);
+    });
+
+    it("adressiert außer der Anmeldung nie die Übungsleitung", () => {
+        [2, 3, 6].forEach(teilnehmerAnzahl => {
+            const uebung = baueUebung(teilnehmerAnzahl, `leitungsfrei-${teilnehmerAnzahl}`);
+            new GenerationService().generate(uebung, baueSzenario());
+
+            alleNachrichten(uebung).forEach(({ nachricht }) => {
+                if (nachricht.id === 1) {
+                    expect(nachricht.empfaenger).toEqual([uebung.leitung]);
+                } else {
+                    expect(nachricht.empfaenger).not.toContain(uebung.leitung);
+                    nachricht.empfaenger.forEach(empfaenger => {
+                        expect(uebung.teilnehmerListe).toContain(empfaenger);
+                    });
+                }
+            });
+        });
     });
 
     it("lässt kuratierte Texte unangetastet und deaktiviert Lösungswörter samt Auto-Stärken", () => {

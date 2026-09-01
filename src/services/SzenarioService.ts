@@ -27,8 +27,13 @@ export class SzenarioParseError extends Error {
 export const SZENARIO_MAX_TEXTLAENGE = 300;
 
 const ABSENDER_WERTE = ["ich", "partner"] as const;
-const EMPFAENGER_WERTE = ["leitung", "alle", "ich", "partner"] as const;
-const RAHMEN_EMPFAENGER_WERTE = ["leitung", "alle"] as const;
+const EMPFAENGER_WERTE = ["gegenstelle", "alle", "ich", "partner"] as const;
+/**
+ * Mit der Übungsleitung wird nicht kommuniziert (nur die Anmeldung geht an
+ * sie); Rahmensprüche richten sich daher immer an alle Teilnehmer.
+ */
+const RAHMEN_EMPFAENGER_WERTE = ["alle"] as const;
+const STRANG_PLATZHALTER = ["{{ich}}", "{{partner}}", "{{gegenstelle}}"] as const;
 
 export function parseSzenario(slug: string, roh: unknown): Szenario {
     const fehler: string[] = [];
@@ -96,17 +101,12 @@ function parseRahmenListe(roh: unknown, feld: string, fehler: string[]): Szenari
         const spruch = eintrag as Record<string, unknown>;
         const empfaenger = spruch["empfaenger"];
         if (!RAHMEN_EMPFAENGER_WERTE.includes(empfaenger as never)) {
-            fehler.push(`${pfad}: empfaenger muss "leitung" oder "alle" sein`);
+            fehler.push(`${pfad}: empfaenger muss "alle" sein (mit der Übungsleitung wird nicht kommuniziert)`);
             return [];
         }
-        const textWert = pruefeSpruchText(spruch["text"], pfad, fehler);
+        // Rahmensprüche haben keinen Strang-Kontext, daher keine Platzhalter.
+        const textWert = pruefeSpruchText(spruch["text"], pfad, fehler, []);
         if (textWert === null) {
-            return [];
-        }
-        // Rahmensprüche haben keinen Strang-Kontext: {{ich}}/{{partner}} würden
-        // beide durch den rotierenden Absender selbst ersetzt.
-        if (textWert.includes("{{ich}}") || textWert.includes("{{partner}}")) {
-            fehler.push(`${pfad}: in Rahmensprüchen ist nur der Platzhalter {{leitung}} erlaubt`);
             return [];
         }
         return [{ empfaenger: empfaenger as SzenarioRahmenSpruch["empfaenger"], text: textWert }];
@@ -156,14 +156,14 @@ function parseStrangSprueche(roh: unknown, strangPfad: string, fehler: string[])
         }
         const empfaenger = spruch["empfaenger"];
         if (!EMPFAENGER_WERTE.includes(empfaenger as never)) {
-            fehler.push(`${pfad}: empfaenger muss "leitung", "alle", "ich" oder "partner" sein`);
+            fehler.push(`${pfad}: empfaenger muss "gegenstelle", "alle", "ich" oder "partner" sein`);
             return [];
         }
         if (absender === empfaenger) {
             fehler.push(`${pfad}: absender und empfaenger dürfen nicht dieselbe Rolle sein (Selbstadressierung)`);
             return [];
         }
-        const textWert = pruefeSpruchText(spruch["text"], pfad, fehler);
+        const textWert = pruefeSpruchText(spruch["text"], pfad, fehler, STRANG_PLATZHALTER);
         if (textWert === null) {
             return [];
         }
@@ -180,7 +180,12 @@ function parseStrangSprueche(roh: unknown, strangPfad: string, fehler: string[])
     return sprueche;
 }
 
-function pruefeSpruchText(roh: unknown, pfad: string, fehler: string[]): string | null {
+function pruefeSpruchText(
+    roh: unknown,
+    pfad: string,
+    fehler: string[],
+    erlaubtePlatzhalter: readonly string[]
+): string | null {
     if (typeof roh !== "string" || roh.trim().length === 0) {
         fehler.push(`${pfad}: text fehlt oder ist leer`);
         return null;
@@ -188,6 +193,16 @@ function pruefeSpruchText(roh: unknown, pfad: string, fehler: string[]): string 
     const text = roh.replace(/\s+/g, " ").trim();
     if (text.length > SZENARIO_MAX_TEXTLAENGE) {
         fehler.push(`${pfad}: text ist länger als ${SZENARIO_MAX_TEXTLAENGE} Zeichen (passt nicht auf den A5-Vordruck)`);
+    }
+    let rest = text;
+    erlaubtePlatzhalter.forEach(platzhalter => {
+        rest = rest.split(platzhalter).join("");
+    });
+    if (rest.includes("{{") || rest.includes("}}")) {
+        fehler.push(
+            `${pfad}: unbekannter Platzhalter — erlaubt sind hier ` +
+            (erlaubtePlatzhalter.length > 0 ? erlaubtePlatzhalter.join(", ") : "keine")
+        );
     }
     return text;
 }

@@ -90,9 +90,18 @@ describe("Szenario-Bestand", () => {
                 const reste = text
                     .replaceAll("{{ich}}", "")
                     .replaceAll("{{partner}}", "")
-                    .replaceAll("{{leitung}}", "");
+                    .replaceAll("{{gegenstelle}}", "");
                 expect(reste).not.toContain("{{");
                 expect(reste).not.toContain("}}");
+            });
+        });
+
+        it("kommuniziert in den Texten nicht mit der Übungsleitung", () => {
+            alleSprueche.forEach(text => {
+                expect(text.toLowerCase()).not.toContain("übungsleitung");
+                // Alleinstehendes "Leitung" (nicht: Freileitung, Stromleitungen, …)
+                // deutet auf Meldeverkehr mit der Leitung hin — den gibt es nicht.
+                expect(text).not.toMatch(/(^|[^A-Za-zÄÖÜäöüß-])Leitung(?![a-zäöüß])/);
             });
         });
     });

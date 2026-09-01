@@ -7,7 +7,7 @@
   "einleitung": [
     {
       "empfaenger": "alle",
-      "text": "Sturmtief KORDULA ist über den Landkreis gezogen. Zahlreiche Bäume auf Straßen, abgedeckte Dächer und gesperrte Kreisstraßen gemeldet. Alle Einheiten arbeiten die zugewiesenen Einsatzstellen ab und melden Lageänderungen an die Leitung."
+      "text": "Sturmtief KORDULA ist über den Landkreis gezogen. Zahlreiche Bäume auf Straßen, abgedeckte Dächer und gesperrte Kreisstraßen gemeldet. Alle Einheiten arbeiten die zugewiesenen Einsatzstellen ab und melden Lageänderungen fortlaufend über Funk."
     },
     {
       "empfaenger": "alle",
@@ -20,12 +20,12 @@
       "sprueche": [
         {
           "absender": "ich",
-          "empfaenger": "leitung",
+          "empfaenger": "gegenstelle",
           "text": "Übernehmen Einsatzstelle Kreisstraße K14 am Ortsausgang Richtung Norden. Zwei entwurzelte Bäume liegen quer über beiden Fahrspuren, Fahrbahn voll gesperrt."
         },
         {
           "absender": "ich",
-          "empfaenger": "leitung",
+          "empfaenger": "gegenstelle",
           "text": "Erkundung abgeschlossen: Stämme etwa 60 Zentimeter stark und unter Spannung. Benötigen einen weiteren Kettensägentrupp sowie Verkehrssicherung in beide Richtungen."
         },
         {
@@ -40,7 +40,7 @@
         },
         {
           "absender": "ich",
-          "empfaenger": "leitung",
+          "empfaenger": "gegenstelle",
           "text": "K14 ist seit 15:45 Uhr wieder einspurig befahrbar, Restarbeiten laufen. Einsatzstelle voraussichtlich in 30 Minuten vollständig geräumt."
         }
       ]
@@ -50,22 +50,22 @@
       "sprueche": [
         {
           "absender": "ich",
-          "empfaenger": "leitung",
+          "empfaenger": "gegenstelle",
           "text": "Übernehmen die Einsatzstelle Grundschule am PASTORENWEG. Der Sturm hat etwa 40 Quadratmeter Dachziegel abgedeckt, Trümmer liegen auf dem Schulhof."
         },
         {
           "absender": "ich",
-          "empfaenger": "leitung",
+          "empfaenger": "gegenstelle",
           "text": "Schulhof ist geräumt und abgesperrt, keine verletzten Personen. Beginnen mit dem Sichern der losen Ziegel über die Steckleiter."
         },
         {
           "absender": "ich",
-          "empfaenger": "leitung",
+          "empfaenger": "gegenstelle",
           "text": "Benötigen drei Planen vier mal sechs Meter und Dachlatten zum Notabdecken, bitte über die Materialausgabe bereitstellen."
         },
         {
           "absender": "ich",
-          "empfaenger": "leitung",
+          "empfaenger": "gegenstelle",
           "text": "Dachfläche ist mit Planen notgesichert, Hausmeister ist eingewiesen. Einsatzstelle wird an den Schulträger übergeben, wir sind wieder frei für Aufträge."
         }
       ]
@@ -75,7 +75,7 @@
       "sprueche": [
         {
           "absender": "ich",
-          "empfaenger": "leitung",
+          "empfaenger": "gegenstelle",
           "text": "Übernehmen den Aufbau der Notunterkunft in der Turnhalle an der Bahnhofstraße. Stärke 1/2/9/12. Beginnen mit dem Aufbau von 50 Feldbetten."
         },
         {
@@ -90,12 +90,12 @@
         },
         {
           "absender": "ich",
-          "empfaenger": "leitung",
+          "empfaenger": "gegenstelle",
           "text": "Notunterkunft ist betriebsbereit: 70 Plätze, Verpflegungsausgabe ab 18:00 Uhr. Bisher sind 23 Personen aus den gesperrten Straßenzügen aufgenommen."
         },
         {
           "absender": "ich",
-          "empfaenger": "leitung",
+          "empfaenger": "gegenstelle",
           "text": "Betreuungsdienst hat die Turnhalle übernommen, wir bleiben mit zwei Helfern als Ansprechpartner vor Ort."
         }
       ]
@@ -105,22 +105,22 @@
       "sprueche": [
         {
           "absender": "ich",
-          "empfaenger": "leitung",
+          "empfaenger": "gegenstelle",
           "text": "Übernehmen die Verkehrssicherung an der L24 zwischen den Ortschaften WIENHAUSEN und Brockdorf. Fahrbahn wegen umgestürzter Pappeln in beiden Richtungen unpassierbar."
         },
         {
           "absender": "ich",
-          "empfaenger": "leitung",
+          "empfaenger": "gegenstelle",
           "text": "Vollsperrung ist eingerichtet, Umleitung über die Dorfstraße ausgeschildert. Faltsignale und Blitzleuchten sind gesetzt."
         },
         {
           "absender": "ich",
-          "empfaenger": "leitung",
+          "empfaenger": "gegenstelle",
           "text": "Ein Pendlerbus wurde an der Sperrung zurückgewiesen und über die Umleitung geführt, sonst keine besonderen Vorkommnisse."
         },
         {
           "absender": "ich",
-          "empfaenger": "leitung",
+          "empfaenger": "gegenstelle",
           "text": "Räumtrupp hat die Fahrbahn freigegeben, wir bauen die Sperrung zurück und sind in etwa 45 Minuten wieder einsatzbereit."
         }
       ]
@@ -130,12 +130,12 @@
       "sprueche": [
         {
           "absender": "ich",
-          "empfaenger": "leitung",
+          "empfaenger": "gegenstelle",
           "text": "Beginnen die Erkundungsfahrt durch den Ortsteil MOORKAMP, kontrollieren alle Wohnstraßen auf Sturmschäden und melden fortlaufend."
         },
         {
           "absender": "ich",
-          "empfaenger": "leitung",
+          "empfaenger": "gegenstelle",
           "text": "Erste Ergebnisse: drei Bäume auf Gehwegen, ein umgeknickter Ampelmast an der Kreuzung Ringstraße, keine Personenschäden erkennbar."
         },
         {
@@ -145,7 +145,7 @@
         },
         {
           "absender": "ich",
-          "empfaenger": "leitung",
+          "empfaenger": "gegenstelle",
           "text": "Erkundung abgeschlossen, insgesamt sieben Schadensstellen aufgenommen und für die Lagekarte gemeldet. Stehen für Folgeaufträge bereit."
         }
       ]
@@ -155,7 +155,7 @@
       "sprueche": [
         {
           "absender": "ich",
-          "empfaenger": "leitung",
+          "empfaenger": "gegenstelle",
           "text": "Übernehmen die Einsatzstelle Lindenallee: Ein Baum ist auf einen abgestellten Pkw gestürzt, auslaufende Betriebsstoffe, keine Person im Fahrzeug."
         },
         {
@@ -175,7 +175,7 @@
         },
         {
           "absender": "ich",
-          "empfaenger": "leitung",
+          "empfaenger": "gegenstelle",
           "text": "Stamm ist vom Fahrzeug gezogen, Betriebsstoffe mit Bindemittel abgestreut. Abschleppdienst ist angefordert, Einsatzstelle in 20 Minuten frei."
         }
       ]
@@ -185,12 +185,12 @@
       "sprueche": [
         {
           "absender": "ich",
-          "empfaenger": "leitung",
+          "empfaenger": "gegenstelle",
           "text": "Übernehmen die Einsatzstelle Pflegeheim HEIDKROG, Stromausfall seit 13:50 Uhr. Hausinterne Sicherheitsbeleuchtung läuft, die Aufzüge stehen."
         },
         {
           "absender": "ich",
-          "empfaenger": "leitung",
+          "empfaenger": "gegenstelle",
           "text": "Benötigen eine Netzersatzanlage mit mindestens 50 kVA und eine Fachkraft für die Einspeisung; erbitten Unterstützung durch {{partner}}, Hausanschlussraum ist zugänglich."
         },
         {
@@ -205,7 +205,7 @@
         },
         {
           "absender": "ich",
-          "empfaenger": "leitung",
+          "empfaenger": "gegenstelle",
           "text": "Einspeisung steht, alle kritischen Verbraucher laufen wieder. Betreiben die Anlage bis zur Netzrückkehr mit einem Maschinisten."
         }
       ]
@@ -215,22 +215,22 @@
       "sprueche": [
         {
           "absender": "ich",
-          "empfaenger": "leitung",
+          "empfaenger": "gegenstelle",
           "text": "Übernehmen die Einsatzstelle Kirche in ELMENHORST. Vom Turm haben sich Kupferbleche gelöst, Teile drohen auf den Vorplatz zu stürzen."
         },
         {
           "absender": "ich",
-          "empfaenger": "leitung",
+          "empfaenger": "gegenstelle",
           "text": "Vorplatz und Friedhofszugang sind im Radius von 30 Metern abgesperrt, warten auf die Drehleiter zur Sicherung der Bleche."
         },
         {
           "absender": "ich",
-          "empfaenger": "leitung",
+          "empfaenger": "gegenstelle",
           "text": "Drehleiter ist eingetroffen, lose Bleche werden entfernt und gesichert. Arbeiten dauern voraussichtlich bis 17:30 Uhr an."
         },
         {
           "absender": "ich",
-          "empfaenger": "leitung",
+          "empfaenger": "gegenstelle",
           "text": "Turm ist gesichert, Absperrung auf den direkten Traufbereich verkleinert. Kirchengemeinde ist informiert, wir sind wieder verfügbar."
         }
       ]
@@ -240,22 +240,22 @@
       "sprueche": [
         {
           "absender": "ich",
-          "empfaenger": "leitung",
+          "empfaenger": "gegenstelle",
           "text": "Haben den Bereitstellungsraum auf dem Festplatz am SANDBRINK bezogen und übernehmen die Materialausgabe. Stärke 0/2/6/8."
         },
         {
           "absender": "ich",
-          "empfaenger": "leitung",
+          "empfaenger": "gegenstelle",
           "text": "Bestand aufgenommen: 120 Sandsäcke, acht Kettensägen mit Zubehör, 14 Planen und zwei Stromerzeuger sind ausgabebereit."
         },
         {
           "absender": "ich",
-          "empfaenger": "leitung",
+          "empfaenger": "gegenstelle",
           "text": "Ausgabe an drei Einheiten erfolgt, der Bestand an Planen wird knapp. Bitte Nachschub von mindestens zehn Planen veranlassen."
         },
         {
           "absender": "ich",
-          "empfaenger": "leitung",
+          "empfaenger": "gegenstelle",
           "text": "Nachschub ist eingetroffen und erfasst. Der Bereitstellungsraum bleibt bis auf Widerruf besetzt, Ausgabe jederzeit möglich."
         }
       ]
@@ -265,12 +265,12 @@
       "sprueche": [
         {
           "absender": "ich",
-          "empfaenger": "leitung",
+          "empfaenger": "gegenstelle",
           "text": "Übernehmen das Freischneiden der Zufahrt zur Rettungswache am TANNENKAMP, mehrere Fichten liegen auf der Anfahrtsstraße."
         },
         {
           "absender": "ich",
-          "empfaenger": "leitung",
+          "empfaenger": "gegenstelle",
           "text": "Rettungswache ist derzeit nur über den Fußweg erreichbar, der Rettungsdienst nutzt die Ausweichroute. Beginnen mit den Sägearbeiten."
         },
         {
@@ -285,7 +285,7 @@
         },
         {
           "absender": "ich",
-          "empfaenger": "leitung",
+          "empfaenger": "gegenstelle",
           "text": "Zufahrt zur Rettungswache ist seit 16:40 Uhr wieder frei befahrbar, Sägearbeiten beendet, Trupp meldet sich einsatzbereit."
         }
       ]
@@ -295,13 +295,13 @@
       "sprueche": [
         {
           "absender": "ich",
-          "empfaenger": "leitung",
+          "empfaenger": "gegenstelle",
           "text": "Übernehmen die Ausleuchtung des Sammelplatzes am Sportheim VOSSBERG für die Nacht, bauen den Lichtmast und zwei Stative auf."
         },
         {
           "absender": "partner",
           "empfaenger": "ich",
-          "text": "Bringen Ihnen einen zusätzlichen Stromerzeuger mit acht kVA und 200 Meter Leitung, Ankunft gegen 19:15 Uhr."
+          "text": "Bringen Ihnen einen zusätzlichen Stromerzeuger mit acht kVA und 200 Meter Leitungsmaterial, Ankunft gegen 19:15 Uhr."
         },
         {
           "absender": "ich",
@@ -310,7 +310,7 @@
         },
         {
           "absender": "ich",
-          "empfaenger": "leitung",
+          "empfaenger": "gegenstelle",
           "text": "Beleuchtung ist in Betrieb, Sammelplatz vollständig ausgeleuchtet. Kraftstoffvorrat reicht für etwa acht Stunden Dauerbetrieb."
         }
       ]
@@ -320,22 +320,22 @@
       "sprueche": [
         {
           "absender": "ich",
-          "empfaenger": "leitung",
+          "empfaenger": "gegenstelle",
           "text": "Übernehmen die Kontrollfahrt entlang des Radwegs zwischen LERCHENFELD und dem Bahnübergang an der Mühlenstraße, prüfen auf abgebrochene Äste."
         },
         {
           "absender": "ich",
-          "empfaenger": "leitung",
+          "empfaenger": "gegenstelle",
           "text": "Am Bahnübergang liegt Astwerk im Lichtraum der Schranke, das Bahnunternehmen ist verständigt, wir sichern die Stelle bis zum Eintreffen."
         },
         {
           "absender": "ich",
-          "empfaenger": "leitung",
+          "empfaenger": "gegenstelle",
           "text": "Radweg ist auf ganzer Länge kontrolliert, vier kleinere Astbrüche selbst beseitigt, zwei Gefahrenbäume markiert und gemeldet."
         },
         {
           "absender": "ich",
-          "empfaenger": "leitung",
+          "empfaenger": "gegenstelle",
           "text": "Kontrollfahrt abgeschlossen, Bahnübergang durch Fachpersonal freigegeben. Kehren zum Bereitstellungsraum zurück, gegen 18:20 Uhr dort."
         }
       ]
@@ -343,7 +343,7 @@
   ],
   "abschluss": [
     {
-      "empfaenger": "leitung",
+      "empfaenger": "alle",
       "text": "Alle zugewiesenen Einsatzstellen sind abgearbeitet, keine offenen Aufträge mehr. Einheiten rücken in die Unterkünfte ein und stellen die Einsatzbereitschaft wieder her."
     },
     {

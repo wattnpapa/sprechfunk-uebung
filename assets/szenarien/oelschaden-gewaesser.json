@@ -7,10 +7,10 @@
   "einleitung": [
     {
       "empfaenger": "alle",
-      "text": "Lage für alle Einheiten: Nach der Havarie eines Sportboots im Hafen Lindenhafen treibt ein Ölfilm auf dem Kanal in Richtung Schleuse, die Schifffahrt ist eingestellt. Besondere Feststellungen sind unmittelbar an {{leitung}} zu melden, alle Einsatzstellen arbeiten auf dieser Rufgruppe."
+      "text": "Lage für alle Einheiten: Nach der Havarie eines Sportboots im Hafen Lindenhafen treibt ein Ölfilm auf dem Kanal in Richtung Schleuse, die Schifffahrt ist eingestellt. Besondere Feststellungen sind unverzüglich zu melden, alle Einsatzstellen arbeiten auf dieser Rufgruppe."
     },
     {
-      "empfaenger": "leitung",
+      "empfaenger": "alle",
       "text": "Melden Übungsbeginn: Einheit vollzählig eingetroffen, Ölwehrgerät und Boote sind überprüft und verladen, sind ab sofort einsatzbereit."
     }
   ],
@@ -20,17 +20,17 @@
       "sprueche": [
         {
           "absender": "ich",
-          "empfaenger": "leitung",
+          "empfaenger": "gegenstelle",
           "text": "Übernehmen die Erkundung der Ölausbreitung mit dem Mehrzweckboot ab dem Sportboothafen LINDENHAFEN in Richtung Schleuse. Laufen gegen 10:15 Uhr aus."
         },
         {
           "absender": "ich",
-          "empfaenger": "leitung",
+          "empfaenger": "gegenstelle",
           "text": "Erkundungsergebnis Abschnitt eins: geschlossener Ölfilm von der Havariestelle bis Kanalkilometer 12,4 über die gesamte Wasserbreite. Geruch nach Dieselkraftstoff deutlich wahrnehmbar."
         },
         {
           "absender": "ich",
-          "empfaenger": "leitung",
+          "empfaenger": "gegenstelle",
           "text": "Ölfilm reißt ab Kanalkilometer 13,1 auf, dort nur noch einzelne Schlieren. Abdrift durch den Westwind überwiegend an das Nordufer."
         },
         {
@@ -40,7 +40,7 @@
         },
         {
           "absender": "ich",
-          "empfaenger": "leitung",
+          "empfaenger": "gegenstelle",
           "text": "Erkundungsfahrt abgeschlossen, Ausdehnung des Ölfilms ist in der Lagekarte eingetragen. Kehren zum Hafen zurück und stehen für weitere Erkundungsfahrten bereit."
         }
       ]
@@ -50,12 +50,12 @@
       "sprueche": [
         {
           "absender": "ich",
-          "empfaenger": "leitung",
+          "empfaenger": "gegenstelle",
           "text": "Übernehmen Einsatzstelle Ölsperre Nord an der ELLERNBRÜCKE. Beginnen mit dem Ausbringen von 60 Metern Schwimmsperre vom Nordufer aus."
         },
         {
           "absender": "ich",
-          "empfaenger": "leitung",
+          "empfaenger": "gegenstelle",
           "text": "Benötigen zum Verspannen der Sperre ein zweites Boot sowie vier zusätzliche Erdanker mit Zubehör."
         },
         {
@@ -70,12 +70,12 @@
         },
         {
           "absender": "ich",
-          "empfaenger": "leitung",
+          "empfaenger": "gegenstelle",
           "text": "Ölsperre Nord ist auf ganzer Kanalbreite gesetzt und verspannt. Die Sperre hält, das Öl staut sich sichtbar davor auf."
         },
         {
           "absender": "ich",
-          "empfaenger": "leitung",
+          "empfaenger": "gegenstelle",
           "text": "Einsatzstelle Ölsperre Nord besetzt mit Stärke 1/1/7/9, Ablösung wird ab 16:00 Uhr erforderlich."
         }
       ]
@@ -85,12 +85,12 @@
       "sprueche": [
         {
           "absender": "ich",
-          "empfaenger": "leitung",
+          "empfaenger": "gegenstelle",
           "text": "Übernehmen den Aufbau der zweiten Ölsperre oberhalb der Schleuse an der Straße SCHLEUSENKAMP. Das Sperrmaterial ist vollständig eingetroffen."
         },
         {
           "absender": "ich",
-          "empfaenger": "leitung",
+          "empfaenger": "gegenstelle",
           "text": "Strömung an der Schleuse stärker als erwartet, die Sperre drückt in der Mitte durch. Setzen eine zweite Sperrlinie zehn Meter dahinter."
         },
         {
@@ -105,7 +105,7 @@
         },
         {
           "absender": "ich",
-          "empfaenger": "leitung",
+          "empfaenger": "gegenstelle",
           "text": "Beide Sperrlinien an der Schleuse stehen, kein Öldurchtritt mehr feststellbar. Der Schleusenbetrieb bleibt nach Absprache mit dem Schleusenwärter eingestellt."
         }
       ]
@@ -115,12 +115,12 @@
       "sprueche": [
         {
           "absender": "ich",
-          "empfaenger": "leitung",
+          "empfaenger": "gegenstelle",
           "text": "Übernehmen die Ölaufnahme mit dem Skimmer in der Bucht am Anleger FÄHRSTIEG. Gerät ist aufgebaut, beginnen mit der Aufnahme des Öl-Wasser-Gemischs."
         },
         {
           "absender": "ich",
-          "empfaenger": "leitung",
+          "empfaenger": "gegenstelle",
           "text": "Skimmer läuft stabil, nehmen etwa 1.200 Liter Gemisch je Stunde auf. Der erste 1.000-Liter-Behälter ist zu drei Vierteln gefüllt."
         },
         {
@@ -135,7 +135,7 @@
         },
         {
           "absender": "ich",
-          "empfaenger": "leitung",
+          "empfaenger": "gegenstelle",
           "text": "Zwischenmeldung vom Skimmer: bislang rund 2.800 Liter Gemisch aufgenommen. Der Betrieb wird bei Einbruch der Dämmerung eingestellt."
         }
       ]
@@ -145,22 +145,22 @@
       "sprueche": [
         {
           "absender": "ich",
-          "empfaenger": "leitung",
+          "empfaenger": "gegenstelle",
           "text": "Übernehmen die Probenahme für die Untere Wasserbehörde. Entnehmen Wasserproben an fünf festgelegten Stellen zwischen Havariestelle und Schleuse."
         },
         {
           "absender": "ich",
-          "empfaenger": "leitung",
+          "empfaenger": "gegenstelle",
           "text": "Probenahme an den ersten drei Stellen abgeschlossen, alle Proben sind beschriftet und gekühlt. An Messstelle drei deutlicher Ölfilm, dort eine zusätzliche Probe entnommen."
         },
         {
           "absender": "ich",
-          "empfaenger": "leitung",
+          "empfaenger": "gegenstelle",
           "text": "Vertreterin der Unteren Wasserbehörde, Frau HAGEMEYER, begleitet die Entnahme ab Messstelle vier und zeichnet die Protokolle ab."
         },
         {
           "absender": "ich",
-          "empfaenger": "leitung",
+          "empfaenger": "gegenstelle",
           "text": "Alle sechs Proben sind entnommen und dokumentiert, Übergabe an den Kurier der Wasserbehörde um 14:10 Uhr am Feuerwehrhaus. Einsatzstelle Probenahme wird geschlossen."
         }
       ]
@@ -170,12 +170,12 @@
       "sprueche": [
         {
           "absender": "ich",
-          "empfaenger": "leitung",
+          "empfaenger": "gegenstelle",
           "text": "Übernehmen das Einfangen verölter Wasservögel am Nordufer. Bislang zwölf betroffene Tiere gesichtet, überwiegend Stockenten sowie zwei Schwäne."
         },
         {
           "absender": "ich",
-          "empfaenger": "leitung",
+          "empfaenger": "gegenstelle",
           "text": "Benötigen zusätzliche Transportboxen und Schutzhandschuhe, die eingefangenen Tiere werden zur Erstversorgung am Ufer gesammelt."
         },
         {
@@ -190,7 +190,7 @@
         },
         {
           "absender": "ich",
-          "empfaenger": "leitung",
+          "empfaenger": "gegenstelle",
           "text": "Neun Tiere sind eingefangen und in Boxen versorgt. Übergabe an die Pflegestation REIHERHORST ist für 15:30 Uhr vereinbart."
         }
       ]
@@ -200,12 +200,12 @@
       "sprueche": [
         {
           "absender": "ich",
-          "empfaenger": "leitung",
+          "empfaenger": "gegenstelle",
           "text": "Übernehmen die Sammelstelle für das aufgenommene Öl-Wasser-Gemisch auf dem Betriebshof an der TORFSTRASSE. Der Aufbau der Auffangwanne läuft."
         },
         {
           "absender": "ich",
-          "empfaenger": "leitung",
+          "empfaenger": "gegenstelle",
           "text": "Sammelstelle ist betriebsbereit, Kapazität 8.000 Liter in Behältern auf dichter Folie. Der beauftragte Entsorgungsfachbetrieb kündigt das Saugfahrzeug für 16:00 Uhr an."
         },
         {
@@ -220,7 +220,7 @@
         },
         {
           "absender": "ich",
-          "empfaenger": "leitung",
+          "empfaenger": "gegenstelle",
           "text": "Bislang 3.500 Liter Gemisch angenommen und dokumentiert. Die Begleitscheine für die Entsorgung liegen vor, Übergabe an das Saugfahrzeug wie geplant."
         }
       ]
@@ -230,27 +230,27 @@
       "sprueche": [
         {
           "absender": "ich",
-          "empfaenger": "leitung",
+          "empfaenger": "gegenstelle",
           "text": "Übernehmen die Sicherung der Havariestelle am Sportboot im Hafen. Das Boot liegt mit Schlagseite am Steg drei, Kraftstoff tritt weiter aus."
         },
         {
           "absender": "ich",
-          "empfaenger": "leitung",
+          "empfaenger": "gegenstelle",
           "text": "Leckstelle am Rumpf unterhalb der Wasserlinie ausgemacht. Dichten mit Leckkeilen und Dichtkissen ab, die austretende Menge nimmt bereits ab."
         },
         {
           "absender": "ich",
-          "empfaenger": "leitung",
+          "empfaenger": "gegenstelle",
           "text": "Austritt ist gestoppt. Um das Boot ist eine geschlossene Ringsperre aus Ölbindeschlängeln gelegt, Restmenge im Tank etwa 60 Liter."
         },
         {
           "absender": "ich",
-          "empfaenger": "leitung",
+          "empfaenger": "gegenstelle",
           "text": "Der Eigner ist unverletzt und wird durch die Wasserschutzpolizei zur Unfallaufnahme befragt. Das Boot wird gegen 17:00 Uhr ausgekrant."
         },
         {
           "absender": "ich",
-          "empfaenger": "leitung",
+          "empfaenger": "gegenstelle",
           "text": "Einsatzstelle Havarie ist mit Stärke 0/1/5/6 besetzt, weitere Kräfte sind hier nicht erforderlich."
         }
       ]
@@ -260,22 +260,22 @@
       "sprueche": [
         {
           "absender": "ich",
-          "empfaenger": "leitung",
+          "empfaenger": "gegenstelle",
           "text": "Übernehmen die Begehung des Südufers zwischen der Hafeneinfahrt und der Ortslage WIEKENDORF. Erfassen verölte Uferabschnitte mit Fotodokumentation."
         },
         {
           "absender": "ich",
-          "empfaenger": "leitung",
+          "empfaenger": "gegenstelle",
           "text": "Auf rund 300 Metern Länge ist der Schilfgürtel deutlich verölt, Betreten der Böschung wegen Rutschgefahr nur mit Sicherung möglich."
         },
         {
           "absender": "ich",
-          "empfaenger": "leitung",
+          "empfaenger": "gegenstelle",
           "text": "Zwei Regenwassereinläufe im begangenen Abschnitt mit Ölbindeschlängeln gesichert, die Lage der Einläufe ist in der Karte vermerkt."
         },
         {
           "absender": "ich",
-          "empfaenger": "leitung",
+          "empfaenger": "gegenstelle",
           "text": "Begehung abgeschlossen, die Dokumentation mit 34 Fotos wird der Einsatzleitung übergeben. Trupp meldet sich zurück am Bereitstellungsraum."
         }
       ]
@@ -285,22 +285,22 @@
       "sprueche": [
         {
           "absender": "ich",
-          "empfaenger": "leitung",
+          "empfaenger": "gegenstelle",
           "text": "Übernehmen die Verkehrssicherung: Der Betriebsweg am Nordufer wird zwischen dem Zugang an der Ortslage MOORKAMP und der Brücke für Fußgänger und Radverkehr gesperrt."
         },
         {
           "absender": "ich",
-          "empfaenger": "leitung",
+          "empfaenger": "gegenstelle",
           "text": "Alle drei Zugänge sind mit Absperrband und Hinweisschildern versehen, eine Streife geht den gesperrten Abschnitt stündlich ab."
         },
         {
           "absender": "ich",
-          "empfaenger": "leitung",
+          "empfaenger": "gegenstelle",
           "text": "Mehrere Angler wurden aus dem gesperrten Abschnitt verwiesen, sonst keine besonderen Vorkommnisse. Die Absperrung bleibt bis auf Widerruf bestehen."
         },
         {
           "absender": "ich",
-          "empfaenger": "leitung",
+          "empfaenger": "gegenstelle",
           "text": "Übergeben die Absperrung um 18:00 Uhr an die Nachtschicht, Schichtstärke dann 0/1/3/4."
         }
       ]
@@ -310,12 +310,12 @@
       "sprueche": [
         {
           "absender": "ich",
-          "empfaenger": "leitung",
+          "empfaenger": "gegenstelle",
           "text": "Übernehmen den Bereitstellungsraum für Ölwehrmaterial auf dem Parkplatz am WISCHKAMP. Die Registrierung ein- und ausgehender Fahrzeuge ist eingerichtet."
         },
         {
           "absender": "ich",
-          "empfaenger": "leitung",
+          "empfaenger": "gegenstelle",
           "text": "Bereitstellungsraum ist bezogen. Vorrat derzeit: 180 Meter Schwimmsperre, 90 Sack Bindemittel und zwölf Rollen Ölbindevlies."
         },
         {
@@ -330,7 +330,7 @@
         },
         {
           "absender": "ich",
-          "empfaenger": "leitung",
+          "empfaenger": "gegenstelle",
           "text": "Zwischenmeldung Bereitstellungsraum: Nach der Ausgabe an {{partner}} verbleiben 60 Sack Bindemittel. Zwei weitere Einsatzstellen haben Bedarf angemeldet, bitten um Nachschub von mindestens 100 Sack bis 15:00 Uhr."
         }
       ]
@@ -340,22 +340,22 @@
       "sprueche": [
         {
           "absender": "ich",
-          "empfaenger": "leitung",
+          "empfaenger": "gegenstelle",
           "text": "Übernehmen die Information der Bootsführer und Anlieger im Hafen und entlang des Südufers. Die Sperrung des Kanals für die Schifffahrt ist durch die zuständige Behörde bestätigt."
         },
         {
           "absender": "ich",
-          "empfaenger": "leitung",
+          "empfaenger": "gegenstelle",
           "text": "Im Hafen sind 14 Liegeplätze belegt, alle Bootsführer sind erreicht und angewiesen, Maschinen nicht zu starten und Bilgenpumpen abzuschalten."
         },
         {
           "absender": "ich",
-          "empfaenger": "leitung",
+          "empfaenger": "gegenstelle",
           "text": "Am Vereinsheim des Wassersportvereins ist eine Ansprechstelle eingerichtet, Aushänge mit Verhaltenshinweisen sind angebracht."
         },
         {
           "absender": "ich",
-          "empfaenger": "leitung",
+          "empfaenger": "gegenstelle",
           "text": "Information abgeschlossen, Rückfragen der Anlieger werden über die Ansprechstelle gebündelt. Stehen für weitere Aufträge zur Verfügung."
         }
       ]
@@ -363,7 +363,7 @@
   ],
   "abschluss": [
     {
-      "empfaenger": "leitung",
+      "empfaenger": "alle",
       "text": "Abschlussmeldung: Alle zugewiesenen Aufträge sind abgearbeitet, die Einsatzstellen sind zurückgebaut, Gerät ist gereinigt und verlastet. Melden Einsatzbereitschaft für den Rückmarsch."
     },
     {

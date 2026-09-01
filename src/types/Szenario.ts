@@ -12,17 +12,21 @@
 export type SzenarioAbsender = "ich" | "partner";
 
 /**
- * An wen ein Spruch geht. "alle" meint wie im Zufallsmodus alle anderen
- * Teilnehmer (ohne Übungsleitung), "leitung" die Übungsleitung.
+ * An wen ein Spruch geht. Mit der Übungsleitung wird grundsätzlich nicht
+ * kommuniziert (nur der Anmeldungs-Funkspruch geht an sie) — Meldungen eines
+ * Strangs empfängt stattdessen die "gegenstelle": ein je Strang fest
+ * zugeloster anderer Teilnehmer, der die Meldungen dieses Strangs aufnimmt.
+ * "alle" meint wie im Zufallsmodus alle anderen Teilnehmer.
  */
-export type SzenarioEmpfaenger = "leitung" | "alle" | "ich" | "partner";
+export type SzenarioEmpfaenger = "gegenstelle" | "alle" | "ich" | "partner";
 
 export interface SzenarioSpruch {
     absender: SzenarioAbsender;
     empfaenger: SzenarioEmpfaenger;
     /**
-     * Funkspruchtext. Optionale Platzhalter: {{ich}}, {{partner}}, {{leitung}}
-     * werden bei der Generierung durch die echten Funkrufnamen ersetzt.
+     * Funkspruchtext. Optionale Platzhalter: {{ich}}, {{partner}} und
+     * {{gegenstelle}} werden bei der Generierung durch die echten
+     * Funkrufnamen ersetzt.
      */
     text: string;
 }
@@ -33,9 +37,12 @@ export interface SzenarioStrang {
     sprueche: SzenarioSpruch[];
 }
 
-/** Rahmenspruch (Einleitung/Abschluss); der Absender rotiert über die Teilnehmer. */
+/**
+ * Rahmenspruch (Einleitung/Abschluss); der Absender rotiert über die
+ * Teilnehmer, Empfänger sind immer alle anderen Teilnehmer.
+ */
 export interface SzenarioRahmenSpruch {
-    empfaenger: "leitung" | "alle";
+    empfaenger: "alle";
     text: string;
 }
 

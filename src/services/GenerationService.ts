@@ -370,24 +370,34 @@ export class GenerationService {
 
         // Stränge seeded mischen und reihum an die Teilnehmer vergeben; die
         // Teilnehmer-Reihenfolge wird ebenfalls gemischt, damit nicht immer
-        // die ersten Namen der Liste die meisten Stränge bekommen.
+        // die ersten Namen der Liste die meisten Stränge bekommen. Mit der
+        // Übungsleitung wird nicht kommuniziert — Meldungen eines Strangs
+        // empfängt eine je Strang fest zugeloste Gegenstelle (anderer
+        // Teilnehmer), bevorzugt jemand Drittes neben dem Partner.
         const rotation = this.shuffle(teilnehmer);
         const instanzen = this.shuffle(szenario.straenge).map((strang, index) => {
             const ich = rotation[index % anzahl] as string;
             const andere = teilnehmer.filter(t => t !== ich);
             const partner = andere[randomInt(andere.length, this.rng)] ?? ich;
-            return { ich, partner, sprueche: strang.sprueche };
+            const dritte = andere.filter(t => t !== partner);
+            const gegenstelle = dritte.length > 0
+                ? dritte[randomInt(dritte.length, this.rng)] ?? partner
+                : partner;
+            return { ich, partner, gegenstelle, sprueche: strang.sprueche };
         });
 
         const aufloesenEmpfaenger = (
             empfaenger: SzenarioEmpfaenger,
             sender: string,
             ich: string,
-            partner: string
+            partner: string,
+            gegenstelle: string
         ): string[] => {
             switch (empfaenger) {
-                case "leitung":
-                    return [uebung.leitung];
+                case "gegenstelle":
+                    // Bei zwei Teilnehmern kann die Gegenstelle der Partner und
+                    // damit der Sender selbst sein — dann empfängt der Inhaber.
+                    return [gegenstelle !== sender ? gegenstelle : ich];
                 case "alle":
                     return teilnehmer.filter(t => t !== sender);
                 case "ich":
@@ -396,11 +406,11 @@ export class GenerationService {
                     return [partner];
             }
         };
-        const aufloesenText = (text: string, ich: string, partner: string): string =>
+        const aufloesenText = (text: string, ich: string, partner: string, gegenstelle: string): string =>
             text
                 .replace(/\{\{ich\}\}/g, ich)
                 .replace(/\{\{partner\}\}/g, partner)
-                .replace(/\{\{leitung\}\}/g, uebung.leitung);
+                .replace(/\{\{gegenstelle\}\}/g, gegenstelle);
 
         const ereignisse: { sender: string; empfaenger: string[]; text: string }[] = [];
 
@@ -409,8 +419,8 @@ export class GenerationService {
             const sender = rotation[index % anzahl] as string;
             ereignisse.push({
                 sender,
-                empfaenger: aufloesenEmpfaenger(spruch.empfaenger, sender, sender, sender),
-                text: aufloesenText(spruch.text, sender, sender)
+                empfaenger: aufloesenEmpfaenger(spruch.empfaenger, sender, sender, sender, sender),
+                text: aufloesenText(spruch.text, sender, sender, sender)
             });
         });
 
@@ -434,8 +444,10 @@ export class GenerationService {
             const sender = spruch.absender === "partner" ? instanz.partner : instanz.ich;
             ereignisse.push({
                 sender,
-                empfaenger: aufloesenEmpfaenger(spruch.empfaenger, sender, instanz.ich, instanz.partner),
-                text: aufloesenText(spruch.text, instanz.ich, instanz.partner)
+                empfaenger: aufloesenEmpfaenger(
+                    spruch.empfaenger, sender, instanz.ich, instanz.partner, instanz.gegenstelle
+                ),
+                text: aufloesenText(spruch.text, instanz.ich, instanz.partner, instanz.gegenstelle)
             });
         });
 
@@ -443,8 +455,8 @@ export class GenerationService {
             const sender = rotation[(szenario.einleitung.length + index) % anzahl] as string;
             ereignisse.push({
                 sender,
-                empfaenger: aufloesenEmpfaenger(spruch.empfaenger, sender, sender, sender),
-                text: aufloesenText(spruch.text, sender, sender)
+                empfaenger: aufloesenEmpfaenger(spruch.empfaenger, sender, sender, sender, sender),
+                text: aufloesenText(spruch.text, sender, sender, sender)
             });
         });
 

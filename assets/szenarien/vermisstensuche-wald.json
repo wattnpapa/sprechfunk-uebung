@@ -10,7 +10,7 @@
       "text": "Lageeinweisung für alle Einheiten: Seit 09:30 Uhr wird eine 78-jährige orientierungslose Frau vermisst, zuletzt gesehen am Waldrand nahe des Wanderparkplatzes Hollenbrook. Suchgebiet ist das Hollenbrooker Holz. Anfahrt zum Bereitstellungsraum über die Kreisstraße K7."
     },
     {
-      "empfaenger": "leitung",
+      "empfaenger": "alle",
       "text": "Sind mit unserer Einheit im Bereitstellungsraum am Wanderparkplatz eingetroffen und einsatzbereit. Erbitten Zuweisung eines Suchauftrags."
     }
   ],
@@ -20,12 +20,12 @@
       "sprueche": [
         {
           "absender": "ich",
-          "empfaenger": "leitung",
+          "empfaenger": "gegenstelle",
           "text": "Übernehmen Suchabschnitt Nord zwischen Moorweg und Bachlauf. Suchkette mit zwölf Einsatzkräften ist eingeteilt, beginnen in westlicher Richtung. Stärke 1/2/9/12."
         },
         {
           "absender": "ich",
-          "empfaenger": "leitung",
+          "empfaenger": "gegenstelle",
           "text": "Suchkette hat den querenden Waldweg erreicht, bisher keine Feststellung. Dichtes Unterholz verlangsamt das Vorankommen, rechnen mit etwa 45 Minuten Verzögerung."
         },
         {
@@ -40,12 +40,12 @@
         },
         {
           "absender": "partner",
-          "empfaenger": "leitung",
+          "empfaenger": "gegenstelle",
           "text": "Unterstützen die Suchkette im Abschnitt Nord am Steilhang mit drei Einsatzkräften. Die Lücke in der Kette ist geschlossen."
         },
         {
           "absender": "ich",
-          "empfaenger": "leitung",
+          "empfaenger": "gegenstelle",
           "text": "Abschnitt Nord vollständig abgesucht, keine Feststellung. Trupp von {{partner}} ist wieder abgerückt. Lösen die Suchkette auf und kehren zum Bereitstellungsraum zurück."
         }
       ]
@@ -55,27 +55,27 @@
       "sprueche": [
         {
           "absender": "ich",
-          "empfaenger": "leitung",
+          "empfaenger": "gegenstelle",
           "text": "Übernehmen Suchabschnitt Süd vom Wanderparkplatz bis zur Kreisstraße K7. Suchkette mit zehn Einsatzkräften steht, beginnen jetzt mit der Absuche."
         },
         {
           "absender": "ich",
-          "empfaenger": "leitung",
+          "empfaenger": "gegenstelle",
           "text": "Feststellung im Abschnitt Süd: Am Wegrand liegt ein einzelner brauner Damenschuh. Fundstelle mit Trassierband markiert. Erbitten Abgleich mit der Bekleidung der Vermissten."
         },
         {
           "absender": "ich",
-          "empfaenger": "leitung",
+          "empfaenger": "gegenstelle",
           "text": "Verstanden, der Schuh gehört nicht zur vermissten Person. Setzen die Suchkette in Richtung Kreisstraße fort."
         },
         {
           "absender": "ich",
-          "empfaenger": "leitung",
+          "empfaenger": "gegenstelle",
           "text": "Suchkette hat die Kreisstraße erreicht. Abschnitt Süd ohne weitere Feststellung abgesucht. Erbitten Folgeauftrag oder Freigabe zur Rückkehr."
         },
         {
           "absender": "ich",
-          "empfaenger": "leitung",
+          "empfaenger": "gegenstelle",
           "text": "Kehren zum Bereitstellungsraum zurück. Zwei Einsatzkräfte benötigen trockenes Schuhwerk, sonst alle wohlauf."
         }
       ]
@@ -85,12 +85,12 @@
       "sprueche": [
         {
           "absender": "ich",
-          "empfaenger": "leitung",
+          "empfaenger": "gegenstelle",
           "text": "Drohnentrupp einsatzbereit auf der Wiese östlich des Wanderparkplatzes. Beginnen den ersten Erkundungsflug über der Schneise in Richtung TANNENHOF."
         },
         {
           "absender": "ich",
-          "empfaenger": "leitung",
+          "empfaenger": "gegenstelle",
           "text": "Erster Flug abgeschlossen. Wärmebildkamera zeigt einen Verdachtspunkt etwa 400 Meter nordöstlich des Startplatzes im dichten Bewuchs. Koordinaten sind notiert."
         },
         {
@@ -110,7 +110,7 @@
         },
         {
           "absender": "ich",
-          "empfaenger": "leitung",
+          "empfaenger": "gegenstelle",
           "text": "Verdachtspunkt durch den Trupp von {{partner}} negativ aufgeklärt. Setzen die Flüge im nächsten Planquadrat fort, Akkuwechsel in fünf Minuten."
         }
       ]
@@ -120,17 +120,17 @@
       "sprueche": [
         {
           "absender": "ich",
-          "empfaenger": "leitung",
+          "empfaenger": "gegenstelle",
           "text": "Rettungshundestaffel mit zwei Flächensuchhunden eingetroffen. Übernehmen das Waldstück zwischen Bachlauf und EICHENGRUND. Stärke 0/1/4/5."
         },
         {
           "absender": "ich",
-          "empfaenger": "leitung",
+          "empfaenger": "gegenstelle",
           "text": "Der erste Hund zeigt Anzeigeverhalten an einer Geländekante. Hundeführer kontrolliert die Stelle jetzt."
         },
         {
           "absender": "ich",
-          "empfaenger": "leitung",
+          "empfaenger": "gegenstelle",
           "text": "Anzeige aufgeklärt: An der Geländekante lag eine graue Wolldecke, vermutlich von Waldbesuchern zurückgelassen. Nehmen sie als möglichen Hinweis mit, Suche läuft weiter."
         },
         {
@@ -145,7 +145,7 @@
         },
         {
           "absender": "ich",
-          "empfaenger": "leitung",
+          "empfaenger": "gegenstelle",
           "text": "Suchgebiet der Hundestaffel vollständig abgearbeitet, keine Person gefunden. Hunde werden versorgt und sind danach wieder einsatzbereit."
         }
       ]
@@ -155,27 +155,27 @@
       "sprueche": [
         {
           "absender": "ich",
-          "empfaenger": "leitung",
+          "empfaenger": "gegenstelle",
           "text": "Haben den Bereitstellungsraum auf dem Wanderparkplatz HOLLENBROOK eingerichtet. Zufahrt ist frei, Stellflächen für zwölf Fahrzeuge sind ausgewiesen."
         },
         {
           "absender": "ich",
-          "empfaenger": "leitung",
+          "empfaenger": "gegenstelle",
           "text": "Registrierung läuft: Bisher sechs Einheiten mit zusammen 41 Einsatzkräften erfasst. Führen die Übersicht über die zugewiesenen Suchabschnitte."
         },
         {
           "absender": "ich",
-          "empfaenger": "leitung",
+          "empfaenger": "gegenstelle",
           "text": "Im Bereitstellungsraum wird der Platz knapp. Erbitten Freigabe, den Seitenstreifen des Forstwegs als zusätzliche Stellfläche zu nutzen."
         },
         {
           "absender": "ich",
-          "empfaenger": "leitung",
+          "empfaenger": "gegenstelle",
           "text": "Verstanden, Seitenstreifen ist freigegeben. Zwei nachrückende Fahrzeuge wurden dort bereits eingewiesen."
         },
         {
           "absender": "ich",
-          "empfaenger": "leitung",
+          "empfaenger": "gegenstelle",
           "text": "Meldung aus dem Bereitstellungsraum: Alle gemeldeten Einheiten sind registriert, aktuelle Gesamtstärke 4/8/39/51."
         }
       ]
@@ -185,27 +185,27 @@
       "sprueche": [
         {
           "absender": "ich",
-          "empfaenger": "leitung",
+          "empfaenger": "gegenstelle",
           "text": "Sind am Wohnhaus der Angehörigen im BUCHENWINKEL eingetroffen. Beginnen mit der Befragung zur vermissten Person."
         },
         {
           "absender": "ich",
           "empfaenger": "alle",
-          "text": "Personenbeschreibung: Vermisst wird Margarete LAUBRINK, 78 Jahre, etwa 1,60 Meter groß, schlank, kurze graue Haare, dunkelblaue Strickjacke, beige Hose, schwarze Halbschuhe. Feststellungen unmittelbar an {{leitung}} melden."
+          "text": "Personenbeschreibung: Vermisst wird Margarete LAUBRINK, 78 Jahre, etwa 1,60 Meter groß, schlank, kurze graue Haare, dunkelblaue Strickjacke, beige Hose, schwarze Halbschuhe. Feststellungen unmittelbar an {{gegenstelle}} melden."
         },
         {
           "absender": "ich",
-          "empfaenger": "leitung",
+          "empfaenger": "gegenstelle",
           "text": "Ergänzung aus der Befragung: Die Vermisste ist gehbeeinträchtigt, ihr Rollator steht noch im Hausflur. Sie ist demnach ohne Hilfsmittel zu Fuß unterwegs, vermutlich langsam."
         },
         {
           "absender": "ich",
-          "empfaenger": "leitung",
+          "empfaenger": "gegenstelle",
           "text": "Weitere Erkenntnis: Die Vermisste hat früher regelmäßig den alten Schützenplatz am Waldrand besucht. Empfehlen, diesen Bereich verstärkt zu berücksichtigen."
         },
         {
           "absender": "ich",
-          "empfaenger": "leitung",
+          "empfaenger": "gegenstelle",
           "text": "Befragung abgeschlossen, ein Angehöriger bleibt telefonisch erreichbar. Rücken vom Wohnhaus ab und stehen für weitere Aufträge zur Verfügung."
         }
       ]
@@ -215,12 +215,12 @@
       "sprueche": [
         {
           "absender": "ich",
-          "empfaenger": "leitung",
+          "empfaenger": "gegenstelle",
           "text": "Übernehmen die Absuche des Bachlaufs STEENBEEKE von der Brücke bis zum Wehr. Gehen beidseitig mit je drei Einsatzkräften vor."
         },
         {
           "absender": "ich",
-          "empfaenger": "leitung",
+          "empfaenger": "gegenstelle",
           "text": "Bachlauf bis zur alten Furt abgesucht, keine Feststellung. Die Uferböschung ist stellenweise abgerutscht, gehen dort nur gesichert vor."
         },
         {
@@ -235,7 +235,7 @@
         },
         {
           "absender": "ich",
-          "empfaenger": "leitung",
+          "empfaenger": "gegenstelle",
           "text": "Bereich unter der Brücke kontrolliert, keine Feststellung. Absuche des Bachlaufs bis zum Wehr abgeschlossen, beide Trupps sind zurück auf dem Weg."
         }
       ]
@@ -245,27 +245,27 @@
       "sprueche": [
         {
           "absender": "ich",
-          "empfaenger": "leitung",
+          "empfaenger": "gegenstelle",
           "text": "Verpflegungsstelle am Rand des Bereitstellungsraums aufgebaut. Ausgabe warmer Getränke ab sofort, warmes Essen ab 13:00 Uhr für 60 Personen möglich."
         },
         {
           "absender": "ich",
-          "empfaenger": "leitung",
+          "empfaenger": "gegenstelle",
           "text": "Bestandsmeldung Verpflegung: 80 Liter Heißgetränke, 100 belegte Brötchen und 60 Portionen Eintopf vorhanden. Nachschub an Trinkwasser ist bestellt."
         },
         {
           "absender": "ich",
-          "empfaenger": "leitung",
+          "empfaenger": "gegenstelle",
           "text": "Trinkwassernachschub eingetroffen: zwölf Kisten mit je sechs Flaschen. Getränke werden gestaffelt an die zurückkehrenden Trupps ausgegeben."
         },
         {
           "absender": "ich",
-          "empfaenger": "leitung",
+          "empfaenger": "gegenstelle",
           "text": "Verpflegungsausgabe läuft störungsfrei, bisher 45 Einsatzkräfte versorgt. Ausgabe wird bis auf Weiteres aufrechterhalten."
         },
         {
           "absender": "ich",
-          "empfaenger": "leitung",
+          "empfaenger": "gegenstelle",
           "text": "Rückbau der Verpflegungsstelle abgeschlossen, Material vollständig verlastet. Stärke 1/0/5/6, sind wieder einsatzbereit."
         }
       ]
@@ -275,22 +275,22 @@
       "sprueche": [
         {
           "absender": "ich",
-          "empfaenger": "leitung",
+          "empfaenger": "gegenstelle",
           "text": "Übernehmen die Sperrung der Waldzufahrten. Die Schranke am Forstweg ist geschlossen, der Posten an der Zufahrt KREUZBUCHE ist besetzt."
         },
         {
           "absender": "ich",
-          "empfaenger": "leitung",
+          "empfaenger": "gegenstelle",
           "text": "An der Sperrstelle stauen sich fünf Fahrzeuge mit Schaulustigen. Fahrzeuge werden zurückgewiesen, die Lage ist unter Kontrolle."
         },
         {
           "absender": "ich",
-          "empfaenger": "leitung",
+          "empfaenger": "gegenstelle",
           "text": "Das Fahrzeug des Revierförsters wurde nach Rücksprache an der Sperrstelle durchgelassen. Sonst keine besonderen Vorkommnisse."
         },
         {
           "absender": "ich",
-          "empfaenger": "leitung",
+          "empfaenger": "gegenstelle",
           "text": "Sperrstellen werden auf Weisung zurückgebaut. Schilder und Absperrmaterial sind eingesammelt, die Posten rücken ein."
         }
       ]
@@ -300,12 +300,12 @@
       "sprueche": [
         {
           "absender": "ich",
-          "empfaenger": "leitung",
+          "empfaenger": "gegenstelle",
           "text": "Übernehmen die Kontrolle der Schutzhütten und Hochsitze im Suchgebiet. Beginnen an der Grillhütte am Parkplatz und arbeiten uns nach Norden vor."
         },
         {
           "absender": "ich",
-          "empfaenger": "leitung",
+          "empfaenger": "gegenstelle",
           "text": "Grillhütte und zwei Hochsitze kontrolliert, keine Feststellung. An der Hütte frische Fußspuren, Laufrichtung nicht eindeutig erkennbar."
         },
         {
@@ -320,7 +320,7 @@
         },
         {
           "absender": "ich",
-          "empfaenger": "leitung",
+          "empfaenger": "gegenstelle",
           "text": "Alle sieben Schutzhütten und Hochsitze im zugewiesenen Bereich kontrolliert, keine vermisste Person angetroffen. Auftrag ist abgeschlossen."
         }
       ]
@@ -330,12 +330,12 @@
       "sprueche": [
         {
           "absender": "ich",
-          "empfaenger": "leitung",
+          "empfaenger": "gegenstelle",
           "text": "Fundmeldung: Vermisste Person in einer Bodensenke nahe der alten SANDKUHLE angetroffen. Sie ist ansprechbar und leicht unterkühlt. Beginnen mit Betreuung und Wärmeerhalt."
         },
         {
           "absender": "ich",
-          "empfaenger": "leitung",
+          "empfaenger": "gegenstelle",
           "text": "Erbitten Rettungsdienst an den Forstweg zur Sandkuhle. Der Zuweg ist nicht befahrbar, die letzten 300 Meter sind nur zu Fuß möglich. Stellen einen Lotsen an den Forstweg."
         },
         {
@@ -350,12 +350,12 @@
         },
         {
           "absender": "partner",
-          "empfaenger": "leitung",
+          "empfaenger": "gegenstelle",
           "text": "Unterstützen an der Fundstelle mit vier Einsatzkräften beim Tragen. Die Person wird jetzt zum Forstweg gebracht."
         },
         {
           "absender": "ich",
-          "empfaenger": "leitung",
+          "empfaenger": "gegenstelle",
           "text": "Übergabe an den Rettungsdienst um 15:42 Uhr erfolgt. Die Person ist stabil und wird zur Kontrolle in ein Krankenhaus gefahren. Fundstelle ist dokumentiert, Trupp ist wieder einsatzbereit."
         }
       ]
@@ -365,27 +365,27 @@
       "sprueche": [
         {
           "absender": "ich",
-          "empfaenger": "leitung",
+          "empfaenger": "gegenstelle",
           "text": "Übernehmen den Aufbau der Beleuchtung für den Bereitstellungsraum und die Hauptwege. Lichtmast und drei Stative werden jetzt in Stellung gebracht."
         },
         {
           "absender": "ich",
-          "empfaenger": "leitung",
+          "empfaenger": "gegenstelle",
           "text": "Beleuchtung am Bereitstellungsraum steht, der Stromerzeuger läuft. Zwei Stative leuchten zusätzlich die Wegkreuzung am Forstweg aus."
         },
         {
           "absender": "ich",
-          "empfaenger": "leitung",
+          "empfaenger": "gegenstelle",
           "text": "Der Kraftstoffvorrat für den Stromerzeuger reicht noch für etwa vier Stunden. Erbitten 20 Liter Kraftstoff als Reserve an den Bereitstellungsraum."
         },
         {
           "absender": "ich",
-          "empfaenger": "leitung",
+          "empfaenger": "gegenstelle",
           "text": "Kraftstoffreserve ist eingetroffen und eingelagert. Die Beleuchtung läuft störungsfrei, der Betrieb ist bis in die Abendstunden gesichert."
         },
         {
           "absender": "ich",
-          "empfaenger": "leitung",
+          "empfaenger": "gegenstelle",
           "text": "Beleuchtung wird auf Weisung zurückgebaut. Material ist geprüft und verlastet, sind abmarschbereit."
         }
       ]
@@ -393,7 +393,7 @@
   ],
   "abschluss": [
     {
-      "empfaenger": "leitung",
+      "empfaenger": "alle",
       "text": "Alle zugewiesenen Aufträge sind abgearbeitet. Einheit ist vollzählig, Material geprüft und verlastet. Rücken auf Weisung zum Standort ab."
     },
     {
