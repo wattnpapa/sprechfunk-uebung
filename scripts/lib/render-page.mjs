@@ -718,8 +718,13 @@ export function ersetzeJsonLd(html, graph) {
 export function sichtbarerText(html) {
     return plainText(
         html
-            .replace(/<script[\s\S]*?<\/script>/g, " ")
-            .replace(/<style[\s\S]*?<\/style>/g, " ")
+            // `i` und Attribute im schließenden Tag: Browser akzeptieren
+            // `</SCRIPT foo="bar">`, und eine Regex, die das übersieht, ist der
+            // klassische Fehler beim Filtern von HTML (CodeQL js/bad-tag-filter).
+            // Hier laufen zwar nur eigene Seiten durch, aber ein Muster, das
+            // anderswo kopiert wird, sollte nicht das kaputte sein.
+            .replace(/<script\b[^>]*>[\s\S]*?<\/script\s*[^>]*>/gi, " ")
+            .replace(/<style\b[^>]*>[\s\S]*?<\/style\s*[^>]*>/gi, " ")
     );
 }
 

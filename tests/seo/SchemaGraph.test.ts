@@ -365,6 +365,35 @@ describe("Zusicherungen des Generators", () => {
     });
 });
 
+describe("sichtbarerText filtert Skript- und Stilblöcke", () => {
+    // Browser rendern auch fehlerhaft geschriebene Tags: Groß-/Kleinschreibung
+    // ist egal, und im schließenden Tag dürfen Attribute stehen. Eine Regex,
+    // die das übersieht, lässt Skriptinhalt als "sichtbaren Text" durch –
+    // genau der Fehler, den CodeQL als js/bad-tag-filter meldet.
+    const faelle: [string, string][] = [
+        ["kleingeschrieben", "<script>alert(1)</script>"],
+        ["großgeschrieben", "<SCRIPT>alert(1)</SCRIPT>"],
+        ["gemischt", "<ScRiPt>alert(1)</sCrIpT>"],
+        ["mit Attribut im Starttag", '<script type="text/javascript">alert(1)</script>'],
+        ["mit Attribut im Endtag", '<script>alert(1)</script foo="bar">'],
+        ["mit Leerzeichen im Endtag", "<script>alert(1)</script >"]
+    ];
+
+    for (const [name, markup] of faelle) {
+        it(`entfernt Skript ${name}`, () => {
+            expect(sichtbarerText(`<p>Text</p>${markup}`)).not.toContain("alert");
+        });
+    }
+
+    it("entfernt Stilblöcke unabhängig von der Schreibweise", () => {
+        expect(sichtbarerText("<p>Text</p><STYLE>p{color:red}</STYLE>")).not.toContain("color");
+    });
+
+    it("lässt den übrigen Text stehen", () => {
+        expect(sichtbarerText("<p>Sichtbar</p><script>weg</script>")).toContain("Sichtbar");
+    });
+});
+
 describe("kein handgeschriebenes JSON-LD in den Quelldateien", () => {
     for (const page of SITE_PAGES) {
         it(`${page.source} enthält kein ld+json`, () => {
