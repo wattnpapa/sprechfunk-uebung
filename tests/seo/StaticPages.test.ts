@@ -9,6 +9,9 @@ import {
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-ignore -- reines JS-Hilfsmodul ohne Typdeklarationen, absichtlich .mjs
 import { renderPageWithStructuredData } from "../../scripts/lib/render-page.mjs";
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+// @ts-ignore -- reines JS-Hilfsmodul ohne Typdeklarationen, absichtlich .mjs
+import { plainText } from "../../scripts/lib/page-metadata.mjs";
 
 /**
  * Die indexierbaren Seiten sind statisches HTML: Fehler in Canonical, Titel oder
@@ -178,8 +181,11 @@ describe("Statische Seiten: SEO-Pflichtangaben", () => {
         const schema = graph["@graph"].find((knoten: Record<string, unknown>) => knoten["@type"] === "FAQPage");
         expect(schema, "Die FAQ-Seite braucht ein FAQPage-Schema").toBeTruthy();
 
+        // Dieselbe Normalisierung wie extractFaqFromHtml, das die Fragen fürs
+        // Schema liest: ein eigener Tag-Filter hier würde bei Inline-Markup
+        // anders normalisieren und den Vergleich grundlos rot färben.
         const ueberschriften = [...html.matchAll(/<h3[^>]*>([\s\S]*?)<\/h3>/g)]
-            .map(treffer => treffer[1].replace(/<[^>]+>/g, "").replace(/\s+/g, " ").trim());
+            .map(treffer => plainText(treffer[1]));
 
         expect(schema.mainEntity.length).toBeGreaterThan(0);
         for (const frage of schema.mainEntity) {
