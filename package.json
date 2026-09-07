@@ -83,7 +83,7 @@
     "@types/jspdf": "^2.0.0",
     "@types/node": "^26.2.0",
     "@types/uuid": "^11.0.0",
-    "@vitest/coverage-v8": "^4.1.11",
+    "@vitest/coverage-v8": "^5.0.0",
     "autoprefixer": "^10.5.4",
     "chokidar-cli": "^3.0.0",
     "concurrently": "^10.0.5",
