@@ -103,6 +103,14 @@
     --fokus: 3px;
     --schatten: none;
 
+    /* Bewegung. Belegung und Begründung stehen in Abschnitt 10. */
+    --takt-sofort: 110ms;
+    --takt-kurz: 180ms;
+    --takt-lang: 300ms;
+    --takt-stempel: 300ms;
+    --kurve-an: cubic-bezier(0.16, 1, 0.3, 1);
+    --kurve-ab: cubic-bezier(0.4, 0, 1, 1);
+
     /* Zuschlag auf ALLE Tippziele. Ein Handschuh-/Hochkontrastmodus erhöht
        nur diesen Wert auf z. B. 0.75rem, alles andere wächst mit. */
     --ziel: 0rem;
@@ -1230,28 +1238,12 @@ select option {
     background: var(--warn-fond);
     color: var(--warn-text);
     border-color: var(--warn-linie);
-    animation: statusPendingPulse 2.8s ease-in-out infinite;
 }
 
 .status-chip--critical {
     background: var(--alarm-fond);
     color: var(--alarm);
     border-color: var(--alarm-linie);
-}
-
-@keyframes statusPendingPulse {
-    0%, 100% {
-        box-shadow: 0 0 0 0 color-mix(in srgb, var(--warn-linie) 0%, transparent);
-    }
-    50% {
-        box-shadow: 0 0 0 4px color-mix(in srgb, var(--warn-linie) 45%, transparent);
-    }
-}
-
-@media (prefers-reduced-motion: reduce) {
-    .status-chip--pending {
-        animation: none;
-    }
 }
 
 .status-ok-row > td,
@@ -1323,10 +1315,10 @@ select option {
     pointer-events: none;
 }
 
+/* Ausgangszustand; die Bewegung selbst steht in Abschnitt 10. */
 .app-toast {
     opacity: 0;
     transform: translateY(8px);
-    transition: all 0.2s ease;
     background: var(--flaeche);
     color: var(--text);
     border: var(--strich) solid var(--linie-stark);
@@ -3100,4 +3092,330 @@ html:has(> body[data-theme="startrek"]) {
 
 .seiten-diagramm-rahmen figcaption {
     text-align: center;
+}
+
+/* =============================================================================
+   10. Bewegung
+   -----------------------------------------------------------------------------
+   Leitidee: Was sich bewegt, ist der Strich — nicht die Fläche.
+
+   Die Gestaltung "Amtlich" kennt keine schwebenden Karten, also auch keine
+   schwebende Bewegung. Kein Federn, kein Vergrößern, kein Einblenden von unten.
+   Bewegung läuft hier auf einer Achse, rechtwinklig, und sie endet sichtbar.
+
+   Das Produkt hat genau ein wiederkehrendes Verb: eine Meldung absetzen. Das
+   ist der einzige Vorgang, der eine eigene Choreografie bekommt — der
+   Absetzstrich (10.2), eine Linie in Bestätigungsgrün, die einmal von links
+   nach rechts durch die Zeile läuft und verschwindet. Er bildet nach, was auf
+   dem Papiervordruck passiert: die Zeile wird abgehakt. Dieselbe Linie steht
+   der Übungsleitung zur Verfügung, wenn eine Meldung aus dem Funknetz eintrifft
+   (10.3) — das ist die einzige Stelle, an der Bewegung eine Information trägt,
+   die sonst niemand mitbekäme.
+
+   Alles Übrige ist Quittung: 110 ms Farbwechsel an Bedienelementen, damit ein
+   Zeigerwechsel nicht springt. Nichts läuft dauerhaft. Der frühere Dauerpuls
+   auf jeder offenen Statusmarke ist entfallen: "offen" ist der Ausgangszustand,
+   und der Ausgangszustand signalisiert in dieser Gestaltung nicht (siehe die
+   Begründung an .status-pending-row). Was pulsierte, war jede Zeile gleichzeitig
+   und damit keine.
+
+   Taktwerte:
+     --takt-sofort  110 ms  Quittung auf eine Eingabe
+     --takt-kurz    180 ms  gewöhnlicher Zustandswechsel, Austritte
+     --takt-lang    300 ms  Ebenenwechsel, Werte, die eine Strecke zurücklegen
+     --takt-stempel 300 ms  der Absetzstrich, als einziger Auftritt mit Autorschaft
+
+   Austritte laufen kürzer als Auftritte. --kurve-an bremst aus (Ankunft),
+   --kurve-ab beschleunigt (Abgang). Der komplette Ausschalter für
+   prefers-reduced-motion steht am Ende des Abschnitts.
+   ========================================================================== */
+
+/* --- 10.1 Quittung: Bedienelemente ---------------------------------------- */
+
+.btn,
+.nav-link,
+.dropdown-item,
+.page-link {
+    transition:
+        background-color var(--takt-sofort) linear,
+        border-color var(--takt-sofort) linear,
+        color var(--takt-sofort) linear;
+}
+
+.form-control,
+.form-select,
+.form-check-input,
+.multiselect-control {
+    transition:
+        border-color var(--takt-sofort) linear,
+        background-color var(--takt-sofort) linear;
+}
+
+a {
+    transition: color var(--takt-sofort) linear;
+}
+
+.table-hover > tbody > tr {
+    transition: background-color var(--takt-sofort) linear;
+}
+
+/* --- 10.2 Absetzstrich: der Auftritt ---------------------------------------
+   .ist-abgesetzt setzt der Controller genau an die Zeile, die gerade abgesetzt
+   wurde — die Zeile ist zu diesem Zeitpunkt frisch gerendert, die Animation
+   startet also mit ihrer Entstehung und braucht keinen Anstoß aus JavaScript.
+
+   Der Strich sitzt als Pseudo-Element an der Unterkante jeder Zelle und wird
+   pro Spalte um 45 ms versetzt gestartet. Zusammen ergibt das eine Linie, die
+   einmal durch die Zeile läuft. Sie liegt unter dem Text, verdeckt ihn nie und
+   verändert keine Layoutgröße. */
+
+.status-ok-row.ist-abgesetzt > td {
+    position: relative;
+}
+
+.status-ok-row.ist-abgesetzt > td::after {
+    content: "";
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: -1px;
+    height: 3px;
+    background: var(--gut);
+    transform: scaleX(0);
+    transform-origin: left center;
+    pointer-events: none;
+    animation: absetzStrich 140ms var(--kurve-an) both;
+}
+
+.status-ok-row.ist-abgesetzt > td:nth-child(2)::after { animation-delay: 45ms; }
+.status-ok-row.ist-abgesetzt > td:nth-child(3)::after { animation-delay: 90ms; }
+.status-ok-row.ist-abgesetzt > td:nth-child(4)::after { animation-delay: 135ms; }
+.status-ok-row.ist-abgesetzt > td:nth-child(5)::after { animation-delay: 180ms; }
+.status-ok-row.ist-abgesetzt > td:nth-child(6)::after { animation-delay: 225ms; }
+
+@keyframes absetzStrich {
+    0% {
+        transform: scaleX(0);
+        opacity: 1;
+    }
+    65% {
+        transform: scaleX(1);
+        opacity: 1;
+    }
+    100% {
+        transform: scaleX(1);
+        opacity: 0;
+    }
+}
+
+/* Der Abdruck an der Statusmarke selbst: ein Ring, der einmal nach außen geht
+   und vergeht. Farben der Marke bleiben unangetastet, damit der Kontrast über
+   die gesamte Laufzeit stimmt. */
+.ist-abgesetzt .status-chip--ok {
+    animation: absetzAbdruck var(--takt-stempel) var(--kurve-an) both;
+}
+
+@keyframes absetzAbdruck {
+    from {
+        box-shadow: 0 0 0 0 color-mix(in srgb, var(--gut) 60%, transparent);
+    }
+    to {
+        box-shadow: 0 0 0 8px color-mix(in srgb, var(--gut) 0%, transparent);
+    }
+}
+
+/* Abgang bei aktivem "Übertragene ausblenden": die Zeile verschwindet erst,
+   nachdem der Absetzstrich durchgelaufen ist. Ohne das wäre die Zeile weg,
+   bevor die Quittung sichtbar war — man sieht dann nicht mehr, was man traf.
+   Entfernt wird sie vom Controller; hier steht nur, wie sie geht. */
+.status-ok-row.ist-abgang > td {
+    /* 380 ms Verzug: erst wenn der Strich die letzte Spalte verlassen hat. */
+    animation: absetzAbgang var(--takt-kurz) var(--kurve-ab) 380ms both;
+}
+
+/* Nur Deckkraft: eine Zeile besteht aus mehreren Zellen, und jede Bewegung
+   oder Beschneidung liefe pro Zelle getrennt — die Zeile zerfiele sichtbar in
+   ihre Spalten. Das Verblassen ist das einzige, was über alle Zellen hinweg
+   gleich aussieht. */
+@keyframes absetzAbgang {
+    from {
+        opacity: 1;
+    }
+    to {
+        opacity: 0;
+    }
+}
+
+/* --- 10.3 Übungsleitung: Meldung aus dem Netz -------------------------------
+   Dieselbe Linie, dieselbe Bedeutung — nur ist die Leitung diesmal nicht die
+   Ursache. Sie soll den Zeilenwechsel bemerken können, ohne die Tabelle
+   anzustarren. Die Klasse setzt die Ansicht auf genau die Zeilen, deren
+   Meldungszahl seit dem letzten Rendern gestiegen ist. */
+
+.uebungsleitung-teilnehmer-zeile.ist-gemeldet > td {
+    position: relative;
+}
+
+.uebungsleitung-teilnehmer-zeile.ist-gemeldet > td::after {
+    content: "";
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: -1px;
+    height: 3px;
+    background: var(--gut);
+    transform: scaleX(0);
+    transform-origin: left center;
+    pointer-events: none;
+    animation: absetzStrich 140ms var(--kurve-an) both;
+}
+
+.uebungsleitung-teilnehmer-zeile.ist-gemeldet > td:nth-child(2)::after { animation-delay: 45ms; }
+.uebungsleitung-teilnehmer-zeile.ist-gemeldet > td:nth-child(3)::after { animation-delay: 90ms; }
+.uebungsleitung-teilnehmer-zeile.ist-gemeldet > td:nth-child(4)::after { animation-delay: 135ms; }
+.uebungsleitung-teilnehmer-zeile.ist-gemeldet > td:nth-child(5)::after { animation-delay: 180ms; }
+.uebungsleitung-teilnehmer-zeile.ist-gemeldet > td:nth-child(6)::after { animation-delay: 225ms; }
+
+/* Der Fortschrittsbalken legt eine Strecke zurück, statt zu springen. Die
+   Ansicht rendert ihn auf dem alten Wert und setzt den neuen im nächsten
+   Frame — anders überlebt kein Übergang das vollständige Neu-Rendern.
+
+   Gestreckt wird über transform, nicht über width: der Balken behält damit
+   seine Boxgröße, und der Übergang kostet kein Layout. Der Selektor bleibt auf
+   den Teilnehmerbalken begrenzt, weil andere Balken der Anwendung ihre Breite
+   weiterhin direkt setzen. */
+.progress-bar[data-fortschritt] {
+    width: 100%;
+    transform-origin: left center;
+    transition: transform var(--takt-lang) var(--kurve-an);
+}
+
+/* --- 10.4 Fokus-Karte ------------------------------------------------------
+   Im Fokus-Modus ist die Karte der ganze Bildschirm. Wechselt sie den Inhalt,
+   ist eine Meldung fällig geworden — der einzige Moment, in dem der Teilnehmer
+   etwas tun muss. Die neue Karte wird von oben nach unten freigegeben, wie ein
+   Vordruck, der aus dem Drucker kommt. Kein Einblenden, keine Bewegung im Raum:
+   die Karte steht, sie wird nur sichtbar. Sie entsteht bei jedem Wechsel neu,
+   die Animation läuft deshalb ohne Zutun von JavaScript. */
+
+#teilnehmerFokusCard > .card {
+    animation: fokusAuszug var(--takt-lang) var(--kurve-an) both;
+}
+
+@keyframes fokusAuszug {
+    from {
+        clip-path: inset(0 0 100% 0);
+    }
+    to {
+        clip-path: inset(0 0 0 0);
+    }
+}
+
+/* --- 10.5 Überfällig -------------------------------------------------------
+   Die X-Zeit-Marke wechselt beim Überschreiten der Fälligkeit auf bg-danger.
+   Das ist ein Wechsel, der ohne Zutun passiert und eine Frist reißt — er
+   bekommt einen einzigen Ausschlag, keinen Dauerzustand. Der Selektor ist auf
+   die X-Zeit-Marke begrenzt; sonst blinkte jede rote Marke der Anwendung. */
+
+[data-xzeit-slot].bg-danger {
+    animation: fristAusschlag var(--takt-lang) var(--kurve-an) both;
+}
+
+@keyframes fristAusschlag {
+    from {
+        box-shadow: 0 0 0 0 color-mix(in srgb, var(--alarm) 65%, transparent);
+    }
+    to {
+        box-shadow: 0 0 0 8px color-mix(in srgb, var(--alarm) 0%, transparent);
+    }
+}
+
+/* --- 10.6 Kurzmeldungen ----------------------------------------------------
+   Auftritt gebremst, Abgang schneller und ohne Weg zurück. Der Controller
+   räumt die Meldung nach 220 ms ab; der Abgang muss darunter bleiben. */
+
+.app-toast {
+    transition:
+        opacity var(--takt-kurz) var(--kurve-ab),
+        transform var(--takt-kurz) var(--kurve-ab);
+}
+
+.app-toast.is-visible {
+    transition:
+        opacity var(--takt-lang) var(--kurve-an),
+        transform var(--takt-lang) var(--kurve-an);
+}
+
+/* --- 10.7 Ebenenwechsel ----------------------------------------------------
+   Der Dialog kommt nicht angeflogen. Er rückt eine Zeilenhöhe nach unten und
+   steht — Bootstraps 50 Pixel sind für diese Gestaltung zu viel Weg. */
+
+.modal.fade .modal-dialog {
+    transition: transform var(--takt-lang) var(--kurve-an);
+    transform: translateY(-12px);
+}
+
+.modal.show .modal-dialog {
+    transform: none;
+}
+
+.modal-backdrop.fade {
+    transition: opacity var(--takt-kurz) linear;
+}
+
+.dropdown-menu.show {
+    animation: menueAuszug var(--takt-kurz) var(--kurve-an) both;
+}
+
+@keyframes menueAuszug {
+    from {
+        clip-path: inset(0 0 100% 0);
+    }
+    to {
+        clip-path: inset(0 0 0 0);
+    }
+}
+
+/* --- 10.8 Ausschalter ------------------------------------------------------
+   Ein Ort für alle Bewegung dieser Datei. Wer prefers-reduced-motion gesetzt
+   hat, bekommt dieselbe Anwendung in denselben Endzuständen, nur ohne Weg
+   dorthin. Die Zeile, die bei aktivem Ausblenden abgeht, wird weiterhin vom
+   Controller entfernt — sie hängt nicht an der Animation. */
+
+@media (prefers-reduced-motion: reduce) {
+
+    .btn,
+    .nav-link,
+    .dropdown-item,
+    .page-link,
+    .form-control,
+    .form-select,
+    .form-check-input,
+    .multiselect-control,
+    a,
+    .table-hover > tbody > tr,
+    .progress-bar[data-fortschritt],
+    .app-toast,
+    .app-toast.is-visible,
+    .modal.fade .modal-dialog,
+    .modal-backdrop.fade {
+        transition: none;
+    }
+
+    .status-ok-row.ist-abgesetzt > td::after,
+    .uebungsleitung-teilnehmer-zeile.ist-gemeldet > td::after {
+        display: none;
+    }
+
+    .ist-abgesetzt .status-chip--ok,
+    .status-ok-row.ist-abgang > td,
+    #teilnehmerFokusCard > .card,
+    [data-xzeit-slot].bg-danger,
+    .dropdown-menu.show {
+        animation: none;
+    }
+
+    .modal.fade .modal-dialog {
+        transform: none;
+    }
 }

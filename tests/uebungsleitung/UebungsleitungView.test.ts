@@ -587,7 +587,7 @@ describe("UebungsleitungView – Live-Status", () => {
             const container = document.getElementById("uebungsleitungTeilnehmer");
             expect(container?.textContent).toContain("2");
             expect(container?.textContent).toContain("zuletzt");
-            expect(container?.innerHTML).toContain("width:50%");
+            expect(container?.innerHTML).toContain("scaleX(0.5)");
         });
 
         it("weist Teilnehmer ohne Meldung als noch nicht übertragen aus", () => {
@@ -622,6 +622,50 @@ describe("UebungsleitungView – Live-Status", () => {
 
             expect(document.getElementById("uebungsleitungTeilnehmer")?.textContent)
                 .not.toContain("Nachzügler");
+        });
+
+        it("markiert erst beim Anstieg eine neue Meldung aus dem Netz", () => {
+            const view = new UebungsleitungView();
+            const stand = (gemeldet: number) => ({
+                A: { teilnehmer: "A", gemeldet, gesamt: 4, online: true }
+            });
+            const zeile = () => document.querySelector("#uebungsleitungTeilnehmer tbody tr");
+
+            view.renderTeilnehmerListe(uebung(["A"]), {}, false, stand(1));
+            expect(zeile()?.className).not.toContain("ist-gemeldet");
+
+            view.renderTeilnehmerListe(uebung(["A"]), {}, false, stand(1));
+            expect(zeile()?.className).not.toContain("ist-gemeldet");
+
+            view.renderTeilnehmerListe(uebung(["A"]), {}, false, stand(2));
+            expect(zeile()?.className).toContain("ist-gemeldet");
+        });
+
+        it("lässt den Fortschrittsbalken vom alten auf den neuen Wert laufen", () => {
+            const rahmen: FrameRequestCallback[] = [];
+            vi.stubGlobal("requestAnimationFrame", (cb: FrameRequestCallback) => {
+                rahmen.push(cb);
+                return rahmen.length;
+            });
+            try {
+                const view = new UebungsleitungView();
+                const stand = (gemeldet: number) => ({
+                    A: { teilnehmer: "A", gemeldet, gesamt: 4, online: true }
+                });
+                const balken = () => document.querySelector("#uebungsleitungTeilnehmer .progress-bar") as HTMLElement;
+
+                view.renderTeilnehmerListe(uebung(["A"]), {}, false, stand(1));
+                rahmen.splice(0).forEach(cb => cb(0));
+                expect(balken().style.transform).toBe("scaleX(0.25)");
+
+                view.renderTeilnehmerListe(uebung(["A"]), {}, false, stand(3));
+                // Vor dem naechsten Frame steht der Balken noch auf dem alten Wert.
+                expect(balken().style.transform).toBe("scaleX(0.25)");
+                rahmen.splice(0).forEach(cb => cb(0));
+                expect(balken().style.transform).toBe("scaleX(0.75)");
+            } finally {
+                vi.unstubAllGlobals();
+            }
         });
 
         it("weist unbestätigte Teilnehmer-Meldungen im Fortschritt aus", () => {

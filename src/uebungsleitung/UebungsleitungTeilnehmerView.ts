@@ -15,6 +15,17 @@ type TeilnehmerCallbacks = {
 };
 
 export class UebungsleitungTeilnehmerView {
+    /**
+     * Zuletzt gezeigter Meldungsstand je Teilnehmer. Die Tabelle wird bei jedem
+     * Firestore-Snapshot vollständig neu geschrieben; ohne diesen Merker wäre
+     * nicht erkennbar, welche Zeile sich tatsächlich geändert hat — und ein
+     * Übergang überlebte das Neu-Rendern ohnehin nicht.
+     */
+    private letzterStand = new Map<string, number>();
+
+    /** Zuletzt gezeigte Balkenlänge in Prozent, Startwert des Übergangs. */
+    private letzterProzent = new Map<string, number>();
+
     public render(
         uebung: Uebung,
         teilnehmerStatus: Record<string, TeilnehmerStatus>,
@@ -88,6 +99,40 @@ export class UebungsleitungTeilnehmerView {
             el.style.height = "auto";
             el.style.height = `${el.scrollHeight}px`;
         });
+
+        this.merkeStand(teilnehmerListe, fortschritt);
+        this.starteBalkenUebergang(container);
+    }
+
+    /** Schreibt den eben gezeigten Stand fort — Grundlage des nächsten Vergleichs. */
+    private merkeStand(teilnehmerListe: string[], fortschritt: Record<string, TeilnehmerFortschritt>): void {
+        teilnehmerListe.forEach(name => {
+            const eintrag = fortschritt[name];
+            this.letzterStand.set(name, eintrag?.gemeldet ?? 0);
+            if (eintrag?.online) {
+                const gesamt = eintrag.gesamt;
+                this.letzterProzent.set(name, gesamt > 0 ? Math.round((eintrag.gemeldet / gesamt) * 100) : 0);
+            }
+        });
+    }
+
+    /**
+     * Setzt die Zielbreite im nächsten Frame. Der Balken ist mit dem alten Wert
+     * im Markup entstanden; erst der Wechsel danach löst den Übergang aus.
+     */
+    private starteBalkenUebergang(container: HTMLElement): void {
+        const balken = container.querySelectorAll<HTMLElement>(".progress-bar[data-fortschritt]");
+        if (!balken.length) {
+            return;
+        }
+        const anwenden = () => balken.forEach(el => {
+            el.style.transform = `scaleX(${Number(el.dataset["fortschritt"]) / 100})`;
+        });
+        if (typeof globalThis.requestAnimationFrame === "function") {
+            globalThis.requestAnimationFrame(anwenden);
+        } else {
+            anwenden();
+        }
     }
 
     public bindEvents(callbacks: TeilnehmerCallbacks): void {
@@ -159,10 +204,16 @@ export class UebungsleitungTeilnehmerView {
         const safeName = escapeHtml(name);
         const nameHtml = this.renderTeilnehmerName(uebung, name, safeName, codeByTeilnehmer);
 
+        const zeilenKlassen = [
+            "uebungsleitung-teilnehmer-zeile",
+            istNachzuegler ? "table-warning" : "",
+            this.hatNeueMeldung(name, fortschritt) ? "ist-gemeldet" : ""
+        ].filter(Boolean).join(" ");
+
         return `
-          <tr${istNachzuegler ? " class=\"table-warning\" data-nachzuegler=\"1\"" : ""}>
+          <tr class="${zeilenKlassen}"${istNachzuegler ? " data-nachzuegler=\"1\"" : ""}>
             <td>${nameHtml}</td>
-            <td>${this.renderFortschrittCell(fortschritt, istNachzuegler)}</td>
+            <td>${this.renderFortschrittCell(name, fortschritt, istNachzuegler)}</td>
             <td>${this.renderAnmeldeCell(name, status)}</td>
             ${showLoesungswort ? this.renderLoesungswortCell(name, status, loesungswoerter) : ""}
             ${showStaerke ? this.renderStaerkeCell({ uebung, name, status, staerken, showStaerkeDetails }) : ""}
@@ -255,7 +306,17 @@ export class UebungsleitungTeilnehmerView {
         );
     }
 
-    private renderFortschrittCell(fortschritt?: TeilnehmerFortschritt, istNachzuegler?: boolean): string {
+    /**
+     * Wahr, sobald die Meldungszahl gegenüber der letzten Anzeige gestiegen ist.
+     * Beim ersten Rendern ist nichts "neu" — sonst blitzte die ganze Tabelle
+     * beim Öffnen auf und die Markierung verlöre ihren Wert.
+     */
+    private hatNeueMeldung(name: string, fortschritt?: TeilnehmerFortschritt): boolean {
+        const vorher = this.letzterStand.get(name);
+        return vorher !== undefined && (fortschritt?.gemeldet ?? 0) > vorher;
+    }
+
+    private renderFortschrittCell(name: string, fortschritt?: TeilnehmerFortschritt, istNachzuegler?: boolean): string {
         if (!fortschritt?.online) {
             return "<span class=\"badge bg-secondary\" title=\"Noch keine Live-Meldung von diesem Teilnehmer\">keine Meldung</span>";
         }
@@ -266,10 +327,13 @@ export class UebungsleitungTeilnehmerView {
         const letzte = letzteMeldungUm
             ? `<small class="text-body-secondary">zuletzt ${formatNatoDate(letzteMeldungUm)}</small>`
             : "<small class=\"text-body-secondary\">noch nichts übertragen</small>";
+        // Der Balken startet auf dem zuletzt gezeigten Wert und bekommt den
+        // neuen erst im nächsten Frame; so legt er die Strecke sichtbar zurück.
+        const start = this.letzterProzent.get(name) ?? percent;
 
         return `
             <div class="progress" style="height:6px;" role="progressbar" aria-valuenow="${percent}" aria-valuemin="0" aria-valuemax="100">
-              <div class="progress-bar ${barCss}" style="width:${percent}%"></div>
+              <div class="progress-bar ${barCss}" style="transform:scaleX(${start / 100})" data-fortschritt="${percent}"></div>
             </div>
             <div class="d-flex justify-content-between align-items-center mt-1">
               <small><strong>${gemeldet}</strong> / ${gesamt}</small>

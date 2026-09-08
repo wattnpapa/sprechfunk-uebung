@@ -33,6 +33,12 @@ const loadPdfJs = async (): Promise<PdfJsModule> => {
     return pdfJsPromise;
 };
 
+/**
+ * Standzeit der abgehenden Zeile: Verzug (380 ms) plus Dauer (--takt-kurz,
+ * 180 ms) der Abgangsanimation aus Abschnitt 10.2 der CSS, aufgerundet.
+ */
+const ABGANG_MS = 600;
+
 // Eingabetypen, bei denen Tastendrücke keine Texteingabe sind (Space toggelt dort z. B. nur).
 const NON_TEXT_INPUT_TYPES = new Set([
     "checkbox", "radio", "button", "submit", "reset", "file", "range", "color", "image"
@@ -301,11 +307,20 @@ export class TeilnehmerView {
             xZeitBasis?: string;
             /** Bestätigungen der Übungsleitung, Key = Nachrichten-ID als String. */
             bestaetigungen?: Record<string, LeitungBestaetigung>;
+            /**
+             * ID der Nachricht, die diesen Aufruf ausgelöst hat, weil sie
+             * gerade abgesetzt wurde. Ihre Zeile bekommt den Absetzstrich
+             * (Abschnitt 10.2 der CSS). Bei aktivem "Übertragene ausblenden"
+             * bleibt sie zusätzlich noch kurz stehen und geht danach ab —
+             * sonst wäre sie weg, bevor die Quittung sichtbar war.
+             */
+            zuletztAbgesetzt?: number;
         } = {}
     ) {
         const showXZeit = optionen.showXZeit ?? false;
         const xZeitBasis = optionen.xZeitBasis;
         const bestaetigungen = optionen.bestaetigungen ?? {};
+        const zuletztAbgesetzt = optionen.zuletztAbgesetzt;
         const tbody = document.getElementById("teilnehmerNachrichtenBody");
         if (!tbody) {
             return;
@@ -331,7 +346,7 @@ export class TeilnehmerView {
                     }
                 }
                 if (storage.hideTransmitted) {
-                    return !storage.nachrichten[n.id]?.uebertragen;
+                    return !storage.nachrichten[n.id]?.uebertragen || n.id === zuletztAbgesetzt;
                 }
                 return true;
             })
@@ -339,6 +354,13 @@ export class TeilnehmerView {
                 const status = storage.nachrichten[n.id];
                 const isUebertragen = !!status?.uebertragen;
                 const toggleId = `toggle-uebertragen-${n.id}`;
+                const istAbgesetzt = isUebertragen && n.id === zuletztAbgesetzt;
+                const istAbgang = istAbgesetzt && storage.hideTransmitted;
+                const zeilenKlassen = [
+                    isUebertragen ? "status-ok-row" : "status-pending-row",
+                    istAbgesetzt ? "ist-abgesetzt" : "",
+                    istAbgang ? "ist-abgang" : ""
+                ].filter(Boolean).join(" ");
 
                 const xZeitCell = showXZeit
                     ? (n.xZeitSlot !== undefined
@@ -347,7 +369,7 @@ export class TeilnehmerView {
                     : "";
 
                 return `
-            <tr class="${isUebertragen ? "status-ok-row" : "status-pending-row"}">
+            <tr class="${zeilenKlassen}"${istAbgang ? " data-abgang=\"1\"" : ""}>
                 <td>${n.id}</td>
                 <td>${escapeHtml(n.empfaenger.join(", "))}</td>
                 <td>${this.renderArtBadge(n)}${escapeHtml(n.nachricht).replace(/\\n/g, "<br>").replace(/\n/g, "<br>")}</td>
@@ -371,9 +393,34 @@ export class TeilnehmerView {
             }).join("");
 
         const colspan = showXZeit ? "6" : "5";
-        tbody.innerHTML = rows || `<tr><td colspan="${colspan}" class="text-center text-muted">Keine Nachrichten vorhanden.</td></tr>`;
+        const leerZeile = `<tr><td colspan="${colspan}" class="text-center text-muted">Keine Nachrichten vorhanden.</td></tr>`;
+        tbody.innerHTML = rows || leerZeile;
 
+        this.raeumeAbgangsZeile(tbody, leerZeile);
         this.renderFokusBereich(nachrichten, storage, showXZeit, xZeitBasis);
+    }
+
+    /**
+     * Entfernt die abgehende Zeile, nachdem der Absetzstrich durch war. Der
+     * Timer ist die Quelle der Wahrheit, nicht das animationend-Ereignis: bei
+     * prefers-reduced-motion läuft keine Animation, die Zeile muss trotzdem
+     * verschwinden.
+     */
+    private raeumeAbgangsZeile(tbody: HTMLElement, leerZeile: string): void {
+        const zeile = tbody.querySelector<HTMLElement>("tr[data-abgang]");
+        if (!zeile) {
+            return;
+        }
+        globalThis.setTimeout(() => {
+            if (!zeile.isConnected) {
+                return;
+            }
+            const eigenesTbody = zeile.parentElement;
+            zeile.remove();
+            if (eigenesTbody && eigenesTbody.children.length === 0) {
+                eigenesTbody.innerHTML = leerZeile;
+            }
+        }, ABGANG_MS);
     }
 
     /**

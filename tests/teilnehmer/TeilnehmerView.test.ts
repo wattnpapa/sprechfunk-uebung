@@ -361,6 +361,80 @@ describe("TeilnehmerView", () => {
         full.setDocMode("meldevordruck");
         expect(true).toBe(true);
     });
+
+    describe("Absetzstrich", () => {
+        it("marks only the just-transmitted row", () => {
+            const view = renderBase();
+            view.renderNachrichten(
+                [
+                    { id: 1, empfaenger: ["B"], nachricht: "eins" },
+                    { id: 2, empfaenger: ["C"], nachricht: "zwei" }
+                ],
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                { hideTransmitted: false, nachrichten: { 1: { uebertragen: true }, 2: { uebertragen: true } } } as any,
+                { zuletztAbgesetzt: 2 }
+            );
+            const zeilen = document.querySelectorAll("#teilnehmerNachrichtenBody tr");
+            expect(zeilen[0]?.className).not.toContain("ist-abgesetzt");
+            expect(zeilen[1]?.className).toContain("ist-abgesetzt");
+            expect(zeilen[1]?.className).not.toContain("ist-abgang");
+        });
+
+        it("does not mark anything without a transmission", () => {
+            const view = renderBase();
+            view.renderNachrichten(
+                [{ id: 1, empfaenger: ["B"], nachricht: "eins" }],
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                { hideTransmitted: false, nachrichten: { 1: { uebertragen: true } } } as any
+            );
+            expect(document.getElementById("teilnehmerNachrichtenBody")?.innerHTML).not.toContain("ist-abgesetzt");
+        });
+
+        it("keeps the transmitted row visible while hiding is active, then removes it", () => {
+            vi.useFakeTimers();
+            try {
+                const view = renderBase();
+                view.renderNachrichten(
+                    [
+                        { id: 1, empfaenger: ["B"], nachricht: "eins" },
+                        { id: 2, empfaenger: ["C"], nachricht: "zwei" }
+                    ],
+                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                    { hideTransmitted: true, nachrichten: { 2: { uebertragen: true } } } as any,
+                    { zuletztAbgesetzt: 2 }
+                );
+                const tbody = document.getElementById("teilnehmerNachrichtenBody") as HTMLElement;
+                expect(tbody.querySelectorAll("tr")).toHaveLength(2);
+                expect(tbody.querySelector("tr[data-abgang]")?.className).toContain("ist-abgang");
+
+                vi.advanceTimersByTime(1000);
+                expect(tbody.querySelectorAll("tr")).toHaveLength(1);
+                expect(tbody.textContent).toContain("eins");
+            } finally {
+                vi.useRealTimers();
+            }
+        });
+
+        it("restores the empty notice when the last row goes", () => {
+            vi.useFakeTimers();
+            try {
+                const view = renderBase();
+                view.renderNachrichten(
+                    [{ id: 1, empfaenger: ["B"], nachricht: "eins" }],
+                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                    { hideTransmitted: true, nachrichten: { 1: { uebertragen: true } } } as any,
+                    { zuletztAbgesetzt: 1 }
+                );
+                const tbody = document.getElementById("teilnehmerNachrichtenBody") as HTMLElement;
+                expect(tbody.querySelectorAll("tr")).toHaveLength(1);
+
+                vi.advanceTimersByTime(1000);
+                expect(tbody.textContent).toContain("Keine Nachrichten vorhanden");
+            } finally {
+                vi.useRealTimers();
+            }
+        });
+    });
 });
 
 describe("TeilnehmerView – Fokus-Modus", () => {
@@ -475,4 +549,5 @@ describe("TeilnehmerView – Fokus-Modus", () => {
         view.updateXZeitCountdown(nachrichten, storage, "11:55");
         expect(document.getElementById("fokusCountdown")?.textContent).toBe("15:00");
     });
+
 });

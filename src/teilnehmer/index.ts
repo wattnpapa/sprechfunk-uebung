@@ -38,6 +38,12 @@ export class TeilnehmerController {
     private docBlobCache = new Map<DocMode, Map<number, Blob>>();
     private preloadToken = 0;
     private debouncedRenderNachrichten = debounce(() => this.renderNachrichten(), 140);
+
+    /**
+     * Nachricht, die gerade abgesetzt wurde. Die Ansicht zeichnet dafür den
+     * Absetzstrich; der Merker wird beim nächsten Rendern verbraucht.
+     */
+    private zuletztAbgesetzt: number | null = null;
     private xZeitInterval: ReturnType<typeof setInterval> | null = null;
     private db: Firestore;
     private liveStatus: LiveStatusService | null = null;
@@ -259,10 +265,15 @@ export class TeilnehmerController {
             return;
         }
         const nachrichten = this.uebung.nachrichten[this.teilnehmerName] || [];
+        // Einmalig: die Quittung gehört zum auslösenden Rendern, nicht zum
+        // nächsten Tastendruck im Suchfeld.
+        const zuletztAbgesetzt = this.zuletztAbgesetzt;
+        this.zuletztAbgesetzt = null;
         this.view.renderNachrichten(nachrichten, this.storage, {
             showXZeit: this.uebung.spielModus === "xZeit",
             ...(this.storage.xZeitBasis ? { xZeitBasis: this.storage.xZeitBasis } : {}),
-            bestaetigungen: this.getEigeneBestaetigungen()
+            bestaetigungen: this.getEigeneBestaetigungen(),
+            ...(zuletztAbgesetzt !== null ? { zuletztAbgesetzt } : {})
         });
     }
 
@@ -320,6 +331,9 @@ export class TeilnehmerController {
         if (!this.storage) {
             return;
         }
+        // Nur das Absetzen bekommt eine Quittung; das Zurücknehmen ist eine
+        // Korrektur und keine Meldung, die durchs Netz geht.
+        this.zuletztAbgesetzt = uebertragen ? id : null;
         const now = new Date().toISOString();
         this.storage.nachrichten[id] = uebertragen
             ? { uebertragen: true, uebertragenUm: now, geaendertUm: now }
