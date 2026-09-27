@@ -95,8 +95,8 @@ function alleSchluessel(wert: unknown, treffer: string[] = []): string[] {
 }
 
 describe("Schema-Graph je Seite", () => {
-    it("die Registry deckt alle 30 ausgelieferten URLs ab", () => {
-        expect(SITE_PAGES).toHaveLength(42);
+    it("die Registry deckt alle 46 ausgelieferten URLs ab", () => {
+        expect(SITE_PAGES).toHaveLength(46);
     });
 
     for (const page of SITE_PAGES) {

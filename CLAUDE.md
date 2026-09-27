@@ -138,6 +138,25 @@ deshalb nicht in der CI).
     `tests/repo/FirestoreRulesDeploy.test.ts`.
 - **`localStorage` seed paths** support mock/E2E mode; don't break them when refactoring storage logic
 
+## Funkspruch-Vorlagen erweitern (Skills)
+
+Der Bestand war lange THW-lastig. Seit 2026-09 gibt es dafür Projekt-Skills unter
+`.claude/skills/`, die im Repo versioniert sind:
+
+- `funkspruch-basis` – Format, Stil nach DV 810.3, Qualitätsregeln, Prüfskript
+  (`node .claude/skills/funkspruch-basis/scripts/pruefe-vorlage.mjs <datei>`) und der
+  vollständige Einbau-Pfad in `referenz/einbau.md` (neun Stationen: Textdatei, beide
+  Registries, Archivseite, Seiten-Registry, feste Zahlen, Schema-Zählung, eingehende
+  Links, Hub-Text).
+- `funkspruch-feuerwehr`, `funkspruch-sanitaet-betreuung`, `funkspruch-wasserrettung`,
+  `funkspruch-rettungsdienst` – Fachprofil je Organisation: Einheiten, Fahrzeuge,
+  Stärkeschema, Rufnamen, Meldearten, typische Lagen, und was nicht hineingehört.
+
+Immer Basis-Skill plus Organisations-Skill laden. Neue Vorlagen kommen als eigener PR und
+werden vor dem Merge von jemandem mit Praxis in der Organisation gegengelesen; der PR-Text
+sagt, ob das passiert ist. Das Prüfskript ersetzt diese Durchsicht nicht, es fängt nur
+Format, Dubletten gegen den ganzen Bestand und Stilverstöße ab.
+
 ## SEO-Arbeitspakete (AP-XX)
 
 Gemeinsamer Kontext für die SEO-Arbeitspakete. Ziel ist Platz 1 für "BOS Sprechfunk Übung"
@@ -191,7 +210,11 @@ erzwingt das über alle Seiten hinweg und über `seo/keywords.json`. Die Seite
 Kategorie), nicht Produkte.
 
 Eigene, belegbare Vorteile: kostenlos, ohne Anmeldung, ohne Installation, Open Source,
-ein gewachsener Bestand echter Übungsfunksprüche in `assets/funksprueche/`.
+ein Bestand von Übungsfunksprüchen in `assets/funksprueche/`, dessen THW-Vorlagen aus
+tatsächlich gefunkten Übungen stammen. Die Vorlagen für Feuerwehr, Sanitäts- und
+Betreuungsdienst, Wasserrettung und Rettungsdienst sind **für den Generator geschrieben**
+(Feld `herkunft` in `VORLAGEN`) und werden auf jeder Seite so genannt. Nie behaupten,
+der ganze Bestand stamme aus echten Übungen.
 
 Ebenso wichtig sind die eigenen Grenzen, und sie gehören sichtbar auf die Seiten: ohne
 Konto gibt es keinen Zugriffsschutz und keine Rechteverwaltung, es gibt keinen
@@ -207,7 +230,7 @@ die der Build auflöst. Ein Test verbietet die früher verstreute Zahl „1.800"
 node -e 'import("./scripts/lib/funkspruch-bestand.mjs").then(m => console.log(m.ANZAHL_GESAMT, m.ANZAHL_ARCHIV))'
 ```
 
-Am 2026-08-04 sind das 3.684 und 2.024. **Nicht über `cat *.txt | grep -c` zählen** – das
+Am 2026-09-27 sind das 4.314 und 2.654. **Nicht über `cat *.txt | grep -c` zählen** – das
 Ergebnis ist um eins zu niedrig, weil `nachrichten_thw_melle.txt` ohne Zeilenumbruch endet
 und `cat` ihre letzte Zeile mit der ersten der Folgedatei verklebt.
 

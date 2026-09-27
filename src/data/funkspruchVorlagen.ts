@@ -17,5 +17,9 @@ export const FUNKSPRUCH_VORLAGEN: Record<string, FunkspruchVorlage> = {
     thwessen: { text: "Funksprüche THW Essen", filename: "assets/funksprueche/nachrichten_thw_essen.txt" },
     thwlehrte: { text: "Funksprüche THW Lehrte", filename: "assets/funksprueche/nachrichten_thw_lehrte.txt" },
     thwsaarstedt: { text: "Funksprüche THW Saarstedt", filename: "assets/funksprueche/nachrichten_thw_saarstedt.txt" },
+    feuerwehrUnwetter: { text: "Funksprüche Feuerwehr, Unwetterlage", filename: "assets/funksprueche/nachrichten_feuerwehr_unwetter.txt" },
+    sanitaetBetreuungEvakuierung: { text: "Funksprüche Sanitäts- und Betreuungsdienst, Evakuierung", filename: "assets/funksprueche/nachrichten_sanitaet_betreuung_evakuierung.txt" },
+    wasserrettungHochwasser: { text: "Funksprüche Wasserrettung, Hochwasser", filename: "assets/funksprueche/nachrichten_wasserrettung_hochwasser.txt" },
+    rettungsdienstManv: { text: "Funksprüche Rettungsdienst, Busunfall mit MANV", filename: "assets/funksprueche/nachrichten_rettungsdienst_manv.txt" },
     vorlageLustig: { text: "Lustige Funksprüche (Chat GPT)", filename: "assets/funksprueche/funksprueche_lustig_kreativ.txt" }
 };

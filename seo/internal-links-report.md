@@ -3,7 +3,7 @@
 Erzeugt von `scripts/check-internal-links.mjs`. Nicht von Hand bearbeiten –
 die Datei wird bei jedem CI-Lauf neu geschrieben.
 
-**Stand: 2026-08-04**
+**Stand: 2026-09-27**
 
 Gezählt werden nur Fließtext-Links. Navigation, Footer, Brotkrumen,
 Seitenleiste, Hub-Karten und Weiterlesen-Block bleiben außen vor, weil sie
@@ -11,9 +11,9 @@ auf jeder Seite gleich sind.
 
 ## Überblick
 
-- Seiten in der Registry: 42
-- davon Inhaltsseiten: 39
-- Fließtext-Links gesamt: 400
+- Seiten in der Registry: 46
+- davon Inhaltsseiten: 43
+- Fließtext-Links gesamt: 426
 - Verstöße: 0
 - Seiten ohne eingehenden Fließtext-Link: 0
 
@@ -26,7 +26,7 @@ Keine. Jede Inhaltsseite hat mindestens einen eingehenden Fließtext-Link.
 | Seite | eingehend | ausgehend |
 | --- | ---: | ---: |
 | `/meldevordruck/` | 30 | 6 |
-| `/funksprueche/` | 30 | 10 |
+| `/funksprueche/` | 30 | 18 |
 | `/buchstabiertafel/` | 26 | 8 |
 | `/regiebuch-funkuebung/` | 25 | 9 |
 | `/anleitung/` | 21 | 13 |
@@ -34,31 +34,35 @@ Keine. Jede Inhaltsseite hat mindestens einen eingehenden Fließtext-Link.
 | `/open-source/` | 16 | 11 |
 | `/funkuebung-planen/` | 14 | 20 |
 | `/bos-funk/` | 13 | 13 |
-| `/funkuebung-dienstabend/` | 12 | 12 |
+| `/funkuebung-dienstabend/` | 12 | 13 |
 | `/digitale-funkuebung/` | 11 | 7 |
 | `/funkrufnamen/` | 10 | 13 |
 | `/funkuebung-thw/` | 8 | 15 |
 | `/betriebsworte/` | 8 | 13 |
-| `/funkuebung-feuerwehr/` | 7 | 8 |
+| `/funkuebung-feuerwehr/` | 7 | 9 |
 | `/funkuebung-vorlage/` | 7 | 16 |
-| `/funkuebung-szenarien/` | 7 | 17 |
+| `/funkuebung-szenarien/` | 7 | 20 |
+| `/kostenlos-ohne-anmeldung/` | 7 | 8 |
 | `/uebungsfunkverkehr/` | 6 | 12 |
 | `/funkreichweite/` | 6 | 14 |
-| `/kostenlos-ohne-anmeldung/` | 6 | 8 |
+| `/funksprueche/vorlage/feuerwehr-unwetter/` | 5 | 2 |
+| `/funksprueche/vorlage/sanitaet-betreuung-evakuierung/` | 5 | 2 |
+| `/funksprueche/vorlage/rettungsdienst-manv/` | 5 | 2 |
 | `/x-zeit/` | 5 | 8 |
 | `/einbetten/` | 5 | 6 |
 | `/ueber-das-projekt/` | 5 | 9 |
 | `/funktionen/` | 4 | 23 |
+| `/funksprueche/vorlage/grundausbildung-einfach/` | 4 | 3 |
+| `/funksprueche/vorlage/thw-essen/` | 4 | 2 |
 | `/funksprueche/vorlage/thw-lehrte/` | 4 | 3 |
 | `/funksprueche/vorlage/thw-melle/` | 4 | 2 |
-| `/funkuebung-katastrophenschutz/` | 4 | 10 |
+| `/funksprueche/vorlage/wasserrettung-hochwasser/` | 4 | 2 |
+| `/funkuebung-katastrophenschutz/` | 4 | 14 |
 | `/verkehrsarten/` | 4 | 12 |
 | `/antennen/` | 4 | 7 |
-| `/alternative/` | 4 | 6 |
+| `/alternative/` | 4 | 7 |
 | `/faq/` | 4 | 13 |
 | `/autor/` | 4 | 5 |
-| `/funksprueche/vorlage/grundausbildung-einfach/` | 3 | 3 |
-| `/funksprueche/vorlage/thw-essen/` | 3 | 2 |
 | `/funksprueche/vorlage/thw-leer/` | 3 | 2 |
 | `/funksprueche/vorlage/thw-saarstedt/` | 3 | 2 |
 | `/funkrufnamen-thw/` | 3 | 11 |
@@ -70,7 +74,7 @@ Keine. Jede Inhaltsseite hat mindestens einen eingehenden Fließtext-Link.
 | Ziel | Varianten | Ankertexte |
 | --- | ---: | --- |
 | `/meldevordruck/` | 8 | „druckvordrucke“, „lagemeldung“, „meldevordruck“, „meldevordruck und nachrichtenvordruck“, „meldevordrucke“, „nachrichtenvordruck“, „pdf-vordrucken“, „vordrucke“ |
-| `/funksprueche/` | 12 | „3.684 funksprüche“, „3.684 funksprüchen“, „beispiel-funksprüche ansehen“, „fertige funksprüche“, „funkspruch-archiv“, „funkspruch-vorlagen“, „funksprüche“, „funksprüche ansehen“, „funksprüche für übungen“, „funksprüchen“, „vorlagen“, „übungspool“ |
+| `/funksprueche/` | 12 | „4.314 funksprüche“, „4.314 funksprüchen“, „beispiel-funksprüche ansehen“, „fertige funksprüche“, „funkspruch-archiv“, „funkspruch-vorlagen“, „funksprüche“, „funksprüche ansehen“, „funksprüche für übungen“, „funksprüchen“, „vorlagen“, „übungspool“ |
 | `/buchstabiertafel/` | 5 | „buchstabieren“, „buchstabiertafel“, „buchstabiertafel inland“, „zahlentafel“, „zur buchstabiertafel“ |
 | `/regiebuch-funkuebung/` | 11 | „auswertung“, „live-cockpit“, „live-nachrichtenplan“, „live-übungsleitung“, „live-übungsleitung ansehen“, „nachrichtenplan“, „nachrichtenplan ansehen“, „regiebuch“, „regiebuch der übung“, „regiebuch mit live-übungsleitung“, „übungsleitung“ |
 | `/anleitung/` | 4 | „anleitung“, „schritt-für-schritt-anleitung“, „sprechfunkübung“, „zur anleitung“ |
@@ -86,23 +90,27 @@ Keine. Jede Inhaltsseite hat mindestens einen eingehenden Fließtext-Link.
 | `/funkuebung-feuerwehr/` | 2 | „feuerwehr“, „funkübung feuerwehr“ |
 | `/funkuebung-vorlage/` | 4 | „fertige vorlagen“, „fertige vorlagen ansehen“, „funkübungen als pdf“, „übungs-vorlagen“ |
 | `/funkuebung-szenarien/` | 6 | „12 szenarien für die funkübung“, „eingekleideten szenario-übung“, „szenarien für die funkübung“, „szenario“, „szenario-ideen“, „übungsszenario“ |
+| `/kostenlos-ohne-anmeldung/` | 3 | „funkübung kostenlos und ohne anmeldung“, „kostenlos und ohne anmeldung“, „nutzung ohne konto und ohne kosten“ |
 | `/uebungsfunkverkehr/` | 2 | „blitz- und staatsnot-nachrichten“, „übungsfunkverkehr“ |
 | `/funkreichweite/` | 3 | „merkregeln zur störungsbeseitigung“, „reichweite“, „reichweite von funkwellen“ |
-| `/kostenlos-ohne-anmeldung/` | 3 | „funkübung kostenlos und ohne anmeldung“, „kostenlos und ohne anmeldung“, „nutzung ohne konto und ohne kosten“ |
+| `/funksprueche/vorlage/feuerwehr-unwetter/` | 5 | „feuerwehr, unwetterlage“, „sturmlage für die feuerwehr“, „sturmlage mit 224 nachrichten“, „sturmtief aus sicht der feuerwehr“, „unwetterlage für die feuerwehr“ |
+| `/funksprueche/vorlage/sanitaet-betreuung-evakuierung/` | 5 | „evakuierung für den sanitäts- und betreuungsdienst“, „evakuierung für sanitäts- und betreuungsdienst“, „evakuierungslage mit betreuungsstellen und registrierung“, „sanitäts- und betreuungsdienst, evakuierung“, „vorlage für den sanitäts- und betreuungsdienst“ |
+| `/funksprueche/vorlage/rettungsdienst-manv/` | 5 | „busunfall aus sicht des rettungsdienstes“, „busunfall mit manv für den rettungsdienst“, „massenanfall von verletzten für den rettungsdienst“, „rettungsdienst, busunfall mit manv“, „vorlage für den rettungsdienst“ |
 | `/x-zeit/` | 4 | „der x-zeit-modus“, „fälligkeitszeitpunkt als x+n“, „x-zeit“, „zeitversetzte fälligkeiten“ |
 | `/einbetten/` | 2 | „alle aushänge und widgets“, „einbetten und weitergeben“ |
 | `/ueber-das-projekt/` | 3 | „redaktionellen transparenz des projekts“, „wie das projekt betrieben und finanziert wird“, „über das projekt“ |
 | `/funktionen/` | 4 | „alle funktionen im überblick“, „bausteinen der anwendung“, „funktionen im überblick“, „überblick über die funktionen“ |
+| `/funksprueche/vorlage/grundausbildung-einfach/` | 3 | „grundausbildung, einfache nachrichten“, „sammlung kurzer meldungen aus der grundausbildung“, „vorlage für die grundausbildung“ |
+| `/funksprueche/vorlage/thw-essen/` | 3 | „92 nachrichten aus essen“, „hochwasserlage aus essen“, „thw essen“ |
 | `/funksprueche/vorlage/thw-lehrte/` | 4 | „752 nachrichten aus lehrte“, „große unwetterlage aus lehrte“, „thw lehrte“, „unwetterlage aus lehrte“ |
 | `/funksprueche/vorlage/thw-melle/` | 4 | „400 nachrichten aus melle“, „fachdichte lage aus melle“, „thw melle“, „vorlage aus melle“ |
+| `/funksprueche/vorlage/wasserrettung-hochwasser/` | 3 | „hochwasser aus sicht der wasserrettung“, „hochwasser für die wasserrettung“, „wasserrettung, hochwasser“ |
 | `/funkuebung-katastrophenschutz/` | 4 | „funkübung im katastrophenschutz“, „hilfsorganisationen“, „katastrophenschutz“, „mehrere organisationen“ |
 | `/verkehrsarten/` | 2 | „verkehrsarten“, „verkehrsarten und relaisbetrieb“ |
 | `/antennen/` | 3 | „antennen“, „antennen und antennenleitungen“, „art der antenne“ |
 | `/alternative/` | 4 | „den wegen zur sprechfunkübung im vergleich“, „der vergleich der vier wege“, „die vier wege im vergleich“, „eine gegenüberstellung der vier gängigen wege“ |
 | `/faq/` | 2 | „faq“, „häufige fragen“ |
 | `/autor/` | 3 | „johannes rudolph, bereichsausbilder sprechfunk“, „wer die inhalte schreibt“, „über den autor“ |
-| `/funksprueche/vorlage/grundausbildung-einfach/` | 3 | „grundausbildung, einfache nachrichten“, „sammlung kurzer meldungen aus der grundausbildung“, „vorlage für die grundausbildung“ |
-| `/funksprueche/vorlage/thw-essen/` | 3 | „92 nachrichten aus essen“, „hochwasserlage aus essen“, „thw essen“ |
 | `/funksprueche/vorlage/thw-leer/` | 3 | „118 nachrichten aus leer“, „sturmlage aus ostfriesland“, „thw leer“ |
 | `/funksprueche/vorlage/thw-saarstedt/` | 3 | „200 standortmeldungen aus saarstedt“, „200 standortmeldungen mit straßennamen in großbuchstaben“, „thw saarstedt“ |
 | `/funkrufnamen-thw/` | 1 | „funkrufnamen im thw“ |

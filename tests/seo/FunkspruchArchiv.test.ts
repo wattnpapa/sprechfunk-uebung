@@ -11,17 +11,21 @@ import {
     baueBestand,
     funkspruchId,
     hatBuchstabieranteil,
+    HERKUNFT,
     kategorieFuer,
+    ORGANISATIONEN,
+    organisationsName,
     parseVorlage,
     schwierigkeitFuer,
     VORLAGEN
 } from "../../scripts/lib/funkspruch-daten.mjs";
+import { FUNKSPRUCH_VORLAGEN } from "../../src/data/funkspruchVorlagen";
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-ignore
 import { ANZAHL_ARCHIV, ANZAHL_GESAMT, ANZAHL_GESAMT_TEXT, BESTAND } from "../../scripts/lib/funkspruch-bestand.mjs";
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-ignore
-import { downloadDateiname, renderFunkspruchListe, txtInhalt } from "../../scripts/lib/funkspruch-seiten.mjs";
+import { downloadDateiname, renderFunkspruchListe, renderVorlagenTabelle, txtInhalt } from "../../scripts/lib/funkspruch-seiten.mjs";
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-ignore
 import { ersetzeBestandszahlen } from "../../scripts/lib/render-page.mjs";
@@ -29,7 +33,7 @@ import { ersetzeBestandszahlen } from "../../scripts/lib/render-page.mjs";
 const ROOT = path.resolve(__dirname, "..", "..");
 const VORLAGEN_DIR = path.join(ROOT, "assets", "funksprueche");
 
-interface Vorlage { datei: string; slug: string; name: string; imArchiv?: boolean }
+interface Vorlage { datei: string; slug: string; name: string; organisation: string[]; herkunft: string; imArchiv?: boolean }
 interface Eintrag {
     id: string; text: string; vorlage: string; kategorie: string;
     organisation: string[]; schwierigkeit: string; buchstabieren: boolean; zeichen: number;
@@ -84,6 +88,68 @@ describe("Bestand deckt die Quelldateien vollständig ab", () => {
 
     it("wirft, wenn eine Vorlage fehlt", () => {
         expect(() => baueBestand({})).toThrow(/fehlt/);
+    });
+});
+
+describe("Registry der Vorlagen ist in sich schlüssig", () => {
+    // Zwei Registries beschreiben dieselben Dateien: VORLAGEN für Build und
+    // Archiv, FUNKSPRUCH_VORLAGEN für die Auswahl in der App. Läuft eine der
+    // beiden weg, gibt es eine Vorlage, die man herunterladen, aber nicht
+    // auswählen kann – oder umgekehrt.
+    it("führt jede Datei auch in der App-Registry", () => {
+        const inApp = Object.values(FUNKSPRUCH_VORLAGEN)
+            .map(vorlage => vorlage.filename.replace(/^assets\/funksprueche\//, ""))
+            .sort();
+        const inBestand = (VORLAGEN as Vorlage[]).map(vorlage => vorlage.datei).sort();
+        expect(inApp).toEqual(inBestand);
+    });
+
+    it("nennt für jede Vorlage Organisation und Herkunft aus den bekannten Listen", () => {
+        for (const vorlage of VORLAGEN as Vorlage[]) {
+            expect(vorlage.organisation.length, `${vorlage.slug} ohne Organisation`).toBeGreaterThan(0);
+            for (const key of vorlage.organisation) {
+                expect(ORGANISATIONEN, `${vorlage.slug}: unbekannte Organisation „${key}“`).toHaveProperty(key);
+            }
+            expect(HERKUNFT, `${vorlage.slug}: unbekannte Herkunft „${vorlage.herkunft}“`).toHaveProperty(vorlage.herkunft);
+        }
+    });
+
+    it("hat je Organisation außer THW mindestens eine Archivvorlage", () => {
+        // Der Anlass für die Organisations-Skills: der Bestand war THW-lastig.
+        for (const key of ["feuerwehr", "sanitaet-betreuung", "wasserrettung", "rettungsdienst"]) {
+            const treffer = (ARCHIV_VORLAGEN as Vorlage[]).filter(v => v.organisation.includes(key));
+            expect(treffer.length, `keine Archivvorlage für ${key}`).toBeGreaterThanOrEqual(1);
+        }
+    });
+
+    it("kennzeichnet geschriebene Vorlagen als solche", () => {
+        // Die THW-Vorlagen stammen aus gefunkten Übungen, alles Neue ist
+        // geschrieben. Wer das verwechselt, macht die Herkunftsaussage auf
+        // /funksprueche/ und /autor/ falsch.
+        for (const vorlage of VORLAGEN as Vorlage[]) {
+            if (vorlage.organisation.includes("thw")) expect(vorlage.herkunft).toBe("uebung");
+            if (!vorlage.organisation.includes("thw") && !vorlage.organisation.includes("allgemein")) {
+                expect(vorlage.herkunft, `${vorlage.slug}`).toBe("geschrieben");
+            }
+        }
+    });
+
+    it("übersetzt Organisationsschlüssel in lesbare Namen", () => {
+        expect(organisationsName(["thw"])).toBe("THW");
+        expect(organisationsName(["sanitaet-betreuung"])).toBe("Sanitäts- und Betreuungsdienst");
+        expect(organisationsName(["feuerwehr", "thw"])).toBe("Feuerwehr, THW");
+        expect(organisationsName(["unbekannt"])).toBe("unbekannt");
+    });
+
+    it("zeigt in der Übersichtstabelle Organisation und Herkunft je Vorlage", () => {
+        const html = renderVorlagenTabelle(BESTAND) as string;
+        expect(html).toContain("<th scope=\"col\">Organisation</th><th scope=\"col\">Herkunft</th>");
+        expect(html).toContain("<td>Feuerwehr</td><td>für den Generator geschrieben</td>");
+        expect(html).toContain("<td>THW</td><td>aus gefunkter Übung</td>");
+        expect(html).toContain("<td>Wasserrettung</td>");
+        expect(html).toContain("<td>Rettungsdienst</td>");
+        expect(html).toContain("<td>Sanitäts- und Betreuungsdienst</td>");
+        expect(html).not.toContain("<td></td>");
     });
 });
 

@@ -114,7 +114,10 @@ Weitere Fragen und Antworten: [sprechfunk-uebung.de/faq](https://sprechfunk-uebu
 - **[Meldevordruck und Nachrichtenvordruck](https://sprechfunk-uebung.de/meldevordruck/)** –
   Aufbau der Felder und leere Vordrucke als PDF
 - **[Funksprüche für Übungen](https://sprechfunk-uebung.de/funksprueche/)** – Beispieltexte und
-  Anleitung für eigene Vorlagen
+  Anleitung für eigene Vorlagen. Die THW-Vorlagen stammen aus gefunkten Übungen, die
+  Vorlagen für Feuerwehr, Sanitäts- und Betreuungsdienst, Wasserrettung und Rettungsdienst
+  wurden für den Generator geschrieben und sind so gekennzeichnet – Korrekturen aus diesen
+  Organisationen sind willkommen
 
 ---
 

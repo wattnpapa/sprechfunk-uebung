@@ -392,6 +392,118 @@ export const SITE_PAGES = [
         ]
     },
     {
+        slug: "funksprueche/vorlage/feuerwehr-unwetter",
+        source: "pages/funksprueche-vorlage-feuerwehr-unwetter.html",
+        sources: ["src/pages/funksprueche-vorlage-feuerwehr-unwetter.html", "assets/funksprueche/nachrichten_feuerwehr_unwetter.txt"],
+        archivVorlage: "feuerwehr-unwetter",
+        breadcrumbEltern: [{ name: "Funksprüche", slug: "funksprueche" }],
+        kurzGesagt: "Diese Vorlage enthält 224 Übungsnachrichten aus einer Sturmlage für die Feuerwehr: Bäume auf Straßen, Keller unter Wasser, ein Dachstuhlbrand nach Blitzschlag, ein steigender Bach im Ortskern. Die Sprache folgt FwDV 3 und FwDV 100, mit Stärkemeldungen, Atemschutzüberwachung und Wasserförderung. Sie wurde für den Generator geschrieben, nicht aus einer gefunkten Übung übernommen. Der Download lässt sich unverändert hochladen.",
+        related: ["funksprueche", "funkuebung-feuerwehr", "funkuebung-szenarien"],
+        label: "Vorlage Feuerwehr Unwetter",
+        hubCategory: "anwendung",
+        archiv: true,
+        schemaType: "CollectionPage", datePublished: "2026-09-27",
+        about: ["Funksprüche", "Übungstexte", "Feuerwehr"],
+        faq: [
+            {
+                q: "Für welche Feuerwehren ist die Vorlage gedacht?",
+                a: "Für Freiwillige Feuerwehren mit mehreren Ortsfeuerwehren in einem Landkreis. Die Lage ist ländlich angelegt, die Fahrzeuge reichen vom TSF-W bis zur Drehleiter, die Führungsstruktur folgt der FwDV 100."
+            },
+            {
+                q: "Was übt die Vorlage anders als die THW-Vorlagen?",
+                a: "Stärkemeldungen nach FwDV 3, Atemschutzüberwachung, Wasserförderung über lange Wegstrecke, Freischaltung durch den Netzbetreiber und die Priorisierung vieler gleichzeitiger Einsatzstellen durch die Einsatzleitung."
+            },
+            {
+                q: "Stammen die Nachrichten aus einem echten Einsatz?",
+                a: "Nein. Die Vorlage wurde für den Generator geschrieben, mit dem Fachprofil der Organisation und den Regeln des BOS-Sprechfunks. Orts- und Straßennamen sind erfunden. Korrekturen aus der Praxis nimmt das Projekt gern an."
+            }
+        ]
+    },
+    {
+        slug: "funksprueche/vorlage/sanitaet-betreuung-evakuierung",
+        source: "pages/funksprueche-vorlage-sanitaet-betreuung-evakuierung.html",
+        sources: ["src/pages/funksprueche-vorlage-sanitaet-betreuung-evakuierung.html", "assets/funksprueche/nachrichten_sanitaet_betreuung_evakuierung.txt"],
+        archivVorlage: "sanitaet-betreuung-evakuierung",
+        breadcrumbEltern: [{ name: "Funksprüche", slug: "funksprueche" }],
+        kurzGesagt: "Diese Vorlage enthält 139 Übungsnachrichten aus einer Evakuierung nach einem Kampfmittelfund für Einsatzeinheiten und Schnelleinsatzgruppen von DRK, ASB, Johannitern und Maltesern. Betreuungsstellen, Registrierung, Verpflegung mit Sonderkost, Sanitätsstation und Krankentransport bettlägeriger Bewohner bilden die Lage. Sie wurde für den Generator geschrieben, nicht aus einer gefunkten Übung übernommen. Der Download lässt sich unverändert hochladen.",
+        related: ["funksprueche", "funkuebung-katastrophenschutz", "funkuebung-dienstabend"],
+        label: "Vorlage Sanitäts- und Betreuungsdienst",
+        hubCategory: "anwendung",
+        archiv: true,
+        schemaType: "CollectionPage", datePublished: "2026-09-27",
+        about: ["Funksprüche", "Übungstexte", "Betreuungsdienst"],
+        faq: [
+            {
+                q: "Für welche Einheiten ist die Vorlage gedacht?",
+                a: "Für Einsatzeinheiten und Schnelleinsatzgruppen Betreuung, Verpflegung und Sanität der Hilfsorganisationen. Die Nachrichten bleiben in der Innensicht des Betreuungs- und Sanitätsdienstes, ohne Löschangriff und ohne Leitstellendisposition."
+            },
+            {
+                q: "Warum stehen so viele Zahlen in den Nachrichten?",
+                a: "Weil der Betreuungsdienst von Zahlen lebt: Belegung nach Personengruppen, Portionen mit Sonderkost, Feldbetten und Decken in Stück, Kapazitäten je Betreuungsstelle. Diese Zahlen fehlerfrei zu übermitteln ist der Kern der Übung."
+            },
+            {
+                q: "Stammen die Nachrichten aus einem echten Einsatz?",
+                a: "Nein. Die Vorlage wurde für den Generator geschrieben, mit dem Fachprofil der Organisation und den Regeln des BOS-Sprechfunks. Orts- und Straßennamen sind erfunden. Korrekturen aus der Praxis nimmt das Projekt gern an."
+            }
+        ]
+    },
+    {
+        slug: "funksprueche/vorlage/wasserrettung-hochwasser",
+        source: "pages/funksprueche-vorlage-wasserrettung-hochwasser.html",
+        sources: ["src/pages/funksprueche-vorlage-wasserrettung-hochwasser.html", "assets/funksprueche/nachrichten_wasserrettung_hochwasser.txt"],
+        archivVorlage: "wasserrettung-hochwasser",
+        breadcrumbEltern: [{ name: "Funksprüche", slug: "funksprueche" }],
+        kurzGesagt: "Diese Vorlage enthält 131 Übungsnachrichten aus einer Hochwasserlage für Wasserrettungszüge von DLRG und Wasserwacht. Boote holen Bewohner aus überfluteten Straßen, dazu Pegelmeldungen, Treibgutwarnungen, Strömungsretter, Taucher am Wehr und eine Personensuche in der Dämmerung. Sie wurde für den Generator geschrieben, nicht aus einer gefunkten Übung übernommen. Der Download lässt sich unverändert hochladen.",
+        related: ["funksprueche", "funkuebung-katastrophenschutz", "funkuebung-szenarien"],
+        label: "Vorlage Wasserrettung",
+        hubCategory: "anwendung",
+        archiv: true,
+        schemaType: "CollectionPage", datePublished: "2026-09-27",
+        about: ["Funksprüche", "Übungstexte", "Wasserrettung"],
+        faq: [
+            {
+                q: "Wie werden die Boote in den Nachrichten benannt?",
+                a: "Als Boot 1 bis Boot 3, weil die Rufnamen aus der Teilnehmerliste der Übung kommen. Wer die Boote als eigene Funkstellen einträgt, bekommt eine Übung, in der Bootsführer und Zugtrupp direkt miteinander funken."
+            },
+            {
+                q: "Passt die Vorlage zu einer Übung mit dem THW?",
+                a: "Ja. Die Hochwasserlage aus Essen im Archiv funkt dieselbe Art Lage von der Landseite. Beide Vorlagen zusammen ergeben eine organisationsübergreifende Übung mit Deich, Booten und Pumpen."
+            },
+            {
+                q: "Stammen die Nachrichten aus einem echten Einsatz?",
+                a: "Nein. Die Vorlage wurde für den Generator geschrieben, mit dem Fachprofil der Organisation und den Regeln des BOS-Sprechfunks. Orts- und Straßennamen sind erfunden. Korrekturen aus der Praxis nimmt das Projekt gern an."
+            }
+        ]
+    },
+    {
+        slug: "funksprueche/vorlage/rettungsdienst-manv",
+        source: "pages/funksprueche-vorlage-rettungsdienst-manv.html",
+        sources: ["src/pages/funksprueche-vorlage-rettungsdienst-manv.html", "assets/funksprueche/nachrichten_rettungsdienst_manv.txt"],
+        archivVorlage: "rettungsdienst-manv",
+        breadcrumbEltern: [{ name: "Funksprüche", slug: "funksprueche" }],
+        kurzGesagt: "Diese Vorlage enthält 136 Übungsnachrichten aus einem Massenanfall von Verletzten nach einem Busunfall auf einer Landesstraße. Sichtung in vier Kategorien, Patientenablage, Behandlungsplatz, Transportorganisation mit Klinikkapazitäten, Rettungshubschrauber und Status-Meldungen nach dem Funkmeldesystem bilden die Lage. Sie wurde für den Generator geschrieben, nicht aus einer gefunkten Übung übernommen. Der Download lässt sich unverändert hochladen.",
+        related: ["funksprueche", "funkuebung-katastrophenschutz", "funkuebung-szenarien"],
+        label: "Vorlage Rettungsdienst MANV",
+        hubCategory: "anwendung",
+        archiv: true,
+        schemaType: "CollectionPage", datePublished: "2026-09-27",
+        about: ["Funksprüche", "Übungstexte", "Rettungsdienst"],
+        faq: [
+            {
+                q: "Was bedeuten SK I bis SK IV in den Nachrichten?",
+                a: "Die Sichtungskategorien: SK I rot für sofortige Behandlung, SK II gelb für dringende, SK III grün für spätere Behandlung, SK IV blau für abwartende Behandlung. Tote werden getrennt gemeldet."
+            },
+            {
+                q: "Warum stehen Status-Meldungen als eigene Zeilen in der Vorlage?",
+                a: "Im Einsatz laufen sie über die Statustaste des Funkmeldesystems. In der Übung gesprochen üben sie die Kürze: Status 4 am Einsatzort, Status 7 Patient aufgenommen, Status 8 am Transportziel, Status 1 wieder einsatzbereit."
+            },
+            {
+                q: "Stammen die Nachrichten aus einem echten Einsatz?",
+                a: "Nein. Die Vorlage wurde für den Generator geschrieben, mit dem Fachprofil der Organisation und den Regeln des BOS-Sprechfunks. Orts- und Straßennamen sind erfunden. Korrekturen aus der Praxis nimmt das Projekt gern an."
+            }
+        ]
+    },
+    {
         slug: "funkuebung-feuerwehr", source: "pages/funkuebung-feuerwehr.html", sources: ["src/pages/funkuebung-feuerwehr.html"],
         kurzGesagt: "Eine Funkübung für die Feuerwehr ist in wenigen Minuten vorbereitet: Teilnehmer mit ihren Florian-Rufnamen eintragen, Umfang festlegen, Vorlage wählen. Der Generator verteilt die Funksprüche und erzeugt für jede Funkstelle die Druckunterlagen. Für den Dienstabend haben sich sechs bis zehn Funkstellen mit je sechs bis zehn Sprüchen bewährt. Gefunkt wird über die vorhandenen Handfunkgeräte.",
         related: ["funkuebung-dienstabend", "funksprueche", "funkrufnamen"],
@@ -1111,7 +1223,7 @@ export const SITE_PAGES = [
     },
     {
         slug: "autor", source: "pages/autor.html", sources: ["src/pages/autor.html"],
-        kurzGesagt: "Der Übungsgenerator ist aus der eigenen Ausbildungspraxis entstanden, nicht am Reißbrett. Der Autor ist seit 2007 beim Technischen Hilfswerk aktiv, Gruppenführer der Fachgruppe Kommunikation und Bereichsausbilder für Sprechfunk. Die mitgelieferten Übungstexte stammen aus tatsächlich gefunkten Übungen mehrerer Ortsverbände. Das Projekt ist Ehrenamt, quelloffen und ohne kommerzielles Interesse.",
+        kurzGesagt: "Der Übungsgenerator ist aus der eigenen Ausbildungspraxis entstanden, nicht am Reißbrett. Der Autor ist seit 2007 beim Technischen Hilfswerk aktiv, Gruppenführer der Fachgruppe Kommunikation und Bereichsausbilder für Sprechfunk. Die THW-Übungstexte stammen aus tatsächlich gefunkten Übungen mehrerer Ortsverbände, die Vorlagen für Feuerwehr, Hilfsorganisationen, Wasserrettung und Rettungsdienst wurden für den Generator geschrieben. Das Projekt ist Ehrenamt, quelloffen und ohne kommerzielles Interesse.",
         related: ["ueber-das-projekt", "open-source", "funkuebung-thw"],
         label: "Über den Autor",
         hubCategory: "anwendung",
@@ -1128,7 +1240,7 @@ export const SITE_PAGES = [
             },
             {
                 q: "Woher kommen die Übungsfunksprüche?",
-                a: "Aus tatsächlich gefunkten Übungen mehrerer THW-Ortsverbände sowie einem Bestand kurzer Meldungen für die Grundausbildung. Der vollständige Bestand ist im Funkspruch-Archiv einsehbar."
+                a: "Die THW-Vorlagen aus tatsächlich gefunkten Übungen mehrerer Ortsverbände, dazu ein Bestand kurzer Meldungen für die Grundausbildung. Die Vorlagen für Feuerwehr, Hilfsorganisationen, Wasserrettung und Rettungsdienst wurden für den Generator geschrieben und sind als solche gekennzeichnet. Der vollständige Bestand ist im Funkspruch-Archiv einsehbar."
             }
         ]
     },
