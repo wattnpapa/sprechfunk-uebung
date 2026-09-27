@@ -134,6 +134,30 @@ export const DIAGRAMME = {
         alt: "Drei beschriftete Felder nebeneinander mit den Kennzahlen der Vorlage: 200 Nachrichten, im Schnitt 62 Zeichen lang und mit Schwerpunkt Buchstabieren",
         bauen: vorlagenProfil(200, 62, "Buchstabieren")
     },
+    "funksprueche/vorlage/feuerwehr-unwetter": {
+        titel: "Profil der Vorlage Feuerwehr, Unwetterlage",
+        beschreibung: "224 Nachrichten aus einer Sturmlage mit vielen gleichzeitigen Einsatzstellen, Schwerpunkt auf der Priorisierung durch die Einsatzleitung.",
+        alt: "Drei beschriftete Felder nebeneinander mit den Kennzahlen der Vorlage: 224 Nachrichten, im Schnitt 107 Zeichen lang und mit Schwerpunkt Priorisierung",
+        bauen: vorlagenProfil(224, 107, "Priorisierung")
+    },
+    "funksprueche/vorlage/sanitaet-betreuung-evakuierung": {
+        titel: "Profil der Vorlage Sanitäts- und Betreuungsdienst",
+        beschreibung: "139 Nachrichten aus einer Evakuierung mit Betreuungsstellen, Schwerpunkt auf Belegungs- und Verpflegungszahlen.",
+        alt: "Drei beschriftete Felder nebeneinander mit den Kennzahlen der Vorlage: 139 Nachrichten, im Schnitt 101 Zeichen lang und mit Schwerpunkt Betreuung",
+        bauen: vorlagenProfil(139, 101, "Betreuung")
+    },
+    "funksprueche/vorlage/wasserrettung-hochwasser": {
+        titel: "Profil der Vorlage Wasserrettung, Hochwasser",
+        beschreibung: "131 Nachrichten aus einer Hochwasserlage mit drei Booten, Schwerpunkt auf dem knappen Bootsfunk.",
+        alt: "Drei beschriftete Felder nebeneinander mit den Kennzahlen der Vorlage: 131 Nachrichten, im Schnitt 100 Zeichen lang und mit Schwerpunkt Bootsbetrieb",
+        bauen: vorlagenProfil(131, 100, "Bootsbetrieb")
+    },
+    "funksprueche/vorlage/rettungsdienst-manv": {
+        titel: "Profil der Vorlage Rettungsdienst, MANV",
+        beschreibung: "136 Nachrichten aus einem Busunfall mit 33 Verletzten, Schwerpunkt auf Sichtung und Transportorganisation.",
+        alt: "Drei beschriftete Felder nebeneinander mit den Kennzahlen der Vorlage: 136 Nachrichten, im Schnitt 103 Zeichen lang und mit Schwerpunkt Sichtung",
+        bauen: vorlagenProfil(136, 103, "Sichtung")
+    },
     "funkuebung-feuerwehr": {
         titel: "Übung für die Feuerwehr vorbereiten",
         beschreibung: "Florian-Rufnamen eintragen, Umfang festlegen, Vorlage wählen, Druckunterlagen erzeugen.",

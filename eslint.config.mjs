@@ -60,6 +60,7 @@ export default tseslint.config(
             "tests/**/*.ts",
             "e2e/**/*.ts",
             "scripts/**/*.mjs",
+            ".claude/skills/**/*.mjs",
             "rollup.config.js",
             "playwright.config.ts",
             "vitest.config.ts"

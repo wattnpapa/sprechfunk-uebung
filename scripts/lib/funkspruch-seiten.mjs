@@ -5,7 +5,7 @@
 // der Filter unten ist eine Zutat, keine Voraussetzung.
 
 import { escapeHtml } from "./schema-graph.mjs";
-import { deutscheZahl, KATEGORIEN, kategorieName, VORLAGEN } from "./funkspruch-daten.mjs";
+import { deutscheZahl, HERKUNFT, KATEGORIEN, kategorieName, organisationsName, VORLAGEN } from "./funkspruch-daten.mjs";
 import { relativerPfad } from "./navigation.mjs";
 
 /** Einsetzstellen in den Quellseiten unter src/pages/. */
@@ -134,16 +134,17 @@ export function renderVorlagenTabelle(bestand, vonSlug = "funksprueche") {
                 + `${escapeHtml(vorlage.name)}</a>`
             : `${escapeHtml(vorlage.name)} <span class="text-body-secondary">`
                 + `(nur im Generator, ${escapeHtml(vorlage.grund ?? "nicht im Archiv")})</span>`;
-        const organisation = vorlage.organisation.includes("thw") ? "THW" : "organisationsübergreifend";
+        const herkunft = HERKUNFT[vorlage.herkunft] ?? "";
         return `                        <tr><td>${ziel}</td>`
             + `<td class="text-end">${deutscheZahl(anzahl)}</td>`
-            + `<td>${organisation}</td></tr>`;
+            + `<td>${escapeHtml(organisationsName(vorlage.organisation))}</td>`
+            + `<td>${escapeHtml(herkunft)}</td></tr>`;
     }).join("\n");
 
     return `            <div class="table-responsive">
                 <table class="table table-sm align-middle" data-testid="vorlagen-tabelle">
                     <thead>
-                        <tr><th scope="col">Vorlage</th><th scope="col" class="text-end">Funksprüche</th><th scope="col">Herkunft</th></tr>
+                        <tr><th scope="col">Vorlage</th><th scope="col" class="text-end">Funksprüche</th><th scope="col">Organisation</th><th scope="col">Herkunft</th></tr>
                     </thead>
                     <tbody>
 ${zeilen}

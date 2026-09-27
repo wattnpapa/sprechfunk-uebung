@@ -17,10 +17,34 @@ import { createHash } from "node:crypto";
  * Dateinamen ergeben und nicht aus dem einzelnen Spruch: "nachrichten_thw_*"
  * ist THW-Material, "*_einfach" ist als einfache Stufe benannt.
  *
+ * `herkunft` unterscheidet, woher der Text kommt: "uebung" ist Material aus
+ * einer tatsächlich gefunkten Übung, "geschrieben" wurde für den Generator
+ * verfasst (seit 2026-09 über die Skills unter .claude/skills/funkspruch-*).
+ * Die Übersicht auf /funksprueche/ zeigt den Unterschied, damit niemand eine
+ * geschriebene Lage für einen Einsatzbericht hält.
+ *
  * `imArchiv: false` nimmt eine Vorlage aus dem öffentlichen Archiv, ohne sie
  * dem Generator zu entziehen. Die Dateien bleiben unverändert im Repo und in
  * der Anwendung auswählbar.
  */
+export const ORGANISATIONEN = {
+    thw: "THW",
+    feuerwehr: "Feuerwehr",
+    "sanitaet-betreuung": "Sanitäts- und Betreuungsdienst",
+    wasserrettung: "Wasserrettung",
+    rettungsdienst: "Rettungsdienst",
+    allgemein: "organisationsübergreifend"
+};
+
+export const HERKUNFT = {
+    uebung: "aus gefunkter Übung",
+    geschrieben: "für den Generator geschrieben"
+};
+
+export function organisationsName(schluessel) {
+    return schluessel.map(key => ORGANISATIONEN[key] ?? key).join(", ");
+}
+
 export const VORLAGEN = [
     {
         datei: "funksprueche_grundausbildung_einfach.txt",
@@ -28,6 +52,7 @@ export const VORLAGEN = [
         name: "Grundausbildung, einfache Nachrichten",
         organisation: ["allgemein"],
         schwierigkeit: "einfach",
+        herkunft: "uebung",
         imArchiv: true
     },
     {
@@ -35,6 +60,7 @@ export const VORLAGEN = [
         slug: "thw-essen",
         name: "THW Essen",
         organisation: ["thw"],
+        herkunft: "uebung",
         imArchiv: true
     },
     {
@@ -42,6 +68,7 @@ export const VORLAGEN = [
         slug: "thw-leer",
         name: "THW Leer",
         organisation: ["thw"],
+        herkunft: "uebung",
         imArchiv: true
     },
     {
@@ -49,6 +76,7 @@ export const VORLAGEN = [
         slug: "thw-lehrte",
         name: "THW Lehrte",
         organisation: ["thw"],
+        herkunft: "uebung",
         imArchiv: true
     },
     {
@@ -56,6 +84,7 @@ export const VORLAGEN = [
         slug: "thw-melle",
         name: "THW Melle",
         organisation: ["thw"],
+        herkunft: "uebung",
         imArchiv: true
     },
     {
@@ -63,6 +92,39 @@ export const VORLAGEN = [
         slug: "thw-saarstedt",
         name: "THW Saarstedt",
         organisation: ["thw"],
+        herkunft: "uebung",
+        imArchiv: true
+    },
+    {
+        datei: "nachrichten_feuerwehr_unwetter.txt",
+        slug: "feuerwehr-unwetter",
+        name: "Feuerwehr, Unwetterlage",
+        organisation: ["feuerwehr"],
+        herkunft: "geschrieben",
+        imArchiv: true
+    },
+    {
+        datei: "nachrichten_sanitaet_betreuung_evakuierung.txt",
+        slug: "sanitaet-betreuung-evakuierung",
+        name: "Sanitäts- und Betreuungsdienst, Evakuierung",
+        organisation: ["sanitaet-betreuung"],
+        herkunft: "geschrieben",
+        imArchiv: true
+    },
+    {
+        datei: "nachrichten_wasserrettung_hochwasser.txt",
+        slug: "wasserrettung-hochwasser",
+        name: "Wasserrettung, Hochwasser",
+        organisation: ["wasserrettung"],
+        herkunft: "geschrieben",
+        imArchiv: true
+    },
+    {
+        datei: "nachrichten_rettungsdienst_manv.txt",
+        slug: "rettungsdienst-manv",
+        name: "Rettungsdienst, Busunfall mit MANV",
+        organisation: ["rettungsdienst"],
+        herkunft: "geschrieben",
         imArchiv: true
     },
     {
@@ -71,6 +133,7 @@ export const VORLAGEN = [
         name: "Humorvolle Lagen",
         organisation: ["allgemein"],
         schwierigkeit: "einfach",
+        herkunft: "geschrieben",
         // Bewusst nicht im öffentlichen Archiv: die Vorlage nennt fremde Marken
         // und Figuren wörtlich. Sie in der Anwendung für Übungs-PDFs zu nutzen
         // ist etwas anderes, als sie als durchsuchbares Archiv mit Download auf
