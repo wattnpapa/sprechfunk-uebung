@@ -167,6 +167,30 @@ Workflow: `.github/workflows/main.yml`
 - Error Monitoring: [error-monitoring.md](error-monitoring.md)
 - Architekturentscheidungen: [adr/](adr/)
 
+## Funkspruch-Vorlagen erweitern
+
+Eine Vorlage ist eine Textdatei unter `assets/funksprueche/`, eine Nachricht je Zeile.
+Bis sie im Generator wählbar und im Archiv sichtbar ist, braucht sie Einträge in zwei
+Registries, eine Archivseite, einen Eintrag in `scripts/site-pages.mjs` und die
+Nachführung der festen Bestandszahlen in Titeln. Der komplette Pfad steht in
+`.claude/skills/funkspruch-basis/referenz/einbau.md`, damit er nicht in drei Köpfen
+verteilt liegt.
+
+Vor dem Einbau die Datei prüfen:
+
+```bash
+node .claude/skills/funkspruch-basis/scripts/pruefe-vorlage.mjs assets/funksprueche/<datei>.txt
+```
+
+Das Skript meldet Formatfehler, Dubletten innerhalb der Datei und gegen den gesamten
+Bestand (der Archiv-Test verlangt eindeutige Kennungen über alle Vorlagen), verbotene
+Wendungen und zeigt die Verteilung über Kategorien, Schwierigkeit und Buchstabieranteil.
+
+Für neue Organisationen gibt es Fachprofile als Skills (`.claude/skills/funkspruch-*`).
+Vorlagen, die daraus entstehen, tragen `herkunft: "geschrieben"` in `VORLAGEN` und sagen
+das auf ihrer Archivseite. Sie ersetzen keine Durchsicht durch jemanden aus der
+Organisation; die gehört vor den Merge.
+
 ## Mitwirken
 
 Pull Requests sind willkommen – Code verbessern, Fehler beheben, Features vorschlagen und
