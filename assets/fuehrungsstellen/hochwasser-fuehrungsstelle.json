@@ -1,0 +1,574 @@
+{
+  "slug": "hochwasser-fuehrungsstelle",
+  "titel": "Hochwasser: Einsatzleitung mit mehreren Einsatzabschnitten",
+  "beschreibung": "Stabsrahmenübung für eine THW-Einsatzleitung im Hochwasser an der Lohne: sechs Einsatzstellen von der Deichverteidigung bis zur Evakuierungsvorbereitung, Aufträge des Führungsstabs per Funk, Ausdruck und E-Mail.",
+  "lage": "Nach 40 Stunden Dauerregen steigt die Lohne weiter. Der Pegel an der Lohnebrücke steht bei 4,82 m und steigt um etwa 4 cm je Stunde; die Wasserbehörde erwartet den Scheitel in der kommenden Nacht bei 5,25 m. Der Deich zwischen Deichkilometer 3,0 und 10,0 ist durchweicht, der Deichverband meldet erste Sickerstellen.\n\nIm Ortskern stehen Keller im Lerchenweg und im Fliederweg unter Wasser, die Kanalisation staut zurück. Der Mühlenkamp ist zwischen Ortskern und dem tief liegenden Ortsteil Wiesengrund überflutet. Wiesengrund und die Deichrampe Süd sind nur noch über den Moorkamp erreichbar; eine Umleitung über den Fennweg ist möglich, dauert aber doppelt so lange. Auf dem Bauhof am Holtkamp läuft eine Sandsackfüllstation.\n\nDer Landkreis hat seinen Führungsstab einberufen. Das THW ist mit Kräften aus mehreren Ortsverbänden im Einsatz und bildet eine gemeinsame Einsatzleitung, die im Führungs- und Kommunikationskraftwagen (FüKomKW) mit Fernmeldezentrale auf dem Bauhof arbeitet. Ihr unterstehen sechs Einsatzstellen: Deichverteidigung Nord, Deichverteidigung Süd, Sandsackfüllstation Bauhof, Pumpen Ortskern, Wiesengrund sowie Pegel und Ausleuchtung. Welcher Einsatzabschnitt welche Einsatzstelle führt, ergibt sich aus den Anmeldungen zu Übungsbeginn.\n\nFeuerwehr, Polizei, Rettungsdienst und der Betreuungsdienst der Hilfsorganisationen arbeiten in eigenen Bereichen unter dem Führungsstab. Es regnet weiter, die Dunkelheit setzt in einigen Stunden ein.",
+  "auftrag": "Sie führen als Einsatzleitung THW alle Einsatzstellen im Einsatzraum Lohne und unterstehen dem Führungsstab des Landkreises. Nehmen Sie die Anmeldungen der Einsatzabschnitte auf und legen Sie Kräfteübersicht und Lagekarte an. Geben Sie Aufträge des Stabs an den zuständigen Einsatzabschnitt weiter und überwachen Sie den Vollzug. Senden Sie alle 30 Minuten eine Lagemeldung an den Stab, die erste 30 Minuten nach Übungsbeginn. Bündeln Sie Anforderungen von Kräften und Material, entscheiden Sie bei knappen Mitteln über den Vorrang und melden Sie Ihre Entscheidung an den Stab. Unfälle von Einsatzkräften und Lageänderungen am Deich melden Sie sofort. Die Fernmeldezentrale führt das Einsatztagebuch über alle Ein- und Ausgänge.",
+  "dauerMinuten": 180,
+  "minAbschnitte": 2,
+  "uebergeordnet": {
+    "bezeichnung": "Führungsstab des Landkreises",
+    "hintergrund": "Der Führungsstab der Katastrophenschutzbehörde führt alle Organisationen im Hochwassereinsatz, ein Fachberater THW sitzt im Stab. Die Wasserbehörde liefert etwa stündlich eine Pegelprognose. Zu Beginn wird der Scheitel bei 5,25 m erwartet; liegt die bestätigte Prognose über 5,35 m, ordnet die Katastrophenschutzbehörde die Evakuierung von Wiesengrund an. Der niedrigste Punkt der Deichkrone liegt bei Deichkilometer 4,3 auf 5,65 m. Der Deichverband stellt einen einzigen Fachberater Deich und läuft den Abschnitt zwischen Deichkilometer 5,5 und 7,5 selbst. Die Feuerwehr pumpt in den übrigen Ortsteilen, die Polizei sperrt Straßen und führt eine Evakuierung, der Betreuungsdienst betreibt Verpflegung und Notunterkunft (Turnhalle der Grundschule am Rosenkamp). Reserven: 50 m³ Füllsand (Lieferzeit etwa 60 Minuten), 3.000 leere Sandsäcke, Diesel, Filtervlies beim Deichverband, kein Stromerzeuger vor Ablauf von 2 Stunden. Für die Nacht rückt eine THW-Ablösung aus dem Nachbarkreis an.",
+    "nachrichten": [
+      {
+        "zeit": 3,
+        "weg": "drucker",
+        "art": "auftrag",
+        "betreff": "Einsatzauftrag Nr. 1 – Übernahme der Einsatzleitung THW im Einsatzraum Lohne",
+        "text": "Sie übernehmen mit sofortiger Wirkung die Einsatzleitung über alle THW-Einsatzstellen im Einsatzraum Lohne: Deichverteidigung Nord (Deichkilometer 3,0 bis 5,5), Deichverteidigung Süd (Deichkilometer 7,5 bis 10,0), Sandsackfüllstation Bauhof, Pumpen Ortskern, Wiesengrund sowie Pegel und Ausleuchtung. Der Deichabschnitt zwischen Deichkilometer 5,5 und 7,5 bleibt beim Deichverband.\n\nMelden Sie die Übernahme. Senden Sie alle 30 Minuten eine Lagemeldung an den Stab, die erste in 30 Minuten. Legen Sie bis zur ersten Lagemeldung eine Kräfteübersicht mit Stärke, Fahrzeugen und Einsatzstelle je Einheit vor.\n\nAnforderungen von Kräften und Material richten Sie gebündelt an den Stab. Unfälle von Einsatzkräften und jede Lageänderung am Deich melden Sie sofort.",
+        "erwartung": "Übernahme an den Stab melden, Einsatzstellen in der Lagekarte anlegen, Kräfteübersicht beginnen, erste Lagemeldung nach 30 Minuten und danach den 30-Minuten-Takt einplanen."
+      },
+      {
+        "zeit": 11,
+        "weg": "email",
+        "art": "information",
+        "betreff": "WG: Unwetterwarnung des Wetterdienstes – ergiebiger Dauerregen",
+        "text": "Zur Kenntnis, weitergeleitet vom Sachgebiet Lage des Führungsstabs.\n\nDer Wetterdienst warnt für den Landkreis vor ergiebigem Dauerregen. In den nächsten 12 Stunden werden weitere 30 bis 40 l/m² erwartet, in Schauern örtlich mehr. Der Wind dreht auf West und frischt in der Nacht in Böen bis 50 km/h auf. Eine Wetterbesserung ist frühestens im Laufe des morgigen Vormittags zu erwarten.\n\nBerücksichtigen Sie die Warnung bei der Planung von Ablösung, Ausleuchtung und Arbeiten auf der Deichböschung. Eine Rückmeldung ist nicht erforderlich.",
+        "erwartung": "Zur Kenntnis nehmen, wesentliche Punkte (anhaltender Regen, Wind auf den Deich, lange Nacht) an alle Einsatzstellen weitergeben, Ablösung und Ausleuchtung früh einplanen."
+      },
+      {
+        "zeit": 25,
+        "weg": "drucker",
+        "art": "auftrag",
+        "betreff": "Einsatzauftrag Nr. 2 – Verdichtung der Deichkontrolle",
+        "text": "Die Wasserbehörde erwartet bis zum Scheitel einen weiteren Anstieg der Lohne und eine zunehmende Durchfeuchtung des Deichkörpers.\n\nVerdichten Sie die Deichkontrolle in den Einsatzstellen Deichverteidigung Nord und Deichverteidigung Süd: Kontrollgang auf der gesamten Strecke alle 15 Minuten, landseitige Böschung und Böschungsfuß besonders beachten.\n\nJede neue Sickerstelle ist sofort mit Deichkilometer, Art des austretenden Wassers (klar oder trüb) und getroffener Maßnahme an den Stab zu melden.\n\nMelden Sie den Vollzug für beide Einsatzstellen.",
+        "erwartung": "Auftrag an {{ea:deich-nord}} und {{ea:deich-sued}} weitergeben, Vollzug beider Einsatzstellen sammeln und an den Stab melden."
+      },
+      {
+        "zeit": 38,
+        "weg": "funk",
+        "art": "rueckfrage",
+        "text": "Frage: Wie hoch ist die Gesamtstärke THW im Einsatzraum ohne Einsatzleitung? Der Stab benötigt die Zahl für den Lagebericht.",
+        "erwartung": "Aus den Anmeldungen addieren und melden: 3/21/62//86 ohne Einsatzleitung, die 24 Spontanhelfer der Füllstation getrennt nennen. Falsche oder fehlende Summe vermerkt die Übungsleitung."
+      },
+      {
+        "zeit": 47,
+        "weg": "drucker",
+        "art": "information",
+        "betreff": "Pegelprognose der Wasserbehörde Nr. 2 – Pegel Lohnebrücke",
+        "text": "Die Wasserbehörde hat die Prognose für den Pegel Lohnebrücke angepasst. Der Anstieg hat sich beschleunigt; der Scheitel wird jetzt bei 5,40 m statt bisher 5,25 m erwartet, weiterhin in der kommenden Nacht.\n\nDer niedrigste Punkt der Deichkrone liegt bei Deichkilometer 4,3 auf 5,65 m. Der Freibord verringert sich dort im Scheitel auf 25 cm.\n\nDer Stab bereitet die Evakuierung des Ortsteils Wiesengrund vor. Die Entscheidung fällt, sobald die Wasserbehörde eine Prognose über 5,35 m bestätigt. Die nächste Prognose folgt in etwa einer Stunde.\n\nGeben Sie die Prognose an die betroffenen Einsatzstellen weiter.",
+        "erwartung": "Prognose an {{ea:deich-nord}}, {{ea:deich-sued}} und {{ea:wiesengrund}} weitergeben, Deichkilometer 4,3 als Schwerpunkt in der Lagekarte kennzeichnen und bei knappem Material berücksichtigen."
+      },
+      {
+        "zeit": 57,
+        "weg": "funk",
+        "art": "information",
+        "text": "Fachberater Deich des Deichverbands ist zur Einsatzstelle Deichverteidigung Nord unterwegs, Eintreffen in etwa 20 Minuten an der Deichrampe Nord. Danach steht er für Deich Süd zur Verfügung.",
+        "erwartung": "An {{ea:deich-nord}} weitergeben (beantwortet deren Rückfrage), {{ea:deich-sued}} ankündigen, dass der Fachberater anschließend kommt."
+      },
+      {
+        "zeit": 59,
+        "weg": "drucker",
+        "art": "auftrag",
+        "betreff": "Einsatzauftrag Nr. 3 – Sperrung Mühlenkamp und Umleitung Fennweg",
+        "text": "Der Mühlenkamp ist zwischen Ortskern und Wiesengrund überflutet. Die Straßenverkehrsbehörde hat die Vollsperrung angeordnet, die Polizei kann erst in etwa 2 Stunden eigene Kräfte stellen.\n\nSperren Sie den Mühlenkamp an beiden Enden des überfluteten Abschnitts mit Absperrschranken und Warnleuchten. Richten Sie die Umleitung über den Fennweg ein und beschildern Sie sie. Absperrmaterial liegt auf dem Bauhof am Holtkamp bereit.\n\nLiegengebliebene Fahrzeuge werden nur geborgen, wenn Personen gefährdet sind; melden Sie solche Fahrzeuge dem Stab.\n\nMelden Sie den Vollzug.",
+        "erwartung": "Auftrag an {{ea:wiesengrund}} weitergeben, Abholung des Absperrmaterials am Bauhof ermöglichen, Sperrung in die Lagekarte übernehmen, Vollzug an den Stab melden."
+      },
+      {
+        "zeit": 61,
+        "weg": "email",
+        "art": "information",
+        "betreff": "Entwurf Pressemitteilung Nr. 2 zur Kenntnis – Hochwasser an der Lohne",
+        "text": "Anbei der Entwurf der zweiten Pressemitteilung des Landkreises zur Kenntnis. Korrekturen zu den Angaben über das THW senden Sie bis zur nächsten Lagemeldung an das Sachgebiet Presse- und Medienarbeit.\n\nEntwurf: „Der Pegel der Lohne steigt weiter. Feuerwehr, THW, Polizei und Hilfsorganisationen sind mit mehreren hundert Einsatzkräften im Einsatz. Das THW ist mit 60 Einsatzkräften an 4 Einsatzstellen tätig, unter anderem bei der Deichverteidigung und beim Leerpumpen aller Keller im Ortskern. Anwohnerinnen und Anwohner werden gebeten, überflutete Straßen nicht zu befahren. Eine Evakuierung ist derzeit nicht geplant.“\n\nDer Entwurf wird nach Freigabe durch die Stabsleitung veröffentlicht.",
+        "erwartung": "Fehler erkennen und bis zur nächsten Lagemeldung korrigieren: 86 statt 60 THW-Kräfte, 6 statt 4 Einsatzstellen, Keller mit drückendem Grundwasser werden nicht leergepumpt, Evakuierung Wiesengrund wird vorbereitet."
+      },
+      {
+        "zeit": 76,
+        "weg": "funk",
+        "art": "rueckfrage",
+        "text": "Frage: Wie viele Sandsäcke sind bisher gefüllt, an den Deich geliefert und verbaut? Der Stab plant den Bedarf für die kommende Nacht.",
+        "erwartung": "Mit Zahlen der Füllstation und der Deich-Einsatzstellen beantworten (Vorrat, Leistung 1.200 je Stunde, Engpass Füllsand, gleichzeitige Anforderungen Nord und Süd) und den Nachbedarf nennen."
+      },
+      {
+        "zeit": 83,
+        "weg": "funk",
+        "art": "auftrag",
+        "text": "Einsatzauftrag Nr. 4: Die Feuerwehr gibt die Tiefgarage am RATHAUSPLATZ an das THW ab, Wasserstand 50 cm, keine Personen gefährdet. Auspumpen mit einer Schmutzwasserkreiselpumpe, Vollzug melden.",
+        "erwartung": "An {{ea:pumpen}} weitergeben und dabei freie Pumpenkapazität prüfen (eine Schmutzwasserkreiselpumpe am Seniorenheim gebunden), Übernahme an den Stab bestätigen."
+      },
+      {
+        "zeit": 94,
+        "weg": "drucker",
+        "art": "auftrag",
+        "betreff": "Einsatzauftrag Nr. 5 – Freihaltung der Evakuierungsroute Moorkamp",
+        "text": "Für eine mögliche Evakuierung des Ortsteils Wiesengrund ist der Moorkamp die einzige Zufahrt für Busse und Rettungsdienst. Er ist ab sofort als Evakuierungsroute freizuhalten.\n\nStellen Sie alle eigenen Transporte über den Moorkamp ein. Sandsacktransporte zur Deichrampe Süd fahren über die Umleitung Fennweg. Die Polizei ist über die geänderte Verkehrsführung informiert.\n\nIst die Versorgung der Deichverteidigung Süd dadurch gefährdet, melden Sie dies mit einem Lösungsvorschlag an den Stab.\n\nMelden Sie den Vollzug.",
+        "erwartung": "An {{ea:sandsack}} und {{ea:deich-sued}} weitergeben. Konflikt erkennen: Fahrzeit zum Deich Süd verdoppelt sich. Vorschlag an den Stab, z. B. Pendelverkehr mit beiden Lkw oder Vorratslager an der Deichrampe Süd."
+      },
+      {
+        "zeit": 104,
+        "weg": "email",
+        "art": "information",
+        "betreff": "Verpflegungsplan Einsatzkräfte – Abendverpflegung",
+        "text": "Der Betreuungsdienst übernimmt die Verpflegung aller Einsatzkräfte im Einsatzraum Lohne.\n\nWarme Abendverpflegung wird in etwa 90 Minuten an der Verpflegungsausgabe auf dem Bauhof am Holtkamp ausgegeben. Einsatzstellen, die nicht abrücken können, erhalten Warmhalteboxen, die sie selbst an der Verpflegungsausgabe abholen. Heiße Getränke stehen dort ab sofort bereit.\n\nMelden Sie bis zur nächsten Lagemeldung die Zahl der Portionen je Einsatzstelle einschließlich Spontanhelfer und die Einsatzstellen, die Warmhalteboxen benötigen.",
+        "erwartung": "Portionen aus der Kräfteübersicht ermitteln (86 THW, Einsatzleitung, Spontanhelfer), Bedarf an Warmhalteboxen bei den Deich-Einsatzstellen abfragen, gesammelt an den Stab melden und die Ausgabe an alle Einsatzstellen weitergeben."
+      },
+      {
+        "zeit": 114,
+        "weg": "drucker",
+        "art": "auftrag",
+        "betreff": "Einsatzauftrag Nr. 6 – Ausleuchtung der Deichverteidigung für die Nacht",
+        "text": "Die Arbeiten an der Deichverteidigung werden über Nacht fortgesetzt. Richten Sie vor Einbruch der Dunkelheit die Ausleuchtung an folgenden Stellen ein, in dieser Reihenfolge:\n\n1. Quellkaden der Deichverteidigung Nord bei Deichkilometer 4,2 und 4,6\n2. Auflast der Deichverteidigung Süd bei Deichkilometer 9,6 und Deichrampe Süd\n3. Verladepunkt an der Deichrampe Nord, soweit Mittel verfügbar\n\nKabelwege und Aufstellorte sind so zu wählen, dass Transporte auf dem Deichverteidigungsweg nicht behindert werden. Den Kraftstoffbedarf für die Nacht melden Sie gesondert.\n\nMelden Sie den Vollzug.",
+        "erwartung": "An {{ea:pegel-licht}} weitergeben, Reihenfolge beachten. Ist deren Stromerzeuger 50 kVA am Seniorenheim gebunden, Ersatz beim Stab anfordern oder Beleuchtungssätze der Bergungsgruppen einplanen; Kraftstoffbedarf gebündelt melden."
+      },
+      {
+        "zeit": 119,
+        "weg": "funk",
+        "art": "rueckfrage",
+        "text": "Frage: Anzahl der Verletzten, Zustand und Treffpunkt an der Deichrampe Süd? Rettungswagen ist alarmiert, Eintreffen in etwa 8 Minuten.",
+        "erwartung": "Beantworten: 1 Helfer, Verdacht auf Unterschenkelbruch, ansprechbar; Treffpunkt Deichrampe Süd über den Moorkamp, Einweiser durch {{ea:deich-sued}}. Hat die EL den Unfall nicht sofort gemeldet, vermerkt die Übungsleitung das."
+      },
+      {
+        "zeit": 137,
+        "weg": "drucker",
+        "art": "auftrag",
+        "betreff": "Einsatzauftrag Nr. 7 – Evakuierung des Ortsteils Wiesengrund",
+        "text": "Die Wasserbehörde hat die Scheitelprognose von 5,40 m bestätigt. Die Katastrophenschutzbehörde hat die Evakuierung des Ortsteils Wiesengrund angeordnet. Die Räumung beginnt sofort und soll vor Einbruch der Dunkelheit abgeschlossen sein.\n\nDie Polizei führt die Evakuierung und kontrolliert die Haushalte. Der Betreuungsdienst betreibt die Notunterkunft in der Turnhalle der Grundschule am Rosenkamp, Busse fahren ab der Sammelstelle auf dem Parkplatz der Sporthalle am Moorkamp. Der Rettungsdienst transportiert Personen, die nicht selbst gehen können.\n\nDas THW unterstützt: Sammelstelle besetzen und ausleuchten, den Moorkamp an der Einmündung und an der Sammelstelle mit je einem Posten sichern, die Polizei bei der Kontrolle der Haushalte technisch unterstützen (Zugang zu Gebäuden, Beleuchtung).\n\nMelden Sie den Vollzug und danach alle 30 Minuten den Stand der Räumung.",
+        "erwartung": "An {{ea:wiesengrund}} weitergeben, Freihaltung des Moorkamps bei {{ea:sandsack}} nachhalten, Ausleuchtung der Sammelstelle mit eigenen Mitteln der Einsatzstelle prüfen, Vollzug und Räumungsstand an den Stab melden."
+      },
+      {
+        "zeit": 152,
+        "weg": "funk",
+        "art": "rueckfrage",
+        "text": "Frage: Wie hoch ist der Ablösebedarf für die Nacht je Einsatzstelle? Die Ablösung aus dem Nachbarkreis wird nach Ihren Angaben eingeteilt.",
+        "erwartung": "Aus Kräfteübersicht und Meldungen je Einsatzstelle ableiten und gesammelt melden: beide Deich-Einsatzstellen vollständig, Füllstation, Pumpen, Wiesengrund, Pegel und Ausleuchtung; Ausfall an Deich Süd berücksichtigen."
+      },
+      {
+        "zeit": 157,
+        "weg": "email",
+        "art": "auftrag",
+        "betreff": "Anforderung Abschlussmeldung und Kräfteübersicht zur Übergabe an die Nachtablösung",
+        "text": "Zur Übergabe an die Nachtablösung benötigt der Stab von der Einsatzleitung THW:\n\n1. eine Abschlussmeldung je Einsatzstelle mit erledigten Aufträgen, offenen Aufträgen und verbautem Material,\n2. die aktuelle Kräfteübersicht mit Stärke, Fahrzeugen und Einsatzzeit je Einheit,\n3. alle Unfälle von Einsatzkräften und Schäden an Gerät seit Übernahme der Einsatzleitung.\n\nSenden Sie die Unterlagen innerhalb von 30 Minuten per E-Mail an das Sachgebiet Lage. Die Vorlage für die Kräfteübersicht ist beigefügt.",
+        "erwartung": "Abschlussstände der Einsatzstellen einholen, Abschlussmeldung und Kräfteübersicht fristgerecht an den Stab senden, Stärke Deich Süd nach dem Unfall (1/4/11//16) und den Unfall selbst aufführen."
+      },
+      {
+        "zeit": 171,
+        "weg": "funk",
+        "art": "information",
+        "text": "Die Ablösung THW aus dem Nachbarkreis trifft in etwa 60 Minuten im Bereitstellungsraum Bauhof ein, Stärke 2/12/64//78. Übergabe der Einsatzstellen vor Ort durch die bisherigen Führungskräfte.",
+        "erwartung": "An alle Einsatzstellen weitergeben, Übergabe planen (Reihenfolge nach Dringlichkeit, Deich zuerst), Einweisung der Ablösung im Bereitstellungsraum vorbereiten."
+      }
+    ]
+  },
+  "straenge": [
+    {
+      "key": "deich-nord",
+      "bezeichnung": "Einsatzstelle Deichverteidigung Nord",
+      "hintergrund": "Deichstrecke zwischen Deichkilometer 3,0 und 5,5, Zufahrt über die Deichrampe Nord am Ende des Holtkamps, 5 Minuten Fahrt vom Bauhof. Kräfte: Zugtrupp und 2 Bergungsgruppen, Stärke 1/5/16//22, GKW und MTW. Auftrag: Deichläufer stellen, Sickerstellen markieren und mit Quellkaden sichern. Material zu Beginn: 300 gefüllte Sandsäcke, Markierungsfähnchen, Warnleuchten. Die Einsatzstelle kennt weder die Pegelprognose noch den Vorrat der Füllstation; dass der niedrigste Punkt der Deichkrone in ihrem Abschnitt bei Deichkilometer 4,3 liegt, erfährt sie nur über die Einsatzleitung. Bis der Fachberater Deich eintrifft, baut sie die Quellkaden nach eigener Erfahrung.",
+      "nachrichten": [
+        {
+          "zeit": 1,
+          "weg": "funk",
+          "art": "betrieb",
+          "text": "Ich melde mich in Ihrem Sprechfunkverkehrskreis an. Einsatzstelle Deichverteidigung Nord zwischen Deichkilometer 3,0 und 5,5 übernommen, Stärke 1/5/16//22. Deichläufer sind auf der Strecke.",
+          "erwartung": "Anmeldung quittieren, Stärke 1/5/16//22 in die Kräfteübersicht, Einsatzstelle in die Lagekarte, vermerken, dass {{ea:deich-nord}} diese Einsatzstelle führt."
+        },
+        {
+          "zeit": 14,
+          "weg": "funk",
+          "art": "lagemeldung",
+          "text": "Erste Erkundung abgeschlossen: Deichkrone durchgehend begehbar, landseitige Böschung stark durchnässt. Bei Deichkilometer 4,2 Sickerstelle am Böschungsfuß, Wasser klar, markiert und unter Beobachtung.",
+          "erwartung": "In die Lagekarte eintragen und in die erste Lagemeldung an den Stab aufnehmen; Fachberatung Deich beim Stab ansprechen."
+        },
+        {
+          "zeit": 31,
+          "weg": "funk",
+          "art": "vollzug",
+          "text": "Vollzug Einsatzauftrag Nr. 2: Kontrollgang auf 15 Minuten verdichtet, 2 Trupps Deichläufer im Wechsel. Jede neue Sickerstelle melden wir sofort mit Deichkilometer.",
+          "erwartung": "Vollzug an den Stab melden. Hat die EL den Einsatzauftrag Nr. 2 nicht an {{ea:deich-nord}} weitergegeben, vermerkt die Übungsleitung das."
+        },
+        {
+          "zeit": 40,
+          "weg": "funk",
+          "art": "anforderung",
+          "text": "Wasser an der Sickerstelle 4,2 wird trüb und führt Sand mit. Beginnen mit dem Bau einer Quellkade. Benötigen 600 Sandsäcke und den Fachberater Deich des Deichverbands.",
+          "erwartung": "Sandsäcke bei {{ea:sandsack}} abrufen, Fachberater Deich beim Stab anfordern, Verschärfung sofort an den Stab melden."
+        },
+        {
+          "zeit": 55,
+          "weg": "funk",
+          "art": "rueckfrage",
+          "text": "Frage: Wann trifft der Fachberater Deich ein? Die Quellkade hat 3 Lagen erreicht, der Austritt ist weiter leicht trüb.",
+          "erwartung": "Beim Stab nachfragen; sobald der Stab das Eintreffen ankündigt, die Zeit an {{ea:deich-nord}} weitergeben."
+        },
+        {
+          "zeit": 70,
+          "weg": "funk",
+          "art": "anforderung",
+          "text": "Zweite Sickerstelle bei Deichkilometer 4,6, Wasser trüb. Benötigen sofort 800 Sandsäcke und eine weitere Bergungsgruppe, sonst kann die zweite Quellkade nicht gebaut werden.",
+          "erwartung": "Priorisieren: Deich Süd fordert gleichzeitig 1.000 Sandsäcke, die Füllstation hat 900. Trübe Sickerstellen nahe dem niedrigsten Kronenpunkt (4,3) sprechen für Vorrang Nord. Entscheidung an {{ea:sandsack}}, Verstärkung beim Stab anfordern."
+        },
+        {
+          "zeit": 97,
+          "weg": "funk",
+          "art": "lagemeldung",
+          "text": "Fachberater Deich ist vor Ort. Quellkaden bei Deichkilometer 4,2 und 4,6 fertig, das Wasser läuft klar über die Kadenkrone ab. Bisher 1.350 Sandsäcke verbaut.",
+          "erwartung": "Entspannung an der Einsatzstelle Nord in die Lagemeldung übernehmen, verbaute Menge für die Sandsackbilanz an den Stab nutzen."
+        },
+        {
+          "zeit": 128,
+          "weg": "funk",
+          "art": "lagemeldung",
+          "text": "Bei Deichkilometer 5,3 am Durchlass GRENZGRABEN tritt landseitig neben dem Rohr Wasser aus, klar, geringe Menge. Markiert, Kontrolle alle 15 Minuten, Fachberater ist informiert.",
+          "erwartung": "Neue Sickerstelle in die Lagekarte eintragen und sofort an den Stab melden, wie Einsatzauftrag Nr. 2 es verlangt (Deichkilometer, klar, Maßnahme)."
+        },
+        {
+          "zeit": 164,
+          "weg": "funk",
+          "art": "lagemeldung",
+          "text": "Abschlussstand Deich Nord: 3 Stellen gesichert, 1.600 Sandsäcke verbaut, keine Verletzten. Kräfte seit 10 Stunden im Einsatz, Ablösung für die Nacht erforderlich.",
+          "erwartung": "Abschlussstand in die Abschlussmeldung an den Stab übernehmen, Ablösebedarf Deich Nord in die Planung der Nachtablösung aufnehmen."
+        }
+      ]
+    },
+    {
+      "key": "deich-sued",
+      "bezeichnung": "Einsatzstelle Deichverteidigung Süd",
+      "hintergrund": "Deichstrecke zwischen Deichkilometer 7,5 und 10,0. Zufahrt über den Moorkamp durch den Ortsteil Wiesengrund zur Deichrampe Süd, 15 Minuten vom Bauhof; über den Fennweg 30 Minuten. Kräfte: Zugtrupp, 1 Bergungsgruppe und Fachgruppe Räumen mit Radlader, Stärke 1/4/12//17. Auftrag: Deichläufer stellen, die aufgeweichte Böschung bei Deichkilometer 9,6 mit einer Auflast aus Sandsäcken sichern. Material zu Beginn: 200 Sandsäcke, Folie; Filtervlies fehlt. Die Böschung ist rutschig, eine Sicherung mit Leinen wird erst nach dem Unfall eingeführt. Die Einsatzstelle weiß nicht, dass Deich Nord um dieselben Sandsäcke konkurriert.",
+      "nachrichten": [
+        {
+          "zeit": 2,
+          "weg": "funk",
+          "art": "betrieb",
+          "text": "Ich melde mich in Ihrem Sprechfunkverkehrskreis an. Einsatzstelle Deichverteidigung Süd zwischen Deichkilometer 7,5 und 10,0 übernommen, Stärke 1/4/12//17, Radlader an der Deichrampe Süd.",
+          "erwartung": "Anmeldung quittieren, Stärke 1/4/12//17 und Radlader in die Kräfteübersicht, {{ea:deich-sued}} als führenden Abschnitt der Einsatzstelle vermerken."
+        },
+        {
+          "zeit": 18,
+          "weg": "funk",
+          "art": "lagemeldung",
+          "text": "Erkundung: Bei Deichkilometer 9,6 ist die landseitige Böschung auf 15 m Länge aufgeweicht, erste Risse quer zur Böschung. Beginnen mit dem Aufbau einer Auflast aus Sandsäcken.",
+          "erwartung": "In die Lagekarte eintragen, als zweiten Schwerpunkt am Deich an den Stab melden."
+        },
+        {
+          "zeit": 29,
+          "weg": "funk",
+          "art": "anforderung",
+          "text": "Benötigen für die Auflast bei Deichkilometer 9,6 1.200 Sandsäcke und 40 m² Filtervlies. Anlieferung über den MOORKAMP bis zur Deichrampe Süd.",
+          "erwartung": "Sandsäcke bei {{ea:sandsack}} abrufen, Filtervlies beim Stab anfordern (Bestand des Deichverbands), Anforderung in die Übersicht offener Anforderungen übernehmen."
+        },
+        {
+          "zeit": 42,
+          "weg": "funk",
+          "art": "vollzug",
+          "text": "Vollzug Einsatzauftrag Nr. 2 für Deich Süd: Deichläufer gehen alle 15 Minuten, bisher keine weitere Sickerstelle. Auflast bei 9,6 zu einem Drittel eingebaut.",
+          "erwartung": "Vollzug an den Stab melden. Wurde Einsatzauftrag Nr. 2 nicht an {{ea:deich-sued}} weitergegeben, vermerkt die Übungsleitung das."
+        },
+        {
+          "zeit": 69,
+          "weg": "funk",
+          "art": "anforderung",
+          "text": "An der Auflast rutscht die Böschungsunterkante nach. Benötigen innerhalb von 30 Minuten weitere 1.000 Sandsäcke, der Vorrat an der Deichrampe Süd reicht noch für 20 Minuten.",
+          "erwartung": "Priorisieren gegen die gleichzeitige Anforderung von Deich Nord (800 Sandsäcke, trübe Sickerstelle). Entscheidung begründen, an {{ea:sandsack}} geben, Engpass und Entscheidung an den Stab melden, Füllsand nachfordern."
+        },
+        {
+          "zeit": 84,
+          "weg": "funk",
+          "art": "rueckfrage",
+          "text": "Frage: Wann kommt die nächste Sandsacklieferung an der Deichrampe Süd? Einbau ruht seit 10 Minuten, die Kräfte sichern die Böschung mit Folie.",
+          "erwartung": "Mit der Füllstation klären und eine verbindliche Zeit nennen; bei Vorrang für Deich Nord Begründung und nächsten Liefertermin übermitteln."
+        },
+        {
+          "zeit": 113,
+          "weg": "funk",
+          "art": "anforderung",
+          "text": "Helfer auf der nassen Böschung abgerutscht, Verdacht auf Unterschenkelbruch, ansprechbar, wird von 2 Kräften betreut. Arbeiten an der Böschung eingestellt. Benötigen Rettungsdienst an der Deichrampe Süd.",
+          "erwartung": "Sofort an den Stab melden und Rettungsdienst über den Stab anfordern, Zufahrt Moorkamp und Treffpunkt Deichrampe Süd angeben, Einweiser veranlassen, Unfall im Einsatztagebuch festhalten."
+        },
+        {
+          "zeit": 127,
+          "weg": "funk",
+          "art": "lagemeldung",
+          "text": "Verletzter Helfer an den Rettungsdienst übergeben, Transport ins Krankenhaus. Arbeiten an der Böschung nur mit Sicherung durch Leinen wieder aufgenommen. Stärke jetzt 1/4/11//16.",
+          "erwartung": "Stärke 1/4/11//16 in der Kräfteübersicht nachführen, Übergabe und Wiederaufnahme mit Sicherung an den Stab melden, Unfall für die Nachbereitung dokumentieren."
+        },
+        {
+          "zeit": 146,
+          "weg": "funk",
+          "art": "lagemeldung",
+          "text": "Auflast bei Deichkilometer 9,6 auf 25 m Länge fertig und mit Folie abgedeckt, 2.300 Sandsäcke verbaut. Böschung seit 30 Minuten ohne Bewegung, Kontrolle alle 15 Minuten.",
+          "erwartung": "Abschlussstand Deich Süd in die Lagemeldung und die Abschlussmeldung übernehmen, verbaute Menge in die Sandsackbilanz."
+        }
+      ]
+    },
+    {
+      "key": "sandsack",
+      "bezeichnung": "Einsatzstelle Sandsackfüllstation Bauhof",
+      "hintergrund": "Sandsackfüllstation auf dem Bauhof am Holtkamp, neben dem Standort der Einsatzleitung. Kräfte: Fachgruppe Logistik und 1 Bergungsgruppe, Stärke 0/4/13//17, dazu 24 Spontanhelfer, die die Gemeinde registriert hat. Ausstattung: 1 Sandsackfüllanlage, 6 Handfüllplätze, 2 Lkw mit Ladebordwand und Anhänger. Leistung etwa 1.200 Sandsäcke je Stunde. Zu Beginn 1.500 gefüllte Sandsäcke und 25 m³ Füllsand, das reicht für etwa 2.500 Säcke. Fahrzeit zum Deich Nord 5 Minuten, zum Deich Süd über den Moorkamp 15 Minuten, über den Fennweg 30 Minuten. Die Einsatzstelle entscheidet nicht selbst über den Vorrang der Lieferungen, sondern fragt die Einsatzleitung.",
+      "nachrichten": [
+        {
+          "zeit": 4,
+          "weg": "funk",
+          "art": "betrieb",
+          "text": "Ich melde mich in Ihrem Sprechfunkverkehrskreis an. Einsatzstelle Sandsackfüllstation auf dem Bauhof HOLTKAMP übernommen, Stärke 0/4/13//17 und 24 Spontanhelfer. Füllbetrieb läuft.",
+          "erwartung": "Anmeldung quittieren, Stärke 0/4/13//17 in die Kräfteübersicht, Spontanhelfer getrennt erfassen, {{ea:sandsack}} als führenden Abschnitt vermerken."
+        },
+        {
+          "zeit": 21,
+          "weg": "funk",
+          "art": "lagemeldung",
+          "text": "Leistung 1.200 Sandsäcke je Stunde. Vorrat 1.500 gefüllte Sandsäcke, Füllsand für weitere 2.500 Stück. 2 Lkw mit Anhänger für den Transport zum Deich einsatzbereit.",
+          "erwartung": "Vorrat und Leistung in der Lageübersicht führen als Grundlage für die Verteilung zwischen Deich Nord und Deich Süd, in die erste Lagemeldung an den Stab übernehmen."
+        },
+        {
+          "zeit": 36,
+          "weg": "funk",
+          "art": "anforderung",
+          "text": "Füllsand reicht bei voller Leistung noch etwa 2 Stunden. Benötigen 50 m³ Füllsand, Anlieferung über die Einfahrt Holtkamp, Kipperstellplatz ist frei.",
+          "erwartung": "Anforderung an den Stab weitergeben (Reserve des Landkreises, etwa 60 Minuten Lieferzeit) und mit anderen Anforderungen bündeln."
+        },
+        {
+          "zeit": 72,
+          "weg": "funk",
+          "art": "rueckfrage",
+          "text": "Frage: Welche Einsatzstelle wird zuerst beliefert? Vorrat 900 gefüllte Sandsäcke, 1 Lkw verfügbar. Deich Nord und Deich Süd fordern zusammen 1.800 Stück.",
+          "erwartung": "Entscheiden und begründen, z. B. Vorrang Deich Nord wegen trüber Sickerstellen nahe Deichkilometer 4,3, Rest an Deich Süd mit der nächsten Füllung. Entscheidung an beide Deich-Einsatzstellen und an den Stab."
+        },
+        {
+          "zeit": 88,
+          "weg": "funk",
+          "art": "lagemeldung",
+          "text": "Füllsand 25 m³ eingetroffen, die zweite Hälfte folgt. Zweiter Lkw wieder an der Füllstation. Vorrat 600 gefüllte Sandsäcke, Füllanlage läuft mit voller Leistung.",
+          "erwartung": "Sandsackbilanz fortschreiben, Deich Süd die nächste Lieferung ankündigen, Zahlen für die Rückfrage des Stabs nutzen."
+        },
+        {
+          "zeit": 100,
+          "weg": "funk",
+          "art": "rueckfrage",
+          "text": "Frage: Ist die Umleitung über den Fennweg für Lkw mit Anhänger freigegeben? Die Fahrt zur Deichrampe Süd dauert damit 30 statt 15 Minuten, die Lieferleistung für Deich Süd halbiert sich.",
+          "erwartung": "Freigabe beim Stab erfragen und weitergeben, Konflikt zwischen Einsatzauftrag Nr. 5 und der Versorgung Deich Süd an den Stab melden, Pendelverkehr mit beiden Lkw oder Vorratslager vorschlagen."
+        },
+        {
+          "zeit": 116,
+          "weg": "funk",
+          "art": "betrieb",
+          "text": "Ablösung der Funkstelle: Die Einsatzstelle funkt ab sofort vom MTW an der Einfahrt Holtkamp, der neue Sprechfunker ist eingewiesen.",
+          "erwartung": "Ablösung quittieren, im Einsatztagebuch vermerken, Erreichbarkeit der Einsatzstelle prüfen."
+        },
+        {
+          "zeit": 133,
+          "weg": "funk",
+          "art": "lagemeldung",
+          "text": "Seit Beginn 4.300 Sandsäcke gefüllt, 3.900 ausgeliefert. 10 Spontanhelfer sind gegangen, 8 neue registriert. Stärke THW 0/4/13//17, Kräfte arbeiten im Wechsel an der Füllanlage.",
+          "erwartung": "Bilanz und Stärke in die Lagemeldung übernehmen, Spontanhelfer in der Übersicht fortschreiben (jetzt 22), Füllsandbedarf für die Nacht abschätzen."
+        },
+        {
+          "zeit": 155,
+          "weg": "funk",
+          "art": "vollzug",
+          "text": "Vollzug Einsatzauftrag Nr. 5: Alle Transporte fahren über den Fennweg, der Moorkamp wird seitdem nicht mehr befahren. Füllsand reicht für den Betrieb bis in die Nacht.",
+          "erwartung": "Vollzug an den Stab melden. Hat die EL den Einsatzauftrag Nr. 5 nicht an {{ea:sandsack}} weitergegeben, vermerkt die Übungsleitung das."
+        }
+      ]
+    },
+    {
+      "key": "pumpen",
+      "bezeichnung": "Einsatzstelle Pumpen Ortskern",
+      "hintergrund": "Wasserschäden im Ortskern um Lerchenweg und Fliederweg. Kräfte: Fachgruppe Wasserschaden/Pumpen, Stärke 0/3/6//9, mit 2 Schmutzwasserkreiselpumpen 5.000 l/min, 6 Tauchpumpen und einem Stromerzeuger 13 kVA. Die Kanalisation staut zurück. Keller, in die Grundwasser drückt, werden nicht leergepumpt, weil sonst Bodenplatten und Wände Schaden nehmen; dort wird nur der Wasserstand gehalten. Im Seniorenheim am Fliederweg steht die Haustechnik im Keller, darunter die Notstromanlage. Die Einsatzstelle hat keinen weiteren Stromerzeuger und weiß nicht, was die Feuerwehr in anderen Ortsteilen macht.",
+      "nachrichten": [
+        {
+          "zeit": 6,
+          "weg": "funk",
+          "art": "betrieb",
+          "text": "Ich melde mich in Ihrem Sprechfunkverkehrskreis an. Einsatzstelle Pumpen Ortskern übernommen, Stärke 0/3/6//9. Verfügbar 2 Schmutzwasserkreiselpumpen und 6 Tauchpumpen.",
+          "erwartung": "Anmeldung quittieren, Stärke 0/3/6//9 und Pumpen in die Kräfteübersicht, {{ea:pumpen}} als führenden Abschnitt vermerken."
+        },
+        {
+          "zeit": 20,
+          "weg": "funk",
+          "art": "lagemeldung",
+          "text": "Erkundung Ortskern: 11 Keller im LERCHENWEG und in angrenzenden Straßen bis 60 cm unter Wasser. Grundwasser drückt nach, dort halten wir nur den Wasserstand und pumpen nicht leer.",
+          "erwartung": "In die Lagekarte übernehmen, Einschränkung (kein Leerpumpen wegen Grundwasser) in die Lagemeldung an den Stab aufnehmen."
+        },
+        {
+          "zeit": 46,
+          "weg": "funk",
+          "art": "rueckfrage",
+          "text": "Frage: Sollen Privatkeller weiter bedient werden? Der Mischwasserkanal staut zurück, das abgepumpte Wasser läuft in die Nachbarkeller wieder ein.",
+          "erwartung": "Entscheiden oder mit dem Stab klären: Privatkeller mit Rückstau vorerst einstellen, Pumpen für gefährdete Objekte freihalten. Entscheidung an {{ea:pumpen}} und an den Stab."
+        },
+        {
+          "zeit": 63,
+          "weg": "funk",
+          "art": "anforderung",
+          "text": "Seniorenheim FLIEDERWEG: Wasser im Technikraum 15 cm und steigend, Notstromanlage steht 40 cm über dem Boden. Setzen eine Schmutzwasserkreiselpumpe ein. Benötigen einen Stromerzeuger 50 kVA als Rückfallebene.",
+          "erwartung": "Hohe Priorität. Stromerzeuger beim Stab anfordern (Reserve erst in 2 Stunden) oder den Stromerzeuger 50 kVA von {{ea:pegel-licht}} umsetzen und die Ausleuchtung zurückstellen; Entscheidung an den Stab melden."
+        },
+        {
+          "zeit": 78,
+          "weg": "funk",
+          "art": "lagemeldung",
+          "text": "Schmutzwasserkreiselpumpe am Seniorenheim läuft, Wasserstand im Technikraum auf 5 cm gesunken. Privatkeller im Lerchenweg vorerst eingestellt, Tauchpumpen in Bereitschaft.",
+          "erwartung": "Entspannung am Seniorenheim an den Stab melden, freie Pumpenkapazität (eine Schmutzwasserkreiselpumpe, Tauchpumpen) für neue Aufträge vermerken."
+        },
+        {
+          "zeit": 102,
+          "weg": "funk",
+          "art": "betrieb",
+          "text": "Funkprobe nach Rufgruppenwechsel, Fahrzeugfunkgerät im MTW neu eingestellt. Frage: Wie werde ich verstanden?",
+          "erwartung": "Funkprobe mit Angabe der Verständlichkeit beantworten, Rufgruppenwechsel der Einsatzstelle im Einsatztagebuch und in der Kommunikationsübersicht vermerken."
+        },
+        {
+          "zeit": 110,
+          "weg": "funk",
+          "art": "vollzug",
+          "text": "Vollzug Einsatzauftrag Nr. 4: Tiefgarage am Rathaus übernommen, zweite Schmutzwasserkreiselpumpe läuft, Wasserstand 50 cm. Ablauf über 150 m Schlauchleitung in das Regenrückhaltebecken.",
+          "erwartung": "Vollzug an den Stab melden, Pumpeneinsatz in der Kräfteübersicht nachführen. Wurde Einsatzauftrag Nr. 4 nicht an {{ea:pumpen}} gegeben, vermerkt die Übungsleitung das."
+        },
+        {
+          "zeit": 138,
+          "weg": "funk",
+          "art": "lagemeldung",
+          "text": "Tiefgarage auf 10 cm abgesenkt, Nachlauf gering. Seniorenheim trocken, Pumpe bleibt dort gesetzt. Kraftstoff für beide Pumpen reicht noch 3 Stunden.",
+          "erwartung": "In die Lagemeldung übernehmen, Kraftstoffbedarf für die Nacht mit dem Bedarf der Einsatzstelle Pegel und Ausleuchtung bündeln."
+        },
+        {
+          "zeit": 160,
+          "weg": "funk",
+          "art": "lagemeldung",
+          "text": "Abschlussstand Pumpen Ortskern: Seniorenheim und Tiefgarage gesichert, in 11 Kellern wird der Wasserstand gehalten, Stärke 0/3/6//9. Die Fachgruppe kann bis in die Nacht weiterarbeiten.",
+          "erwartung": "Abschlussstand in die Abschlussmeldung übernehmen, offene Keller als Restaufgabe für die Nachtablösung festhalten."
+        }
+      ]
+    },
+    {
+      "key": "wiesengrund",
+      "bezeichnung": "Einsatzstelle Wiesengrund – Sperrungen und Evakuierungsvorbereitung",
+      "hintergrund": "Tief liegender Ortsteil Wiesengrund mit 46 Haushalten und 108 Einwohnern, davon 9 Personen, die nicht selbst gehen können. Zufahrten: Moorkamp (frei, zugleich einzige Route zur Deichrampe Süd) und Mühlenkamp (überflutet). Kräfte: Zugtrupp und 1 Bergungsgruppe, Stärke 1/3/9//13, GKW mit Beleuchtungssatz. Auftrag: Ordnungsamt und Polizei bei Sperrungen und bei der Vorbereitung einer Evakuierung technisch unterstützen, Sammelstelle auf dem Parkplatz der Sporthalle am Moorkamp vorbereiten. Kein Absperrmaterial an Bord. Die Einsatzstelle weiß nicht, ab welcher Pegelprognose der Stab die Evakuierung anordnet.",
+      "nachrichten": [
+        {
+          "zeit": 8,
+          "weg": "funk",
+          "art": "betrieb",
+          "text": "Ich melde mich in Ihrem Sprechfunkverkehrskreis an. Einsatzstelle Wiesengrund übernommen, Stärke 1/3/9//13, Standort Parkplatz der Sporthalle am Moorkamp.",
+          "erwartung": "Anmeldung quittieren, Stärke 1/3/9//13 in die Kräfteübersicht, Standort in die Lagekarte, {{ea:wiesengrund}} als führenden Abschnitt vermerken."
+        },
+        {
+          "zeit": 23,
+          "weg": "funk",
+          "art": "lagemeldung",
+          "text": "Erkundung WIESENGRUND: Der Mühlenkamp steht auf 80 m Länge 25 cm unter Wasser, Fahrzeuge fahren trotzdem durch. Einzige freie Zufahrt ist der Moorkamp.",
+          "erwartung": "In die Lagekarte eintragen (Mühlenkamp überflutet, Moorkamp einzige Zufahrt), Gefahr durch Durchfahrten an den Stab melden."
+        },
+        {
+          "zeit": 50,
+          "weg": "funk",
+          "art": "rueckfrage",
+          "text": "Frage: Sollen wir den Mühlenkamp sperren? Absperrmaterial ist nicht an Bord. Ein Pkw ist im Wasser liegen geblieben, der Fahrer ist ausgestiegen und unverletzt.",
+          "erwartung": "Mit dem Stab klären (Sperrung ordnet die Straßenverkehrsbehörde an), Absperrmaterial vom Bauhof in Aussicht stellen; der Stab erteilt kurz darauf Einsatzauftrag Nr. 3."
+        },
+        {
+          "zeit": 66,
+          "weg": "funk",
+          "art": "vollzug",
+          "text": "Vollzug Einsatzauftrag Nr. 3: Mühlenkamp an beiden Enden gesperrt, Umleitung über den FENNWEG ausgeschildert. Der liegengebliebene Pkw steht außerhalb der Fahrspur.",
+          "erwartung": "Vollzug an den Stab melden, Sperrung in die Lagekarte. Wurde Einsatzauftrag Nr. 3 nicht an {{ea:wiesengrund}} weitergegeben, vermerkt die Übungsleitung das."
+        },
+        {
+          "zeit": 80,
+          "weg": "funk",
+          "art": "rueckfrage",
+          "text": "Frage: Bleibt der Moorkamp für eine Evakuierung frei? Sandsacktransporte fahren dort alle 10 Minuten, Begegnungsverkehr mit Bussen ist auf der Straße nicht möglich.",
+          "erwartung": "Konflikt zwischen Versorgung Deich Süd und Evakuierungsroute erkennen und an den Stab melden; bis zur Entscheidung einen Zwischenbescheid an {{ea:wiesengrund}} geben."
+        },
+        {
+          "zeit": 106,
+          "weg": "funk",
+          "art": "lagemeldung",
+          "text": "Sammelstelle auf dem Parkplatz der Sporthalle vorbereitet: Zelt, Beleuchtung und Beschilderung stehen. Nach Liste des Ordnungsamts 108 Personen, davon 9 mit Transportbedarf liegend oder im Rollstuhl.",
+          "erwartung": "Zahlen an den Stab melden (Transport der 9 Personen ist Sache des Rettungsdienstes), Sammelstelle in die Lagekarte übernehmen."
+        },
+        {
+          "zeit": 126,
+          "weg": "funk",
+          "art": "lagemeldung",
+          "text": "Wasser am Mühlenkamp steigt auf 40 cm, erste Gärten am Südrand des Ortsteils laufen voll. Anwohner fragen nach der Evakuierung, 6 Haushalte verlassen den Ortsteil bereits selbst.",
+          "erwartung": "Verschärfung sofort an den Stab melden, Frage der Anwohner nach einer Entscheidung zur Evakuierung weitergeben."
+        },
+        {
+          "zeit": 149,
+          "weg": "funk",
+          "art": "vollzug",
+          "text": "Vollzug Einsatzauftrag Nr. 7: Sammelstelle besetzt und ausgeleuchtet, Moorkamp mit 2 Posten gesichert, erster Bus mit 35 Personen abgefahren. Kontrolle der Haushalte läuft mit der Polizei.",
+          "erwartung": "Vollzug an den Stab melden, Fortschritt der Räumung in der Lagekarte führen. Ohne Weitergabe von Einsatzauftrag Nr. 7 an {{ea:wiesengrund}} vermerkt die Übungsleitung das Versäumnis."
+        },
+        {
+          "zeit": 168,
+          "weg": "funk",
+          "art": "lagemeldung",
+          "text": "Stand der Räumung: 94 Personen haben den Ortsteil verlassen, 9 Personen mit dem Rettungsdienst transportiert. 5 Personen weigern sich zu gehen, Polizei ist informiert. Stärke 1/3/9//13.",
+          "erwartung": "Räumungsstand an den Stab melden, die 5 verbliebenen Personen als offenen Punkt führen, Besetzung der Posten für die Nacht einplanen."
+        }
+      ]
+    },
+    {
+      "key": "pegel-licht",
+      "bezeichnung": "Einsatzstelle Pegel und Ausleuchtung",
+      "hintergrund": "Pegelposten an der Lohnebrücke und Vorbereitung der Ausleuchtung für die Nacht. Kräfte: Fachgruppe Notversorgung und Notinstandsetzung, Stärke 0/2/6//8, mit einem Stromerzeuger 50 kVA, 2 Lichtmastanhängern und Kabelmaterial. Der Pegel wird alle 30 Minuten abgelesen, bei auffälligem Anstieg früher. Die Einsatzstelle kennt die Prognose der Wasserbehörde nicht. Der Stromerzeuger 50 kVA ist ihr einziges großes Aggregat; wird er abgegeben, kann nur ein Lichtmast über den kleinen Stromerzeuger des Anhängers betrieben werden. Kraftstoff an Bord für etwa 4 Stunden Volllast.",
+      "nachrichten": [
+        {
+          "zeit": 10,
+          "weg": "funk",
+          "art": "betrieb",
+          "text": "Ich melde mich in Ihrem Sprechfunkverkehrskreis an. Einsatzstelle Pegel und Ausleuchtung übernommen, Pegelposten an der Lohnebrücke besetzt. Stärke 0/2/6//8, Stromerzeuger 50 kVA und 2 Lichtmasten.",
+          "erwartung": "Anmeldung quittieren, Stärke 0/2/6//8 und Stromerzeuger in die Kräfteübersicht, {{ea:pegel-licht}} als führenden Abschnitt vermerken."
+        },
+        {
+          "zeit": 26,
+          "weg": "funk",
+          "art": "lagemeldung",
+          "text": "Pegel Lohnebrücke 4,84 m, Anstieg 4 cm je Stunde. Treibgut nimmt zu, bisher kein Stau an den Brückenpfeilern.",
+          "erwartung": "Pegelstand in die Lageübersicht und in die erste Lagemeldung an den Stab übernehmen."
+        },
+        {
+          "zeit": 52,
+          "weg": "funk",
+          "art": "lagemeldung",
+          "text": "Pegel Lohnebrücke 4,88 m, der Anstieg hat sich auf etwa 9 cm je Stunde verdoppelt. Nächste Ablesung in 30 Minuten, bei weiterem Anstieg früher.",
+          "erwartung": "Beschleunigten Anstieg an den Stab melden und mit der neuen Prognose der Wasserbehörde abgleichen, Deich-Einsatzstellen informieren."
+        },
+        {
+          "zeit": 74,
+          "weg": "funk",
+          "art": "lagemeldung",
+          "text": "Ein Baumstamm hat sich am mittleren Pfeiler der Lohnebrücke verkeilt, das Wasser staut sich etwa 10 cm auf. Brücke weiter befahrbar, Beseitigung nur mit Kran möglich.",
+          "erwartung": "Sofort an den Stab melden (Kran und Prüfung der Brücke veranlasst der Stab), Beobachtung der Brücke durch den Pegelposten anordnen."
+        },
+        {
+          "zeit": 89,
+          "weg": "funk",
+          "art": "rueckfrage",
+          "text": "Frage: Bleibt der Stromerzeuger 50 kVA für die Ausleuchtung bei uns? Der Aufbau der Lichtmasten muss vor Einbruch der Dunkelheit beginnen.",
+          "erwartung": "Nach eigener Entscheidung zur Anforderung des Seniorenheims beantworten. Wurde der Stromerzeuger abgegeben, Ersatz beim Stab anfordern und festlegen, welche Stelle zuerst ausgeleuchtet wird."
+        },
+        {
+          "zeit": 108,
+          "weg": "funk",
+          "art": "lagemeldung",
+          "text": "Pegel Lohnebrücke 4,97 m, Anstieg weiter 9 cm je Stunde. Baumstamm am Pfeiler unverändert, Aufstau jetzt 15 cm.",
+          "erwartung": "Pegel an den Stab melden, Verlauf mit der Prognose von 5,40 m abgleichen und an die Deich-Einsatzstellen und {{ea:wiesengrund}} weitergeben."
+        },
+        {
+          "zeit": 130,
+          "weg": "funk",
+          "art": "lagemeldung",
+          "text": "Erster Lichtmast an der Quellkade bei Deichkilometer 4,2 in Betrieb, der zweite wird an der Deichrampe Süd aufgebaut. Kabelwege über den Deichweg sind gegen Überfahren gesichert.",
+          "erwartung": "Fortschritt zu Einsatzauftrag Nr. 6 in der Lagekarte führen und an den Stab melden."
+        },
+        {
+          "zeit": 143,
+          "weg": "funk",
+          "art": "anforderung",
+          "text": "Für den Nachtbetrieb der Lichtmasten benötigen wir 120 l Dieselkraftstoff vor Einbruch der Dunkelheit, Anlieferung an die Deichrampe Süd.",
+          "erwartung": "Mit dem Kraftstoffbedarf der Einsatzstelle Pumpen Ortskern bündeln und gesammelt beim Stab anfordern, Anlieferung über den Fennweg angeben."
+        },
+        {
+          "zeit": 162,
+          "weg": "funk",
+          "art": "vollzug",
+          "text": "Vollzug Einsatzauftrag Nr. 6: Beide Lichtmasten in Betrieb, Quellkaden Nord und Deichrampe Süd ausgeleuchtet. Pegel Lohnebrücke 5,05 m, Anstieg 7 cm je Stunde.",
+          "erwartung": "Vollzug und Pegel an den Stab melden. Ohne Weitergabe von Einsatzauftrag Nr. 6 an {{ea:pegel-licht}} vermerkt die Übungsleitung das."
+        }
+      ]
+    }
+  ]
+}
