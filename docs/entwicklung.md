@@ -56,6 +56,9 @@ bleibt deshalb so lange wirkungslos, bis sie zusätzlich an Firebase geschickt w
 fällt erst auf, wenn Firestore Schreibzugriffe ablehnt („Übung konnte nicht gespeichert werden“).
 Genau so lief es am 2026-09-01 nach dem Szenario-Modus: Das neue Feld `szenarioSlug` stand in
 `erlaubteFelder()` im Repository, aber nicht in den Regeln, die Firestore tatsächlich auswertete.
+Dasselbe gilt für das Feld `fuehrungsstelle` der Führungsstellen-Übung (2026-09-30): Ohne
+Deploy lehnt Firestore jede Führungsstellen-Übung beim Speichern ab, während klassische
+Übungen weiter funktionieren.
 
 Automatisch: `.github/workflows/firestore-rules.yml` läuft bei jedem Push auf `main`, der
 `firestore.rules` anfasst, und deployt die Regeln. Zusätzlich weist `ci.yml` schon im Pull Request
