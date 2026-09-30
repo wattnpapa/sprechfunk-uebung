@@ -5,6 +5,8 @@
  */
 export type NachrichtArt = "spruch" | "durchsage";
 
+import type { Meldeart, UebermittlungsWeg } from "./FuehrungsstellenUebung";
+
 export interface Nachricht {
     id: number;
     empfaenger: string[];
@@ -24,4 +26,13 @@ export interface Nachricht {
      * damit die Dramaturgie des Szenarios erhalten bleibt.
      */
     szenarioNr?: number;
+    /**
+     * Nur in Führungsstellen-Übungen gesetzt: Übermittlungsweg, Meldeart,
+     * Betreff (Ausdruck und E-Mail) und die Reaktion, die von der beübten
+     * Stelle erwartet wird. Ältere Übungen haben die Felder nicht.
+     */
+    weg?: UebermittlungsWeg;
+    meldeart?: Meldeart;
+    betreff?: string;
+    erwartung?: string;
 }

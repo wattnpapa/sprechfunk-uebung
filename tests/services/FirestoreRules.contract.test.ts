@@ -45,6 +45,13 @@ function baueVollstaendigeUebung(): FunkUebung {
     u.xZeitIntervallMinuten = 3;
     u.xZeitStartOffsetMinuten = 0;
     u.szenarioSlug = "unwetter-sturm";
+    u.fuehrungsstelle = {
+        slug: "hochwasser-fuehrungsstelle",
+        beuebteStelle: "Heros Jever 21/10",
+        uebergeordnet: "Kater Jever",
+        unterstellt: ["Heros Leer 21/10"],
+        beginn: "09:00"
+    };
     u.seed = "vergleichslauf-2026";
     return u;
 }

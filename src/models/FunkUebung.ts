@@ -1,6 +1,7 @@
 import { NAMENS_POOL } from "../data/namen-funkuebungen";
 import type { Uebung } from "../types/Uebung";
 import type { Nachricht } from "../types/Nachricht";
+import type { FuehrungsstellenKonfiguration } from "../types/FuehrungsstellenUebung";
 // Tiefer Import: "crypto-js" als Ganzes zieht die komplette Cipher-Suite
 // (AES, Blowfish, TripleDES, cipher-core) ins Bundle, gebraucht wird nur MD5.
 import MD5 from "crypto-js/md5";
@@ -38,6 +39,7 @@ export class FunkUebung implements Uebung {
     xZeitIntervallMinuten?: number;
     xZeitStartOffsetMinuten?: number;
     szenarioSlug?: string | undefined;
+    fuehrungsstelle?: FuehrungsstellenKonfiguration | undefined;
 
     constructor(buildVersion: string) {
         this.id = this.generateId();
@@ -111,7 +113,8 @@ export class FunkUebung implements Uebung {
             nachrichten: this.nachrichten,
             // undefined fällt bei JSON.stringify weg — Checksummen alter
             // Übungen ohne Szenario bleiben dadurch unverändert.
-            szenarioSlug: this.szenarioSlug
+            szenarioSlug: this.szenarioSlug,
+            fuehrungsstelle: this.fuehrungsstelle
         });
 
         this.checksumme = MD5(data).toString();
@@ -148,7 +151,8 @@ export class FunkUebung implements Uebung {
             spielModus: this.spielModus,
             xZeitIntervallMinuten: this.xZeitIntervallMinuten,
             xZeitStartOffsetMinuten: this.xZeitStartOffsetMinuten,
-            szenarioSlug: this.szenarioSlug
+            szenarioSlug: this.szenarioSlug,
+            fuehrungsstelle: this.fuehrungsstelle
         }, null, 2); // Pretty Print
     }
 }

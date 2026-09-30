@@ -9,6 +9,9 @@ import { Meldevordruck } from "../pdf/Meldevordruck.js";
 import { Nachrichtenvordruck } from "../pdf/Nachrichtenvordruck.js";
 import { Teilnehmer } from "../pdf/Teilnehmer.js";
 import { Uebungsleitung } from "../pdf/Uebungsleitung.js";
+import { Drehbuch } from "../pdf/Drehbuch.js";
+import { ladeFuehrungsstellenUebung } from "./FuehrungsstellenUebungService";
+import type { FuehrungsstellenUebung } from "../types/FuehrungsstellenUebung";
 import { uiFeedback } from "../core/UiFeedback";
 import { UebungsleitungStorage } from "../types/Storage";
 import { generateTeilnehmerDebriefPdfBlob } from "./pdfDebriefService";
@@ -358,6 +361,37 @@ class PDFGenerator {
     }
 
     /**
+     * Drehbuch einer Führungsstellen-Übung. Das Drehbuch-JSON wird bei Bedarf
+     * nachgeladen; für Übungen ohne Rollenbesetzung gibt es kein Drehbuch.
+     */
+    async generateDrehbuchPDFBlob(funkUebung: FunkUebung, drehbuch?: FuehrungsstellenUebung): Promise<Blob | null> {
+        const slug = funkUebung.fuehrungsstelle?.slug;
+        if (!slug) {
+            return null;
+        }
+        const geladen = drehbuch ?? await ladeFuehrungsstellenUebung(slug);
+        const pdf = new jsPDF({ orientation: "landscape", unit: "mm", format: "a4" });
+        const dokument = new Drehbuch(funkUebung, geladen, pdf);
+        dokument.draw();
+        return dokument.blob();
+    }
+
+    async generateDrehbuchPDF(funkUebung: FunkUebung, drehbuch?: FuehrungsstellenUebung): Promise<void> {
+        const blob = await this.generateDrehbuchPDFBlob(funkUebung, drehbuch);
+        if (!blob) {
+            uiFeedback.error("Diese Übung hat kein Drehbuch.");
+            return;
+        }
+        const link = document.createElement("a");
+        link.href = URL.createObjectURL(blob);
+        link.download = "Drehbuch_Fuehrungsstellen-Uebung.pdf";
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        URL.revokeObjectURL(link.href);
+    }
+
+    /**
      * Erstellt ein A5-PDF mit allen Nachrichtenvordrucken (plain, ohne Hintergrund & Fußzeile),
      * jeweils mit Deckblatt als Trennblatt.
      */
@@ -423,6 +457,7 @@ class PDFGenerator {
         const { createZipDownloadName, generateAllPDFsAsZipBlob } = await import("./pdfZipService");
         const zipBlob = await generateAllPDFsAsZipBlob(funkUebung, {
             sanitizeFileName: this.sanitizeFileName,
+            generateDrehbuchPDFBlob: this.generateDrehbuchPDFBlob.bind(this),
             generateTeilnehmerPDFsBlob: this.generateTeilnehmerPDFsBlob.bind(this),
             generateAllTeilnehmerUebersichtPrintBlob: this.generateAllTeilnehmerUebersichtPrintBlob.bind(this),
             generateInstructorPDFBlob: this.generateInstructorPDFBlob.bind(this),

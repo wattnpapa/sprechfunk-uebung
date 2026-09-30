@@ -292,6 +292,41 @@ test("@generator generates exercise from szenario source", async ({ page }) => {
     await expect(page.locator("#links-teilnehmer-container .generator-link-row[data-link-type='teilnehmer']")).toHaveCount(7);
 });
 
+test("@generator generates a fuehrungsstellen-uebung with roles instead of participants", async ({ page }) => {
+    await page.goto("/");
+
+    await page.locator("#optionFuehrungsstelle").check();
+    await expect(page.locator("#fuehrungsstelleContainer")).toBeVisible();
+    // Rollen statt Teilnehmerliste; Verteilung, Lösungswörter und Spielmodus kommen aus dem Drehbuch.
+    await expect(page.locator("#teilnehmerVerwaltungCard")).toBeHidden();
+    await expect(page.locator("#verteilungSection")).toBeHidden();
+    await expect(page.locator("#spielModusSection")).toBeHidden();
+
+    await page.selectOption("#fuehrungsstelleAuswahl", "hochwasser-fuehrungsstelle");
+    await expect(page.locator("#fuehrungsstelleInfo")).toContainText("Einsatzabschnitte");
+    await expect(page.locator("#fuehrungsstelleAbschnitte .fuehrungsstelle-abschnitt")).toHaveCount(3);
+
+    await page.locator("#fuehrungsstelleBeuebteStelle").fill("Heros E2E 10");
+    await page.locator("#fuehrungsstelleUebergeordnet").fill("Kater E2E");
+    await page.getByTestId("generator-fuehrungsstelle-abschnitt-hinzufuegen").click();
+    await expect(page.locator("#fuehrungsstelleAbschnitte .fuehrungsstelle-abschnitt")).toHaveCount(4);
+    await page.locator("#fuehrungsstelleBeginn").fill("09:00");
+
+    await page.locator("#startUebungBtn").click();
+
+    await expect(page.locator("#uebung-links")).toBeVisible();
+    // Vier Abschnitte plus übergeordnete Stelle; die beübte Stelle bekommt keinen Zugang.
+    await expect(page.locator("#links-teilnehmer-container .generator-link-row[data-link-type='teilnehmer']")).toHaveCount(5);
+    await expect(page.locator("#links-teilnehmer-container")).not.toContainText("Heros E2E 10");
+    await expect(page.locator("#links-teilnehmer-container")).toContainText("Kater E2E");
+    await expect(page.locator("#fuehrungsstelleDownloads")).toBeVisible();
+
+    const downloadPromise = page.waitForEvent("download");
+    await page.getByTestId("generator-drehbuch-pdf").click();
+    const download = await downloadPromise;
+    expect(download.suggestedFilename()).toBe("Drehbuch_Fuehrungsstellen-Uebung.pdf");
+});
+
 test("@generator blocks generation when participant names are duplicates", async ({ page }) => {
     await page.goto("/");
 

@@ -7,14 +7,22 @@ import { GENERATOR_VIEW_MARKUP } from "./viewMarkup";
 import { GeneratorLinksRenderer } from "./GeneratorLinksRenderer";
 import { GeneratorTeilnehmerTableRenderer } from "./GeneratorTeilnehmerTableRenderer";
 import { GeneratorResultRenderer } from "./GeneratorResultRenderer";
+import {
+    GeneratorFuehrungsstellenForm,
+    type AbschnittsGrenzen,
+    type FuehrungsstellenRollenFormular
+} from "./GeneratorFuehrungsstellenForm";
 
-export type FunkspruchQuelle = "vorlagen" | "upload" | "szenario";
+export type { AbschnittsGrenzen, FuehrungsstellenRollenFormular };
+
+export type FunkspruchQuelle = "vorlagen" | "upload" | "szenario" | "fuehrungsstelle";
 
 export class GeneratorView {
     private bindingController = new AbortController();
     private linksRenderer = new GeneratorLinksRenderer();
     private teilnehmerRenderer = new GeneratorTeilnehmerTableRenderer();
     private resultRenderer = new GeneratorResultRenderer();
+    private fuehrungsstellenForm = new GeneratorFuehrungsstellenForm();
     private templatePicker: MultiSelect | null = null;
     
     // Cache für DOM-Elemente könnte hier angelegt werden, 
@@ -331,6 +339,7 @@ export class GeneratorView {
         bind("optionVorlagen", "vorlagen");
         bind("optionUpload", "upload");
         bind("optionSzenario", "szenario");
+        bind("optionFuehrungsstelle", "fuehrungsstelle");
     }
 
     public bindLoesungswortOptionChange(onChange: () => void) {
@@ -394,6 +403,7 @@ export class GeneratorView {
         onCopyJson: () => void;
         onZipAllPdfs: () => void;
         onDownloadUebersichtPdf: () => void;
+        onDrehbuchPdf: () => void;
     }) {
         document.getElementById("addTeilnehmerBtn")?.addEventListener("click", handlers.onAddTeilnehmer, { signal: this.bindingController.signal });
         document.getElementById("startUebungBtn")?.addEventListener("click", handlers.onStartUebung, { signal: this.bindingController.signal });
@@ -403,6 +413,7 @@ export class GeneratorView {
         document.getElementById("copyJsonBtnFooter")?.addEventListener("click", handlers.onCopyJson, { signal: this.bindingController.signal });
         document.getElementById("zipAllPdfsBtn")?.addEventListener("click", handlers.onZipAllPdfs, { signal: this.bindingController.signal });
         document.getElementById("uebersichtAllPdfBtn")?.addEventListener("click", handlers.onDownloadUebersichtPdf, { signal: this.bindingController.signal });
+        document.getElementById("drehbuchPdfBtn")?.addEventListener("click", handlers.onDrehbuchPdf, { signal: this.bindingController.signal });
     }
 
     public bindQuickJoin(onSubmit: (uebungCode: string, teilnehmerCode: string) => void): void {
@@ -478,6 +489,9 @@ export class GeneratorView {
     }
 
     public getSelectedSource(): FunkspruchQuelle {
+        if ((document.getElementById("optionFuehrungsstelle") as HTMLInputElement | null)?.checked) {
+            return "fuehrungsstelle";
+        }
         if ((document.getElementById("optionSzenario") as HTMLInputElement | null)?.checked) {
             return "szenario";
         }
@@ -492,9 +506,13 @@ export class GeneratorView {
     }
 
     public setSelectedSource(source: FunkspruchQuelle) {
-        const radioId = source === "szenario"
-            ? "optionSzenario"
-            : source === "upload" ? "optionUpload" : "optionVorlagen";
+        const radioIds: Record<FunkspruchQuelle, string> = {
+            vorlagen: "optionVorlagen",
+            upload: "optionUpload",
+            szenario: "optionSzenario",
+            fuehrungsstelle: "optionFuehrungsstelle"
+        };
+        const radioId = radioIds[source];
         const radio = document.getElementById(radioId) as HTMLInputElement | null;
         if (radio) {
             radio.checked = true;
@@ -505,25 +523,42 @@ export class GeneratorView {
     public toggleSourceView(source: FunkspruchQuelle) {
         const selectBoxContainer = document.getElementById("funkspruchVorlage")?.parentElement;
         const fileUploadContainer = document.getElementById("fileUploadContainer");
-        const szenarioContainer = document.getElementById("szenarioContainer");
-
         if (!selectBoxContainer || !fileUploadContainer) {
             return;
         }
 
         selectBoxContainer.style.display = source === "vorlagen" ? "block" : "none";
         fileUploadContainer.style.display = source === "upload" ? "block" : "none";
-        if (szenarioContainer) {
-            szenarioContainer.style.display = source === "szenario" ? "block" : "none";
-        }
+        this.setBlockSichtbar("szenarioContainer", source === "szenario");
+        this.setBlockSichtbar("fuehrungsstelleContainer", source === "fuehrungsstelle");
 
         // Im Szenario-Modus bestimmen Drehbuch statt Regler die Verteilung;
         // Lösungswörter und Auto-Stärken würden kuratierte Texte umschreiben.
-        const nichtImSzenario = ["verteilungSection", "loesungswortSection", "autoStaerkeContainer"];
-        nichtImSzenario.forEach(id => {
+        const mitDrehbuch = source === "szenario" || source === "fuehrungsstelle";
+        this.setSichtbar(["verteilungSection", "loesungswortSection", "autoStaerkeContainer"], !mitDrehbuch);
+        // Die Führungsstellen-Übung bringt Rollen, Zeiten und Anmeldungen aus
+        // dem Drehbuch mit; Teilnehmerverwaltung und Spielmodus entfallen.
+        this.setSichtbar([
+            "spielModusSection", "anmeldungContainer", "nachrichtenArtContainer",
+            "nachrichtenArtOptionsContainer", "teilnehmerVerwaltungCard"
+        ], source !== "fuehrungsstelle");
+        if (source !== "fuehrungsstelle") {
+            this.updateNachrichtenArtOptionsVisibility();
+        }
+    }
+
+    private setBlockSichtbar(id: string, sichtbar: boolean): void {
+        const el = document.getElementById(id);
+        if (el) {
+            el.style.display = sichtbar ? "block" : "none";
+        }
+    }
+
+    private setSichtbar(ids: string[], sichtbar: boolean): void {
+        ids.forEach(id => {
             const el = document.getElementById(id);
             if (el) {
-                el.style.display = source === "szenario" ? "none" : "";
+                el.style.display = sichtbar ? "" : "none";
             }
         });
     }
@@ -555,7 +590,11 @@ export class GeneratorView {
     }
 
     public renderSzenarioInfo(zeilen: string[]) {
-        const info = document.getElementById("szenarioInfo");
+        this.renderInfoZeilen("szenarioInfo", zeilen);
+    }
+
+    private renderInfoZeilen(containerId: string, zeilen: string[]): void {
+        const info = document.getElementById(containerId);
         if (!info) {
             return;
         }
@@ -565,6 +604,44 @@ export class GeneratorView {
             div.textContent = zeile;
             info.appendChild(div);
         });
+    }
+
+    // --- Führungsstellen-Übung (Formularteil in GeneratorFuehrungsstellenForm) ---
+
+    public populateFuehrungsstelleSelect(uebungen: Record<string, { titel: string }>, selected?: string) {
+        this.fuehrungsstellenForm.populateSelect(uebungen, selected);
+    }
+
+    public getSelectedFuehrungsstelle(): string {
+        return this.fuehrungsstellenForm.getSelected();
+    }
+
+    public bindFuehrungsstelleChange(onChange: () => void) {
+        this.fuehrungsstellenForm.bindChange(onChange, this.bindingController.signal);
+    }
+
+    public renderFuehrungsstelleInfo(zeilen: string[]) {
+        this.renderInfoZeilen("fuehrungsstelleInfo", zeilen);
+    }
+
+    public bindFuehrungsstellenAbschnittEvents(onAdd: () => void, onRemove: (index: number) => void) {
+        this.fuehrungsstellenForm.bindAbschnittEvents(onAdd, onRemove, this.bindingController.signal);
+    }
+
+    public setFuehrungsstellenRollen(rollen: FuehrungsstellenRollenFormular, grenzen: AbschnittsGrenzen) {
+        this.fuehrungsstellenForm.setRollen(rollen, grenzen);
+    }
+
+    public getFuehrungsstellenRollen(): FuehrungsstellenRollenFormular {
+        return this.fuehrungsstellenForm.getRollen();
+    }
+
+    public renderFuehrungsstellenAbschnitte(namen: string[], grenzen: AbschnittsGrenzen) {
+        this.fuehrungsstellenForm.renderAbschnitte(namen, grenzen);
+    }
+
+    public toggleFuehrungsstelleDownloads(sichtbar: boolean) {
+        this.fuehrungsstellenForm.toggleDownloads(sichtbar);
     }
 
     public showOutputContainer() {

@@ -9,6 +9,8 @@ interface LinkRowOptions {
     uebung?: FunkUebung;
     codeText?: string;
     copyValue?: string;
+    /** Stellenname unter dem Funkrufnamen, wenn die Übung einen kennt. */
+    stelle?: string;
 }
 
 interface TeilnehmerMailtoOptions {
@@ -54,8 +56,14 @@ export class GeneratorLinksRenderer {
             }
         );
 
+        // Die beübte Stelle einer Führungsstellen-Übung kennt das Drehbuch
+        // nicht und bekommt deshalb keinen Zugang.
+        const beuebteStelle = uebung.fuehrungsstelle?.beuebteStelle;
         if (uebung.teilnehmerIds) {
             Object.entries(uebung.teilnehmerIds).forEach(([participantCode, name]) => {
+                if (beuebteStelle !== undefined && name === beuebteStelle) {
+                    return;
+                }
                 const normalizedParticipantCode = participantCode.toUpperCase();
                 const joinUrl = this.createTeilnehmerJoinUrl(uebungCode, normalizedParticipantCode);
                 const joinText = [
@@ -78,7 +86,8 @@ export class GeneratorLinksRenderer {
                         }),
                         uebung,
                         codeText: `Teilnehmer Code: ${uebungCode} / ${normalizedParticipantCode}`,
-                        copyValue: joinText
+                        copyValue: joinText,
+                        ...(uebung.teilnehmerStellen?.[name] ? { stelle: uebung.teilnehmerStellen[name] } : {})
                     }
                 );
             });
@@ -88,7 +97,7 @@ export class GeneratorLinksRenderer {
     }
 
     private appendLinkRow(container: HTMLElement, options: LinkRowOptions): void {
-        const { typ, name, url, mailtoUrl, uebung, codeText, copyValue } = options;
+        const { typ, name, url, mailtoUrl, uebung, codeText, copyValue, stelle } = options;
         const row = document.createElement("div");
         row.className = "generator-link-row";
         row.setAttribute("data-link-type", typ.toLowerCase());
@@ -104,6 +113,12 @@ export class GeneratorLinksRenderer {
         const nameCell = document.createElement("div");
         nameCell.className = "generator-link-name";
         nameCell.textContent = name === "-" ? "Allgemein" : name;
+        if (stelle) {
+            const stelleZeile = document.createElement("div");
+            stelleZeile.className = "small text-muted";
+            stelleZeile.textContent = stelle;
+            nameCell.appendChild(stelleZeile);
+        }
         row.appendChild(nameCell);
 
         const linkCell = document.createElement("div");

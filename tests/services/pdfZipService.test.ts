@@ -68,3 +68,33 @@ describe("services/pdfZipService", () => {
         expect(zipFiles).toContain("Teilnehmer/Heros Oldenburg 10/Übersicht_Heros Oldenburg 10.pdf");
     });
 });
+
+describe("services/pdfZipService Führungsstellen-Übung", () => {
+    beforeEach(() => {
+        zipFiles.length = 0;
+    });
+
+    it("legt das Drehbuch neben Uebungsleitung.pdf ab, wenn die Übung eines hat", async () => {
+        const uebung = new FunkUebung("dev");
+        uebung.teilnehmerListe = ["EL 10", "EA 11"];
+        uebung.fuehrungsstelle = { slug: "test", beuebteStelle: "EL 10", uebergeordnet: "Kater", unterstellt: ["EA 11"] };
+        const deps = { ...createDeps(), generateDrehbuchPDFBlob: vi.fn(async () => new Blob(["drehbuch"])) };
+
+        await generateAllPDFsAsZipBlob(uebung, deps);
+
+        expect(deps.generateDrehbuchPDFBlob).toHaveBeenCalledWith(uebung);
+        expect(zipFiles).toContain("Drehbuch_Fuehrungsstellen-Uebung.pdf");
+    });
+
+    it("fragt für Übungen ohne Rollenbesetzung kein Drehbuch an", async () => {
+        const uebung = new FunkUebung("dev");
+        uebung.teilnehmerListe = ["A"];
+        const deps = { ...createDeps(), generateDrehbuchPDFBlob: vi.fn(async () => null) };
+
+        await generateAllPDFsAsZipBlob(uebung, deps);
+
+        expect(deps.generateDrehbuchPDFBlob).not.toHaveBeenCalled();
+        expect(zipFiles).not.toContain("Drehbuch_Fuehrungsstellen-Uebung.pdf");
+    });
+});
+

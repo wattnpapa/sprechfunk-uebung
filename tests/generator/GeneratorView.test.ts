@@ -560,4 +560,78 @@ describe("GeneratorView", () => {
         expect(document.getElementById("calcAnBuchstabieren")?.textContent).toBe("2");
         expect(onChange).toHaveBeenCalled();
     });
+
+    it("blendet für die Führungsstellen-Übung Teilnehmerverwaltung, Verteilung und Spielmodus aus", () => {
+        const view = new GeneratorView();
+        view.render();
+        view.setSelectedSource("fuehrungsstelle");
+        expect(view.getSelectedSource()).toBe("fuehrungsstelle");
+        expect((document.getElementById("fuehrungsstelleContainer") as HTMLElement).style.display).toBe("block");
+        expect((document.getElementById("szenarioContainer") as HTMLElement).style.display).toBe("none");
+        ["verteilungSection", "loesungswortSection", "autoStaerkeContainer", "spielModusSection",
+            "anmeldungContainer", "nachrichtenArtContainer", "teilnehmerVerwaltungCard"].forEach(id => {
+            expect((document.getElementById(id) as HTMLElement).style.display, id).toBe("none");
+        });
+
+        view.setSelectedSource("vorlagen");
+        expect(view.getSelectedSource()).toBe("vorlagen");
+        expect((document.getElementById("fuehrungsstelleContainer") as HTMLElement).style.display).toBe("none");
+        ["spielModusSection", "anmeldungContainer", "teilnehmerVerwaltungCard", "verteilungSection"].forEach(id => {
+            expect((document.getElementById(id) as HTMLElement).style.display, id).toBe("");
+        });
+    });
+
+    it("reicht Rollenfelder, Drehbuch-Auswahl und Download-Umschalter an das Formular durch", () => {
+        const view = new GeneratorView();
+        view.render();
+        view.populateFuehrungsstelleSelect({ a: { titel: "Lage A" }, b: { titel: "Lage B" } }, "b");
+        expect(view.getSelectedFuehrungsstelle()).toBe("b");
+        view.setFuehrungsstellenRollen({ beuebteStelle: "EL 10", uebergeordnet: "Kater", unterstellt: ["EA 11", "EA 12"] }, { min: 2, max: 6 });
+        expect(view.getFuehrungsstellenRollen()).toEqual({ beuebteStelle: "EL 10", uebergeordnet: "Kater", unterstellt: ["EA 11", "EA 12"] });
+        view.renderFuehrungsstellenAbschnitte(["EA 11"], { min: 1, max: 6 });
+        expect(document.querySelectorAll(".fuehrungsstelle-abschnitt")).toHaveLength(1);
+        view.renderFuehrungsstelleInfo(["Zeile 1", "Zeile 2"]);
+        expect(document.getElementById("fuehrungsstelleInfo")?.textContent).toContain("Zeile 2");
+        view.toggleFuehrungsstelleDownloads(true);
+        expect((document.getElementById("fuehrungsstelleDownloads") as HTMLElement).style.display).toBe("block");
+
+        const onChange = vi.fn();
+        const onAdd = vi.fn();
+        const onRemove = vi.fn();
+        const onDrehbuch = vi.fn();
+        view.bindFuehrungsstelleChange(onChange);
+        view.bindFuehrungsstellenAbschnittEvents(onAdd, onRemove);
+        view.bindPrimaryActions({
+            onAddTeilnehmer: vi.fn(), onStartUebung: vi.fn(), onChangePage: vi.fn(), onCopyJson: vi.fn(),
+            onZipAllPdfs: vi.fn(), onDownloadUebersichtPdf: vi.fn(), onDrehbuchPdf: onDrehbuch
+        });
+        document.getElementById("fuehrungsstelleAuswahl")?.dispatchEvent(new window.Event("change"));
+        document.getElementById("fuehrungsstelleAbschnittHinzufuegen")?.dispatchEvent(new window.Event("click", { bubbles: true }));
+        document.querySelector(".fuehrungsstelle-abschnitt-entfernen")?.dispatchEvent(new window.Event("click", { bubbles: true }));
+        document.getElementById("drehbuchPdfBtn")?.dispatchEvent(new window.Event("click"));
+        expect(onChange).toHaveBeenCalledTimes(1);
+        expect(onAdd).toHaveBeenCalledTimes(1);
+        expect(onRemove).toHaveBeenCalledWith(0);
+        expect(onDrehbuch).toHaveBeenCalledTimes(1);
+    });
+
+    it("lässt in den Links die beübte Stelle weg und zeigt die Stellennamen der Rollen", () => {
+        const view = new GeneratorView();
+        view.render();
+        const u = new FunkUebung("dev");
+        u.id = "u1";
+        u.name = "Führungsstelle";
+        u.uebungCode = "K7M4Q2";
+        u.teilnehmerListe = ["EL 10", "EA 11", "Kater"];
+        u.teilnehmerIds = { A1B2: "EL 10", C3D4: "EA 11", E5F6: "Kater" };
+        u.teilnehmerStellen = { "EL 10": "Beübte Führungsstelle", "EA 11": "Einsatzstelle Nord", "Kater": "Führungsstab" };
+        u.fuehrungsstelle = { slug: "x", beuebteStelle: "EL 10", uebergeordnet: "Kater", unterstellt: ["EA 11"] };
+        view.renderLinks(u);
+        const rows = document.querySelectorAll("#links-teilnehmer-container .generator-link-row[data-link-type='teilnehmer']");
+        expect(rows).toHaveLength(2);
+        const html = document.getElementById("links-teilnehmer-container")?.innerHTML ?? "";
+        expect(html).not.toContain("A1B2");
+        expect(html).toContain("Einsatzstelle Nord");
+        expect(html).toContain("Führungsstab");
+    });
 });

@@ -12,6 +12,14 @@ import { uiFeedback } from "../core/UiFeedback";
 import { SZENARIEN } from "../data/szenarien";
 import { parseSzenario } from "../services/SzenarioService";
 import { szenarioMaxTeilnehmer, szenarioSpruchAnzahl, type Szenario } from "../types/Szenario";
+import { FUEHRUNGSSTELLEN_UEBUNGEN } from "../data/fuehrungsstellenUebungen";
+import { ladeFuehrungsstellenUebung } from "../services/FuehrungsstellenUebungService";
+import {
+    fuehrungsstellenMaxAbschnitte,
+    fuehrungsstellenNachrichtenAnzahl,
+    type FuehrungsstellenUebung
+} from "../types/FuehrungsstellenUebung";
+import type { AbschnittsGrenzen, FuehrungsstellenRollenFormular, FunkspruchQuelle } from "./GeneratorView";
 
 export class GeneratorController {
     private static instance: GeneratorController;
@@ -22,6 +30,15 @@ export class GeneratorController {
     private szenarioCache = new Map<string, Szenario>();
     /** Entwertet überholte Info-Fetches bei schnellem Szenario-Wechsel. */
     private szenarioInfoToken = 0;
+    private fuehrungsstelleInfoToken = 0;
+    /** Abschnittsspanne des gewählten Drehbuchs; bis zum ersten Laden großzügig. */
+    private fuehrungsstelleGrenzen: AbschnittsGrenzen = { min: 1, max: 8 };
+    /** Vorbelegung der Rollen: Führungsstelle, Zugtrupps als Abschnitte, Katastrophenschutzstab. */
+    private static readonly FUEHRUNGSSTELLE_VORBELEGUNG: FuehrungsstellenRollenFormular = {
+        beuebteStelle: "Heros Musterstadt 10",
+        uebergeordnet: "Kater Musterstadt",
+        unterstellt: ["Heros Musterstadt 21/10", "Heros Musterstadt 22/10", "Heros Musterstadt 23/10"]
+    };
     private showStellenname = false;
     private firebaseService: FirebaseService;
     private generationService: GenerationService;
@@ -111,19 +128,25 @@ export class GeneratorController {
             Object.assign(this.funkUebung, data);
         });
         this.view.bindSourceToggle(source => {
-            if (source === "szenario") {
-                // Lösungswörter sind im Szenario-Modus deaktiviert — Auswahl,
+            if (source === "szenario" || source === "fuehrungsstelle") {
+                // Lösungswörter sind mit Drehbuch deaktiviert — Auswahl,
                 // Shuffle-Button und die Spalte in der Teilnehmertabelle sollen
                 // das auch zeigen, nicht nur der Hinweistext.
                 this.view.selectLoesungswortOption("none");
                 this.stateService.resetLoesungswoerter(this.funkUebung);
                 this.renderTeilnehmer(false);
+            }
+            if (source === "szenario") {
                 void this.updateSzenarioInfo();
+            }
+            if (source === "fuehrungsstelle") {
+                void this.updateFuehrungsstelleInfo();
             }
         });
         this.view.bindSzenarioChange(() => {
             void this.updateSzenarioInfo();
         });
+        this.bindFuehrungsstellenEvents();
         this.view.bindLoesungswortOptionChange(() => {
             this.view.updateLoesungswortOptionUI();
             const option = this.view.getSelectedLoesungswortOption();
@@ -162,6 +185,18 @@ export class GeneratorController {
             onDownloadUebersichtPdf: async () => {
                 const pdfGenerator = await ladePdfGenerator();
                 await pdfGenerator.generateAllTeilnehmerUebersichtPrint(this.funkUebung);
+            },
+            onDrehbuchPdf: async () => {
+                const slug = this.funkUebung.fuehrungsstelle?.slug;
+                if (!slug) {
+                    return;
+                }
+                const drehbuch = await this.loadFuehrungsstellenUebung(slug);
+                if (!drehbuch) {
+                    return;
+                }
+                const pdfGenerator = await ladePdfGenerator();
+                await pdfGenerator.generateDrehbuchPDF(this.funkUebung, drehbuch);
             }
         });
         this.view.bindQuickJoin((uebungCode, teilnehmerCode) => {
@@ -174,6 +209,16 @@ export class GeneratorController {
                 tc: teilnehmerCode
             }).toString()}`;
         });
+    }
+
+    private bindFuehrungsstellenEvents(): void {
+        this.view.bindFuehrungsstelleChange(() => {
+            void this.updateFuehrungsstelleInfo();
+        });
+        this.view.bindFuehrungsstellenAbschnittEvents(
+            () => this.aendereAbschnitte(namen => [...namen, this.naechsterAbschnittName(namen)]),
+            index => this.aendereAbschnitte(namen => namen.filter((_, i) => i !== index))
+        );
     }
 
     private async loadUebung(uebungId: string | null): Promise<FunkUebung> {
@@ -198,11 +243,21 @@ export class GeneratorController {
         this.view.setVersionInfo(this.funkUebung.id, this.buildInfo);
         this.view.populateTemplateSelect(this.templatesFunksprueche, this.funkUebung.verwendeteVorlagen);
         this.view.populateSzenarioSelect(SZENARIEN, this.funkUebung.szenarioSlug);
+        this.view.populateFuehrungsstelleSelect(FUEHRUNGSSTELLEN_UEBUNGEN, this.funkUebung.fuehrungsstelle?.slug);
+        this.view.setFuehrungsstellenRollen(
+            this.funkUebung.fuehrungsstelle ?? GeneratorController.FUEHRUNGSSTELLE_VORBELEGUNG,
+            this.fuehrungsstelleGrenzen
+        );
         this.view.setFormData(this.funkUebung);
-        const quelle = this.funkUebung.szenarioSlug ? "szenario" : "vorlagen";
+        const quelle = this.funkUebung.fuehrungsstelle
+            ? "fuehrungsstelle"
+            : this.funkUebung.szenarioSlug ? "szenario" : "vorlagen";
         this.view.setSelectedSource(quelle);
         if (quelle === "szenario") {
             void this.updateSzenarioInfo();
+        }
+        if (quelle === "fuehrungsstelle") {
+            void this.updateFuehrungsstelleInfo();
         }
     }
 
@@ -297,48 +352,11 @@ export class GeneratorController {
         }
 
         // 1. Daten aus View übernehmen
-        const formData = this.view.getFormData();
-        Object.assign(this.funkUebung, formData);
-        this.readLoesungswoerterFromView();
-        const source = this.view.getSelectedSource();
-        this.funkUebung.szenarioSlug = source === "szenario"
-            ? (this.view.getSelectedSzenario() || undefined)
-            : undefined;
-        this.funkUebung.istStandardKonfiguration =
-            this.isFreshExercise && this.createConfigFingerprint(this.funkUebung) === this.initialConfigFingerprint;
+        const source = this.uebernimmFormular();
 
-        if (!this.validateTeilnehmerListe()) {
+        // 2./3. Prüfen und generieren, je nach Quelle
+        if (!(await this.generiereNachQuelle(source))) {
             return;
-        }
-
-        if (source === "szenario") {
-            const szenario = await this.loadSelectedSzenario();
-            if (!szenario) {
-                return;
-            }
-            if (!this.validateSzenarioTeilnehmerzahl(szenario)) {
-                return;
-            }
-            // Drehbuch statt Pool: Lösungswörter und Spruchquellen entfallen.
-            this.stateService.resetLoesungswoerter(this.funkUebung);
-            this.funkUebung.funksprueche = [];
-            this.funkUebung.verwendeteVorlagen = [];
-
-            // 3. Generieren
-            this.generationService.generate(this.funkUebung, szenario);
-        } else {
-            if (!this.validateSpruchVerteilung()) {
-                return;
-            }
-
-            const funkspruecheLoaded = await this.loadFunkspruecheFromSelectedSource();
-            if (!funkspruecheLoaded) {
-                return;
-            }
-            this.warnIfSpruchPoolTooSmall();
-
-            // 3. Generieren
-            this.generationService.generate(this.funkUebung);
         }
 
         // 4. Übungscode gegen den Bestand absichern und speichern
@@ -360,6 +378,147 @@ export class GeneratorController {
         
         // 5. Anzeigen
         this.renderUebungResult();
+    }
+
+    /** Formularwerte in die Übung übernehmen; liefert die gewählte Quelle. */
+    private uebernimmFormular(): FunkspruchQuelle {
+        const formData = this.view.getFormData();
+        Object.assign(this.funkUebung, formData);
+        this.readLoesungswoerterFromView();
+        const source = this.view.getSelectedSource();
+        this.funkUebung.szenarioSlug = source === "szenario"
+            ? (this.view.getSelectedSzenario() || undefined)
+            : undefined;
+        this.funkUebung.fuehrungsstelle = source === "fuehrungsstelle"
+            ? { slug: this.view.getSelectedFuehrungsstelle(), ...this.view.getFuehrungsstellenRollen() }
+            : undefined;
+        this.funkUebung.istStandardKonfiguration =
+            this.isFreshExercise && this.createConfigFingerprint(this.funkUebung) === this.initialConfigFingerprint;
+        return source;
+    }
+
+    /** Prüft die Eingaben der Quelle und generiert; false bricht ab (Meldung ist dann gezeigt). */
+    private async generiereNachQuelle(source: FunkspruchQuelle): Promise<boolean> {
+        if (source === "fuehrungsstelle") {
+            // Rollen statt Teilnehmerliste: Der GenerationService prüft die
+            // Besetzung gegen das Drehbuch und baut die Teilnehmerliste selbst.
+            return this.generiereFuehrungsstellenUebung();
+        }
+        if (!this.validateTeilnehmerListe()) {
+            return false;
+        }
+        if (source === "szenario") {
+            return this.generiereSzenarioUebung();
+        }
+        return this.generiereZufallsUebung();
+    }
+
+    private async generiereSzenarioUebung(): Promise<boolean> {
+        const szenario = await this.loadSelectedSzenario();
+        if (!szenario || !this.validateSzenarioTeilnehmerzahl(szenario)) {
+            return false;
+        }
+        // Drehbuch statt Pool: Lösungswörter und Spruchquellen entfallen.
+        this.stateService.resetLoesungswoerter(this.funkUebung);
+        this.funkUebung.funksprueche = [];
+        this.funkUebung.verwendeteVorlagen = [];
+        this.generationService.generate(this.funkUebung, szenario);
+        return true;
+    }
+
+    private async generiereZufallsUebung(): Promise<boolean> {
+        if (!this.validateSpruchVerteilung()) {
+            return false;
+        }
+        if (!(await this.loadFunkspruecheFromSelectedSource())) {
+            return false;
+        }
+        this.warnIfSpruchPoolTooSmall();
+        this.generationService.generate(this.funkUebung);
+        return true;
+    }
+
+    /** Führungsstellen-Übung erzeugen; false, wenn Auswahl oder Besetzung nicht passen. */
+    private async generiereFuehrungsstellenUebung(): Promise<boolean> {
+        const slug = this.funkUebung.fuehrungsstelle?.slug ?? "";
+        if (!slug || !FUEHRUNGSSTELLEN_UEBUNGEN[slug]) {
+            uiFeedback.error("Bitte ein Drehbuch auswählen.");
+            return false;
+        }
+        const drehbuch = await this.loadFuehrungsstellenUebung(slug);
+        if (!drehbuch) {
+            return false;
+        }
+        this.stateService.resetLoesungswoerter(this.funkUebung);
+        this.funkUebung.funksprueche = [];
+        this.funkUebung.verwendeteVorlagen = [];
+        try {
+            this.generationService.generateFuehrungsstelle(this.funkUebung, drehbuch);
+        } catch (error) {
+            uiFeedback.error(error instanceof Error ? error.message : "Die Führungsstellen-Übung konnte nicht erzeugt werden.");
+            return false;
+        }
+        return true;
+    }
+
+    private async loadFuehrungsstellenUebung(slug: string): Promise<FuehrungsstellenUebung | null> {
+        try {
+            return await ladeFuehrungsstellenUebung(slug);
+        } catch (error) {
+            console.error("Drehbuch konnte nicht geladen werden:", error);
+            uiFeedback.error("Das Drehbuch konnte nicht geladen werden. Bitte erneut versuchen.");
+            return null;
+        }
+    }
+
+    /**
+     * Beschreibung und Abschnittsspanne des gewählten Drehbuchs anzeigen und
+     * die Abschnittsliste in die erlaubte Spanne bringen.
+     */
+    private async updateFuehrungsstelleInfo(): Promise<void> {
+        const token = ++this.fuehrungsstelleInfoToken;
+        const slug = this.view.getSelectedFuehrungsstelle();
+        if (!slug || !FUEHRUNGSSTELLEN_UEBUNGEN[slug]) {
+            this.view.renderFuehrungsstelleInfo([]);
+            return;
+        }
+        try {
+            const drehbuch = await ladeFuehrungsstellenUebung(slug);
+            if (token !== this.fuehrungsstelleInfoToken) {
+                return; // Inzwischen wurde ein anderes Drehbuch gewählt.
+            }
+            this.fuehrungsstelleGrenzen = {
+                min: Math.max(1, drehbuch.minAbschnitte),
+                max: fuehrungsstellenMaxAbschnitte(drehbuch)
+            };
+            this.aendereAbschnitte(namen => namen);
+            this.view.renderFuehrungsstelleInfo([
+                drehbuch.beschreibung,
+                `Für ${this.fuehrungsstelleGrenzen.min} bis ${this.fuehrungsstelleGrenzen.max} Einsatzabschnitte · ` +
+                `${fuehrungsstellenNachrichtenAnzahl(drehbuch)} Nachrichten · ${drehbuch.dauerMinuten} Minuten.`
+            ]);
+        } catch (error) {
+            if (token !== this.fuehrungsstelleInfoToken) {
+                return;
+            }
+            console.error("Drehbuch-Info konnte nicht geladen werden:", error);
+            this.view.renderFuehrungsstelleInfo(["Das Drehbuch konnte nicht geladen werden."]);
+        }
+    }
+
+    /** Abschnittsliste ändern und in die Spanne des Drehbuchs bringen (auffüllen oder kürzen). */
+    private aendereAbschnitte(aenderung: (namen: string[]) => string[]): void {
+        const namen = aenderung(this.view.getFuehrungsstellenRollen().unterstellt);
+        while (namen.length < this.fuehrungsstelleGrenzen.min) {
+            namen.push(this.naechsterAbschnittName(namen));
+        }
+        this.view.renderFuehrungsstellenAbschnitte(namen.slice(0, this.fuehrungsstelleGrenzen.max), this.fuehrungsstelleGrenzen);
+    }
+
+    private naechsterAbschnittName(vorhandene: string[]): string {
+        const vorbelegung = GeneratorController.FUEHRUNGSSTELLE_VORBELEGUNG.unterstellt;
+        const kandidat = vorbelegung[vorhandene.length] ?? `Heros Musterstadt 2${vorhandene.length + 1}/10`;
+        return vorhandene.includes(kandidat) ? `Einsatzabschnitt ${vorhandene.length + 1}` : kandidat;
     }
 
     /** Lädt und validiert ein Szenario-JSON; Ergebnisse werden gecacht. */
@@ -534,6 +693,7 @@ export class GeneratorController {
         const chart = this.statsService.berechneVerteilung(this.funkUebung);
 
         this.view.renderUebungResult(this.funkUebung, stats, chart);
+        this.view.toggleFuehrungsstelleDownloads(!!this.funkUebung.fuehrungsstelle);
     }
 
     displayPage(index: number) {
@@ -602,7 +762,8 @@ export class GeneratorController {
             spruchAnteilProzent: uebung.spruchAnteilProzent ?? 50,
             loesungswoerter: uebung.loesungswoerter || {},
             loesungsStaerken: uebung.loesungsStaerken || {},
-            szenarioSlug: uebung.szenarioSlug ?? null
+            szenarioSlug: uebung.szenarioSlug ?? null,
+            fuehrungsstelle: uebung.fuehrungsstelle ?? null
         });
     }
 

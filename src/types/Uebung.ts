@@ -1,4 +1,5 @@
 import type { Nachricht } from "./Nachricht";
+import type { FuehrungsstellenKonfiguration } from "./FuehrungsstellenUebung";
 
 export interface Uebung {
     id: string;
@@ -56,4 +57,11 @@ export interface Uebung {
      * erzeugt wurden. Optional für Rückwärtskompatibilität.
      */
     szenarioSlug?: string | undefined;
+    /**
+     * Rollenbesetzung einer Führungsstellen-Übung (Stabsrahmenübung für eine
+     * Führungsstelle): Slug des Drehbuchs (assets/fuehrungsstellen/<slug>.json)
+     * und die Funkrufnamen der beübten Stelle, der übergeordneten Stelle und
+     * der Einsatzabschnitte. Optional für Rückwärtskompatibilität.
+     */
+    fuehrungsstelle?: FuehrungsstellenKonfiguration | undefined;
 }

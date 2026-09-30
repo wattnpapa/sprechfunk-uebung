@@ -140,4 +140,40 @@ describe("pdf/Teilnehmer", () => {
         const nachrichtenTableCall = calls[2]?.[0] as { body: Array<[number, string, string]> };
         expect(nachrichtenTableCall.body[0]?.[2]).toBe("Erste Zeile\nZweite Zeile");
     });
+
+    it("zeigt im Rollenblatt einer Führungsstellen-Übung Zeit, Weg und erwartete Reaktion", () => {
+        const calls: { head: unknown; body: unknown }[] = [];
+        const pdf = {
+            internal: { pageSize: { getWidth: () => 297, getHeight: () => 210 } },
+            setFont: vi.fn(() => pdf),
+            setFontSize: vi.fn(() => pdf),
+            text: vi.fn(() => pdf),
+            line: vi.fn(() => pdf),
+            setDrawColor: vi.fn(() => pdf),
+            getTextWidth: vi.fn(() => 20),
+            textWithLink: vi.fn(() => pdf),
+            output: vi.fn(() => new Blob(["x"])),
+            setPage: vi.fn(),
+            addPage: vi.fn(),
+            autoTable: vi.fn(function (this: unknown, opts: { head: unknown; body: unknown }) {
+                calls.push({ head: opts.head, body: opts.body });
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                (pdf as any).lastAutoTable = { finalY: 100 };
+                return this;
+            }),
+            lastAutoTable: { finalY: 80 },
+            getNumberOfPages: vi.fn(() => 1)
+        };
+        const u = new FunkUebung("dev");
+        u.teilnehmerListe = ["EL 10", "Kater"];
+        u.fuehrungsstelle = { slug: "x", beuebteStelle: "EL 10", uebergeordnet: "Kater", unterstellt: [], beginn: "09:00" };
+        u.nachrichten = {
+            "EL 10": [],
+            "Kater": [{ id: 1, empfaenger: ["EL 10"], nachricht: "Auftrag", xZeitSlot: 45, weg: "drucker", betreff: "Nr. 1", erwartung: "Weitergeben" }]
+        };
+        new Teilnehmer("Kater", u, pdf as never).draw();
+        const tabelle = calls[calls.length - 1];
+        expect(tabelle?.head).toEqual([["Nr.", "Zeit", "Weg", "Nachrichtentext", "Erwartete Reaktion"]]);
+        expect(tabelle?.body).toEqual([[1, "+0:45 (09:45)", "Ausdruck", "Betreff: Nr. 1\nAuftrag", "Weitergeben"]]);
+    });
 });
