@@ -387,7 +387,11 @@ export class UebungsleitungController {
                     text: msg.nachricht,
                     ...(msg.xZeitSlot !== undefined ? { xZeitSlot: msg.xZeitSlot } : {}),
                     ...(msg.art !== undefined ? { art: msg.art } : {}),
-                    ...(msg.szenarioNr !== undefined ? { szenarioNr: msg.szenarioNr } : {})
+                    ...(msg.szenarioNr !== undefined ? { szenarioNr: msg.szenarioNr } : {}),
+                    ...(msg.weg !== undefined ? { weg: msg.weg } : {}),
+                    ...(msg.meldeart !== undefined ? { meldeart: msg.meldeart } : {}),
+                    ...(msg.betreff !== undefined ? { betreff: msg.betreff } : {}),
+                    ...(msg.erwartung !== undefined ? { erwartung: msg.erwartung } : {})
                 });
             });
         });

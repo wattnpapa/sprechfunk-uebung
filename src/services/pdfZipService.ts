@@ -4,6 +4,8 @@ import { formatNatoDate } from "../utils/date";
 
 type PdfZipDeps = {
     sanitizeFileName: (name: string) => string;
+    /** Nur Führungsstellen-Übungen haben ein Drehbuch; andere liefern null. */
+    generateDrehbuchPDFBlob?: (funkUebung: FunkUebung) => Promise<Blob | null>;
     generateTeilnehmerPDFsBlob: (funkUebung: FunkUebung) => Promise<Map<string, Blob>>;
     generateAllTeilnehmerUebersichtPrintBlob: (funkUebung: FunkUebung) => Promise<Blob>;
     generateInstructorPDFBlob: (funkUebung: FunkUebung) => Blob;
@@ -35,6 +37,12 @@ export async function generateAllPDFsAsZipBlob(
     zip.file("Gesamt/Übersicht_Alle_Teilnehmer.pdf", await deps.generateAllTeilnehmerUebersichtPrintBlob(funkUebung));
 
     zip.file("Uebungsleitung.pdf", deps.generateInstructorPDFBlob(funkUebung));
+    if (funkUebung.fuehrungsstelle && deps.generateDrehbuchPDFBlob) {
+        const drehbuch = await deps.generateDrehbuchPDFBlob(funkUebung);
+        if (drehbuch) {
+            zip.file("Drehbuch_Fuehrungsstellen-Uebung.pdf", drehbuch);
+        }
+    }
 
     const nachrichtenvordruckBlobs = await deps.generateNachrichtenvordruckPDFsBlob(funkUebung);
     nachrichtenvordruckBlobs.forEach((blob, teilnehmer) => {

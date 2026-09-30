@@ -15,6 +15,16 @@ describe("spielModusMerkmal", () => {
 });
 
 describe("funkspruchQuelleMerkmal", () => {
+    it("erkennt Führungsstellen-Übungen vor allen anderen Quellen", () => {
+        const fuehrungsstelle = { slug: "hochwasser-fuehrungsstelle", beuebteStelle: "EL", uebergeordnet: "Stab", unterstellt: ["EA"] };
+        expect(funkspruchQuelleMerkmal({ fuehrungsstelle, szenarioSlug: "unwetter-sturm", verwendeteVorlagen: ["thwleer"] }))
+            .toEqual({ label: "Führungsstelle", detail: "Hochwasser: Einsatzleitung mit mehreren Einsatzabschnitten" });
+        expect(funkspruchQuelleMerkmal({ fuehrungsstelle: { ...fuehrungsstelle, slug: "geloescht" } }))
+            .toEqual({ label: "Führungsstelle", detail: "geloescht" });
+        expect(spielModusMerkmal({ fuehrungsstelle, spielModus: "xZeit", xZeitIntervallMinuten: 3 }))
+            .toEqual({ label: "X-Zeit", detail: "Zeiten aus dem Drehbuch" });
+    });
+
     it("erkennt Szenario-Übungen und löst den Titel auf", () => {
         expect(funkspruchQuelleMerkmal({ szenarioSlug: "unwetter-sturm" }))
             .toEqual({ label: "Szenario", detail: "Sturmtief über dem Landkreis" });

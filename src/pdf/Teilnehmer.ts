@@ -3,6 +3,7 @@ import { BasePDFTeilnehmer } from "./BasePDFTeilnehmer";
 import { formatNatoDate } from "../utils/date";
 import { Nachricht } from "../types/Nachricht";
 import { nachrichtenArtLabel } from "../utils/nachrichtenArt";
+import { formatFuehrungsstellenZeit, uebermittlungsWegLabel } from "../utils/fuehrungsstelle";
 
 export class Teilnehmer extends BasePDFTeilnehmer {
     private readonly pageMarginTop = 25;
@@ -112,6 +113,10 @@ export class Teilnehmer extends BasePDFTeilnehmer {
     }
 
     private drawNachrichtenTable(nachrichten: Nachricht[], startY: number): void {
+        if (this.funkUebung.fuehrungsstelle) {
+            this.drawFuehrungsstellenTable(nachrichten, startY);
+            return;
+        }
         // Die Spalte entfällt bei Übungen ohne gekennzeichnete Übermittlungsart,
         // damit dort die volle Breite für den Nachrichtentext bleibt.
         const zeigeArt = nachrichten.some((n: Nachricht) => !!n.art);
@@ -155,6 +160,49 @@ export class Teilnehmer extends BasePDFTeilnehmer {
                 ...(zeigeArt ? { 3: { cellWidth: columnWidths[3] } } : {})
             },
             styles: { fontSize: 10, cellPadding: 1.5, lineWidth: 0.1, lineColor: [0, 0, 0], overflow: "linebreak" },
+            headStyles: { fillColor: [200, 200, 200] }
+        });
+    }
+
+    /**
+     * Rollenblatt einer Führungsstellen-Übung: Wer einen Abschnitt oder den
+     * Stab spielt, braucht neben dem Text die Minute ab Übungsbeginn, den Weg
+     * und die Reaktion, die von der beübten Stelle erwartet wird.
+     */
+    private drawFuehrungsstellenTable(nachrichten: Nachricht[], startY: number): void {
+        const beginn = this.funkUebung.fuehrungsstelle?.beginn;
+        const zeitWidth = 24;
+        const wegWidth = 20;
+        const lfdnrWidth = 12;
+        const rest = this.contentWidth - lfdnrWidth - zeitWidth - wegWidth;
+        const textWidth = rest * 0.6;
+        const erwartungWidth = rest - textWidth;
+
+        (this.pdf as any).autoTable({
+            head: [["Nr.", "Zeit", "Weg", "Nachrichtentext", "Erwartete Reaktion"]],
+            body: nachrichten.map((n: Nachricht) => [
+                n.id,
+                formatFuehrungsstellenZeit(n.xZeitSlot ?? 0, beginn),
+                uebermittlungsWegLabel(n.weg),
+                (n.betreff ? `Betreff: ${n.betreff}\n` : "") + String(n.nachricht ?? "").replace(/\\n/g, "\n"),
+                n.erwartung ?? ""
+            ]),
+            startY,
+            theme: "grid",
+            margin: {
+                left: this.pageMarginLeft,
+                top: this.secondPageTableTopMargin,
+                bottom: this.pageMarginBottom
+            },
+            tableWidth: this.contentWidth,
+            columnStyles: {
+                0: { cellWidth: lfdnrWidth },
+                1: { cellWidth: zeitWidth },
+                2: { cellWidth: wegWidth },
+                3: { cellWidth: textWidth },
+                4: { cellWidth: erwartungWidth }
+            },
+            styles: { fontSize: 9, cellPadding: 1.5, lineWidth: 0.1, lineColor: [0, 0, 0], overflow: "linebreak", valign: "top" },
             headStyles: { fillColor: [200, 200, 200] }
         });
     }

@@ -64,6 +64,20 @@ Each mode is a self-contained module with an `index.ts` entry:
 - `Uebung` (`src/types/Uebung.ts`) — the persisted exercise document in Firestore
 - `FunkUebung` (`src/models/FunkUebung.ts`) — extended model used during generation
 - `Nachricht` (`src/types/Nachricht.ts`) — individual radio message
+- `Szenario` (`src/types/Szenario.ts`) — peer-to-peer drehbuch: Handlungsstränge distributed
+  over the participants (`assets/szenarien/*.json`, registry `src/data/szenarien.ts`)
+- `FuehrungsstellenUebung` (`src/types/FuehrungsstellenUebung.ts`) — Stabsrahmenübung for
+  exactly one Führungsstelle: the Übungsleitung plays the subordinate Einsatzabschnitte and
+  the superior Stab, every message goes to the beübte Stelle and carries a minute (stored as
+  `xZeitSlot`, `spielModus` forced to `xZeit`), `weg` (funk/drucker/email), `meldeart`,
+  optional `betreff` and the `erwartung` for the Übungsleitung. Strands are distributed
+  round-robin (deterministic) over the configured Abschnitte, so the number of Abschnitte is
+  variable between `minAbschnitte` and the strand count. Drehbücher live in
+  `assets/fuehrungsstellen/*.json` (registry `src/data/fuehrungsstellenUebungen.ts`, parser
+  `FuehrungsstellenUebungService`, inventory test
+  `tests/fuehrungsstellen/FuehrungsstellenBestand.test.ts`). The role assignment is persisted
+  in `Uebung.fuehrungsstelle` (allowlisted in `firestore.rules`); the beübte Stelle gets no
+  participant link. `src/pdf/Drehbuch.ts` renders the Drehbuch PDF that the ZIP includes.
 
 ### Services
 - `GenerationService` — creates message distribution, join codes (Übungs-/Teilnehmercodes), checksums

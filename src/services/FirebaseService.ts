@@ -20,6 +20,13 @@ import {
 } from "firebase/firestore";
 import { Uebung } from "../types/Uebung";
 import type { Nachricht } from "../types/Nachricht";
+import {
+    MELDEARTEN,
+    UEBERMITTLUNGS_WEGE,
+    type FuehrungsstellenKonfiguration,
+    type Meldeart,
+    type UebermittlungsWeg
+} from "../types/FuehrungsstellenUebung";
 import { FunkUebung } from "../models/FunkUebung";
 
 export class FirebaseService {
@@ -391,6 +398,7 @@ export class FirebaseService {
             if (szenarioNr !== undefined) {
                 base.szenarioNr = szenarioNr;
             }
+            Object.assign(base, parseFuehrungsstellenFelder(obj));
             return base;
         };
 
@@ -444,7 +452,8 @@ export class FirebaseService {
             xZeitStartOffsetMinuten: typeof data.xZeitStartOffsetMinuten === "number" ? data.xZeitStartOffsetMinuten : undefined,
             szenarioSlug: typeof data.szenarioSlug === "string" && data.szenarioSlug.trim() !== ""
                 ? data.szenarioSlug
-                : undefined
+                : undefined,
+            fuehrungsstelle: parseFuehrungsstellenKonfiguration(data.fuehrungsstelle)
         });
 
         // Legacy-Daten kompatibel machen: "Alle" immer in explizite Empfängerliste auflösen.
@@ -850,4 +859,50 @@ export class FirebaseService {
         );
         return snapshot.data().count;
     }
+}
+
+/**
+ * Felder einer Führungsstellen-Nachricht beim Laden übernehmen; unbekannte
+ * Werte fallen weg, damit die Ansichten nur mit gültigen Wegen und Arten
+ * arbeiten.
+ */
+function parseFuehrungsstellenFelder(obj: Record<string, unknown>): Partial<Nachricht> {
+    const felder: Partial<Nachricht> = {};
+    if (UEBERMITTLUNGS_WEGE.includes(obj["weg"] as UebermittlungsWeg)) {
+        felder.weg = obj["weg"] as UebermittlungsWeg;
+    }
+    if (MELDEARTEN.includes(obj["meldeart"] as Meldeart)) {
+        felder.meldeart = obj["meldeart"] as Meldeart;
+    }
+    if (typeof obj["betreff"] === "string" && obj["betreff"].trim() !== "") {
+        felder.betreff = obj["betreff"];
+    }
+    if (typeof obj["erwartung"] === "string" && obj["erwartung"].trim() !== "") {
+        felder.erwartung = obj["erwartung"];
+    }
+    return felder;
+}
+
+/** Rollenbesetzung einer Führungsstellen-Übung; unvollständige Daten ergeben undefined. */
+function parseFuehrungsstellenKonfiguration(roh: unknown): FuehrungsstellenKonfiguration | undefined {
+    if (!roh || typeof roh !== "object") {
+        return undefined;
+    }
+    const obj = roh as Record<string, unknown>;
+    const slug = nichtLeererText(obj["slug"]);
+    const beuebteStelle = nichtLeererText(obj["beuebteStelle"]);
+    const uebergeordnet = nichtLeererText(obj["uebergeordnet"]);
+    const unterstellt = Array.isArray(obj["unterstellt"])
+        ? (obj["unterstellt"] as unknown[]).map(nichtLeererText).filter((v): v is string => v !== undefined)
+        : [];
+    if (!slug || !beuebteStelle || !uebergeordnet || unterstellt.length === 0) {
+        return undefined;
+    }
+    const beginn = nichtLeererText(obj["beginn"]);
+    const beginnGueltig = beginn !== undefined && /^\d{1,2}:\d{2}$/.test(beginn);
+    return { slug, beuebteStelle, uebergeordnet, unterstellt, ...(beginnGueltig ? { beginn } : {}) };
+}
+
+function nichtLeererText(wert: unknown): string | undefined {
+    return typeof wert === "string" && wert.trim() !== "" ? wert : undefined;
 }

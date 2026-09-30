@@ -5,6 +5,8 @@ import type { EffektiverNachrichtenStatus } from "../services/liveStatusMerge";
 import { escapeHtml } from "../utils/html";
 import type { NachrichtArt } from "../types/Nachricht";
 import { nachrichtenArtBadgeClass, nachrichtenArtLabel } from "../utils/nachrichtenArt";
+import type { Meldeart, UebermittlungsWeg } from "../types/FuehrungsstellenUebung";
+import { renderFuehrungsstellenHinweise } from "../utils/fuehrungsstelle";
 
 export interface FlattenedNachricht {
     nr: number;
@@ -13,6 +15,11 @@ export interface FlattenedNachricht {
     text: string;
     xZeitSlot?: number;
     art?: NachrichtArt;
+    /** Führungsstellen-Übung: Weg, Meldeart, Betreff und erwartete Reaktion der beübten Stelle. */
+    weg?: UebermittlungsWeg;
+    meldeart?: Meldeart;
+    betreff?: string;
+    erwartung?: string;
 }
 
 export interface HeatmapBin {
@@ -315,13 +322,14 @@ export class UebungsleitungNachrichtenView {
         const notiz = status.notiz ?? "";
         // `erledigtUm` ist der frühere Zeitpunkt aus Teilnehmer-Meldung und Bestätigung.
         const zeitpunkt = status.erledigtUm ?? status.abgesetztUm;
+        const hinweise = renderFuehrungsstellenHinweise(nachricht);
         return `
                 <tr class="${abgesetzt ? "status-ok-row" : "status-pending-row"}">
                   <td class="text-center fw-bold">${nachricht.nr}</td>
                   <td>${nachricht.empfaenger.map(e => `<div>${e}</div>`).join("")}</td>
                   <td>${nachricht.sender}</td>
                   <td class="nachricht-text">
-                      ${nachricht.art ? `<span class="${nachrichtenArtBadgeClass(nachricht.art)} me-2">${nachrichtenArtLabel(nachricht.art)}</span>` : ""}${escapeHtml(nachricht.text).replace(/\\n/g, "<br>").replace(/\n/g, "<br>")}
+                      ${nachricht.art ? `<span class="${nachrichtenArtBadgeClass(nachricht.art)} me-2">${nachrichtenArtLabel(nachricht.art)}</span>` : ""}${hinweise.kopf}${escapeHtml(nachricht.text).replace(/\\n/g, "<br>").replace(/\n/g, "<br>")}${hinweise.fuss}
                       <textarea
                         class="form-control form-control-sm mt-2 nachricht-notiz"
                         data-nr="${nachricht.nr}"

@@ -239,3 +239,57 @@ describe("FirebaseService local mock mode", () => {
         expect((s as any).isLocalMockMode()).toBe(false);
     });
 });
+
+describe("FirebaseService Führungsstellen-Felder", () => {
+    it("übernimmt Rollenbesetzung und Nachrichtenfelder beim Laden und verwirft Unbekanntes", () => {
+        const s = new FirebaseService({} as never);
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const mapped = (s as any).mapToDomain("uF", {
+            name: "Führungsstelle",
+            datum: "2026-11-14T08:00:00.000Z",
+            createDate: "2026-09-30T10:00:00.000Z",
+            teilnehmerListe: ["EL 10", "EA 11", "Kater"],
+            teilnehmerIds: { A1B2: "EA 11", C3D4: "Kater", E5F6: "EL 10" },
+            nachrichten: {
+                "EA 11": [{
+                    id: 1, empfaenger: ["EL 10"], nachricht: "Lage", xZeitSlot: 5, szenarioNr: 1,
+                    weg: "funk", meldeart: "lagemeldung", erwartung: "Lagekarte", betreff: ""
+                }],
+                "Kater": [{
+                    id: 1, empfaenger: ["EL 10"], nachricht: "Auftrag", xZeitSlot: 7, szenarioNr: 2,
+                    weg: "brieftaube", meldeart: "unbekannt", betreff: "Einsatzauftrag Nr. 1", erwartung: 42
+                }]
+            },
+            spielModus: "xZeit",
+            fuehrungsstelle: {
+                slug: "hochwasser-fuehrungsstelle", beuebteStelle: "EL 10", uebergeordnet: "Kater",
+                unterstellt: ["EA 11", 7, ""], beginn: "09:00"
+            }
+        });
+        expect(mapped.fuehrungsstelle).toEqual({
+            slug: "hochwasser-fuehrungsstelle", beuebteStelle: "EL 10", uebergeordnet: "Kater",
+            unterstellt: ["EA 11"], beginn: "09:00"
+        });
+        expect(mapped.nachrichten["EA 11"][0]).toMatchObject({ weg: "funk", meldeart: "lagemeldung", erwartung: "Lagekarte" });
+        expect(mapped.nachrichten["EA 11"][0]).not.toHaveProperty("betreff");
+        const kater = mapped.nachrichten["Kater"][0];
+        expect(kater.betreff).toBe("Einsatzauftrag Nr. 1");
+        expect(kater).not.toHaveProperty("weg");
+        expect(kater).not.toHaveProperty("meldeart");
+        expect(kater).not.toHaveProperty("erwartung");
+    });
+
+    it("lässt unvollständige Rollenbesetzungen weg", () => {
+        const s = new FirebaseService({} as never);
+        const basis = { datum: "2026-11-14T08:00:00.000Z", createDate: "2026-09-30T10:00:00.000Z", teilnehmerListe: [], teilnehmerIds: {}, nachrichten: {} };
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const ohneAbschnitte = (s as any).mapToDomain("u1", { ...basis, fuehrungsstelle: { slug: "x", beuebteStelle: "EL", uebergeordnet: "Stab", unterstellt: [] } });
+        expect(ohneAbschnitte.fuehrungsstelle).toBeUndefined();
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const falscherBeginn = (s as any).mapToDomain("u2", { ...basis, fuehrungsstelle: { slug: "x", beuebteStelle: "EL", uebergeordnet: "Stab", unterstellt: ["EA"], beginn: "neun" } });
+        expect(falscherBeginn.fuehrungsstelle).toEqual({ slug: "x", beuebteStelle: "EL", uebergeordnet: "Stab", unterstellt: ["EA"] });
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        expect((s as any).mapToDomain("u3", basis).fuehrungsstelle).toBeUndefined();
+    });
+});
+

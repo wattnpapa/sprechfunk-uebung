@@ -6,6 +6,7 @@ import { Nachricht } from "../types/Nachricht";
 import type { LeitungBestaetigung, LiveSyncState } from "../types/LiveStatus";
 import { formatCountdown, parseHHMMtoMs } from "../utils/xzeit";
 import { nachrichtenArtBadgeClass, nachrichtenArtLabel } from "../utils/nachrichtenArt";
+import { renderFuehrungsstellenHinweise } from "../utils/fuehrungsstelle";
 
 interface PdfPage {
     getViewport: (options: { scale: number; rotation?: number }) => { width: number; height: number };
@@ -362,6 +363,7 @@ export class TeilnehmerView {
                     istAbgang ? "ist-abgang" : ""
                 ].filter(Boolean).join(" ");
 
+                const hinweise = renderFuehrungsstellenHinweise(n);
                 const xZeitCell = showXZeit
                     ? (n.xZeitSlot !== undefined
                         ? `<td><span class="${this.getXZeitBadgeClass(n.xZeitSlot, xZeitBasis, isUebertragen)}" data-xzeit-slot="${n.xZeitSlot}" data-n-id="${n.id}">${this.getXZeitBadgeLabel(n.xZeitSlot, xZeitBasis, isUebertragen)}</span></td>`
@@ -372,7 +374,7 @@ export class TeilnehmerView {
             <tr class="${zeilenKlassen}"${istAbgang ? " data-abgang=\"1\"" : ""}>
                 <td>${n.id}</td>
                 <td>${escapeHtml(n.empfaenger.join(", "))}</td>
-                <td>${this.renderArtBadge(n)}${escapeHtml(n.nachricht).replace(/\\n/g, "<br>").replace(/\n/g, "<br>")}</td>
+                <td>${this.renderArtBadge(n)}${hinweise.kopf}${escapeHtml(n.nachricht).replace(/\\n/g, "<br>").replace(/\n/g, "<br>")}${hinweise.fuss}</td>
                 ${xZeitCell}
                 <td>
                     <div class="form-check form-switch d-flex align-items-center gap-2">

@@ -39,6 +39,8 @@ vi.mock("../../src/generator/GeneratorView", () => ({
         bindDistributionInputs() {}
         bindSourceToggle() {}
         bindSzenarioChange() {}
+        bindFuehrungsstelleChange() {}
+        bindFuehrungsstellenAbschnittEvents() {}
         bindLoesungswortOptionChange() {}
         bindTeilnehmerEvents() {}
         bindAnmeldungToggle() {}
@@ -48,9 +50,16 @@ vi.mock("../../src/generator/GeneratorView", () => ({
         setVersionInfo() {}
         populateTemplateSelect() {}
         populateSzenarioSelect() {}
+        populateFuehrungsstelleSelect() {}
+        setFuehrungsstellenRollen() {}
+        renderFuehrungsstellenAbschnitte() {}
+        toggleFuehrungsstelleDownloads() {}
         setSelectedSource() {}
         getSelectedSzenario() { return ""; }
+        getSelectedFuehrungsstelle() { return ""; }
+        getFuehrungsstellenRollen() { return { beuebteStelle: "", uebergeordnet: "", unterstellt: [] }; }
         renderSzenarioInfo() {}
+        renderFuehrungsstelleInfo() {}
         setFormData() {}
         toggleSourceView() {}
         renderTeilnehmerSection() {}
@@ -113,6 +122,8 @@ describe("GeneratorController", () => {
             bindDistributionInputs: vi.fn(),
             bindSourceToggle: vi.fn(),
             bindSzenarioChange: vi.fn(),
+            bindFuehrungsstelleChange: vi.fn(),
+            bindFuehrungsstellenAbschnittEvents: vi.fn(),
             bindLoesungswortOptionChange: vi.fn(),
             bindTeilnehmerEvents: vi.fn(),
             bindAnmeldungToggle: vi.fn(),
@@ -123,9 +134,15 @@ describe("GeneratorController", () => {
             setVersionInfo: vi.fn(),
             populateTemplateSelect: vi.fn(),
             populateSzenarioSelect: vi.fn(),
+            populateFuehrungsstelleSelect: vi.fn(),
+            setFuehrungsstellenRollen: vi.fn(),
+            toggleFuehrungsstelleDownloads: vi.fn(),
             setSelectedSource: vi.fn(),
             getSelectedSzenario: vi.fn().mockReturnValue(""),
+            getSelectedFuehrungsstelle: vi.fn().mockReturnValue(""),
+            getFuehrungsstellenRollen: vi.fn().mockReturnValue({ beuebteStelle: "", uebergeordnet: "", unterstellt: [] }),
             renderSzenarioInfo: vi.fn(),
+            renderFuehrungsstelleInfo: vi.fn(),
             setFormData: vi.fn(),
             toggleSourceView: vi.fn()
         };
@@ -541,7 +558,7 @@ describe("GeneratorController", () => {
         const controller = await makeController();
         controller.funkUebung.nachrichten = { A: [{ nachricht: "x" }] as unknown as never[] };
 
-        const view = { renderUebungResult: vi.fn() };
+        const view = { renderUebungResult: vi.fn(), toggleFuehrungsstelleDownloads: vi.fn() };
         const statsService = {
             berechneUebungsdauer: vi.fn().mockReturnValue({ dauer: 1 }),
             berechneVerteilung: vi.fn().mockReturnValue({ verteilung: 1 })
@@ -662,6 +679,8 @@ describe("GeneratorController", () => {
             bindDistributionInputs: vi.fn(),
             bindSourceToggle: vi.fn(),
             bindSzenarioChange: vi.fn(),
+            bindFuehrungsstelleChange: vi.fn(),
+            bindFuehrungsstellenAbschnittEvents: vi.fn(),
             bindLoesungswortOptionChange,
             bindTeilnehmerEvents: vi.fn(),
             bindAnmeldungToggle: vi.fn(),
@@ -708,6 +727,8 @@ describe("GeneratorController", () => {
             bindDistributionInputs,
             bindSourceToggle: vi.fn(),
             bindSzenarioChange: vi.fn(),
+            bindFuehrungsstelleChange: vi.fn(),
+            bindFuehrungsstellenAbschnittEvents: vi.fn(),
             bindLoesungswortOptionChange,
             bindTeilnehmerEvents,
             bindAnmeldungToggle,

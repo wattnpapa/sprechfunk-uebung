@@ -1,0 +1,581 @@
+{
+  "slug": "bombenfund-fuehrungsstelle",
+  "titel": "Bombenfund und Evakuierung: Einsatzleitung mit mehreren Einsatzabschnitten",
+  "beschreibung": "Stabsrahmenübung für eine THW-Einsatzleitung: Blindgängerfund am Moorkamp, Evakuierung von rund 600 Anwohnern, 6 Einsatzstellen von der Absperrung bis zur Betreuungsstelle und eine Freigabe, die sich bis in die Nacht verschiebt.",
+  "lage": "Bei Tiefbauarbeiten für eine neue Regenwasserleitung am Moorkamp im Ortsteil Wiesengrund ist vor rund 2 Stunden ein Blindgänger aus dem Zweiten Weltkrieg gefunden worden, eine Fliegerbombe von etwa 250 kg. Die Polizei hat die Fundstelle gesichert und einen Absperrradius von 500 m festgelegt. Rund 600 Anwohner in etwa 180 Gebäuden müssen das Gebiet bis zur Freigabe verlassen, darunter 11 nicht gehfähige Personen nach Liste des Ordnungsamts. Die Katastrophenschutzbehörde des Landkreises hat ihren Führungsstab einberufen. Die Polizei führt Absperrung und Räumung, die Feuerwehr hält Kräfte bereit, der Betreuungsdienst der Hilfsorganisationen übernimmt Registrierung und Betreuung in der Grundschule Wiesengrund an der Schulstraße. Der Kampfmittelräumdienst ist auf Anfahrt; mit der Entschärfung wird erst begonnen, wenn das Gebiet vollständig geräumt gemeldet ist. Die Freigabe wird für den Abend erwartet. Das THW ist mit Kräften mehrerer Ortsverbände an 6 Einsatzstellen eingesetzt: Absperrung gemeinsam mit der Polizei, Transport immobiler Personen, Aufbau der Betreuungsstelle, Bereitstellungsraum mit Lotsenpunkt auf dem Festplatz am Holtkamp, Stromversorgung und Ausleuchtung der Betreuungsstelle sowie Räumungskontrolle und Bestreifung. Die Einsatzleitung THW arbeitet mit Fernmeldezentrale im FüKomKW am Festplatz. Es ist trocken, für den Abend werden 6 °C erwartet.",
+  "auftrag": "Übernehmen Sie die Führung aller THW-Kräfte im Einsatzraum und führen Sie die 6 Einsatzstellen über Ihre Einsatzabschnitte. Führen Sie Lagekarte und Kräfteübersicht. Geben Sie Aufträge des Stabs an die zuständige Einsatzstelle weiter und überwachen Sie den Vollzug. Melden Sie dem Stab alle 30 Minuten die Lage, erstmals 30 Minuten nach Übernahme. Bündeln Sie Anforderungen von Kräften und Material, bevor Sie sie an den Stab richten; über knappe eigene Mittel entscheiden Sie selbst und melden die Entscheidung. Sicherheitsereignisse melden Sie sofort, Rettungsdienst fordern Sie ausschließlich über den Stab an. Über Durchlässe und Ausnahmen an der Absperrung entscheiden Polizei und Stab, nicht die Einsatzstellen.",
+  "dauerMinuten": 180,
+  "minAbschnitte": 2,
+  "uebergeordnet": {
+    "bezeichnung": "Führungsstab des Landkreises",
+    "hintergrund": "Der Stab führt den Gesamteinsatz. Die Polizei führt Absperrung und Räumung; Wohnungsgänge erlaubt sie nur einzeln, begleitet und bis zum Beginn der Entschärfung, die Tischlerei räumt sie selbst. Die Feuerwehr hält Kräfte bereit, der Rettungsdienst einen Rettungswagen an der Grundschule. Pflegebedürftige bringt der Rettungsdienst in das Seniorenheim am Holtkamp (6 freie Plätze), sie bleiben dort über Nacht. Busse stellt der Verkehrsbetrieb, Sammelstelle Fliederweg. Der Hausmeister kommt in etwa 90 Minuten. Der Kampfmittelräumdienst beginnt erst nach der Meldung „Gebiet geräumt“; später findet er einen beschädigten Zünder, die Freigabe verschiebt sich um mindestens 3 Stunden, der Radius von 500 m bleibt. Der Netzbetreiber schaltet den Ortsnetzstrang ab. Nachalarmiert werden eine Fachgruppe Logistik und später 2 Bergungsgruppen. Tiere kommen in den Werkraum der Schule. Absperrmaterial, Feldbetten, Decken und Diesel liefert der Bauhof in etwa 60 Minuten, Handscheinwerfer hat er nicht.",
+    "nachrichten": [
+      {
+        "zeit": 3,
+        "weg": "drucker",
+        "art": "auftrag",
+        "betreff": "Einsatzauftrag Nr. 1 – Übernahme der Einsatzleitung THW im Einsatzraum Moorkamp",
+        "text": "Lage: Blindgänger am Moorkamp, Absperrradius 500 m, die Räumung von rund 600 Anwohnern läuft. Die Polizei führt Absperrung und Räumung, der Betreuungsdienst betreibt die Betreuungsstelle in der Grundschule Wiesengrund. Der Kampfmittelräumdienst ist auf Anfahrt.\n\nAuftrag: Die Einsatzleitung THW übernimmt ab sofort die Führung aller THW-Kräfte an den Einsatzstellen Absperrung, Transport immobiler Personen, Betreuungsstelle, Bereitstellungsraum, Stromversorgung und Ausleuchtung sowie Bestreifung.\n\nDurchführung: Lagemeldungen an den Stab alle 30 Minuten, erstmals in 30 Minuten. Kräfteübersicht mit Stärke je Einsatzstelle bis zur ersten Lagemeldung vorlegen. Anforderungen von Kräften und Material gebündelt an den Stab richten. Rettungsdienst ausschließlich über den Stab anfordern.\n\nRückmeldung: Übernahme der Einsatzleitung und Erreichbarkeit der Fernmeldezentrale an den Stab bestätigen.\n\nFührungsstab, S 3 – Einsatz",
+        "erwartung": "Übernahme an den Stab bestätigen, Rhythmus der Lagemeldungen (alle 30 Minuten) festlegen, Lagekarte und Kräfteübersicht anlegen und den Auftrag allen Einsatzabschnitten bekannt geben."
+      },
+      {
+        "zeit": 13,
+        "weg": "email",
+        "art": "information",
+        "betreff": "Gliederung der Kräfteübersicht und der Lagemeldung",
+        "text": "Die Kräfteübersicht ist nach folgender Gliederung zu führen: je Einsatzstelle Bezeichnung der Einsatzstelle, führender Einsatzabschnitt, Einheiten, Stärke im Schema Führer/Unterführer/Helfer//Gesamt, Fahrzeuge und Besonderheiten.\n\nDie Lagemeldung an den Stab gliedert sich in: 1. Lage je Einsatzstelle, 2. getroffene Maßnahmen, 3. Anforderungen, 4. Sicherheitsereignisse, 5. Absichten bis zur nächsten Lagemeldung.\n\nDie erste Kräfteübersicht wird mit der ersten Lagemeldung erwartet, danach bei jeder Änderung der Stärke um mehr als 5 Einsatzkräfte.\n\nFührungsstab, S 2 – Lage",
+        "erwartung": "Gliederung übernehmen, Kräfteübersicht danach aufbauen und mit der ersten Lagemeldung an den Stab senden; Gliederung für alle folgenden Lagemeldungen verwenden."
+      },
+      {
+        "zeit": 22,
+        "weg": "drucker",
+        "art": "auftrag",
+        "betreff": "Einsatzauftrag Nr. 2 – Nachgemeldete immobile Person Lerchenweg 21",
+        "text": "Der ambulante Pflegedienst meldet eine bettlägerige Person im Lerchenweg 21, 1. Obergeschoss, die nicht auf der Liste des Ordnungsamts steht.\n\nAuftrag: Die Einsatzstelle Transport immobiler Personen trägt die Person aus der Wohnung und übergibt sie am Hauseingang liegend an den Rettungsdienst. Den Rettungswagen an der Grundschule entsendet der Stab zum Lerchenweg 21.\n\nRückmeldung: Übergabe abwarten und Vollzug an den Stab melden. Die Gesamtzahl der zu transportierenden Personen erhöht sich damit auf 12.\n\nFührungsstab, S 3 – Einsatz",
+        "erwartung": "Auftrag an {{ea:transport}} weitergeben, Liste in der Lagekarte auf 12 Personen ergänzen, Übergabe an den Rettungsdienst abwarten und den Vollzug an den Stab melden."
+      },
+      {
+        "zeit": 31,
+        "weg": "funk",
+        "art": "rueckfrage",
+        "text": "Frage: Stand der Evakuierung? Benötigt werden die Zahl der registrierten Personen in der Betreuungsstelle und die Zahl der immobilen Personen, die noch im Gebiet sind.",
+        "erwartung": "Aus den Meldungen beantworten: 46 Personen registriert, von 11 immobilen Personen 9 noch im Gebiet, dazu die Nachmeldung aus Einsatzauftrag Nr. 2, also 10. Fehlen der EL die Zahlen, Rückfrage bei den Abschnitten und zeitnah nachmelden."
+      },
+      {
+        "zeit": 38,
+        "weg": "funk",
+        "art": "information",
+        "text": "Kampfmittelräumdienst an der Fundstelle eingetroffen. Entschärfung beginnt erst nach der Meldung „Gebiet geräumt“. Eine Fachgruppe Logistik ist nachalarmiert, Eintreffen im Bereitstellungsraum in etwa 40 Minuten.",
+        "erwartung": "An alle Einsatzabschnitte weitergeben, {{ea:bereitstellungsraum}} auf die Fachgruppe Logistik vorbereiten und die Voraussetzung „Gebiet geräumt“ als offenen Punkt in der Lagekarte führen."
+      },
+      {
+        "zeit": 45,
+        "weg": "drucker",
+        "art": "auftrag",
+        "betreff": "Einsatzauftrag Nr. 3 – Zusätzlicher Absperrpunkt 5 am Lohnesteg",
+        "text": "Die Polizei hat festgestellt, dass Fußgänger über den Lohnesteg am Ende des Moorkamps in den Absperrradius gelangen.\n\nAuftrag: Die Einsatzstelle Absperrung richtet am jenseitigen Ende des Lohnestegs, außerhalb des Radius, gemeinsam mit der Polizei einen Absperrpunkt 5 ein und besetzt ihn dauerhaft. Durchlass nur für Einsatzkräfte.\n\nRückmeldung: Einrichtung des Absperrpunkts 5 und die Stärke dort an den Stab melden. Materialbedarf gebündelt anfordern.\n\nFührungsstab, S 3 – Einsatz",
+        "erwartung": "Auftrag an {{ea:absperrung}} weitergeben und dabei die offene Materialanforderung für Absperrpunkt 4 mitdenken; Absperrpunkt 5 in die Lagekarte eintragen und den Vollzug überwachen."
+      },
+      {
+        "zeit": 52,
+        "weg": "drucker",
+        "art": "auftrag",
+        "betreff": "Einsatzauftrag Nr. 4 – Umschaltung der Betreuungsstelle auf Ersatzstrom",
+        "text": "Der Netzbetreiber schaltet für die Entschärfung den Ortsnetzstrang Wiesengrund ab. Betroffen ist auch die Grundschule Wiesengrund mit der Betreuungsstelle. Die Abschaltung erfolgt in etwa 45 Minuten, jedoch erst nach Bestätigung durch den Stab.\n\nAuftrag: Die Einsatzstelle Stromversorgung und Ausleuchtung schaltet die Grundschule vor der Abschaltung auf die Netzersatzanlage um. Die Unterbrechung bei der Umschaltung ist kurz zu halten und vorher mit dem Betreuungsdienst abzustimmen.\n\nRückmeldung: Vollzug der Umschaltung unverzüglich an den Stab melden, da der Netzbetreiber auf diese Meldung wartet.\n\nFührungsstab, S 3 – Einsatz",
+        "erwartung": "Auftrag an {{ea:stromversorgung}} weitergeben, das beantwortet zugleich deren Rückfrage zum Zeitpunkt; Zeitpunkt der Umschaltung mit {{ea:betreuungsstelle}} abstimmen lassen, Vollzug abwarten und sofort an den Stab melden."
+      },
+      {
+        "zeit": 58,
+        "weg": "funk",
+        "art": "rueckfrage",
+        "text": "Frage: Gesamtstärke THW im Einsatzraum einschließlich Reserve, aufgeschlüsselt nach Einsatzstellen?",
+        "erwartung": "Aus der Kräfteübersicht beantworten: 1/17/56//74 an den Einsatzstellen (Absperrung 22, Transport 10, Betreuungsstelle 15, Bereitstellungsraum 12, Stromversorgung 9, Bestreifung 6), zuzüglich der eigenen Führungsstelle. Hat die EL die Reserve geteilt, verschiebt sich die Aufschlüsselung, die Summe bleibt 1/17/56//74."
+      },
+      {
+        "zeit": 68,
+        "weg": "drucker",
+        "art": "auftrag",
+        "betreff": "Einsatzauftrag Nr. 5 – Räumungskontrolle und Meldung „Gebiet geräumt“",
+        "text": "Der Kampfmittelräumdienst beginnt mit der Entschärfung erst, wenn der Stab das Gebiet innerhalb des Radius als vollständig geräumt meldet.\n\nAuftrag: Die Einsatzstelle Bestreifung kontrolliert gemeinsam mit der Polizei alle Gebäude im Radius, kennzeichnet sie und meldet den Abschluss. Die Beschäftigten der Tischlerei am Lerchenweg bringt die Polizei aus dem Gebiet, die Anlage schaltet der Betreiber ab.\n\nDie Einsatzleitung führt die Meldungen der Bestreifung und der Einsatzstelle Transport immobiler Personen zusammen und meldet dem Stab „Gebiet geräumt“ erst, wenn beide abgeschlossen sind.\n\nRückmeldung: Meldung „Gebiet geräumt“ an den Stab.\n\nFührungsstab, S 3 – Einsatz",
+        "erwartung": "Auftrag an {{ea:bestreifung}} weitergeben, Stand von {{ea:transport}} abfragen, beide Meldungen zusammenführen und erst dann „Gebiet geräumt“ an den Stab melden. Eine zu frühe Meldung vermerkt die Übungsleitung."
+      },
+      {
+        "zeit": 71,
+        "weg": "funk",
+        "art": "information",
+        "text": "Rettungswagen für den verletzten Helfer im Mühlenkamp 12 ist alarmiert, Eintreffen in etwa 8 Minuten. Unfallmeldung schriftlich nachreichen.",
+        "erwartung": "An {{ea:transport}} weitergeben (Einweisung des Rettungswagens am Hauseingang), Unfallmeldung vormerken. Hat die EL den Unfall nicht sofort an den Stab gemeldet, vermerkt die Übungsleitung das."
+      },
+      {
+        "zeit": 79,
+        "weg": "email",
+        "art": "information",
+        "betreff": "Entwurf Pressemitteilung Nr. 2 zur Kenntnis",
+        "text": "Nachstehend der Entwurf der Pressemitteilung Nr. 2 der Pressestelle zur Kenntnis. Hinweise auf fachliche Fehler bis zur nächsten Lagemeldung an den Stab.\n\nEntwurf: Nach dem Fund einer Fliegerbombe am Moorkamp im Ortsteil Wiesengrund haben rund 600 Anwohner ihre Wohnungen verlassen. Rund 100 Personen werden in der Betreuungsstelle der Grundschule Wiesengrund betreut. Das THW unterstützt die Polizei mit 60 Einsatzkräften an der Absperrung, beim Transport nicht gehfähiger Personen und bei der Stromversorgung. Die Entschärfung ist für den frühen Abend geplant.\n\nPresseanfragen an den Einsatzstellen sind an die Pressestelle des Landkreises zu verweisen. Einsatzkräfte geben keine Auskünfte.\n\nFührungsstab, S 5 – Presse- und Medienarbeit",
+        "erwartung": "Zahlen prüfen und dem Stab Korrekturen melden (THW-Stärke laut Kräfteübersicht höher, Zahl der Registrierten in der Betreuungsstelle inzwischen über 160); Hinweis zu Presseanfragen an alle Einsatzabschnitte weitergeben."
+      },
+      {
+        "zeit": 86,
+        "weg": "funk",
+        "art": "information",
+        "text": "Für Tiere der Evakuierten richtet das Ordnungsamt den Werkraum der Grundschule als Tierraum ein. Tiere nur angeleint oder in Transportboxen, Futter bringt der Tierschutzverein.",
+        "erwartung": "An {{ea:betreuungsstelle}} weitergeben, damit die Frage nach den Tieren erledigt ist. Hat die EL die Rückfrage der Betreuungsstelle nicht an den Stab gegeben, trotzdem weitergeben; die Übungsleitung vermerkt die Lücke."
+      },
+      {
+        "zeit": 93,
+        "weg": "email",
+        "art": "information",
+        "betreff": "Verpflegungsplan Einsatzkräfte",
+        "text": "Verpflegungsplan des Stabs für die Einsatzkräfte:\n\nWarmverpflegung liefert der Betreuungsdienst in den Bereitstellungsraum am Festplatz, Ausgabe ab etwa 60 Minuten nach Eingang dieser Nachricht, geplant für 80 Einsatzkräfte. Kaltverpflegung und Getränke für Absperrpunkte und Streifen werden gleichzeitig ausgegeben und von den Einsatzstellen selbst abgeholt.\n\nFür eine mögliche Nacht ist eine 2. Warmverpflegung vorgesehen; den Bedarf mit der Kräfteübersicht bis zur übernächsten Lagemeldung melden.\n\nDie Verpflegung der Evakuierten in der Betreuungsstelle regelt der Betreuungsdienst selbst.\n\nFührungsstab, S 4 – Versorgung",
+        "erwartung": "Plan an alle Einsatzabschnitte weitergeben, besonders an {{ea:bereitstellungsraum}} (Ausgabe dort, beantwortet dessen Rückfrage). Die Zahl 80 mit der Kräfteübersicht abgleichen (81 an den Einsatzstellen mit Fachgruppe Logistik, ohne den verletzten Helfer, zuzüglich Führungsstelle) und dem Stab die Korrektur melden. Bedarf für die Nacht vormerken."
+      },
+      {
+        "zeit": 101,
+        "weg": "funk",
+        "art": "rueckfrage",
+        "text": "Frage: Ist die Grundschule auf Ersatzstrom umgeschaltet? Der Netzbetreiber wartet auf die Bestätigung, um abzuschalten.",
+        "erwartung": "Aus der Vollzugsmeldung von {{ea:stromversorgung}} beantworten (umgeschaltet, Last 34 kW). Hat die EL den Vollzug bereits gemeldet, genügt die Bestätigung; fehlte die Meldung, vermerkt die Übungsleitung das."
+      },
+      {
+        "zeit": 112,
+        "weg": "drucker",
+        "art": "auftrag",
+        "betreff": "Einsatzauftrag Nr. 6 – Ausleuchtung der Fundstelle für den Kampfmittelräumdienst",
+        "text": "Der Kampfmittelräumdienst arbeitet voraussichtlich bis in die Dunkelheit an der Fundstelle und fordert eine Ausleuchtung des Arbeitsbereichs von etwa 30 m x 30 m.\n\nAuftrag: Die Einsatzstelle Stromversorgung und Ausleuchtung baut einen Lichtmast an der Fundstelle am Moorkamp auf, Zufahrt über den Absperrpunkt 1. Aufbau nur in Absprache mit dem Kampfmittelräumdienst, danach ziehen sich die Kräfte aus dem Radius zurück.\n\nRückmeldung: Betriebsbereitschaft der Ausleuchtung an den Stab melden. Ist der Auftrag nur mit Einschränkungen an anderer Stelle ausführbar, Entscheidung und Folgen melden.\n\nFührungsstab, S 3 – Einsatz",
+        "erwartung": "Auftrag an {{ea:stromversorgung}} weitergeben, {{ea:absperrung}} über die Durchfahrt an Absperrpunkt 1 informieren, {{ea:betreuungsstelle}} über den Wegfall des Lichtmasts. Erkennen, dass der einzige Lichtmast an der Betreuungsstelle steht, über die Ausleuchtung des Vorplatzes entscheiden und Konflikt und Entscheidung an den Stab melden."
+      },
+      {
+        "zeit": 131,
+        "weg": "drucker",
+        "art": "information",
+        "betreff": "Lageinformation – Verzögerung der Entschärfung und der Freigabe",
+        "text": "Der Kampfmittelräumdienst hat festgestellt, dass der Zünder beschädigt ist. Die Entschärfung ist aufwendiger als geplant. Mit der Freigabe ist frühestens in 3 Stunden zu rechnen. Der Absperrradius von 500 m bleibt bestehen.\n\nFolgen für den Einsatz: Absperrung, Bestreifung der Absperrgrenze und Betreuungsstelle bleiben bis in die Nacht in Betrieb. Die Betreuungsstelle bereitet eine Übernachtung für bis zu 150 Personen vor. Der Stab alarmiert 2 Bergungsgruppen zur Ablösung nach.\n\nDie Einsatzleitung meldet bis zur nächsten Lagemeldung den Ablösebedarf je Einsatzstelle, den Kraftstoffbedarf für die Nacht und fehlendes Material für Übernachtung und Ausleuchtung.\n\nFührungsstab, S 2 – Lage",
+        "erwartung": "An alle Einsatzabschnitte weitergeben, Ablöse-, Kraftstoff- und Materialbedarf je Einsatzstelle abfragen und gebündelt an den Stab melden; {{ea:betreuungsstelle}} auf Übernachtung umstellen lassen."
+      },
+      {
+        "zeit": 146,
+        "weg": "funk",
+        "art": "auftrag",
+        "text": "Einsatzauftrag Nr. 7: 2 Bergungsgruppen zur Ablösung treffen in etwa 20 Minuten im Bereitstellungsraum ein. Zuerst die Absperrpunkte 1 bis 3 ablösen, abgelöste Kräfte zur Verpflegung in den Bereitstellungsraum.",
+        "erwartung": "Auftrag an {{ea:bereitstellungsraum}} (Aufnahme, Einweisung) und {{ea:absperrung}} (Ablösung) weitergeben. Mit dem Ablösebedarf abwägen, den die EL nach der Lageinformation zur Verzögerung bei allen Einsatzstellen abgefragt haben sollte; liegt er nicht vor, bei {{ea:bestreifung}} und {{ea:betreuungsstelle}} abfragen. Entscheidung melden."
+      },
+      {
+        "zeit": 158,
+        "weg": "email",
+        "art": "auftrag",
+        "betreff": "Anforderung Übergabemeldung zum Schichtwechsel und aktualisierte Kräfteübersicht",
+        "text": "Der Stab bereitet die Übergabe an die Nachtbesetzung vor.\n\nDie Einsatzleitung THW legt bis zur nächsten Lagemeldung vor: 1. Stand je Einsatzstelle zur Übergabe, 2. aktualisierte Kräfteübersicht einschließlich Ablösung, 3. offene Anforderungen (Kraftstoff, Feldbetten, Beleuchtung), 4. Unfälle und Ausfälle, 5. Kräfte, die bis zur Freigabe im Einsatz bleiben.\n\nNach der Freigabe durch den Kampfmittelräumdienst sind Absperrmaterial, Lichtmast und Netzersatzanlage abzubauen; die Reihenfolge des Rückbaus schlägt die Einsatzleitung vor.\n\nFührungsstab, S 2 – Lage",
+        "erwartung": "Stand aller Einsatzstellen zur Übergabe einholen, Kräfteübersicht aktualisieren, Unfall des Helfers und offene Anforderungen aufnehmen, Rückbaufolge vorschlagen und die Übergabemeldung fristgerecht an den Stab senden."
+      }
+    ]
+  },
+  "straenge": [
+    {
+      "key": "absperrung",
+      "bezeichnung": "Einsatzstelle Absperrung Moorkamp",
+      "hintergrund": "Auftrag: Absperrring mit 500 m Radius um die Fundstelle am Moorkamp gemeinsam mit der Polizei einrichten und halten. Die Polizei führt die Absperrung und entscheidet über jeden Durchlass; das THW stellt Absperrmaterial und besetzt die Absperrpunkte 1 bis 4 am Holtkamp, Mühlenkamp, Fliederweg und Lerchenweg mit je 1 Polizeibeamten. Kräfte: Zugtrupp und Bergungsgruppen 1 und 2 eines Technischen Zuges, Stärke 1/5/16//22, mit 2 Gerätekraftwagen mit eigener Beleuchtung (Stromerzeuger, Flutlichtstrahler), 1 Mannschaftstransportwagen und Anhänger mit Absperrschranken, Leitkegeln und Absperrband. Das Material reicht knapp für 4 Absperrpunkte. Die Einsatzstelle weiß noch nicht, dass die Polizei einen 5. Absperrpunkt am Lohnesteg fordert, dass die Freigabe sich bis in die Nacht verschiebt und dass die Absperrpunkte dann Licht und Ablösung brauchen.",
+      "nachrichten": [
+        {
+          "zeit": 1,
+          "weg": "funk",
+          "art": "betrieb",
+          "text": "Einsatzstelle Absperrung Moorkamp übernommen. Absperrpunkte 1 bis 4 werden gemeinsam mit der Polizei besetzt, Absperrmaterial wird verteilt.",
+          "erwartung": "Anmeldung von {{ea}} quittieren, Einsatzstelle Absperrung mit den Absperrpunkten 1 bis 4 in die Lagekarte eintragen und in der Kräfteübersicht anlegen."
+        },
+        {
+          "zeit": 14,
+          "weg": "funk",
+          "art": "lagemeldung",
+          "text": "Stärke 1/5/16//22. Absperrpunkte 1 bis 3 besetzt, Absperrpunkt 4 am Lerchenweg folgt in 10 Minuten. Polizei meldet noch Anwohner im Radius, Räumung läuft.",
+          "erwartung": "Stärke in die Kräfteübersicht übernehmen, Stand der Absperrpunkte in der Lagekarte nachführen und in die erste Lagemeldung an den Stab aufnehmen."
+        },
+        {
+          "zeit": 30,
+          "weg": "funk",
+          "art": "anforderung",
+          "text": "Für Absperrpunkt 4 fehlen 6 Absperrschranken und 20 Leitkegel, die Einmündung dort ist 25 m breit. Vorhandenes Material ist verbaut.",
+          "erwartung": "Anforderung bündeln: prüfen, ob Reserve oder später die Fachgruppe Logistik Material bringen kann, sonst mit Menge und Ziel an den Stab weitergeben; Zusage an {{ea}} zurückmelden."
+        },
+        {
+          "zeit": 48,
+          "weg": "funk",
+          "art": "rueckfrage",
+          "text": "Frage: 3 Anwohner wollen am Absperrpunkt 2 Medikamente aus ihren Wohnungen holen, die Polizei dort verweist auf eine Entscheidung von oben. Dürfen wir begleiten, oder bleibt der Radius für alle geschlossen?",
+          "erwartung": "Nicht selbst entscheiden: Rückfrage an den Stab weitergeben, weil Polizei und Stab über Ausnahmen entscheiden. Antwort (einzeln, mit Polizei, nur bis zur Entschärfung) an {{ea}} zurückgeben; bis dahin bleibt der Radius geschlossen."
+        },
+        {
+          "zeit": 62,
+          "weg": "funk",
+          "art": "vollzug",
+          "text": "Auftrag Absperrpunkt 5 ausgeführt: Posten jenseits der Lohne am LOHNESTEG eingerichtet, außerhalb des Radius, mit Polizei besetzt. Stärke dort 0/1/3//4. Material dafür von Absperrpunkt 3 umgesetzt.",
+          "erwartung": "Vollzug an den Stab melden, Absperrpunkt 5 in die Lagekarte eintragen und nachfragen, ob Absperrpunkt 3 noch dicht ist. Hat die EL Einsatzauftrag Nr. 3 nicht an {{ea}} weitergegeben, vermerkt die Übungsleitung das."
+        },
+        {
+          "zeit": 84,
+          "weg": "funk",
+          "art": "lagemeldung",
+          "text": "Ein Fernsehteam wollte am Absperrpunkt 1 bis zur Fundstelle fahren. Polizei hat es abgewiesen und an die Pressestelle verwiesen. Absperrring geschlossen.",
+          "erwartung": "In die nächste Lagemeldung aufnehmen, mit dem Hinweis zu Presseanfragen aus der E-Mail des Stabs abgleichen und dem Stab melden, dass Presse an den Absperrpunkten auftritt."
+        },
+        {
+          "zeit": 118,
+          "weg": "funk",
+          "art": "anforderung",
+          "text": "Beleuchtung der 2 Gerätekraftwagen an den Absperrpunkten 1 und 2 in Betrieb. Für die Absperrpunkte 3 bis 5 benötigen wir 3 Stromerzeuger mit je 2 Flutlichtstrahlern, sonst sind die Absperrungen ab der Dämmerung schlecht zu erkennen.",
+          "erwartung": "Priorisieren: Der Lichtmast ist mit Einsatzauftrag Nr. 6 gebunden. Freie Flutlichtstrahler der Stromversorgung nur zusammen mit Stromerzeugern einplanen, die Netzersatzanlage steht fest an der Schule. Eigene Mittel prüfen, Rest gebündelt beim Stab anfordern und die Entscheidung an {{ea}} und den Stab melden."
+        },
+        {
+          "zeit": 139,
+          "weg": "funk",
+          "art": "lagemeldung",
+          "text": "Nach Verschiebung der Freigabe: Kräfte an den Absperrpunkten seit dem Eintreffen über 2 Stunden ohne Pause, seit der Alarmierung über 3 Stunden. Ablösung für 16 Helfer bis zur nächsten Lagemeldung erforderlich.",
+          "erwartung": "Ablösebedarf in die Kräfteübersicht übernehmen und an den Stab weitergeben; mit der angekündigten Ablösung abgleichen, sobald sie vorliegt, und {{ea}} den Zeitpunkt mitteilen."
+        },
+        {
+          "zeit": 175,
+          "weg": "funk",
+          "art": "vollzug",
+          "text": "Ablösung ausgeführt: Absperrpunkte 1 bis 3 von den Ablösekräften übernommen, abgelöste Kräfte auf dem Weg in den Bereitstellungsraum. Absperrpunkte 4 und 5 folgen nach Einweisung der 2. Bergungsgruppe.",
+          "erwartung": "Vollzug zu Einsatzauftrag Nr. 7 an den Stab melden, Kräfteübersicht mit der Ablösung aktualisieren und die offene Ablösung der Absperrpunkte 4 und 5 in die Übergabemeldung aufnehmen."
+        }
+      ]
+    },
+    {
+      "key": "transport",
+      "bezeichnung": "Einsatzstelle Transport immobiler Personen",
+      "hintergrund": "Auftrag: 11 nicht gehfähige Personen nach Liste des Ordnungsamts aus dem Evakuierungsgebiet bringen: aus der Wohnung tragen und mit dem Mannschaftstransportwagen zur Betreuungsstelle in der Grundschule Wiesengrund fahren. Liegend zu transportierende Personen übernimmt der Rettungsdienst am Hauseingang. Kräfte: 1 Bergungsgruppe, verstärkt um 1 Helfer, mit 2 Tragetrupps zu je 4 Helfern, Tragestuhl und 2 Schleifkorbtragen, Stärke 0/2/8//10, 1 Mannschaftstransportwagen. Die Einsatzstelle weiß noch nicht, dass der Pflegedienst eine 12. Person im Lerchenweg nachmeldet, dass 2 Personen dauerhaft Sauerstoff brauchen und nicht in die Betreuungsstelle können und dass ein Helfer beim Treppentransport im Mühlenkamp stürzt. Nach der Freigabe steht der Rücktransport an.",
+      "nachrichten": [
+        {
+          "zeit": 4,
+          "weg": "funk",
+          "art": "betrieb",
+          "text": "Einsatzstelle Transport immobiler Personen übernommen. Liste mit 11 Personen liegt vor, der 1. Tragetrupp beginnt im FLIEDERWEG.",
+          "erwartung": "Anmeldung quittieren, Einsatzstelle in Lagekarte und Kräfteübersicht anlegen und die Liste der 11 Personen als offenen Auftrag führen."
+        },
+        {
+          "zeit": 16,
+          "weg": "funk",
+          "art": "lagemeldung",
+          "text": "Stärke 0/2/8//10 mit 2 Tragetrupps. 2 von 11 Personen an der Betreuungsstelle übergeben, Transporte laufen weiter.",
+          "erwartung": "Stärke in die Kräfteübersicht übernehmen und den Fortschritt (2 von 11) festhalten; die Zahl wird für die Rückfrage des Stabs zum Stand der Evakuierung gebraucht."
+        },
+        {
+          "zeit": 33,
+          "weg": "funk",
+          "art": "anforderung",
+          "text": "Benötigen einen 3. Tragetrupp mit 4 Helfern. Im Mühlenkamp 12 wohnen 2 Personen im 3. Obergeschoss ohne Aufzug, mit 2 Trupps dauert das über 1 Stunde.",
+          "erwartung": "Priorisieren: Fast gleichzeitig fordert die Betreuungsstelle Helfer an, frei ist nur die Reserve-Bergungsgruppe im Bereitstellungsraum. Entscheiden (Menschen im Gefahrenbereich haben Vorrang) und an {{ea}} und den Stab melden. Teilung der Reserve ist zulässig; dann ist keine Reserve mehr vorhanden, das dem Stab melden und Ersatz anfordern."
+        },
+        {
+          "zeit": 44,
+          "weg": "funk",
+          "art": "rueckfrage",
+          "text": "Frage: Wohin mit 2 Personen aus dem Lerchenweg 17, die dauerhaft Sauerstoff brauchen? Die Betreuungsstelle hat dafür keine Pflegeplätze.",
+          "erwartung": "Rückfrage an den Stab weitergeben, der Unterbringung und Rettungsdienst koordiniert; Antwort (Seniorenheim am Holtkamp, Transport durch den Rettungsdienst) an {{ea}} zurückgeben und in der Lagekarte vermerken."
+        },
+        {
+          "zeit": 57,
+          "weg": "funk",
+          "art": "vollzug",
+          "text": "Auftrag Lerchenweg 21 ausgeführt: Person liegend an den Rettungsdienst übergeben. Stand: 6 von jetzt 12 Personen aus dem Gebiet gebracht.",
+          "erwartung": "Vollzug an den Stab melden und die Gesamtzahl in der Lagekarte auf 12 Personen korrigieren. Hat die EL Einsatzauftrag Nr. 2 nicht an {{ea}} weitergegeben, vermerkt die Übungsleitung das."
+        },
+        {
+          "zeit": 64,
+          "weg": "funk",
+          "art": "anforderung",
+          "text": "Helfer beim Treppentransport im MÜHLENKAMP 12 gestürzt, Verdacht auf Verletzung am Sprunggelenk, ansprechbar. Transport dort unterbrochen, die Bewohnerin ist in der Wohnung gesichert. Benötigen Rettungsdienst.",
+          "erwartung": "Sofort an den Stab melden und Rettungsdienst über den Stab anfordern, nicht bis zur nächsten Lagemeldung warten. Unfall dokumentieren, Stärke von {{ea}} anpassen und Ersatz für den Tragetrupp prüfen."
+        },
+        {
+          "zeit": 85,
+          "weg": "funk",
+          "art": "lagemeldung",
+          "text": "Rettungsdienst hat den verletzten Helfer übernommen, Transport ins Krankenhaus. Stärke jetzt 0/2/7//9. Transport im Mühlenkamp 12 läuft mit 1 Trupp weiter.",
+          "erwartung": "Kräfteübersicht korrigieren (0/2/7//9), Verbleib des Helfers festhalten, an den Stab melden und den Ausfall in der nächsten Lagemeldung nennen."
+        },
+        {
+          "zeit": 91,
+          "weg": "funk",
+          "art": "lagemeldung",
+          "text": "Alle 12 Personen aus dem Gebiet gebracht: 8 an die Betreuungsstelle, 4 mit dem Rettungsdienst in das Seniorenheim am Holtkamp. Tragetrupps räumen die Einsatzstelle.",
+          "erwartung": "Sofort an den Stab melden und mit der Räumungskontrolle aus Einsatzauftrag Nr. 5 zusammenführen, denn beides ist Voraussetzung für „Gebiet geräumt“; Verbleib der 12 Personen in der Lagekarte festhalten."
+        },
+        {
+          "zeit": 128,
+          "weg": "funk",
+          "art": "lagemeldung",
+          "text": "Beide Tragetrupps und der Mannschaftstransportwagen stehen im Bereitstellungsraum auf Abruf. Stärke 0/2/7//9, 1 Helfer weiterhin im Krankenhaus.",
+          "erwartung": "Kräfteübersicht aktualisieren und {{ea}} als verfügbare Reserve führen; die Kräfte können für Ablösung oder Transporte der Betreuungsstelle eingeplant werden."
+        },
+        {
+          "zeit": 164,
+          "weg": "funk",
+          "art": "rueckfrage",
+          "text": "Frage: Die Freigabe verzögert sich. Bleiben die 4 Personen im Seniorenheim über Nacht, oder sollen wir den Rücktransport nach der Freigabe noch heute vorbereiten?",
+          "erwartung": "An den Stab weitergeben und die Antwort (die 4 Personen bleiben über Nacht im Seniorenheim) an {{ea}} zurückgeben; bis dahin keinen Rücktransport beginnen. Die Frage in die Übergabemeldung aufnehmen."
+        }
+      ]
+    },
+    {
+      "key": "betreuungsstelle",
+      "bezeichnung": "Einsatzstelle Betreuungsstelle Grundschule",
+      "hintergrund": "Auftrag: In Turnhalle und Aula der Grundschule Wiesengrund an der Schulstraße die Betreuungsstelle aufbauen und logistisch betreiben. Registrierung, Betreuung und Verpflegung der Evakuierten übernimmt der Betreuungsdienst der Hilfsorganisationen; das THW stellt Sitzplätze, Tische, Trennwände, Beschilderung und Feldbetten. Kräfte: 1 Bergungsgruppe und Teile der Fachgruppe Logistik, Stärke 0/3/12//15, mit 1 Gerätekraftwagen und 1 Lastkraftwagen mit 150 Sitzplätzen und 40 Feldbetten. Der Hausmeister ist nicht erreichbar, die Heizung der Turnhalle ist aus. Die Einsatzstelle weiß noch nicht, dass deutlich mehr Evakuierte kommen als erwartet, dass viele Tiere mitbringen und dass sich die Freigabe bis in die Nacht verschiebt.",
+      "nachrichten": [
+        {
+          "zeit": 6,
+          "weg": "funk",
+          "art": "betrieb",
+          "text": "Einsatzstelle Betreuungsstelle übernommen. Turnhalle der Grundschule WIESENGRUND ist offen, Aufbau von 150 Sitzplätzen läuft, Betreuungsdienst beginnt mit der Registrierung.",
+          "erwartung": "Anmeldung quittieren, Betreuungsstelle in Lagekarte und Kräfteübersicht anlegen und den Beginn der Registrierung durch den Betreuungsdienst für die erste Lagemeldung vormerken."
+        },
+        {
+          "zeit": 20,
+          "weg": "funk",
+          "art": "lagemeldung",
+          "text": "Stärke 0/3/12//15. 150 Sitzplätze und Registrierung im Foyer stehen, 46 Personen erfasst. Heizung der Turnhalle ist aus, Hausmeister nicht erreichbar.",
+          "erwartung": "Stärke übernehmen, Zahl der Registrierten für die Rückfrage des Stabs festhalten und den fehlenden Hausmeister über den Stab klären lassen."
+        },
+        {
+          "zeit": 35,
+          "weg": "funk",
+          "art": "anforderung",
+          "text": "Benötigen 6 Helfer zusätzlich für den Aufbau von 40 Feldbetten. 92 Personen registriert, der Zustrom ist stärker als erwartet.",
+          "erwartung": "Priorisieren: Die Anforderung konkurriert mit dem 3. Tragetrupp der Einsatzstelle Transport um dieselbe Reserve-Bergungsgruppe. Entscheiden, begründen und {{ea}} Bescheid geben. Teilung der Reserve ist zulässig; dann ist keine Reserve mehr vorhanden, das dem Stab melden und Ersatz anfordern. Zurückgestelltes beim Stab nachfordern."
+        },
+        {
+          "zeit": 55,
+          "weg": "funk",
+          "art": "lagemeldung",
+          "text": "164 Personen registriert, die Turnhalle ist voll. Öffnen die Aula als 2. Aufenthaltsbereich mit 60 Plätzen, Beschilderung wird umgestellt.",
+          "erwartung": "Lagekarte nachführen, Zahl der Registrierten und die erreichte Kapazitätsgrenze an den Stab melden und prüfen, ob weiteres Material angefordert werden muss."
+        },
+        {
+          "zeit": 75,
+          "weg": "funk",
+          "art": "rueckfrage",
+          "text": "Frage: 14 Evakuierte haben Hunde und Katzen dabei, die Schule lässt keine Tiere in die Turnhalle. Wo sollen die Tiere untergebracht werden?",
+          "erwartung": "Rückfrage an den Stab weitergeben und die Antwort (Tierraum im Werkraum der Schule) an {{ea}} zurückgeben; bis dahin bleiben die Tiere mit ihren Haltern vor der Halle."
+        },
+        {
+          "zeit": 97,
+          "weg": "funk",
+          "art": "lagemeldung",
+          "text": "Werkraum als Tierraum eingerichtet, 11 Hunde und 6 Katzen untergebracht. 212 Personen registriert, davon 131 in Turnhalle und Aula, die übrigen privat untergekommen.",
+          "erwartung": "Zahlen in die Lagekarte und die nächste Lagemeldung übernehmen und mit dem Entwurf der Pressemitteilung abgleichen (dort zu niedrig)."
+        },
+        {
+          "zeit": 115,
+          "weg": "funk",
+          "art": "lagemeldung",
+          "text": "Betreuungsdienst meldet 3 Personen mit Kreislaufbeschwerden, versorgt durch den Sanitätsdienst vor Ort. Hausmeister eingetroffen, Heizung der Turnhalle läuft wieder, Halle bei 17 °C.",
+          "erwartung": "Zur Kenntnis in die Lagekarte übernehmen und in der nächsten Lagemeldung nennen; kein eigener Handlungsbedarf, solange der Sanitätsdienst vor Ort versorgt."
+        },
+        {
+          "zeit": 148,
+          "weg": "funk",
+          "art": "anforderung",
+          "text": "Wegen der verschobenen Freigabe bereiten wir die Übernachtung vor. Benötigen weitere 110 Feldbetten, 150 Decken und Trennwände für einen Ruhebereich.",
+          "erwartung": "Anforderung mit Menge und Ziel gebündelt an den Stab weitergeben, Transport über die Fachgruppe Logistik im Bereitstellungsraum prüfen und {{ea}} den Liefertermin mitteilen."
+        },
+        {
+          "zeit": 170,
+          "weg": "funk",
+          "art": "lagemeldung",
+          "text": "Stand zur Übergabe Betreuungsstelle: 238 Personen registriert, 142 anwesend, 40 Feldbetten belegt, Tierraum mit 19 Tieren. Stärke 0/3/12//15, Ablösung für die Nacht nötig.",
+          "erwartung": "In die Übergabemeldung an den Stab übernehmen, Ablösebedarf der Betreuungsstelle in die Planung der Ablösung aufnehmen und die offene Feldbettenlieferung nachhalten."
+        }
+      ]
+    },
+    {
+      "key": "bereitstellungsraum",
+      "bezeichnung": "Einsatzstelle Bereitstellungsraum Festplatz",
+      "hintergrund": "Auftrag: Bereitstellungsraum auf dem Festplatz am Holtkamp außerhalb des Absperrradius betreiben. Lotsenpunkt an der Einfahrt, Erfassung aller eintreffenden Einheiten und Fahrzeuge, Einweisung in den Einsatzraum, Führung der Reserve. Kräfte: Lotsentrupp 0/1/2//3 und als Reserve 1 Bergungsgruppe 0/2/7//9 mit 1 Gerätekraftwagen, zusammen 0/3/9//12. Platz für 20 Fahrzeuge, keine Beleuchtung, nur 60 l Diesel in Kanistern; die Tankstelle im Ort schließt am Abend. Die Einsatzstelle weiß noch nicht, welche Kräfte der Stab nachalarmiert, wann die Verpflegung kommt und dass am Abend Ablösekräfte aufgenommen und eingewiesen werden müssen.",
+      "nachrichten": [
+        {
+          "zeit": 8,
+          "weg": "funk",
+          "art": "betrieb",
+          "text": "Einsatzstelle Bereitstellungsraum übernommen. Festplatz am HOLTKAMP, Lotsenpunkt an der Einfahrt besetzt, Platz für 20 Fahrzeuge.",
+          "erwartung": "Anmeldung quittieren, Bereitstellungsraum und Lotsenpunkt in die Lagekarte eintragen und in der Kräfteübersicht anlegen."
+        },
+        {
+          "zeit": 26,
+          "weg": "funk",
+          "art": "lagemeldung",
+          "text": "Stärke Bereitstellungsraum 0/3/9//12: Lotsentrupp 0/1/2//3, Reserve 1 Bergungsgruppe 0/2/7//9 mit Gerätekraftwagen. Weitere Kräfte sind nicht angekündigt.",
+          "erwartung": "In die Kräfteübersicht übernehmen; die Reserve ist die einzige freie Einheit und für die Entscheidung über die Anforderungen von Transport und Betreuungsstelle wichtig."
+        },
+        {
+          "zeit": 42,
+          "weg": "funk",
+          "art": "lagemeldung",
+          "text": "2 Linienbusse für gehfähige Anwohner eingetroffen und eingewiesen. Sie pendeln ab sofort zwischen der Sammelstelle am Fliederweg und der Grundschule.",
+          "erwartung": "In die Lagekarte übernehmen, die Betreuungsstelle über den Buszulauf informieren lassen und in der Lagemeldung an den Stab nennen."
+        },
+        {
+          "zeit": 60,
+          "weg": "funk",
+          "art": "rueckfrage",
+          "text": "Frage: Die Einheiten im Bereitstellungsraum sind seit der Alarmierung ohne Verpflegung. Wann und wo ist Verpflegung für die Einsatzkräfte vorgesehen?",
+          "erwartung": "An den Stab weitergeben; die Antwort kommt mit dem Verpflegungsplan per E-Mail. Den Plan dann an alle Einsatzstellen weitergeben, nicht nur an {{ea}}."
+        },
+        {
+          "zeit": 80,
+          "weg": "funk",
+          "art": "lagemeldung",
+          "text": "Nachalarmierte Fachgruppe Logistik eingetroffen, Stärke 0/2/6//8, mit 2 Lastkraftwagen mit Ladebordwand. Einsatzbereit für Material- und Verpflegungstransporte.",
+          "erwartung": "Kräfteübersicht ergänzen und die Fachgruppe Logistik gezielt einsetzen, etwa für Absperrmaterial oder Feldbetten zur Betreuungsstelle; den Einsatz an {{ea}} anweisen."
+        },
+        {
+          "zeit": 90,
+          "weg": "funk",
+          "art": "betrieb",
+          "text": "Funkstelle Bereitstellungsraum abgelöst, Sprecher ist jetzt ein Helfer des Lotsentrupps. Meldungen laufen unverändert über diese Funkstelle.",
+          "erwartung": "Ablösung der Funkstelle quittieren und in der Übersicht der Funkverbindungen vermerken; bei schlechter Verständigung eine Funkprobe durchführen."
+        },
+        {
+          "zeit": 127,
+          "weg": "funk",
+          "art": "lagemeldung",
+          "text": "Kraftstoff im Bereitstellungsraum: 3 Kanister mit zusammen 60 l Diesel. Die Tankstelle im Ort schließt am Abend, weitere Betankung nur über Nachschub.",
+          "erwartung": "Mit dem Kraftstoffbedarf von Netzersatzanlage und Stromerzeugern abgleichen und Nachschub gebündelt beim Stab anfordern, bevor die Nacht beginnt."
+        },
+        {
+          "zeit": 152,
+          "weg": "funk",
+          "art": "lagemeldung",
+          "text": "Warmverpflegung für 80 Einsatzkräfte im Bereitstellungsraum eingetroffen, Ausgabe läuft. Kräfte von Absperrung und Bestreifung können truppweise zur Ausgabe abgelöst werden.",
+          "erwartung": "An alle Einsatzabschnitte weitergeben und die Verpflegung der Außenposten so steuern, dass Absperrung und Bestreifung besetzt bleiben."
+        },
+        {
+          "zeit": 167,
+          "weg": "funk",
+          "art": "vollzug",
+          "text": "Auftrag Aufnahme der Ablösekräfte ausgeführt: 2 Bergungsgruppen, Stärke 0/4/14//18, mit 2 Gerätekraftwagen. Werden über den Lotsenpunkt zur Absperrung geführt.",
+          "erwartung": "Vollzug an den Stab melden und die Ablösekräfte in die Kräfteübersicht übernehmen. Hat die EL Einsatzauftrag Nr. 7 nicht an {{ea}} weitergegeben, vermerkt die Übungsleitung das."
+        }
+      ]
+    },
+    {
+      "key": "stromversorgung",
+      "bezeichnung": "Einsatzstelle Stromversorgung und Ausleuchtung",
+      "hintergrund": "Auftrag: Ersatzstromversorgung der Betreuungsstelle in der Grundschule Wiesengrund sicherstellen sowie Vorplatz und Wege ausleuchten. Die Schule liegt außerhalb des Radius, hängt aber am selben Ortsnetzstrang wie das Evakuierungsgebiet, den der Netzbetreiber für die Entschärfung abschaltet. Kräfte: Fachgruppe Elektroversorgung mit Netzersatzanlage 50 kVA, dazu 1 Lichtmast auf Anhänger und 6 Flutlichtstrahler, Stärke 0/3/6//9. Der Tankinhalt reicht unter Last für etwa 3 Stunden. Eingespeist wird am Hausanschlussraum. Die Einsatzstelle weiß noch nicht, wann abgeschaltet wird, dass der Stab den einzigen Lichtmast für die Fundstelle braucht und dass der Kraftstoff nicht bis zur Wiederzuschaltung des Netzes nach der Freigabe reicht.",
+      "nachrichten": [
+        {
+          "zeit": 10,
+          "weg": "funk",
+          "art": "betrieb",
+          "text": "Einsatzstelle Stromversorgung übernommen. Netzersatzanlage 50 kVA steht am Hausanschlussraum der Grundschule, Einspeisung wird vorbereitet.",
+          "erwartung": "Anmeldung quittieren, Einsatzstelle in Lagekarte und Kräfteübersicht anlegen."
+        },
+        {
+          "zeit": 24,
+          "weg": "funk",
+          "art": "rueckfrage",
+          "text": "Frage: Wann schaltet der Netzbetreiber den Ortsnetzstrang ab? Für die Umschaltung der Schule auf Ersatzstrom brauchen wir 15 Minuten Vorlauf.",
+          "erwartung": "An den Stab weitergeben; die Antwort kommt mit Einsatzauftrag Nr. 4. Bis dahin {{ea}} anweisen, umschaltbereit zu bleiben."
+        },
+        {
+          "zeit": 40,
+          "weg": "funk",
+          "art": "lagemeldung",
+          "text": "Stärke 0/3/6//9. Einspeisepunkt am Hausanschluss hergestellt, Probelauf ohne Last in Ordnung. Umschaltung ist jederzeit möglich.",
+          "erwartung": "Stärke in die Kräfteübersicht übernehmen und die Umschaltbereitschaft für die Lagemeldung an den Stab festhalten."
+        },
+        {
+          "zeit": 66,
+          "weg": "funk",
+          "art": "lagemeldung",
+          "text": "Lichtmast auf dem Schulhof aufgestellt, Vorplatz und Zugang zur Turnhalle werden ab der Dämmerung ausgeleuchtet. 6 Flutlichtstrahler noch verlastet.",
+          "erwartung": "In die Lagekarte übernehmen und festhalten, wo der einzige Lichtmast steht und dass 6 Flutlichtstrahler frei sind, außerhalb der Schule aber eine eigene Einspeisung brauchen; wird für spätere Anforderungen gebraucht."
+        },
+        {
+          "zeit": 88,
+          "weg": "funk",
+          "art": "vollzug",
+          "text": "Auftrag Umschaltung auf Ersatzstrom ausgeführt: Grundschule umgeschaltet, Unterbrechung 3 Minuten, die Netzersatzanlage trägt 34 kW. Der Netzbetreiber kann abschalten.",
+          "erwartung": "Vollzug sofort an den Stab melden, weil der Netzbetreiber darauf wartet. Hat die EL Einsatzauftrag Nr. 4 nicht an {{ea}} weitergegeben, vermerkt die Übungsleitung das."
+        },
+        {
+          "zeit": 106,
+          "weg": "funk",
+          "art": "lagemeldung",
+          "text": "Netzbetreiber hat abgeschaltet. Grundschule läuft weiter über die Netzersatzanlage, Kraftstoff reicht bei aktueller Last für etwa 3 Stunden.",
+          "erwartung": "In die Lagekarte übernehmen, Reichweite des Kraftstoffs für die weitere Planung vormerken und in der Lagemeldung an den Stab nennen."
+        },
+        {
+          "zeit": 124,
+          "weg": "funk",
+          "art": "rueckfrage",
+          "text": "Frage: Welche Ausleuchtung hat Vorrang? Der Auftrag zur Ausleuchtung der Fundstelle verlangt den Lichtmast, derselbe Mast leuchtet den Vorplatz der Betreuungsstelle aus.",
+          "erwartung": "Priorisieren, der Auftrag des Stabs kollidiert mit der Lage: entscheiden (z. B. Lichtmast zur Fundstelle, Vorplatz mit Flutlichtstrahlern) und die Entscheidung an {{ea}} und den Stab melden; im Zweifel Rückfrage an den Stab."
+        },
+        {
+          "zeit": 142,
+          "weg": "funk",
+          "art": "vollzug",
+          "text": "Auftrag Ausleuchtung der Fundstelle ausgeführt: Lichtmast am MOORKAMP aufgebaut und in Betrieb. Vorplatz der Betreuungsstelle mit 2 Flutlichtstrahlern ausgeleuchtet.",
+          "erwartung": "Vollzug zu Einsatzauftrag Nr. 6 an den Stab melden, Lagekarte nachführen und die übrigen 4 Flutlichtstrahler für die Absperrung nur zusammen mit Stromerzeugern einplanen."
+        },
+        {
+          "zeit": 160,
+          "weg": "funk",
+          "art": "anforderung",
+          "text": "Wegen der späteren Freigabe reicht der Kraftstoff der Netzersatzanlage nicht bis zur Wiederzuschaltung des Netzes. Benötigen 200 l Diesel bis zur übernächsten Lagemeldung.",
+          "erwartung": "Mit dem Kraftstoffstand im Bereitstellungsraum abgleichen (nur 60 l), Nachschub gebündelt beim Stab anfordern und {{ea}} den Liefertermin mitteilen."
+        }
+      ]
+    },
+    {
+      "key": "bestreifung",
+      "bezeichnung": "Einsatzstelle Bestreifung Absperrradius",
+      "hintergrund": "Auftrag: Das Gebiet innerhalb des Radius gemeinsam mit der Polizei bestreifen, Nachzügler ansprechen und zu den Absperrpunkten begleiten, kontrollierte Gebäude an der Tür kennzeichnen; den Südteil kontrolliert die Polizei mit eigenen Kräften. Ab der Meldung „Gebiet geräumt“ darf außer dem Kampfmittelräumdienst niemand in den Radius, die Streifen bestreifen dann die Absperrgrenze von außen. Kräfte: 3 Streifen aus je 2 THW-Kräften und 1 Polizeibeamten, Streife 1 führt der Truppführer selbst, Stärke 0/1/5//6, 1 Mannschaftstransportwagen, Handfunkgeräte, Kreide und Absperrband. Im Radius stehen etwa 180 Gebäude. Die Einsatzstelle weiß noch nicht, dass der Stab eine vollständige Räumungskontrolle als Voraussetzung für die Entschärfung verlangt, dass ein Betrieb im Gebiet nicht räumen will, dass die Absperrung am Uferweg eine Lücke hat und dass die Bestreifung bis in die Nacht dauert.",
+      "nachrichten": [
+        {
+          "zeit": 11,
+          "weg": "funk",
+          "art": "betrieb",
+          "text": "Einsatzstelle Bestreifung übernommen. 3 Streifen aus je 2 THW-Kräften und 1 Polizeibeamten beginnen im Nordteil, Stärke 0/1/5//6.",
+          "erwartung": "Anmeldung quittieren, Einsatzstelle und Streifenbereiche in die Lagekarte eintragen und die Stärke in die Kräfteübersicht übernehmen."
+        },
+        {
+          "zeit": 28,
+          "weg": "funk",
+          "art": "lagemeldung",
+          "text": "Nordteil bis zum LERCHENWEG abgegangen, an 3 Gebäuden öffnet niemand. Anschriften an die Polizei übergeben, Türen gekennzeichnet.",
+          "erwartung": "Lagekarte nachführen und die 3 Anschriften festhalten; sie fließen in die spätere Meldung „Gebiet geräumt“ ein."
+        },
+        {
+          "zeit": 46,
+          "weg": "funk",
+          "art": "rueckfrage",
+          "text": "Frage: In der Tischlerei LERCHENHOLZ am Lerchenweg arbeiten 2 Beschäftigte weiter und wollen die Trocknungsanlage nicht abschalten. Die Polizei vor Ort verweist an den Stab. Wer entscheidet?",
+          "erwartung": "Nicht selbst entscheiden, sofort an den Stab weitergeben: Ohne Räumung des Betriebs kann die Entschärfung nicht beginnen. Antwort (Räumung durch die Polizei) an {{ea}} zurückgeben."
+        },
+        {
+          "zeit": 72,
+          "weg": "funk",
+          "art": "betrieb",
+          "text": "Funkprobe nach Rufgruppenwechsel: Einsatzstelle Bestreifung jetzt auf der zugewiesenen Rufgruppe, die Streifen arbeiten auf eigener Rufgruppe. Frage: Wie werde ich verstanden?",
+          "erwartung": "Funkprobe beantworten und die Verständlichkeit angeben; Rufgruppenzuordnung in der Kommunikationsübersicht festhalten. Streifen in der Rufgruppe der Einsatzleitung nicht zulassen."
+        },
+        {
+          "zeit": 95,
+          "weg": "funk",
+          "art": "vollzug",
+          "text": "Auftrag Räumungskontrolle ausgeführt: alle 180 Gebäude kontrolliert und gekennzeichnet, Südteil durch die Polizei. 3 Gebäude ohne Öffnung hat die Polizei geöffnet und kontrolliert, Tischlerei geräumt. Aus Sicht der Bestreifung ist das Gebiet geräumt, Streifen gehen an die Absperrgrenze.",
+          "erwartung": "Mit der Meldung der Einsatzstelle Transport (alle 12 Personen heraus) zusammenführen und dem Stab „Gebiet geräumt“ melden. Fehlte Einsatzauftrag Nr. 5 bei {{ea}}, vermerkt die Übungsleitung das."
+        },
+        {
+          "zeit": 109,
+          "weg": "funk",
+          "art": "lagemeldung",
+          "text": "Streife 2 hat bei der Außenbestreifung vom Uferweg an der Lohne aus einen Radfahrer im Radius gesehen, die Polizei hat ihn herausgeholt. Der Uferweg ist am Radius nicht abgesperrt.",
+          "erwartung": "Lücke sofort an {{ea:absperrung}} weitergeben (Uferweg sperren) und dem Stab melden, dass das Gebiet kurzzeitig nicht geräumt war; der Kampfmittelräumdienst muss das wissen."
+        },
+        {
+          "zeit": 134,
+          "weg": "funk",
+          "art": "anforderung",
+          "text": "Für die Außenbestreifung von Uferweg und Gartenrändern bei Dunkelheit benötigen wir 6 Handscheinwerfer mit Ersatzakkus. Die vorhandenen Helmlampen reichen nicht aus.",
+          "erwartung": "Anforderung mit Menge und Ziel bündeln und zusammen mit dem Lichtbedarf der Absperrung an den Stab richten. Hat der Stab keine Handscheinwerfer, Abgabe durch andere Einsatzstellen prüfen und {{ea}} die Lösung mitteilen."
+        },
+        {
+          "zeit": 155,
+          "weg": "funk",
+          "art": "lagemeldung",
+          "text": "Bestreifung der Absperrgrenze im 30-Minuten-Takt, keine weiteren Personen im Radius festgestellt. Streifen seit Beginn der Bestreifung über 2 Stunden ohne Pause, Stärke weiter 0/1/5//6.",
+          "erwartung": "Ablösebedarf der Bestreifung in die Planung der Ablösung aufnehmen und in der Lagemeldung an den Stab nennen."
+        },
+        {
+          "zeit": 172,
+          "weg": "funk",
+          "art": "lagemeldung",
+          "text": "Stand zur Übergabe Bestreifung: bei der letzten Runde keine Personen im Radius festgestellt, Uferweg abgesperrt, alle Gebäude gekennzeichnet. Streifen bleiben bis zur Freigabe an der Absperrgrenze.",
+          "erwartung": "In die Übergabemeldung an den Stab übernehmen und {{ea}} bis zur Freigabe an der Absperrgrenze belassen; Ablösung der Streifen einplanen."
+        }
+      ]
+    }
+  ]
+}

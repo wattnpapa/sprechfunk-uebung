@@ -41,9 +41,17 @@ Du stellst ein:
 - Optional: „Anmeldungs-Funkspruch generieren“
 
 ### Schritt 4: Quelle der Funksprüche wählen
-Du hast zwei Möglichkeiten:
+Du hast vier Möglichkeiten:
 - **Vorlagen verwenden** (empfohlen)
 - **Eigene Datei hochladen** (`.txt`)
+- **Szenario**: eine zusammenhängende Lage, deren Handlungsstränge auf die Teilnehmer verteilt werden
+- **Führungsstellen-Übung**: genau eine Stelle wird beübt, etwa eine Einsatzleitung im
+  FüKomKW. Du trägst die Funkrufnamen der beübten Stelle, der übergeordneten Stelle und der
+  unterstellten Einsatzabschnitte ein; die Übungsleitung spielt diese Rollen nach dem
+  Drehbuch ein. Jede Nachricht hat eine Minute ab Übungsbeginn (X-Zeit), einen Weg (Funk,
+  Ausdruck, E-Mail) und die Reaktion, die von der beübten Stelle erwartet wird. Bei
+  weniger Einsatzabschnitten als Einsatzstellen im Drehbuch führt ein Abschnitt mehrere
+  Einsatzstellen. Die beübte Stelle bekommt keinen Teilnehmer-Link.
 
 ### Schritt 5: Lösungswörter (optional)
 Du kannst wählen:
@@ -116,7 +124,11 @@ Im Admin-Bereich siehst du:
 
 Du kannst herunterladen:
 - komplette Druckdaten als ZIP (im Generator),
-- teilnehmerspezifische ZIP-Datei (in der Teilnehmeransicht).
+- teilnehmerspezifische ZIP-Datei (in der Teilnehmeransicht),
+- bei einer Führungsstellen-Übung zusätzlich das Drehbuch als PDF: Lage, Auftrag,
+  Rollenkarten und die Zeitachse aller Nachrichten mit erwarteter Reaktion. Die Nachrichten
+  der übergeordneten Stelle, die als Ausdruck ankommen sollen, druckst du über die
+  Nadeldrucker-Variante ihres Nachrichtenvordrucks aus dem ZIP.
 
 ---
 

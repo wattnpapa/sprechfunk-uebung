@@ -124,9 +124,10 @@ export class Uebungsleitung extends BasePDF {
         this.pdf.addPage();
         let lastNrValue: number | null = null;
         // Die dicke Trennlinie markiert Rundengrenzen (alle Nr. 1, dann Nr. 2, …).
-        // In Szenario-Übungen ist die Tabelle nach Erzählreihenfolge sortiert,
-        // die Nr wechselt dann fast jede Zeile — die Linie entfällt dort.
-        const istSzenario = !!this.funkUebung.szenarioSlug;
+        // In Szenario- und Führungsstellen-Übungen ist die Tabelle nach
+        // Erzählreihenfolge sortiert, die Nr wechselt dann fast jede Zeile —
+        // die Linie entfällt dort.
+        const istSzenario = !!this.funkUebung.szenarioSlug || !!this.funkUebung.fuehrungsstelle;
 
         (this.pdf as any).autoTable({
             head: [["Nr", "Empfänger", "Sender", "Nachricht", "Zeit"]],

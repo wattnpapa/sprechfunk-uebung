@@ -83,7 +83,8 @@ function erlaubteFelder() {
     'buchstabierenAn', 'anmeldungAktiv', 'nachrichtenArtAktiv',
     'spruchAnteilProzent', 'verwendeteVorlagen',
     'istStandardKonfiguration', 'spielModus', 'xZeitIntervallMinuten',
-    'xZeitStartOffsetMinuten', 'szenarioSlug', 'seed', 'statTeilnehmerAnzahl', 'statNachrichtenAnzahl',
+    'xZeitStartOffsetMinuten', 'szenarioSlug', 'fuehrungsstelle', 'seed',
+    'statTeilnehmerAnzahl', 'statNachrichtenAnzahl',
     'statBytes', 'statMonat', 'statJahr', 'statHatLoesungswoerter',
     'statHatLoesungsStaerken', 'statHatBuchstabieren'
   ];
@@ -155,7 +156,23 @@ function istOptionalesGueltig(daten) {
          && optionalOk(daten, 'xZeitStartOffsetMinuten', istZahlImBereich(daten.xZeitStartOffsetMinuten, 0, 1440))
          // Slug des Szenarios (Szenario-Modus); Inhalte liegen als statisches
          // JSON im Deployment, im Dokument steht nur die Referenz.
-         && optionalOk(daten, 'szenarioSlug', istText(daten.szenarioSlug, 64));
+         && optionalOk(daten, 'szenarioSlug', istText(daten.szenarioSlug, 64))
+         // Rollenbesetzung einer Führungsstellen-Übung; das Drehbuch selbst
+         // liegt als statisches JSON im Deployment, im Dokument stehen nur
+         // Slug und Funkrufnamen.
+         && optionalOk(daten, 'fuehrungsstelle', istFuehrungsstelle(daten.fuehrungsstelle));
+}
+
+function istFuehrungsstelle(wert) {
+  return wert is map
+         && wert.keys().hasOnly(['slug', 'beuebteStelle', 'uebergeordnet', 'unterstellt', 'beginn'])
+         && wert.keys().hasAll(['slug', 'beuebteStelle', 'uebergeordnet', 'unterstellt'])
+         && istText(wert.slug, 64)
+         && istText(wert.beuebteStelle, 100)
+         && istText(wert.uebergeordnet, 100)
+         && wert.unterstellt is list
+         && wert.unterstellt.size() <= 8
+         && optionalOk(wert, 'beginn', istText(wert.beginn, 5));
 }
 
 // Die stat*-Felder speisen die Aggregations-Queries des Admin-Dashboards.
