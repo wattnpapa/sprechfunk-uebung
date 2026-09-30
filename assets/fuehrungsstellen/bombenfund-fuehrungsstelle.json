@@ -31,7 +31,7 @@
         "weg": "drucker",
         "art": "auftrag",
         "betreff": "Einsatzauftrag Nr. 2 – Nachgemeldete immobile Person Lerchenweg 21",
-        "text": "Der ambulante Pflegedienst meldet eine bettlägerige Person im Lerchenweg 21, 1. Obergeschoss, die nicht auf der Liste des Ordnungsamts steht.\n\nAuftrag: Die Einsatzstelle Transport immobiler Personen trägt die Person aus der Wohnung und übergibt sie am Hauseingang liegend an den Rettungsdienst. Der Rettungswagen an der Grundschule wird vom Stab zum Lerchenweg 21 entsandt und übernimmt die Person am Hauseingang.\n\nRückmeldung: Übergabe abwarten und Vollzug an den Stab melden. Die Gesamtzahl der zu transportierenden Personen erhöht sich damit auf 12.\n\nFührungsstab, S 3 – Einsatz",
+        "text": "Der ambulante Pflegedienst meldet eine bettlägerige Person im Lerchenweg 21, 1. Obergeschoss, die nicht auf der Liste des Ordnungsamts steht.\n\nAuftrag: Die Einsatzstelle Transport immobiler Personen trägt die Person aus der Wohnung und übergibt sie am Hauseingang liegend an den Rettungsdienst. Den Rettungswagen an der Grundschule entsendet der Stab zum Lerchenweg 21.\n\nRückmeldung: Übergabe abwarten und Vollzug an den Stab melden. Die Gesamtzahl der zu transportierenden Personen erhöht sich damit auf 12.\n\nFührungsstab, S 3 – Einsatz",
         "erwartung": "Auftrag an {{ea:transport}} weitergeben, Liste in der Lagekarte auf 12 Personen ergänzen, Übergabe an den Rettungsdienst abwarten und den Vollzug an den Stab melden."
       },
       {
@@ -468,7 +468,7 @@
           "weg": "funk",
           "art": "lagemeldung",
           "text": "Lichtmast auf dem Schulhof aufgestellt, Vorplatz und Zugang zur Turnhalle werden ab der Dämmerung ausgeleuchtet. 6 Flutlichtstrahler noch verlastet.",
-          "erwartung": "In die Lagekarte übernehmen und festhalten, wo der einzige Lichtmast steht und dass 6 Flutlichtstrahler frei sind; wird für spätere Anforderungen gebraucht."
+          "erwartung": "In die Lagekarte übernehmen und festhalten, wo der einzige Lichtmast steht und dass 6 Flutlichtstrahler frei sind, außerhalb der Schule aber eine eigene Einspeisung brauchen; wird für spätere Anforderungen gebraucht."
         },
         {
           "zeit": 88,
