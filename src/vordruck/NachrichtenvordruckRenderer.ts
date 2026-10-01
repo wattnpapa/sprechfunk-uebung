@@ -88,15 +88,31 @@ export function zeichneNachrichtenvordruck(
         height: 16.5
     });
 
-    zeichneMehrzeilig(pdf, {
-        text: daten.inhalt,
-        x: offsetX + 17,
-        y: 77,
-        maxWidth: 120,
-        lineHeight: 6.3,
-        fontSize: 12,
-        lineSpacing: 0
-    });
+    // Inhalt ab 77 mm bis zum Fußblock bei 148 mm. Funksprüche passen in
+    // Normalgröße; lange Ausdrucke und E-Mails einer Führungsstellen-Übung
+    // werden verkleinert, statt in den Fußblock zu laufen.
+    const inhaltHoehe = 71;
+    pdf.setFontSize(12);
+    const inhaltZeilen: string[] = pdf.splitTextToSize(String(daten.inhalt).replace(/\\n/g, "\n"), 120);
+    if (inhaltZeilen.length * 6.3 <= inhaltHoehe) {
+        zeichneMehrzeilig(pdf, {
+            text: daten.inhalt,
+            x: offsetX + 17,
+            y: 77,
+            maxWidth: 120,
+            lineHeight: 6.3,
+            fontSize: 12,
+            lineSpacing: 0
+        });
+    } else {
+        zeichneInZelle(pdf, {
+            text: String(daten.inhalt).replace(/\\n/g, "\n"),
+            x: offsetX + 17,
+            y: 77,
+            width: 120,
+            height: inhaltHoehe
+        });
+    }
 
     if (!optionen.ohneRahmen) {
         zeichneRahmen(pdf, daten, offsetX);

@@ -31,6 +31,12 @@ export class GeneratorController {
     /** Entwertet überholte Info-Fetches bei schnellem Szenario-Wechsel. */
     private szenarioInfoToken = 0;
     private fuehrungsstelleInfoToken = 0;
+    /**
+     * Teilnehmer des Formulars, bevor eine Führungsstellen-Übung die Liste mit
+     * ihren Rollen überschreibt; beim Wechsel auf eine andere Quelle kommt
+     * die Liste zurück.
+     */
+    private teilnehmerVorFuehrungsstelle: { liste: string[]; stellen: Record<string, string> } | null = null;
     /** Abschnittsspanne des gewählten Drehbuchs; bis zum ersten Laden großzügig. */
     private fuehrungsstelleGrenzen: AbschnittsGrenzen = { min: 1, max: 8 };
     /** Vorbelegung der Rollen: Führungsstelle, Zugtrupps als Abschnitte, Katastrophenschutzstab. */
@@ -108,6 +114,7 @@ export class GeneratorController {
         const uebungId = params.length >= 1 ? (params[0] ?? null) : null;
         const uebung = await this.loadUebung(uebungId);
         this.funkUebung = uebung;
+        this.teilnehmerVorFuehrungsstelle = null;
         this.isFreshExercise = !uebungId;
         this.initialConfigFingerprint = this.createConfigFingerprint(this.funkUebung);
         this.updateUI();
@@ -134,8 +141,13 @@ export class GeneratorController {
                 // das auch zeigen, nicht nur der Hinweistext.
                 this.view.selectLoesungswortOption("none");
                 this.stateService.resetLoesungswoerter(this.funkUebung);
-                this.renderTeilnehmer(false);
             }
+            if (source !== "fuehrungsstelle") {
+                this.stelleTeilnehmerWiederHer();
+            }
+            // Immer neu zeichnen, damit Tabelle und Teilnehmerliste der Übung
+            // nach einem Quellenwechsel nicht auseinanderlaufen.
+            this.renderTeilnehmer(false);
             if (source === "szenario") {
                 void this.updateSzenarioInfo();
             }
@@ -352,10 +364,14 @@ export class GeneratorController {
         }
 
         // 1. Daten aus View übernehmen
+        const vorherigeBesetzung = this.funkUebung.fuehrungsstelle;
         const source = this.uebernimmFormular();
 
         // 2./3. Prüfen und generieren, je nach Quelle
         if (!(await this.generiereNachQuelle(source))) {
+            // Eine abgelehnte Rollenbesetzung darf nicht neben dem Ergebnis des
+            // letzten erfolgreichen Laufs stehen bleiben (Drehbuch-PDF, ZIP).
+            this.funkUebung.fuehrungsstelle = vorherigeBesetzung;
             return;
         }
 
@@ -452,6 +468,7 @@ export class GeneratorController {
         this.stateService.resetLoesungswoerter(this.funkUebung);
         this.funkUebung.funksprueche = [];
         this.funkUebung.verwendeteVorlagen = [];
+        this.sichereTeilnehmerVorFuehrungsstelle();
         try {
             this.generationService.generateFuehrungsstelle(this.funkUebung, drehbuch);
         } catch (error) {
@@ -459,6 +476,26 @@ export class GeneratorController {
             return false;
         }
         return true;
+    }
+
+    private sichereTeilnehmerVorFuehrungsstelle(): void {
+        if (this.teilnehmerVorFuehrungsstelle) {
+            return;
+        }
+        this.teilnehmerVorFuehrungsstelle = {
+            liste: [...this.funkUebung.teilnehmerListe],
+            stellen: { ...(this.funkUebung.teilnehmerStellen ?? {}) }
+        };
+    }
+
+    private stelleTeilnehmerWiederHer(): void {
+        const gesichert = this.teilnehmerVorFuehrungsstelle;
+        if (!gesichert) {
+            return;
+        }
+        this.funkUebung.teilnehmerListe = [...gesichert.liste];
+        this.funkUebung.teilnehmerStellen = { ...gesichert.stellen };
+        this.teilnehmerVorFuehrungsstelle = null;
     }
 
     private async loadFuehrungsstellenUebung(slug: string): Promise<FuehrungsstellenUebung | null> {

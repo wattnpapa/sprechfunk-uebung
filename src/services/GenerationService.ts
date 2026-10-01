@@ -88,14 +88,25 @@ export class GenerationService {
         uebung.teilnehmerListe = fuehrungsstellenTeilnehmerListe(konfiguration);
         uebung.teilnehmerStellen = this.fuehrungsstellenStellen(drehbuch, konfiguration);
         uebung.nachrichten = this.verteileNachrichtenNachDrehbuch(drehbuch, konfiguration);
-        this.finalisiere(uebung);
+        // Keine Soll-Stärke: Die Drehbücher melden laufende Stände derselben
+        // Einheit (Anmeldung, Änderung, Abschlussstand) und Teilsummen; eine
+        // Addition aller Treffer ergäbe eine Zahl, die nirgends im Drehbuch steht.
+        this.finalisiere(uebung, false);
     }
 
-    /** Schritte, die jeder Generierungspfad zum Schluss durchläuft. */
-    private finalisiere(uebung: FunkUebung): void {
+    /**
+     * Schritte, die jeder Generierungspfad zum Schluss durchläuft. Ohne
+     * `mitStaerken` bleibt die Soll-Stärke leer, die Leitungsansicht blendet
+     * die Spalte dann aus.
+     */
+    private finalisiere(uebung: FunkUebung, mitStaerken = true): void {
         this.ensureJoinCodes(uebung);
         this.updateChecksum(uebung);
-        this.berechneLoesungsStaerken(uebung);
+        if (mitStaerken) {
+            this.berechneLoesungsStaerken(uebung);
+        } else {
+            uebung.loesungsStaerken = {};
+        }
         // Erst hier, weil die Art von `staerken` und `loesungsbuchstaben` abhängt
         // und beide vorher gefüllt werden.
         this.markiereNachrichtenArt(uebung);
@@ -134,13 +145,17 @@ export class GenerationService {
         return konfiguration;
     }
 
-    /** Stellennamen aus den Rollen: Die Abschnitte tragen ihre Einsatzstellen. */
+    /**
+     * Stellennamen aus den Rollen: Die Abschnitte tragen ihre Einsatzstellen,
+     * der Stab seine Bezeichnung. Die beübte Stelle bekommt bewusst keinen —
+     * der Stellenname steht auf den Vordrucken als Anschrift, und dort muss
+     * ihr Funkrufname stehen.
+     */
     private fuehrungsstellenStellen(
         drehbuch: FuehrungsstellenUebung,
         konfiguration: FuehrungsstellenKonfiguration
     ): Record<string, string> {
         const stellen: Record<string, string> = {
-            [konfiguration.beuebteStelle]: "Beübte Führungsstelle",
             [konfiguration.uebergeordnet]: drehbuch.uebergeordnet.bezeichnung
         };
         const zuordnung = verteileStraenge(drehbuch.straenge.length, konfiguration.unterstellt.length);

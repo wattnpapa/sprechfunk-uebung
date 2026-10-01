@@ -79,8 +79,9 @@ describe("GenerationService Führungsstellen-Übung", () => {
         expect(uebung.spielModus).toBe("xZeit");
         expect(uebung.anmeldungAktiv).toBe(false);
         expect(uebung.szenarioSlug).toBeUndefined();
+        // Die beübte Stelle bekommt keinen Stellennamen: Auf den Vordrucken
+        // steht der Stellenname als Anschrift, dort muss ihr Funkrufname stehen.
         expect(uebung.teilnehmerStellen).toEqual({
-            "EL 10": "Beübte Führungsstelle",
             "Kater Test": "Führungsstab",
             "EA 11": "Einsatzstelle 1, Einsatzstelle 3",
             "EA 12": "Einsatzstelle 2, Einsatzstelle 4"
@@ -118,7 +119,11 @@ describe("GenerationService Führungsstellen-Übung", () => {
         expect(stab.map(n => n.weg)).toEqual(["drucker", "email", "funk"]);
         expect(stab.map(n => n.xZeitSlot)).toEqual([5, 10, 11]);
         expect(stab[0]?.meldeart).toBe("auftrag");
-        expect(stab[1]).not.toHaveProperty("betreff", undefined);
+        // Funk-Nachrichten tragen keinen Betreff-Schlüssel — Firestore lehnt
+        // undefined in der verschachtelten nachrichten-Map ab.
+        alleNachrichten(uebung)
+            .filter(({ nachricht }) => nachricht.weg === "funk")
+            .forEach(({ nachricht }) => expect(Object.keys(nachricht)).not.toContain("betreff"));
     });
 
     it("nummeriert szenarioNr global entlang der entzerrten Zeitachse", () => {
@@ -134,14 +139,16 @@ describe("GenerationService Führungsstellen-Übung", () => {
         }
     });
 
-    it("summiert die Stärkemeldungen bei der beübten Stelle, ohne Texte zu verändern", () => {
+    it("führt keine Soll-Stärke und verändert keine Texte", () => {
         const uebung = baueUebung();
         new GenerationService().generateFuehrungsstelle(uebung, baueDrehbuch());
 
-        // Stab 1/2/9 + Stränge 0/1/4, 0/1/5, 0/1/6, 0/1/7 = 1/6/31 -> 38
-        expect(uebung.loesungsStaerken?.["EL 10"]).toBe("1/6/31/38");
+        // Die Drehbücher melden laufende Stände derselben Einheit; eine Summe
+        // aller Treffer wäre eine Zahl, die nirgends im Drehbuch steht.
+        expect(uebung.loesungsStaerken).toEqual({});
         alleNachrichten(uebung).forEach(({ nachricht }) => {
             expect(nachricht.nachricht).not.toContain("Aktuelle Stärke:");
+            expect(nachricht).not.toHaveProperty("staerken");
         });
         expect(uebung.loesungswoerter).toEqual({});
     });

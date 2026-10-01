@@ -281,16 +281,71 @@ describe("GeneratorController Führungsstellen-Übung", () => {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const mit = (controller as any).createConfigFingerprint(controller.funkUebung);
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        (globalThis as any).fetch = vi.fn().mockResolvedValue({ text: async () => "Spruch eins.\nSpruch zwei.\n" });
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         (controller as any).view = baueView({
             getSelectedSource: () => "vorlagen",
-            getSelectedTemplates: () => [],
-            getFormData: () => ({ spruecheProTeilnehmer: 3, spruecheAnAlle: 0, spruecheAnMehrere: 0, anmeldungAktiv: false })
+            getSelectedTemplates: () => ["thwleer"],
+            getFormData: () => ({ spruecheProTeilnehmer: 3, spruecheAnAlle: 0, spruecheAnMehrere: 0, anmeldungAktiv: false, spielModus: "klassisch" })
         });
         controller.funkUebung.teilnehmerListe = ["A", "B"];
         await controller.startUebung();
         expect(controller.funkUebung.fuehrungsstelle).toBeUndefined();
+        expect(controller.funkUebung.spielModus).toBe("klassisch");
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const ohne = (controller as any).createConfigFingerprint(controller.funkUebung);
         expect(mit).not.toBe(ohne);
+    });
+
+    it("behält bei abgelehnter Besetzung die vorherige Rollenbesetzung", async () => {
+        const controller = await makeController();
+        const vorher = { slug: "hochwasser-fuehrungsstelle", beuebteStelle: "EL alt", uebergeordnet: "Stab alt", unterstellt: ["EA alt"] };
+        controller.funkUebung.fuehrungsstelle = vorher;
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        (controller as any).generationService.generateFuehrungsstelle = vi.fn(() => {
+            throw new Error("Die Funkrufnamen der Führungsstellen-Übung müssen eindeutig sein.");
+        });
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        (controller as any).view = baueView();
+        await controller.startUebung();
+        expect(controller.funkUebung.fuehrungsstelle).toEqual(vorher);
+    });
+
+    it("stellt die Teilnehmer des Formulars wieder her, wenn die Quelle die Führungsstellen-Übung verlässt", async () => {
+        const controller = await makeController();
+        let quelleGewechselt: ((source: string) => void) | undefined;
+        const renderTeilnehmerSection = vi.fn();
+        const view = baueView({
+            bindDistributionInputs: vi.fn(), bindSzenarioChange: vi.fn(),
+            bindSourceToggle: vi.fn((cb: (source: string) => void) => { quelleGewechselt = cb; }),
+            bindFuehrungsstelleChange: vi.fn(), bindFuehrungsstellenAbschnittEvents: vi.fn(),
+            bindLoesungswortOptionChange: vi.fn(), bindTeilnehmerEvents: vi.fn(), bindAnmeldungToggle: vi.fn(),
+            bindNachrichtenArtToggle: vi.fn(), bindSpielModusToggle: vi.fn(), bindQuickJoin: vi.fn(),
+            bindPrimaryActions: vi.fn(), selectLoesungswortOption: vi.fn(), renderTeilnehmerSection,
+            updateLoesungswortOptionUI: vi.fn()
+        });
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        (controller as any).view = view;
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        (controller as any).renderUebungResult = vi.fn();
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        (controller as any).bindEvents();
+        controller.funkUebung.teilnehmerListe = ["Heros A 21/10", "Heros B 21/10"];
+        controller.funkUebung.teilnehmerStellen = { "Heros A 21/10": "Trupp A" };
+        // Die echte Generierung ersetzt die Teilnehmerliste durch die Rollen.
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        (controller as any).generationService.generateFuehrungsstelle = vi.fn((uebung: { teilnehmerListe: string[]; teilnehmerStellen: Record<string, string> }) => {
+            uebung.teilnehmerListe = ["EL 10", "EA 11", "EA 12", "Kater"];
+            uebung.teilnehmerStellen = { Kater: "Führungsstab" };
+        });
+
+        await controller.startUebung();
+        expect(controller.funkUebung.teilnehmerListe).toEqual(["EL 10", "EA 11", "EA 12", "Kater"]);
+
+        quelleGewechselt?.("vorlagen");
+        expect(controller.funkUebung.teilnehmerListe).toEqual(["Heros A 21/10", "Heros B 21/10"]);
+        expect(controller.funkUebung.teilnehmerStellen).toEqual({ "Heros A 21/10": "Trupp A" });
+        // Die Tabelle wird bei jedem Quellenwechsel neu gezeichnet.
+        expect(renderTeilnehmerSection).toHaveBeenLastCalledWith(["Heros A 21/10", "Heros B 21/10"], { "Heros A 21/10": "Trupp A" }, {}, true);
     });
 });

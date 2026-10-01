@@ -31,8 +31,12 @@ export class FuehrungsstellenParseError extends Error {
 
 /** Ein Funkspruch muss auf einen A5-Vordruck passen (kein Seitenumbruch). */
 export const FUEHRUNGSSTELLE_MAX_FUNKTEXT = 300;
-/** Ausdruck und E-Mail dürfen länger sein — ein Einsatzauftrag hat Absätze. */
-export const FUEHRUNGSSTELLE_MAX_TEXT = 1500;
+/**
+ * Ausdruck und E-Mail dürfen länger sein — ein Einsatzauftrag hat Absätze.
+ * Auf dem A5-Nachrichtenvordruck wird so ein Text verkleinert gesetzt; mehr
+ * als 1000 Zeichen wären dort nicht mehr lesbar.
+ */
+export const FUEHRUNGSSTELLE_MAX_TEXT = 1000;
 export const FUEHRUNGSSTELLE_MAX_ERWARTUNG = 400;
 export const FUEHRUNGSSTELLE_MAX_BETREFF = 120;
 export const FUEHRUNGSSTELLE_MIN_DAUER = 30;
@@ -72,7 +76,12 @@ export function parseFuehrungsstellenUebung(slug: string, roh: unknown): Fuehrun
     const dauerMinuten = parseDauer(obj["dauerMinuten"], fehler);
 
     const strangKeys = leseStrangKeys(obj["straenge"]);
-    const kontext: NachrichtenKontext = { dauerMinuten, strangKeys };
+    // Eine ungültige Dauer ist genau ein Fehler; sie soll nicht jede Nachricht
+    // zusätzlich als „außerhalb der Dauer" melden.
+    const kontext: NachrichtenKontext = {
+        dauerMinuten: dauerMinuten > 0 ? dauerMinuten : Number.POSITIVE_INFINITY,
+        strangKeys
+    };
     const straenge = parseStraenge(obj["straenge"], kontext, fehler);
     const uebergeordnet = parseStab(obj["uebergeordnet"], kontext, fehler);
     const minAbschnitte = parseMinAbschnitte(obj["minAbschnitte"], straenge.length, fehler);
@@ -168,12 +177,6 @@ function parseStraenge(roh: unknown, kontext: NachrichtenKontext, fehler: string
         }
         gesehen.add(key);
         const nachrichten = parseNachrichten(strang["nachrichten"], pfad, { ...kontext, imStrang: true }, fehler);
-        // Einsatzabschnitte melden über Funk; Ausdruck und E-Mail kommen vom Stab.
-        nachrichten.forEach((nachricht, i) => {
-            if (nachricht.weg !== "funk") {
-                fehler.push(`${pfad}.nachrichten[${i}]: Stränge senden nur über funk`);
-            }
-        });
         return [{ ...rolle, key, nachrichten }];
     });
 }
@@ -201,15 +204,22 @@ function parseNachrichten(
     return roh.flatMap((eintrag, index) => {
         const nachrichtPfad = `${pfad}.nachrichten[${index}]`;
         const nachricht = parseNachricht(eintrag, nachrichtPfad, kontext, fehler);
-        if (!nachricht) {
-            return [];
+        // Die Sortierung auch über Nachrichten mit anderen Fehlern prüfen,
+        // sonst versteckt ein Tippfehler den Sortierfehler bis zur Korrektur.
+        const zeit = nachricht?.zeit ?? leseZeit(eintrag);
+        if (zeit !== undefined) {
+            if (zeit < letzteZeit) {
+                fehler.push(`${nachrichtPfad}: zeit (${zeit}) liegt vor der vorherigen Nachricht (${letzteZeit}) — aufsteigend sortieren`);
+            }
+            letzteZeit = Math.max(letzteZeit, zeit);
         }
-        if (nachricht.zeit < letzteZeit) {
-            fehler.push(`${nachrichtPfad}: zeit (${nachricht.zeit}) liegt vor der vorherigen Nachricht (${letzteZeit}) — aufsteigend sortieren`);
-        }
-        letzteZeit = Math.max(letzteZeit, nachricht.zeit);
-        return [nachricht];
+        return nachricht ? [nachricht] : [];
     });
+}
+
+function leseZeit(roh: unknown): number | undefined {
+    const zeit = roh && typeof roh === "object" ? (roh as Record<string, unknown>)["zeit"] : undefined;
+    return typeof zeit === "number" && Number.isInteger(zeit) ? zeit : undefined;
 }
 
 // eslint-disable-next-line complexity
@@ -228,11 +238,16 @@ function parseNachricht(
 
     const zeit = nachricht["zeit"];
     if (typeof zeit !== "number" || !Number.isInteger(zeit) || zeit < 0 || zeit > kontext.dauerMinuten) {
-        fehler.push(`${pfad}: zeit muss eine ganze Minute zwischen 0 und ${kontext.dauerMinuten} sein`);
+        const obergrenze = Number.isFinite(kontext.dauerMinuten) ? ` und ${kontext.dauerMinuten}` : "";
+        fehler.push(`${pfad}: zeit muss eine ganze Minute zwischen 0${obergrenze} sein`);
     }
     const weg = nachricht["weg"];
-    if (!UEBERMITTLUNGS_WEGE.includes(weg as UebermittlungsWeg)) {
+    const wegGueltig = UEBERMITTLUNGS_WEGE.includes(weg as UebermittlungsWeg);
+    if (!wegGueltig) {
         fehler.push(`${pfad}: weg muss ${UEBERMITTLUNGS_WEGE.join(", ")} sein`);
+    } else if (kontext.imStrang && weg !== "funk") {
+        // Einsatzabschnitte melden über Funk; Ausdruck und E-Mail kommen vom Stab.
+        fehler.push(`${pfad}: Stränge senden nur über funk`);
     }
     const art = nachricht["art"];
     if (!MELDEARTEN.includes(art as Meldeart)) {
@@ -248,7 +263,7 @@ function parseNachricht(
     );
     const betreff = pruefeText(
         nachricht["betreff"], `${pfad}.betreff`,
-        { maxLaenge: FUEHRUNGSSTELLE_MAX_BETREFF, pflicht: weg !== "funk", platzhalter }, fehler
+        { maxLaenge: FUEHRUNGSSTELLE_MAX_BETREFF, pflicht: wegGueltig && weg !== "funk", platzhalter }, fehler
     );
     if (weg === "funk" && betreff) {
         fehler.push(`${pfad}: betreff ist nur bei drucker und email vorgesehen`);

@@ -484,6 +484,20 @@ describe("TeilnehmerView – Fokus-Modus", () => {
         expect((document.getElementById("teilnehmerTableView") as HTMLElement).style.display).toBe("none");
     });
 
+    it("zeigt in der Fokus-Karte Weg, Betreff und erwartete Reaktion einer Führungsstellen-Nachricht", () => {
+        const view = renderXZeit();
+        view.renderNachrichten(
+            [{ id: 1, empfaenger: ["EL 10"], nachricht: "Sperren Sie den Mühlenkamp.", xZeitSlot: 0, weg: "drucker", meldeart: "auftrag", betreff: "Einsatzauftrag Nr. 3", erwartung: "An EA 12 weitergeben" }],
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            { hideTransmitted: false, fokusModus: true, nachrichten: {} } as any,
+            { showXZeit: true, xZeitBasis: "11:55" }
+        );
+        const html = document.getElementById("teilnehmerFokusCard")?.innerHTML ?? "";
+        expect(html).toContain("Ausdruck");
+        expect(html).toContain("Einsatzauftrag Nr. 3");
+        expect(html).toContain("Erwartet: An EA 12 weitergeben");
+    });
+
     it("zeigt einen Countdown, solange keine Meldung fällig ist", () => {
         const view = renderXZeit();
         renderMitStorage(view, { 1: { uebertragen: true } }, "11:55");

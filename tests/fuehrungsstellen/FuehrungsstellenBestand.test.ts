@@ -9,6 +9,8 @@ import {
     type FuehrungsstellenUebung
 } from "../../src/types/FuehrungsstellenUebung";
 import { enthaeltBuchstabierAufgabe } from "../../src/utils/buchstabieren";
+import { GenerationService } from "../../src/services/GenerationService";
+import { FunkUebung } from "../../src/models/FunkUebung";
 
 /**
  * Hält die mitgelieferten Drehbücher (assets/fuehrungsstellen/*.json), die
@@ -155,6 +157,28 @@ describe("Führungsstellen-Bestand", () => {
             const funkTexte = alle.filter(n => n.weg === "funk").map(n => n.text);
             expect(funkTexte.filter(text => enthaeltBuchstabierAufgabe(text)).length).toBeGreaterThanOrEqual(6);
             expect(texte.filter(text => STAERKE_THW.test(text)).length).toBeGreaterThanOrEqual(4);
+        });
+
+        it("lässt sich für jede erlaubte Abschnittszahl vollständig und ohne Reste generieren", () => {
+            for (let anzahl = uebung.minAbschnitte; anzahl <= uebung.straenge.length; anzahl++) {
+                const funkUebung = new FunkUebung("test");
+                funkUebung.fuehrungsstelle = {
+                    slug, beuebteStelle: "EL 10", uebergeordnet: "Kater",
+                    unterstellt: Array.from({ length: anzahl }, (_, i) => `EA ${i + 11}`)
+                };
+                new GenerationService().generateFuehrungsstelle(funkUebung, uebung);
+                const nachrichten = Object.values(funkUebung.nachrichten).flat();
+                expect(nachrichten).toHaveLength(alle.length);
+                nachrichten.forEach(n => {
+                    expect(`${n.nachricht} ${n.betreff ?? ""} ${n.erwartung ?? ""}`).not.toContain("{{");
+                    expect(n.xZeitSlot).toBeLessThanOrEqual(uebung.dauerMinuten);
+                });
+                Object.values(funkUebung.nachrichten).forEach(liste => {
+                    for (let i = 1; i < liste.length; i++) {
+                        expect(liste[i]?.xZeitSlot ?? 0).toBeGreaterThan(liste[i - 1]?.xZeitSlot ?? 0);
+                    }
+                });
+            }
         });
 
         it("bleibt beim Nachrichteninhalt: kein Betriebsgespräch, keine Übungsleitung im Text", () => {
