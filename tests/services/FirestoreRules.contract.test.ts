@@ -139,6 +139,17 @@ describe("firestore.rules Feldvertrag", () => {
         expect(rulesQuelltext).toContain("^teilnehmer-[A-Za-z0-9]{1,32}$");
     });
 
+    it("prüft die Anwesenheit optionaler Felder nicht über keys() (Ausdrucks-Budget)", () => {
+        // Firestore wertet höchstens 1000 Ausdrücke je Anfrage aus. `keys()`
+        // zählt mit der Zahl der Dokumentfelder; je optionalem Feld aufgerufen,
+        // kippte das am 2026-09-30 jedes Speichern in Produktion (ADR 0008).
+        // Das Budget selbst misst tests/rules/FirestoreRules.emulator.test.ts.
+        expect(rulesQuelltext).not.toMatch(/keys\(\)\.hasAny\(/);
+        expect(rulesQuelltext).not.toContain("optionalOk(");
+        // keys() nur für die Allowlists: hasOnly/hasAll der drei Dokumenttypen.
+        expect((rulesQuelltext.match(/\.keys\(\)/g) ?? []).length).toBeLessThanOrEqual(6);
+    });
+
     it("dokumentiert das Sicherheitsmodell und sperrt fremde Collections", () => {
         expect(rulesQuelltext).toContain("match /uebungen/{uebungId}");
         expect(rulesQuelltext).toMatch(/match \/\{document=\*\*\}\s*{\s*allow read, write: if false;/);

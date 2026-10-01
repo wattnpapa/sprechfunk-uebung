@@ -60,9 +60,18 @@ Dasselbe gilt für das Feld `fuehrungsstelle` der Führungsstellen-Übung (2026-
 Deploy lehnt Firestore jede Führungsstellen-Übung beim Speichern ab, während klassische
 Übungen weiter funktionieren.
 
-Automatisch: `.github/workflows/firestore-rules.yml` läuft bei jedem Push auf `main`, der
-`firestore.rules` anfasst, und deployt die Regeln. Zusätzlich weist `ci.yml` schon im Pull Request
-darauf hin, dass ein Deploy fällig wird.
+Automatisch: Der Job `firestore-rules` in `.github/workflows/main.yml` deployt die Regeln bei
+jedem Push auf `main`, **bevor** die Website zu GitHub Pages geht; der Pages-Deploy wartet auf
+ihn und entfällt, wenn er fehlschlägt (ADR 0008). Ein Pfadfilter gibt es bewusst nicht: Der
+Deploy ist idempotent und holt so auch einen früher ausgefallenen Lauf nach. Zusätzlich weist
+`ci.yml` schon im Pull Request darauf hin, dass der Merge die Regeln in Produktion bringt.
+
+Deployt heißt nicht auswertbar: Firestore bricht die Regelauswertung nach 1000 Ausdrücken je
+Anfrage mit `PERMISSION_DENIED` ab, ohne Hinweis im Client. Am 2026-09-30 reichte dafür das
+27. optionale Feld, weil der damalige Helfer `optionalOk` die Anwesenheit jedes Felds über
+`keys()` prüfte und `keys()` mit der Zahl der Dokumentfelder zählt. Seitdem prüft
+`tests/rules/FirestoreRules.emulator.test.ts` die Regeln im Emulator gegen echte Dokumente,
+samt Reserve unter dem Limit (siehe [Regeln lokal prüfen](#regeln-lokal-prüfen-emulator)).
 
 Manuell – jederzeit, idempotent, auch ohne CI:
 
@@ -92,6 +101,19 @@ Einmalige Einrichtung im Google-Cloud-Projekt `sprechfunk-uebung`:
    `FIREBASE_SERVICE_ACCOUNT` hinterlegen.
 
 Der Schlüssel gehört nie ins Repository (siehe [CONTRIBUTING.md](../CONTRIBUTING.md)).
+
+### Regeln lokal prüfen (Emulator)
+
+```bash
+npm run rules:test
+```
+
+Startet den Firestore-Emulator (braucht Java; `firebase-tools` kommt per `npx`) gegen das
+Demo-Projekt `demo-sprechfunk`, nie gegen Produktion, und schreibt Dokumente, wie
+`GenerationService` und `FirebaseService` sie wirklich erzeugen. Der Test schlägt fehl, wenn
+Firestore ein solches Dokument ablehnen würde oder die Reserve unter dem Ausdrucks-Limit
+aufgebraucht ist. In Pull Requests läuft dasselbe als Job `firestore-rules-emulator` in `ci.yml`.
+Richtwert: Jedes neue optionale Feld in `firestore.rules` kostet 10 bis 20 Ausdrücke.
 
 ### Indizes
 
@@ -136,8 +158,8 @@ Workflow: `.github/workflows/main.yml`
 - Pro E2E-Suite werden Artefakte hochgeladen:
 - `test-results`, `playwright-report`
 - E2E JUnit-Resultate werden zu Codecov hochgeladen
-- Deployment auf GitHub Pages nach erfolgreichen Jobs – **nur die Website**, nicht die
-  Firestore-Regeln (dafür `.github/workflows/firestore-rules.yml`, siehe
+- Deployment auf GitHub Pages nach erfolgreichen Jobs; vorher deployt der Job
+  `firestore-rules` die Firestore-Regeln, und ohne ihn geht keine Website live (siehe
   [Firestore-Regeln deployen](#firestore-regeln-deployen))
 - Nightly Full E2E: `.github/workflows/e2e-nightly.yml`
 - PR-Validierung: `.github/workflows/ci.yml`
@@ -156,7 +178,9 @@ Workflow: `.github/workflows/main.yml`
 - Firestore-Zugriffsregeln: `firestore.rules` (Deploy: `npm run rules:deploy`, siehe
   [Firestore-Regeln deployen](#firestore-regeln-deployen))
 - Zugriffsmodell und bekannte Restrisiken: [adr/0005-firestore-sicherheitsregeln.md](adr/0005-firestore-sicherheitsregeln.md)
-- Deploy-Weg der Regeln: [adr/0007-firestore-regeln-deploy.md](adr/0007-firestore-regeln-deploy.md)
+- Deploy-Weg der Regeln: [adr/0008-firestore-regeln-im-deployment.md](adr/0008-firestore-regeln-im-deployment.md)
+  (Zugangsdaten und Fehlerverhalten: [adr/0007-firestore-regeln-deploy.md](adr/0007-firestore-regeln-deploy.md))
+- Regeln im Emulator prüfen: `npm run rules:test`
 - Sicherheitsupdates regelmäßig über Dependabot/NPM Audit
 - `jspdf`/`jspdf-autotable` auf aktuellem Stand
 - Dependabot Konfiguration: `.github/dependabot.yml`

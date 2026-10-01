@@ -7,3 +7,7 @@ playwright-report/
 test-results/
 .aider-desk/tasks/
 vordruck-referenz.pdf
+
+# Firestore-Emulator (npm run rules:test)
+firestore-debug.log
+ui-debug.log
