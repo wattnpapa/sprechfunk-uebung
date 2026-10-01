@@ -263,12 +263,13 @@ describe("FirebaseService Führungsstellen-Felder", () => {
             spielModus: "xZeit",
             fuehrungsstelle: {
                 slug: "hochwasser-fuehrungsstelle", beuebteStelle: "EL 10", uebergeordnet: "Kater",
-                unterstellt: ["EA 11", 7, ""], beginn: "09:00"
+                unterstellt: ["EA 11", 7, ""], beginn: "09:00",
+                stellen: { "EL 10": "Einsatzleitung", "Kater": "", "EA 11": 4, " ": "x" }
             }
         });
         expect(mapped.fuehrungsstelle).toEqual({
             slug: "hochwasser-fuehrungsstelle", beuebteStelle: "EL 10", uebergeordnet: "Kater",
-            unterstellt: ["EA 11"], beginn: "09:00"
+            unterstellt: ["EA 11"], beginn: "09:00", stellen: { "EL 10": "Einsatzleitung" }
         });
         expect(mapped.nachrichten["EA 11"][0]).toMatchObject({ weg: "funk", meldeart: "lagemeldung", erwartung: "Lagekarte" });
         expect(mapped.nachrichten["EA 11"][0]).not.toHaveProperty("betreff");
@@ -288,6 +289,9 @@ describe("FirebaseService Führungsstellen-Felder", () => {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const falscherBeginn = (s as any).mapToDomain("u2", { ...basis, fuehrungsstelle: { slug: "x", beuebteStelle: "EL", uebergeordnet: "Stab", unterstellt: ["EA"], beginn: "neun" } });
         expect(falscherBeginn.fuehrungsstelle).toEqual({ slug: "x", beuebteStelle: "EL", uebergeordnet: "Stab", unterstellt: ["EA"] });
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const leereStellen = (s as any).mapToDomain("u4", { ...basis, fuehrungsstelle: { slug: "x", beuebteStelle: "EL", uebergeordnet: "Stab", unterstellt: ["EA"], stellen: ["kein", "map"] } });
+        expect(leereStellen.fuehrungsstelle).not.toHaveProperty("stellen");
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         expect((s as any).mapToDomain("u3", basis).fuehrungsstelle).toBeUndefined();
     });

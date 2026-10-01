@@ -69,6 +69,7 @@ function baueView(overrides: Record<string, unknown> = {}) {
         getZentralesLoesungswort: () => "",
         renderFuehrungsstelleInfo: vi.fn(),
         renderFuehrungsstellenAbschnitte: vi.fn(),
+        getFuehrungsstellenAbschnitte: () => [{ funkrufname: "EA 11", stelle: "" }, { funkrufname: "EA 12", stelle: "" }],
         setFuehrungsstellenRollen: vi.fn(),
         populateFuehrungsstelleSelect: vi.fn(),
         populateTemplateSelect: vi.fn(),
@@ -166,7 +167,8 @@ describe("GeneratorController Führungsstellen-Übung", () => {
     it("zeigt Drehbuch-Info und bringt die Abschnittsliste in die Spanne des Drehbuchs", async () => {
         const controller = await makeController();
         const view = baueView({
-            getFuehrungsstellenRollen: () => ({ beuebteStelle: "EL", uebergeordnet: "Stab", unterstellt: ["EA 11"] })
+            getFuehrungsstellenRollen: () => ({ beuebteStelle: "EL", uebergeordnet: "Stab", unterstellt: ["EA 11"] }),
+            getFuehrungsstellenAbschnitte: () => [{ funkrufname: "EA 11", stelle: "Abschnitt Nord" }]
         });
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         (controller as any).view = view;
@@ -179,9 +181,11 @@ describe("GeneratorController Führungsstellen-Übung", () => {
             "Beschreibung des Drehbuchs.",
             "Für 2 bis 4 Einsatzabschnitte · 5 Nachrichten · 180 Minuten."
         ]);
-        // Ein Abschnitt zu wenig: mit der Vorbelegung auf das Minimum aufgefüllt.
+        // Ein Abschnitt zu wenig: mit der Vorbelegung auf das Minimum aufgefüllt,
+        // der getippte Stellenname der ersten Zeile bleibt erhalten.
         expect(view.renderFuehrungsstellenAbschnitte).toHaveBeenCalledWith(
-            ["EA 11", "Heros Musterstadt 22/10"], { min: 2, max: 4 }
+            [{ funkrufname: "EA 11", stelle: "Abschnitt Nord" }, { funkrufname: "Heros Musterstadt 22/10", stelle: "Einsatzabschnitt 2" }],
+            { min: 2, max: 4 }
         );
     });
 
@@ -206,10 +210,12 @@ describe("GeneratorController Führungsstellen-Übung", () => {
 
     it("fügt Abschnitte bis zur Obergrenze hinzu und entfernt sie nicht unter das Minimum", async () => {
         const controller = await makeController();
-        let namen = ["Heros Musterstadt 21/10", "Heros Musterstadt 22/10", "Heros Musterstadt 23/10"];
+        type Zeile = { funkrufname: string; stelle: string };
+        const zeile = (funkrufname: string, stelle = ""): Zeile => ({ funkrufname, stelle });
+        let zeilen = [zeile("Heros Musterstadt 21/10", "Nord"), zeile("Heros Musterstadt 22/10"), zeile("Heros Musterstadt 23/10")];
         const view = baueView({
-            getFuehrungsstellenRollen: () => ({ beuebteStelle: "EL", uebergeordnet: "Stab", unterstellt: namen }),
-            renderFuehrungsstellenAbschnitte: vi.fn((neue: string[]) => { namen = neue; })
+            getFuehrungsstellenAbschnitte: () => zeilen,
+            renderFuehrungsstellenAbschnitte: vi.fn((neue: Zeile[]) => { zeilen = neue; })
         });
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         (controller as any).view = view;
@@ -218,20 +224,23 @@ describe("GeneratorController Führungsstellen-Übung", () => {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const aendere = (controller as any).aendereAbschnitte.bind(controller);
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const naechster = (controller as any).naechsterAbschnittName.bind(controller);
+        const naechster = (controller as any).naechsterAbschnitt.bind(controller);
 
-        aendere((liste: string[]) => [...liste, naechster(liste)]);
-        expect(namen).toEqual(["Heros Musterstadt 21/10", "Heros Musterstadt 22/10", "Heros Musterstadt 23/10", "Heros Musterstadt 24/10"]);
-        aendere((liste: string[]) => [...liste, naechster(liste)]);
-        expect(namen).toHaveLength(4); // Obergrenze: der fünfte wird abgeschnitten
-        aendere((liste: string[]) => liste.filter((_, i) => i !== 0));
-        aendere((liste: string[]) => liste.filter((_, i) => i !== 0));
-        aendere((liste: string[]) => liste.filter((_, i) => i !== 0));
-        expect(namen).toHaveLength(2); // Untergrenze: wieder aufgefüllt
+        aendere((liste: Zeile[]) => [...liste, naechster(liste)]);
+        expect(zeilen).toEqual([
+            zeile("Heros Musterstadt 21/10", "Nord"), zeile("Heros Musterstadt 22/10"), zeile("Heros Musterstadt 23/10"),
+            zeile("Heros Musterstadt 24/10", "Einsatzabschnitt 4")
+        ]);
+        aendere((liste: Zeile[]) => [...liste, naechster(liste)]);
+        expect(zeilen).toHaveLength(4); // Obergrenze: der fünfte wird abgeschnitten
+        aendere((liste: Zeile[]) => liste.filter((_, i) => i !== 0));
+        aendere((liste: Zeile[]) => liste.filter((_, i) => i !== 0));
+        aendere((liste: Zeile[]) => liste.filter((_, i) => i !== 0));
+        expect(zeilen).toHaveLength(2); // Untergrenze: wieder aufgefüllt
         // Vorbelegte Namen, die schon vergeben sind, werden nicht doppelt vergeben.
-        expect(naechster(["Heros Musterstadt 21/10", "Heros Musterstadt 22/10", "Heros Musterstadt 23/10", "Heros Musterstadt 24/10", "Heros Musterstadt 25/10"]))
-            .toBe("Heros Musterstadt 26/10");
-        expect(naechster(["Heros Musterstadt 22/10"])).toBe("Einsatzabschnitt 2");
+        expect(naechster(["21/10", "22/10", "23/10", "24/10", "25/10"].map(n => zeile(`Heros Musterstadt ${n}`))))
+            .toEqual(zeile("Heros Musterstadt 26/10", "Einsatzabschnitt 6"));
+        expect(naechster([zeile("Heros Musterstadt 22/10")])).toEqual(zeile("Einsatzabschnitt 2", "Einsatzabschnitt 2"));
     });
 
     it("stellt beim Laden einer Führungsstellen-Übung Quelle und Rollen wieder her", async () => {

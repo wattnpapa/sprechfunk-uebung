@@ -22,6 +22,15 @@ describe("pdf/vordruckDaten", () => {
         expect(vordruckDatenAusUebung("Kater", uebung, { id: 3, empfaenger: ["EL 10"], nachricht: "Funk", weg: "funk" }).uebermittlungsweg).toBe("funk");
     });
 
+    it("setzt den Stellennamen der beübten Stelle als Anschrift, wenn einer eingetragen ist", () => {
+        const mitStelle = new FunkUebung("dev");
+        mitStelle.teilnehmerListe = ["EL 10", "Kater"];
+        mitStelle.teilnehmerStellen = { "EL 10": "Einsatzleitung Musterstadt", Kater: "Führungsstab" };
+        const daten = vordruckDatenAusUebung("Kater", mitStelle, { id: 1, empfaenger: ["EL 10"], nachricht: "Text", weg: "drucker", betreff: "B" });
+        expect(daten.anschriften).toEqual(["Einsatzleitung Musterstadt"]);
+        expect(daten.empfaenger).toEqual(["EL 10"]);
+    });
+
     it("lässt Nachrichten ohne Führungsstellen-Felder unverändert", () => {
         const daten = vordruckDatenAusUebung("EL 10", uebung, { id: 1, empfaenger: ["Kater"], nachricht: "Lage unverändert." });
         expect(daten.inhalt).toBe("Lage unverändert.");

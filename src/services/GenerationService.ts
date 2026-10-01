@@ -86,7 +86,9 @@ export class GenerationService {
         uebung.funksprueche = [];
         uebung.verwendeteVorlagen = [];
         uebung.teilnehmerListe = fuehrungsstellenTeilnehmerListe(konfiguration);
-        uebung.teilnehmerStellen = this.fuehrungsstellenStellen(drehbuch, konfiguration);
+        // Stellennamen wie in der klassischen Übung: Was eingetragen ist, steht
+        // auf den Vordrucken als Anschrift; nichts wird aus dem Drehbuch erfunden.
+        uebung.teilnehmerStellen = { ...(konfiguration.stellen ?? {}) };
         uebung.nachrichten = this.verteileNachrichtenNachDrehbuch(drehbuch, konfiguration);
         // Keine Soll-Stärke: Die Drehbücher melden laufende Stände derselben
         // Einheit (Anmeldung, Änderung, Abschlussstand) und Teilsummen; eine
@@ -141,31 +143,37 @@ export class GenerationService {
         if (new Set(alle).size !== alle.length) {
             throw new Error("Die Funkrufnamen der Führungsstellen-Übung müssen eindeutig sein.");
         }
+        const stellen = this.bereinigeStellen(roh.stellen, alle);
+        if (stellen) {
+            konfiguration.stellen = stellen;
+        } else {
+            delete konfiguration.stellen;
+        }
         uebung.fuehrungsstelle = konfiguration;
         return konfiguration;
     }
 
     /**
-     * Stellennamen aus den Rollen: Die Abschnitte tragen ihre Einsatzstellen,
-     * der Stab seine Bezeichnung. Die beübte Stelle bekommt bewusst keinen —
-     * der Stellenname steht auf den Vordrucken als Anschrift, und dort muss
-     * ihr Funkrufname stehen.
+     * Stellennamen auf die Rollen der Übung eindampfen: getrimmt, ohne leere
+     * Werte und ohne Reste umbenannter Funkrufnamen. Liefert undefined, wenn
+     * nichts übrig bleibt, damit kein leeres Objekt gespeichert wird.
      */
-    private fuehrungsstellenStellen(
-        drehbuch: FuehrungsstellenUebung,
-        konfiguration: FuehrungsstellenKonfiguration
-    ): Record<string, string> {
-        const stellen: Record<string, string> = {
-            [konfiguration.uebergeordnet]: drehbuch.uebergeordnet.bezeichnung
-        };
-        const zuordnung = verteileStraenge(drehbuch.straenge.length, konfiguration.unterstellt.length);
-        konfiguration.unterstellt.forEach((name, abschnittIndex) => {
-            const eigene = drehbuch.straenge
-                .filter((_, strangIndex) => zuordnung[strangIndex] === abschnittIndex)
-                .map(strang => strang.bezeichnung);
-            stellen[name] = eigene.join(", ");
+    private bereinigeStellen(
+        roh: Record<string, string> | undefined,
+        rollen: string[]
+    ): Record<string, string> | undefined {
+        if (!roh) {
+            return undefined;
+        }
+        const stellen: Record<string, string> = {};
+        Object.entries(roh).forEach(([name, stelle]) => {
+            const funkrufname = name.trim();
+            const stellenname = typeof stelle === "string" ? stelle.trim() : "";
+            if (rollen.includes(funkrufname) && stellenname.length > 0) {
+                stellen[funkrufname] = stellenname;
+            }
         });
-        return stellen;
+        return Object.keys(stellen).length > 0 ? stellen : undefined;
     }
 
     /**

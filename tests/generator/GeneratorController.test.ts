@@ -53,6 +53,7 @@ vi.mock("../../src/generator/GeneratorView", () => ({
         populateFuehrungsstelleSelect() {}
         setFuehrungsstellenRollen() {}
         renderFuehrungsstellenAbschnitte() {}
+        getFuehrungsstellenAbschnitte() { return []; }
         toggleFuehrungsstelleDownloads() {}
         setSelectedSource() {}
         getSelectedSzenario() { return ""; }
@@ -136,6 +137,7 @@ describe("GeneratorController", () => {
             populateSzenarioSelect: vi.fn(),
             populateFuehrungsstelleSelect: vi.fn(),
             setFuehrungsstellenRollen: vi.fn(),
+            getFuehrungsstellenAbschnitte: vi.fn().mockReturnValue([]),
             toggleFuehrungsstelleDownloads: vi.fn(),
             setSelectedSource: vi.fn(),
             getSelectedSzenario: vi.fn().mockReturnValue(""),

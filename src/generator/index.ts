@@ -3,7 +3,7 @@ import { FUNKSPRUCH_VORLAGEN } from "../data/funkspruchVorlagen";
 import { store } from "../state/store";
 import { FirebaseService } from "../services/FirebaseService";
 import { GenerationService } from "../services/GenerationService";
-import { GeneratorView } from "./GeneratorView";
+import { type AbschnittZeile, GeneratorView } from "./GeneratorView";
 import { GeneratorStateService, type LoesungswortOption } from "./GeneratorStateService";
 import { GeneratorStatsService } from "./GeneratorStatsService";
 import { GeneratorPreviewService } from "./GeneratorPreviewService";
@@ -43,7 +43,14 @@ export class GeneratorController {
     private static readonly FUEHRUNGSSTELLE_VORBELEGUNG: FuehrungsstellenRollenFormular = {
         beuebteStelle: "Heros Musterstadt 10",
         uebergeordnet: "Kater Musterstadt",
-        unterstellt: ["Heros Musterstadt 21/10", "Heros Musterstadt 22/10", "Heros Musterstadt 23/10"]
+        unterstellt: ["Heros Musterstadt 21/10", "Heros Musterstadt 22/10", "Heros Musterstadt 23/10"],
+        stellen: {
+            "Heros Musterstadt 10": "Einsatzleitung",
+            "Kater Musterstadt": "Führungsstab",
+            "Heros Musterstadt 21/10": "Einsatzabschnitt 1",
+            "Heros Musterstadt 22/10": "Einsatzabschnitt 2",
+            "Heros Musterstadt 23/10": "Einsatzabschnitt 3"
+        }
     };
     private showStellenname = false;
     private firebaseService: FirebaseService;
@@ -228,8 +235,8 @@ export class GeneratorController {
             void this.updateFuehrungsstelleInfo();
         });
         this.view.bindFuehrungsstellenAbschnittEvents(
-            () => this.aendereAbschnitte(namen => [...namen, this.naechsterAbschnittName(namen)]),
-            index => this.aendereAbschnitte(namen => namen.filter((_, i) => i !== index))
+            () => this.aendereAbschnitte(zeilen => [...zeilen, this.naechsterAbschnitt(zeilen)]),
+            index => this.aendereAbschnitte(zeilen => zeilen.filter((_, i) => i !== index))
         );
     }
 
@@ -544,18 +551,24 @@ export class GeneratorController {
     }
 
     /** Abschnittsliste ändern und in die Spanne des Drehbuchs bringen (auffüllen oder kürzen). */
-    private aendereAbschnitte(aenderung: (namen: string[]) => string[]): void {
-        const namen = aenderung(this.view.getFuehrungsstellenRollen().unterstellt);
-        while (namen.length < this.fuehrungsstelleGrenzen.min) {
-            namen.push(this.naechsterAbschnittName(namen));
+    /** Abschnittsliste ändern; die Zeilen kommen aus dem Formular, damit getippte Stellennamen erhalten bleiben. */
+    private aendereAbschnitte(aenderung: (zeilen: AbschnittZeile[]) => AbschnittZeile[]): void {
+        const zeilen = aenderung(this.view.getFuehrungsstellenAbschnitte());
+        while (zeilen.length < this.fuehrungsstelleGrenzen.min) {
+            zeilen.push(this.naechsterAbschnitt(zeilen));
         }
-        this.view.renderFuehrungsstellenAbschnitte(namen.slice(0, this.fuehrungsstelleGrenzen.max), this.fuehrungsstelleGrenzen);
+        this.view.renderFuehrungsstellenAbschnitte(zeilen.slice(0, this.fuehrungsstelleGrenzen.max), this.fuehrungsstelleGrenzen);
     }
 
-    private naechsterAbschnittName(vorhandene: string[]): string {
+    private naechsterAbschnitt(vorhandene: AbschnittZeile[]): AbschnittZeile {
+        const namen = vorhandene.map(zeile => zeile.funkrufname);
+        const nummer = vorhandene.length + 1;
         const vorbelegung = GeneratorController.FUEHRUNGSSTELLE_VORBELEGUNG.unterstellt;
-        const kandidat = vorbelegung[vorhandene.length] ?? `Heros Musterstadt 2${vorhandene.length + 1}/10`;
-        return vorhandene.includes(kandidat) ? `Einsatzabschnitt ${vorhandene.length + 1}` : kandidat;
+        const kandidat = vorbelegung[vorhandene.length] ?? `Heros Musterstadt 2${nummer}/10`;
+        return {
+            funkrufname: namen.includes(kandidat) ? `Einsatzabschnitt ${nummer}` : kandidat,
+            stelle: `Einsatzabschnitt ${nummer}`
+        };
     }
 
     /** Lädt und validiert ein Szenario-JSON; Ergebnisse werden gecacht. */

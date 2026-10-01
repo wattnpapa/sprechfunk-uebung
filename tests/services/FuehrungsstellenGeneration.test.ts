@@ -55,7 +55,8 @@ function baueUebung(unterstellt = ["EA 11", "EA 12"], seed = "fuehrungsstelle-te
         beuebteStelle: "EL 10",
         uebergeordnet: "Kater Test",
         unterstellt,
-        beginn: "09:00"
+        beginn: "09:00",
+        stellen: { "EL 10": "Einsatzleitung", "Kater Test": "Führungsstab" }
     };
     return uebung;
 }
@@ -79,13 +80,23 @@ describe("GenerationService Führungsstellen-Übung", () => {
         expect(uebung.spielModus).toBe("xZeit");
         expect(uebung.anmeldungAktiv).toBe(false);
         expect(uebung.szenarioSlug).toBeUndefined();
-        // Die beübte Stelle bekommt keinen Stellennamen: Auf den Vordrucken
-        // steht der Stellenname als Anschrift, dort muss ihr Funkrufname stehen.
-        expect(uebung.teilnehmerStellen).toEqual({
-            "Kater Test": "Führungsstab",
-            "EA 11": "Einsatzstelle 1, Einsatzstelle 3",
-            "EA 12": "Einsatzstelle 2, Einsatzstelle 4"
-        });
+        // Stellennamen kommen nur aus der Besetzung: Auf den Vordrucken steht
+        // der Stellenname des Empfängers als Anschrift, sonst der Funkrufname.
+        expect(uebung.teilnehmerStellen).toEqual({ "EL 10": "Einsatzleitung", "Kater Test": "Führungsstab" });
+    });
+
+    it("bereinigt die Stellennamen: getrimmt, ohne leere Werte und ohne fremde Funkrufnamen", () => {
+        const uebung = baueUebung([" EA 11 ", "EA 12"]);
+        uebung.fuehrungsstelle!.stellen = { " EA 11 ": " Abschnitt Nord ", "EL 10": "  ", "Heros Fremd": "Nicht dabei" };
+        new GenerationService().generateFuehrungsstelle(uebung, baueDrehbuch());
+        expect(uebung.fuehrungsstelle?.stellen).toEqual({ "EA 11": "Abschnitt Nord" });
+        expect(uebung.teilnehmerStellen).toEqual({ "EA 11": "Abschnitt Nord" });
+
+        const ohne = baueUebung();
+        ohne.fuehrungsstelle!.stellen = { "EL 10": "" };
+        new GenerationService().generateFuehrungsstelle(ohne, baueDrehbuch());
+        expect(ohne.fuehrungsstelle).not.toHaveProperty("stellen");
+        expect(ohne.teilnehmerStellen).toEqual({});
     });
 
     it("verteilt Stränge reihum und löst die Platzhalter je Rolle auf", () => {

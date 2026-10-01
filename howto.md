@@ -46,9 +46,10 @@ Du hast vier Möglichkeiten:
 - **Eigene Datei hochladen** (`.txt`)
 - **Szenario**: eine zusammenhängende Lage, deren Handlungsstränge auf die Teilnehmer verteilt werden
 - **Führungsstellen-Übung**: genau eine Stelle wird beübt, etwa eine Einsatzleitung im
-  FüKomKW. Du trägst die Funkrufnamen der beübten Stelle, der übergeordneten Stelle und der
-  unterstellten Einsatzabschnitte ein; die Übungsleitung spielt diese Rollen nach dem
-  Drehbuch ein. Jede Nachricht hat eine Minute ab Übungsbeginn (X-Zeit), einen Weg (Funk,
+  FüKomKW. Du trägst Funkrufname und Stellenname der beübten Stelle, der übergeordneten
+  Stelle und der unterstellten Einsatzabschnitte ein; der Stellenname steht wie in der
+  klassischen Übung auf den Nachrichtenvordrucken als Anschrift. Die Übungsleitung spielt
+  diese Rollen nach dem Drehbuch ein. Jede Nachricht hat eine Minute ab Übungsbeginn (X-Zeit), einen Weg (Funk,
   Ausdruck, E-Mail) und die Reaktion, die von der beübten Stelle erwartet wird. Bei
   weniger Einsatzabschnitten als Einsatzstellen im Drehbuch führt ein Abschnitt mehrere
   Einsatzstellen. Die beübte Stelle bekommt keinen Teilnehmer-Link.

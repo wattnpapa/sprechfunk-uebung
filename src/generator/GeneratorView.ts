@@ -10,10 +10,11 @@ import { GeneratorResultRenderer } from "./GeneratorResultRenderer";
 import {
     GeneratorFuehrungsstellenForm,
     type AbschnittsGrenzen,
+    type AbschnittZeile,
     type FuehrungsstellenRollenFormular
 } from "./GeneratorFuehrungsstellenForm";
 
-export type { AbschnittsGrenzen, FuehrungsstellenRollenFormular };
+export type { AbschnittsGrenzen, AbschnittZeile, FuehrungsstellenRollenFormular };
 
 export type FunkspruchQuelle = "vorlagen" | "upload" | "szenario" | "fuehrungsstelle";
 
@@ -639,8 +640,12 @@ export class GeneratorView {
         return this.fuehrungsstellenForm.getRollen();
     }
 
-    public renderFuehrungsstellenAbschnitte(namen: string[], grenzen: AbschnittsGrenzen) {
-        this.fuehrungsstellenForm.renderAbschnitte(namen, grenzen);
+    public renderFuehrungsstellenAbschnitte(zeilen: AbschnittZeile[], grenzen: AbschnittsGrenzen) {
+        this.fuehrungsstellenForm.renderAbschnitte(zeilen, grenzen);
+    }
+
+    public getFuehrungsstellenAbschnitte(): AbschnittZeile[] {
+        return this.fuehrungsstellenForm.getAbschnittZeilen();
     }
 
     public toggleFuehrungsstelleDownloads(sichtbar: boolean) {

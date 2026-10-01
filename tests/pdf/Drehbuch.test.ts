@@ -54,7 +54,8 @@ function baueUebung(beginn?: string): FunkUebung {
     u.teilnehmerListe = ["EL 10", "EA 11", "EA 12", "Kater"];
     u.fuehrungsstelle = {
         slug: "test", beuebteStelle: "EL 10", uebergeordnet: "Kater", unterstellt: ["EA 11", "EA 12"],
-        ...(beginn ? { beginn } : {})
+        ...(beginn ? { beginn } : {}),
+        stellen: { "EL 10": "Einsatzleitung" }
     };
     u.nachrichten = {
         "EL 10": [],
@@ -74,7 +75,9 @@ describe("pdf/Drehbuch", () => {
         // Rollen, Lage, Auftrag, Rollenkarten, Zeitachse
         expect(calls).toHaveLength(5);
         const rollen = calls[0]?.body as string[][];
-        expect(rollen[0]?.[1]).toBe("EL 10");
+        // Stellenname unter dem Funkrufnamen, ohne Stellenname nur der Funkrufname.
+        expect(rollen[0]?.[1]).toBe("EL 10\nEinsatzleitung");
+        expect(rollen[1]?.[1]).toBe("EA 11");
         // Zwei Abschnitte, drei Stränge: EA 11 führt A und C.
         expect(rollen[1]?.[2]).toBe("Einsatzstelle A\nEinsatzstelle C");
         expect(rollen[2]?.[2]).toBe("Einsatzstelle B");

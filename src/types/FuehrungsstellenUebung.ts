@@ -103,6 +103,13 @@ export interface FuehrungsstellenKonfiguration {
     unterstellt: string[];
     /** Übungsbeginn als "HH:MM"; optional, nur für Uhrzeiten im Drehbuch. */
     beginn?: string;
+    /**
+     * Stellenname je Funkrufname („Einsatzleitung“, „Führungsstab“), wie
+     * `teilnehmerStellen` der klassischen Übung. Steht auf den
+     * Nachrichtenvordrucken als Anschrift und in der Übungsleitung neben dem
+     * Funkrufnamen. Nur gefüllte Einträge werden geführt.
+     */
+    stellen?: Record<string, string>;
 }
 
 /** Jeder Einsatzabschnitt braucht mindestens einen eigenen Strang. */

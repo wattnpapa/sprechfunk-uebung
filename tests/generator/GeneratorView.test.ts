@@ -586,10 +586,11 @@ describe("GeneratorView", () => {
         view.render();
         view.populateFuehrungsstelleSelect({ a: { titel: "Lage A" }, b: { titel: "Lage B" } }, "b");
         expect(view.getSelectedFuehrungsstelle()).toBe("b");
-        view.setFuehrungsstellenRollen({ beuebteStelle: "EL 10", uebergeordnet: "Kater", unterstellt: ["EA 11", "EA 12"] }, { min: 2, max: 6 });
-        expect(view.getFuehrungsstellenRollen()).toEqual({ beuebteStelle: "EL 10", uebergeordnet: "Kater", unterstellt: ["EA 11", "EA 12"] });
-        view.renderFuehrungsstellenAbschnitte(["EA 11"], { min: 1, max: 6 });
+        view.setFuehrungsstellenRollen({ beuebteStelle: "EL 10", uebergeordnet: "Kater", unterstellt: ["EA 11", "EA 12"], stellen: { "EL 10": "Einsatzleitung" } }, { min: 2, max: 6 });
+        expect(view.getFuehrungsstellenRollen()).toEqual({ beuebteStelle: "EL 10", uebergeordnet: "Kater", unterstellt: ["EA 11", "EA 12"], stellen: { "EL 10": "Einsatzleitung" } });
+        view.renderFuehrungsstellenAbschnitte([{ funkrufname: "EA 11", stelle: "Abschnitt Nord" }], { min: 1, max: 6 });
         expect(document.querySelectorAll(".fuehrungsstelle-abschnitt")).toHaveLength(1);
+        expect(view.getFuehrungsstellenAbschnitte()).toEqual([{ funkrufname: "EA 11", stelle: "Abschnitt Nord" }]);
         view.renderFuehrungsstelleInfo(["Zeile 1", "Zeile 2"]);
         expect(document.getElementById("fuehrungsstelleInfo")?.textContent).toContain("Zeile 2");
         view.toggleFuehrungsstelleDownloads(true);

@@ -307,7 +307,9 @@ test("@generator generates a fuehrungsstellen-uebung with roles instead of parti
     await expect(page.locator("#fuehrungsstelleAbschnitte .fuehrungsstelle-abschnitt")).toHaveCount(3);
 
     await page.locator("#fuehrungsstelleBeuebteStelle").fill("Heros E2E 10");
+    await page.locator("#fuehrungsstelleBeuebteStelleName").fill("Einsatzleitung E2E");
     await page.locator("#fuehrungsstelleUebergeordnet").fill("Kater E2E");
+    await page.locator("#fuehrungsstelleUebergeordnetName").fill("Führungsstab E2E");
     await page.getByTestId("generator-fuehrungsstelle-abschnitt-hinzufuegen").click();
     await expect(page.locator("#fuehrungsstelleAbschnitte .fuehrungsstelle-abschnitt")).toHaveCount(4);
     await page.locator("#fuehrungsstelleBeginn").fill("09:00");
@@ -319,6 +321,8 @@ test("@generator generates a fuehrungsstellen-uebung with roles instead of parti
     await expect(page.locator("#links-teilnehmer-container .generator-link-row[data-link-type='teilnehmer']")).toHaveCount(5);
     await expect(page.locator("#links-teilnehmer-container")).not.toContainText("Heros E2E 10");
     await expect(page.locator("#links-teilnehmer-container")).toContainText("Kater E2E");
+    // Der Stellenname steht wie in der klassischen Übung unter dem Funkrufnamen.
+    await expect(page.locator("#links-teilnehmer-container")).toContainText("Führungsstab E2E");
     await expect(page.locator("#fuehrungsstelleDownloads")).toBeVisible();
 
     const downloadPromise = page.waitForEvent("download");
