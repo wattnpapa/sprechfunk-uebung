@@ -66,11 +66,13 @@
     "embed": "node scripts/generate-embed.mjs",
     "backlinks:report": "node scripts/seo-backlinks.mjs",
     "outreach:check": "node scripts/check-outreach.mjs",
-    "rules:deploy": "npx --yes firebase-tools@15 deploy --only firestore:rules"
+    "rules:deploy": "npx --yes firebase-tools@15 deploy --only firestore:rules",
+    "rules:test": "npx --yes firebase-tools@15 emulators:exec --only firestore --project demo-sprechfunk \"vitest run tests/rules\""
   },
   "devDependencies": {
     "@axe-core/playwright": "^4.13.0",
     "@eslint/js": "^10.0.1",
+    "@firebase/rules-unit-testing": "^5.0.2",
     "@playwright/test": "^1.62.1",
     "@rollup/plugin-commonjs": "^29.0.3",
     "@rollup/plugin-node-resolve": "^16.0.3",

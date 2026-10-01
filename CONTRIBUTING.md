@@ -114,8 +114,8 @@ Konventionen im Überblick (ausführlich in [`CLAUDE.md`](CLAUDE.md)):
 - **TypeScript** im Strict Mode, kein implizites `any`
 - **Firestore**: keine `undefined`-Felder schreiben, fehlende Indizes abfangen;
   neue persistierte Felder gehören in die Allowlists in `firestore.rules`. Die Regeln
-  werden getrennt von der Website deployt – das übernimmt nach dem Merge ein eigener
-  Workflow, notfalls `npm run rules:deploy`
+  gehen beim Merge mit dem Deployment nach Firebase (Job `firestore-rules`, vor der
+  Website), notfalls `npm run rules:deploy`; `npm run rules:test` prüft sie im Emulator
   ([Details](docs/entwicklung.md#firestore-regeln-deployen))
 - **Neue Seite?** Ein Eintrag in `scripts/site-pages.mjs` plus die HTML-Datei unter
   `src/pages/` – es gibt bewusst nur diese eine Registry

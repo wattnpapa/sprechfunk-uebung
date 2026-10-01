@@ -112,9 +112,81 @@ jobs:
             playwright-report
           if-no-files-found: ignore
 
+  firestore-rules:
+    # Die Firestore-Regeln sind Teil des Deployments (ADR 0008): Sie gehen bei
+    # jedem Push auf main nach Firebase, und zwar bevor die Website live geht,
+    # damit ein neuer Stand von dist/ nie auf alte Regeln trifft. Der Deploy ist
+    # idempotent; die CLI räumt alte Regelversionen an der Quote selbst ab.
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v7
+        with:
+          node-version: '24'
+
+      # Kein npm ci: der Deploy braucht keine Projekt-Abhängigkeiten, nur die
+      # Firebase-CLI, die `npm run rules:deploy` per npx zieht.
+
+      - name: Secret prüfen
+        env:
+          FIREBASE_SERVICE_ACCOUNT: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
+        run: |
+          if [ -n "$FIREBASE_SERVICE_ACCOUNT" ]; then
+            exit 0
+          fi
+          # Bewusst ein Fehlschlag statt eines stillen Skips: Ohne Regeln kein
+          # Website-Deploy. Ein grüner, übersprungener Job sähe exakt so aus wie
+          # die Lücke, die dieser Job schließen soll.
+          {
+            echo "### Firestore-Regeln NICHT deployt – Website-Deploy angehalten"
+            echo ""
+            echo "Das Repository-Secret \`FIREBASE_SERVICE_ACCOUNT\` fehlt."
+            echo "Produktion arbeitet weiter mit den alten Regeln und der alten Website."
+            echo ""
+            echo "Jetzt lokal nachholen und den Workflow erneut starten:"
+            echo ""
+            echo '\`\`\`bash'
+            echo "npm run rules:deploy"
+            echo '\`\`\`'
+            echo ""
+            echo "Dauerhaft lösen: docs/entwicklung.md, Abschnitt „Firestore-Regeln deployen“."
+          } >> "$GITHUB_STEP_SUMMARY"
+          echo "::error file=firestore.rules::Regel-Deploy ohne Zugangsdaten: Secret FIREBASE_SERVICE_ACCOUNT fehlt (Repository-Secret, nicht Environment — die FIREBASE_*-Werte im Environment github-pages sind Web-Konfiguration und hier nicht sichtbar). Bis zum manuellen 'npm run rules:deploy' gelten in Produktion die alten Regeln; die Website wird nicht ausgeliefert."
+          exit 1
+
+      - name: Zugangsdaten bereitstellen
+        env:
+          FIREBASE_SERVICE_ACCOUNT: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
+        run: |
+          schluessel="$RUNNER_TEMP/firebase-service-account.json"
+          printf '%s' "$FIREBASE_SERVICE_ACCOUNT" > "$schluessel"
+          chmod 600 "$schluessel"
+          echo "GOOGLE_APPLICATION_CREDENTIALS=$schluessel" >> "$GITHUB_ENV"
+
+      - name: Regeln deployen
+        run: npm run rules:deploy
+
+      - name: Zugangsdaten entfernen
+        if: always()
+        run: rm -f "$RUNNER_TEMP/firebase-service-account.json"
+
+      - name: Ergebnis vermerken
+        run: |
+          {
+            echo "### Firestore-Regeln deployt"
+            echo ""
+            echo "\`firestore.rules\` aus \`${GITHUB_SHA:0:7}\` ist in Produktion aktiv."
+          } >> "$GITHUB_STEP_SUMMARY"
+
   deploy:
-    needs: [changes, e2e-matrix]
-    if: ${{ !cancelled() && (((needs.changes.outputs.run_e2e == 'true' || github.event_name == 'workflow_dispatch') && needs.e2e-matrix.result == 'success') || (needs.changes.outputs.run_e2e != 'true' && github.event_name != 'workflow_dispatch')) }}
+    # Erst die Regeln, dann die Website: ohne grünen firestore-rules-Job kein Release.
+    needs: [changes, e2e-matrix, firestore-rules]
+    if: ${{ !cancelled() && needs.firestore-rules.result == 'success' && (((needs.changes.outputs.run_e2e == 'true' || github.event_name == 'workflow_dispatch') && needs.e2e-matrix.result == 'success') || (needs.changes.outputs.run_e2e != 'true' && github.event_name != 'workflow_dispatch')) }}
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}

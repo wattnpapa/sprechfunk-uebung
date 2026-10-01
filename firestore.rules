@@ -10,6 +10,8 @@ rules_version = '2';
 //   * Strukturprüfung beim Schreiben: nur bekannte Felder, korrekte Typen,
 //     begrenzte Stringlängen und Listengrößen.
 //   * Schutz der Dokument-ID gegen Umschreiben.
+//   Beim Erweitern das Ausdrucks-Budget beachten (Kommentar vor
+//   istGueltigeUebung).
 //
 // Bekannte Restrisiken (nicht durch Regeln abgedeckt):
 //   1. Jeder mit dem öffentlichen API-Key kann Übungen lesen, anlegen und
@@ -110,84 +112,115 @@ function istZahlImBereich(wert, min, max) {
   return wert is number && wert >= min && wert <= max;
 }
 
-function optionalOk(daten, feld, bedingung) {
-  return !daten.keys().hasAny([feld]) || bedingung;
-}
+// ---------------------------------------------------------------------------
+// Ausdrucks-Budget: Firestore wertet höchstens 1000 Ausdrücke je Anfrage aus
+// und lehnt darüber mit PERMISSION_DENIED ab — ohne Hinweis im Client.
+// Jeder Knoten zählt (Literal, Feldzugriff, Aufruf, Operator), Funktions-
+// argumente werden mitgezählt. Am 2026-09-30 kippte ein zusätzliches
+// optionales Feld jedes Speichern in Produktion: Der frühere Helfer für
+// optionale Felder nahm die Bedingung als Argument entgegen und prüfte die
+// Anwesenheit über `keys()` plus `hasAny` — rund 30 Ausdrücke je Feld, mal 27.
+//
+// Im Emulator gemessen (tests/rules/FirestoreRules.emulator.test.ts misst
+// die Reserve bei jedem Lauf):
+//   `'feld' in daten`                                  ≈ 3
+//   `daten.feld is bool`                               ≈ 4
+//   `daten.feld is string && daten.feld.size() <= n`   ≈ 10
+//   `… is number && … >= a && … <= b`                  ≈ 16
+//   Aufruf einer Hilfsfunktion zusätzlich              ≈ 4 je Aufruf
+// Deshalb stehen die Prüfungen der Übungsfelder unten ausgeschrieben statt
+// über Hilfsfunktionen, verteilt auf kleine Gruppen (der Compiler lehnt zu
+// lange Ketten als „too complex" ab). Richtwert je neuem optionalen Feld:
+// 10 bis 20 Ausdrücke.
+// ---------------------------------------------------------------------------
 
 function istGueltigeUebung(daten) {
   return daten.keys().hasOnly(erlaubteFelder())
          && daten.keys().hasAll(pflichtFelder())
-         && istText(daten.id, 64)
+         && daten.id is string && daten.id.size() <= 64
          && daten.uebungCode.matches('^[A-Z0-9]{6}$')
-         && istText(daten.name, 200)
-         && istZeitpunkt(daten.datum)
-         && istZeitpunkt(daten.createDate)
-         && daten.teilnehmerListe is list
-         && daten.teilnehmerListe.size() <= 100
-         && daten.teilnehmerIds is map
-         && daten.teilnehmerIds.size() <= 100
-         && daten.nachrichten is map
-         && daten.nachrichten.size() <= 100
-         && istOptionalesGueltig(daten)
-         && sindStatistikFelderGueltig(daten);
-}
-
-function istOptionalesGueltig(daten) {
-  return optionalOk(daten, 'checksumme', istText(daten.checksumme, 64))
-         && optionalOk(daten, 'rufgruppe', istText(daten.rufgruppe, 100))
-         && optionalOk(daten, 'leitung', istText(daten.leitung, 100))
-         && optionalOk(daten, 'buildVersion', istText(daten.buildVersion, 64))
-         // Seed der Nachrichtenverteilung. Offen lesbar und damit kein Geheimnis
-         // — die Zugangscodes werden bewusst nicht daraus abgeleitet.
-         && optionalOk(daten, 'seed', istText(daten.seed, 64))
-         && optionalOk(daten, 'teilnehmerStellen', daten.teilnehmerStellen is map)
-         && optionalOk(daten, 'loesungswoerter', daten.loesungswoerter is map)
-         && optionalOk(daten, 'loesungsStaerken', daten.loesungsStaerken is map)
-         && optionalOk(daten, 'verwendeteVorlagen', daten.verwendeteVorlagen is list
-                                                    && daten.verwendeteVorlagen.size() <= 50)
-         && optionalOk(daten, 'anmeldungAktiv', daten.anmeldungAktiv is bool)
-         && optionalOk(daten, 'istStandardKonfiguration', daten.istStandardKonfiguration is bool)
-         && optionalOk(daten, 'spielModus', daten.spielModus in ['klassisch', 'xZeit'])
-         && optionalOk(daten, 'spruecheProTeilnehmer', istZahlImBereich(daten.spruecheProTeilnehmer, 0, 1000))
-         && optionalOk(daten, 'spruecheAnAlle', istZahlImBereich(daten.spruecheAnAlle, 0, 1000))
-         && optionalOk(daten, 'spruecheAnMehrere', istZahlImBereich(daten.spruecheAnMehrere, 0, 1000))
-         && optionalOk(daten, 'buchstabierenAn', istZahlImBereich(daten.buchstabierenAn, 0, 1000))
-         && optionalOk(daten, 'xZeitIntervallMinuten', istZahlImBereich(daten.xZeitIntervallMinuten, 0, 1440))
-         && optionalOk(daten, 'xZeitStartOffsetMinuten', istZahlImBereich(daten.xZeitStartOffsetMinuten, 0, 1440))
-         // Slug des Szenarios (Szenario-Modus); Inhalte liegen als statisches
-         // JSON im Deployment, im Dokument steht nur die Referenz.
-         && optionalOk(daten, 'szenarioSlug', istText(daten.szenarioSlug, 64))
+         && daten.name is string && daten.name.size() <= 200
+         && (daten.datum is timestamp || (daten.datum is string && daten.datum.size() <= 40))
+         && (daten.createDate is timestamp || (daten.createDate is string && daten.createDate.size() <= 40))
+         && daten.teilnehmerListe is list && daten.teilnehmerListe.size() <= 100
+         && daten.teilnehmerIds is map && daten.teilnehmerIds.size() <= 100
+         && daten.nachrichten is map && daten.nachrichten.size() <= 100
+         && sindOptionaleTexteGueltig(daten)
+         && sindOptionaleSchalterGueltig(daten)
+         && sindOptionaleZahlenGueltig(daten)
+         && sindStatistikFelderGueltig(daten)
          // Rollenbesetzung einer Führungsstellen-Übung; das Drehbuch selbst
          // liegt als statisches JSON im Deployment, im Dokument stehen nur
-         // Slug und Funkrufnamen.
-         && optionalOk(daten, 'fuehrungsstelle', istFuehrungsstelle(daten.fuehrungsstelle));
+         // Slug, Funkrufnamen und Stellennamen.
+         && (!('fuehrungsstelle' in daten) || istFuehrungsstelle(daten.fuehrungsstelle));
+}
+
+function sindOptionaleTexteGueltig(daten) {
+  return (!('checksumme' in daten) || (daten.checksumme is string && daten.checksumme.size() <= 64))
+         && (!('rufgruppe' in daten) || (daten.rufgruppe is string && daten.rufgruppe.size() <= 100))
+         && (!('leitung' in daten) || (daten.leitung is string && daten.leitung.size() <= 100))
+         && (!('buildVersion' in daten) || (daten.buildVersion is string && daten.buildVersion.size() <= 64))
+         // Seed der Nachrichtenverteilung. Offen lesbar und damit kein Geheimnis
+         // — die Zugangscodes werden bewusst nicht daraus abgeleitet.
+         && (!('seed' in daten) || (daten.seed is string && daten.seed.size() <= 64))
+         // Slug des Szenarios (Szenario-Modus); Inhalte liegen als statisches
+         // JSON im Deployment, im Dokument steht nur die Referenz.
+         && (!('szenarioSlug' in daten) || (daten.szenarioSlug is string && daten.szenarioSlug.size() <= 64))
+         && (!('teilnehmerStellen' in daten) || daten.teilnehmerStellen is map)
+         && (!('loesungswoerter' in daten) || daten.loesungswoerter is map)
+         && (!('loesungsStaerken' in daten) || daten.loesungsStaerken is map)
+         && (!('verwendeteVorlagen' in daten) || (daten.verwendeteVorlagen is list
+                                                  && daten.verwendeteVorlagen.size() <= 50));
+}
+
+function sindOptionaleSchalterGueltig(daten) {
+  return (!('anmeldungAktiv' in daten) || daten.anmeldungAktiv is bool)
+         && (!('istStandardKonfiguration' in daten) || daten.istStandardKonfiguration is bool)
+         && (!('spielModus' in daten) || daten.spielModus in ['klassisch', 'xZeit']);
+}
+
+function sindOptionaleZahlenGueltig(daten) {
+  return (!('spruecheProTeilnehmer' in daten)
+          || (daten.spruecheProTeilnehmer is number && daten.spruecheProTeilnehmer >= 0 && daten.spruecheProTeilnehmer <= 1000))
+         && (!('spruecheAnAlle' in daten)
+             || (daten.spruecheAnAlle is number && daten.spruecheAnAlle >= 0 && daten.spruecheAnAlle <= 1000))
+         && (!('spruecheAnMehrere' in daten)
+             || (daten.spruecheAnMehrere is number && daten.spruecheAnMehrere >= 0 && daten.spruecheAnMehrere <= 1000))
+         && (!('buchstabierenAn' in daten)
+             || (daten.buchstabierenAn is number && daten.buchstabierenAn >= 0 && daten.buchstabierenAn <= 1000))
+         && (!('xZeitIntervallMinuten' in daten)
+             || (daten.xZeitIntervallMinuten is number && daten.xZeitIntervallMinuten >= 0 && daten.xZeitIntervallMinuten <= 1440))
+         && (!('xZeitStartOffsetMinuten' in daten)
+             || (daten.xZeitStartOffsetMinuten is number && daten.xZeitStartOffsetMinuten >= 0 && daten.xZeitStartOffsetMinuten <= 1440));
 }
 
 function istFuehrungsstelle(wert) {
   return wert is map
          && wert.keys().hasOnly(['slug', 'beuebteStelle', 'uebergeordnet', 'unterstellt', 'beginn', 'stellen'])
          && wert.keys().hasAll(['slug', 'beuebteStelle', 'uebergeordnet', 'unterstellt'])
-         && istText(wert.slug, 64)
-         && istText(wert.beuebteStelle, 100)
-         && istText(wert.uebergeordnet, 100)
-         && wert.unterstellt is list
-         && wert.unterstellt.size() <= 8
-         && optionalOk(wert, 'beginn', istText(wert.beginn, 5))
+         && wert.slug is string && wert.slug.size() <= 64
+         && wert.beuebteStelle is string && wert.beuebteStelle.size() <= 100
+         && wert.uebergeordnet is string && wert.uebergeordnet.size() <= 100
+         && wert.unterstellt is list && wert.unterstellt.size() <= 8
+         && (!('beginn' in wert) || (wert.beginn is string && wert.beginn.size() <= 5))
          // Stellenname je Funkrufname; höchstens eine Stelle je Rolle (1 + 8 + 1).
-         && optionalOk(wert, 'stellen', wert.stellen is map && wert.stellen.size() <= 10);
+         && (!('stellen' in wert) || (wert.stellen is map && wert.stellen.size() <= 10));
 }
 
 // Die stat*-Felder speisen die Aggregations-Queries des Admin-Dashboards.
 // Werden sie manipuliert, sind nur die Kennzahlen falsch — trotzdem eng führen.
 function sindStatistikFelderGueltig(daten) {
-  return optionalOk(daten, 'statTeilnehmerAnzahl', istZahlImBereich(daten.statTeilnehmerAnzahl, 0, 100))
-         && optionalOk(daten, 'statNachrichtenAnzahl', istZahlImBereich(daten.statNachrichtenAnzahl, 0, 100000))
-         && optionalOk(daten, 'statBytes', istZahlImBereich(daten.statBytes, 0, 5000000))
-         && optionalOk(daten, 'statMonat', istZahlImBereich(daten.statMonat, 0, 11))
-         && optionalOk(daten, 'statJahr', istZahlImBereich(daten.statJahr, 1970, 2200))
-         && optionalOk(daten, 'statHatLoesungswoerter', daten.statHatLoesungswoerter is bool)
-         && optionalOk(daten, 'statHatLoesungsStaerken', daten.statHatLoesungsStaerken is bool)
-         && optionalOk(daten, 'statHatBuchstabieren', daten.statHatBuchstabieren is bool);
+  return (!('statTeilnehmerAnzahl' in daten)
+          || (daten.statTeilnehmerAnzahl is number && daten.statTeilnehmerAnzahl >= 0 && daten.statTeilnehmerAnzahl <= 100))
+         && (!('statNachrichtenAnzahl' in daten)
+             || (daten.statNachrichtenAnzahl is number && daten.statNachrichtenAnzahl >= 0 && daten.statNachrichtenAnzahl <= 100000))
+         && (!('statBytes' in daten)
+             || (daten.statBytes is number && daten.statBytes >= 0 && daten.statBytes <= 5000000))
+         && (!('statMonat' in daten) || (daten.statMonat is number && daten.statMonat >= 0 && daten.statMonat <= 11))
+         && (!('statJahr' in daten) || (daten.statJahr is number && daten.statJahr >= 1970 && daten.statJahr <= 2200))
+         && (!('statHatLoesungswoerter' in daten) || daten.statHatLoesungswoerter is bool)
+         && (!('statHatLoesungsStaerken' in daten) || daten.statHatLoesungsStaerken is bool)
+         && (!('statHatBuchstabieren' in daten) || daten.statHatBuchstabieren is bool);
 }
 
 // ---------------------------------------------------------------------------
@@ -216,17 +249,17 @@ function istGueltigerStatus(daten) {
          && daten.keys().hasAll(['version', 'lastUpdated'])
          && istZahlImBereich(daten.version, 1, 100)
          && istZeitpunkt(daten.lastUpdated)
-         && optionalOk(daten, 'teilnehmerId', istText(daten.teilnehmerId, 32))
+         && (!('teilnehmerId' in daten) || istText(daten.teilnehmerId, 32))
          // `teilnehmer` ist im Teilnehmer-Dokument der Funkrufname, im
          // leitung-Dokument die Statusliste je Teilnehmer.
-         && optionalOk(daten, 'teilnehmer', istText(daten.teilnehmer, 100)
-                                            || (daten.teilnehmer is map
-                                                && daten.teilnehmer.size() <= 100))
-         && optionalOk(daten, 'xZeitBasis', istText(daten.xZeitBasis, 5))
-         && optionalOk(daten, 'xZeitBasisGeaendertUm', istZeitpunkt(daten.xZeitBasisGeaendertUm))
+         && (!('teilnehmer' in daten) || istText(daten.teilnehmer, 100)
+                                       || (daten.teilnehmer is map
+                                           && daten.teilnehmer.size() <= 100))
+         && (!('xZeitBasis' in daten) || istText(daten.xZeitBasis, 5))
+         && (!('xZeitBasisGeaendertUm' in daten) || istZeitpunkt(daten.xZeitBasisGeaendertUm))
          // Obergrenzen wie bei den Übungsdaten: 100 Teilnehmer, 100 Nachrichten.
-         && optionalOk(daten, 'nachrichten', daten.nachrichten is map
-                                             && daten.nachrichten.size() <= 10000)
-         && optionalOk(daten, 'nachrichtenNotizen', daten.nachrichtenNotizen is map
-                                                    && daten.nachrichtenNotizen.size() <= 10000);
+         && (!('nachrichten' in daten) || (daten.nachrichten is map
+                                           && daten.nachrichten.size() <= 10000))
+         && (!('nachrichtenNotizen' in daten) || (daten.nachrichtenNotizen is map
+                                                  && daten.nachrichtenNotizen.size() <= 10000));
 }

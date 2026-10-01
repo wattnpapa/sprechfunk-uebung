@@ -11,8 +11,8 @@ permissions:
 jobs:
   firestore-rules-hinweis:
     # Reiner Hinweis, schlägt nie fehl. Regeln werden erst nach dem Merge deployt
-    # (.github/workflows/firestore-rules.yml); wer den Hinweis im PR sieht, weiß
-    # vorher, dass danach ein Deploy fällig ist.
+    # (Job firestore-rules in main.yml, vor dem Website-Release); wer den Hinweis
+    # im PR sieht, weiß vorher, dass der Merge sie in Produktion bringt.
     if: github.event_name == 'pull_request'
     runs-on: ubuntu-latest
     permissions:
@@ -32,20 +32,47 @@ jobs:
             echo "firestore.rules unverändert – nichts zu tun."
             exit 0
           fi
-          echo "::notice file=firestore.rules::Dieser PR ändert firestore.rules. Die Regeln gelten erst in Produktion, wenn nach dem Merge der Workflow 'Firestore-Regeln deployen' durchgelaufen ist — schlägt er fehl, erst nach einem manuellen 'npm run rules:deploy'."
+          echo "::notice file=firestore.rules::Dieser PR ändert firestore.rules. Nach dem Merge deployt der Job 'firestore-rules' in main.yml die Regeln, bevor die Website live geht — schlägt er fehl, bleibt auch die Website zurück, bis ein manuelles 'npm run rules:deploy' gelaufen ist."
           {
             echo "### Dieser PR ändert \`firestore.rules\`"
             echo ""
-            echo "Regeln werden **nicht** mit der Website ausgeliefert. Nach dem Merge läuft"
-            echo "\`.github/workflows/firestore-rules.yml\`."
+            echo "Nach dem Merge deployt der Job \`firestore-rules\` in \`main.yml\` die Regeln,"
+            echo "bevor die Website ausgeliefert wird."
             echo ""
             echo "Schlägt der Job fehl (z. B. weil das Secret \`FIREBASE_SERVICE_ACCOUNT\` fehlt),"
-            echo "gelten in Produktion weiter die alten Regeln, bis das hier lief:"
+            echo "bleiben Regeln und Website auf dem alten Stand, bis das hier lief:"
             echo ""
             echo '```bash'
             echo "npm run rules:deploy"
             echo '```'
           } >> "$GITHUB_STEP_SUMMARY"
+
+  firestore-rules-emulator:
+    # Spielt firestore.rules im Firestore-Emulator gegen Dokumente durch, wie
+    # die Anwendung sie wirklich schreibt – samt Reserve unter dem Limit von
+    # 1000 Ausdrücken je Anfrage (ADR 0008). Kein Required Check (ADR 0001),
+    # aber rot, sobald eine Regeländerung Produktion das Speichern verbieten würde.
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v7
+        with:
+          node-version: '24'
+
+      - name: Setup Java (Firestore-Emulator)
+        uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: '21'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Regeln im Emulator prüfen
+        run: npm run rules:test
 
   validate:
     runs-on: ubuntu-latest

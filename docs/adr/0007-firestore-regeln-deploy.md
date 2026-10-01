@@ -1,7 +1,10 @@
 # ADR 0007: Firestore-Regeln per Workflow deployen
 
 ## Status
-Accepted
+Accepted. Der Deploy-Weg (eigener Workflow mit Pfadfilter, entkoppelt vom Website-Release) ist
+durch [ADR 0008](0008-firestore-regeln-im-deployment.md) ersetzt: Der Deploy ist seitdem ein Job
+in `main.yml`, der vor der Website läuft. Zugangsdaten, Fehlerverhalten und das Kommando
+`npm run rules:deploy` gelten weiter.
 
 ## Context
 

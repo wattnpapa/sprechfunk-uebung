@@ -141,15 +141,19 @@ deshalb nicht in der CI).
   `status`; new persisted fields must be added to the allowlists there, or
   Firestore rejects the write in production (guarded by
   `tests/services/FirestoreRules.contract.test.ts`)
-  - **Editing the file is only half the job — the rules ship separately from the website.**
-    `main.yml` uploads `dist/` to GitHub Pages and nothing else, so a merged rules change stays
-    inert until it is pushed to Firebase. `.github/workflows/firestore-rules.yml` does that on
-    every push to `main` that touches `firestore.rules`; without the repository secret
-    `FIREBASE_SERVICE_ACCOUNT` that job fails on purpose and the deploy has to be repeated by
-    hand with `npm run rules:deploy`. Details and one-time setup: `docs/entwicklung.md`,
-    section „Firestore-Regeln deployen“; rationale in
-    `docs/adr/0007-firestore-regeln-deploy.md`. Guarded by
-    `tests/repo/FirestoreRulesDeploy.test.ts`.
+  - **The rules are part of the deployment.** The job `firestore-rules` in `main.yml` pushes
+    `firestore.rules` to Firebase on every push to `main`, before the Pages deploy, which
+    waits for it; without the repository secret `FIREBASE_SERVICE_ACCOUNT` the job fails on
+    purpose, the website is held back, and the deploy has to be done by hand with
+    `npm run rules:deploy`. Details: `docs/entwicklung.md`, section „Firestore-Regeln
+    deployen“; rationale in `docs/adr/0008-firestore-regeln-im-deployment.md` (credentials
+    and failure semantics in ADR 0007). Guarded by `tests/repo/FirestoreRulesDeploy.test.ts`.
+  - **Firestore evaluates at most 1000 expressions per request** and answers
+    `PERMISSION_DENIED` above that. Check presence of optional fields with `'feld' in daten`,
+    never with `keys()` per field, and keep each new optional field to 10–20 expressions.
+    `npm run rules:test` runs the rules in the Firestore emulator against documents the app
+    really writes and asserts a reserve below the limit (needs Java); CI runs the same as the
+    job `firestore-rules-emulator`.
 - **`localStorage` seed paths** support mock/E2E mode; don't break them when refactoring storage logic
 
 ## Funkspruch-Vorlagen erweitern (Skills)
