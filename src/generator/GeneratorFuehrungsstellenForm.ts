@@ -1,7 +1,7 @@
 /**
  * Formularteil der Führungsstellen-Übung im Generator: Drehbuch-Auswahl,
- * Rollenbesetzung (beübte Stelle, übergeordnete Stelle, Einsatzabschnitte)
- * und der Drehbuch-Download. Reine DOM-Arbeit; die Grenzen der
+ * Rollenbesetzung (beübte Stelle, übergeordnete Stelle, Einsatzabschnitte,
+ * je mit Funkrufname und Stellenname) und der Drehbuch-Download. Reine DOM-Arbeit; die Grenzen der
  * Abschnittszahl kommen vom Controller aus dem gewählten Drehbuch.
  */
 
@@ -11,6 +11,14 @@ export interface FuehrungsstellenRollenFormular {
     uebergeordnet: string;
     unterstellt: string[];
     beginn?: string;
+    /** Stellenname je Funkrufname; nur gefüllte Felder. */
+    stellen?: Record<string, string>;
+}
+
+/** Eine Zeile der Abschnittsliste: Funkrufname und Stellenname. */
+export interface AbschnittZeile {
+    funkrufname: string;
+    stelle: string;
 }
 
 /** Erlaubte Zahl von Einsatzabschnitten laut gewähltem Drehbuch. */
@@ -56,48 +64,74 @@ export class GeneratorFuehrungsstellenForm {
     }
 
     public setRollen(rollen: FuehrungsstellenRollenFormular, grenzen: AbschnittsGrenzen): void {
-        const beuebt = document.getElementById("fuehrungsstelleBeuebteStelle") as HTMLInputElement | null;
-        const stab = document.getElementById("fuehrungsstelleUebergeordnet") as HTMLInputElement | null;
-        const beginn = document.getElementById("fuehrungsstelleBeginn") as HTMLInputElement | null;
-        if (beuebt) {
-            beuebt.value = rollen.beuebteStelle;
-        }
-        if (stab) {
-            stab.value = rollen.uebergeordnet;
-        }
-        if (beginn) {
-            beginn.value = rollen.beginn ?? "";
-        }
-        this.renderAbschnitte(rollen.unterstellt, grenzen);
+        const stellen = rollen.stellen ?? {};
+        this.setWert("fuehrungsstelleBeuebteStelle", rollen.beuebteStelle);
+        this.setWert("fuehrungsstelleBeuebteStelleName", stellen[rollen.beuebteStelle] ?? "");
+        this.setWert("fuehrungsstelleUebergeordnet", rollen.uebergeordnet);
+        this.setWert("fuehrungsstelleUebergeordnetName", stellen[rollen.uebergeordnet] ?? "");
+        this.setWert("fuehrungsstelleBeginn", rollen.beginn ?? "");
+        this.renderAbschnitte(
+            rollen.unterstellt.map(funkrufname => ({ funkrufname, stelle: stellen[funkrufname] ?? "" })),
+            grenzen
+        );
     }
 
     public getRollen(): FuehrungsstellenRollenFormular {
-        const wert = (id: string): string =>
-            ((document.getElementById(id) as HTMLInputElement | null)?.value ?? "").trim();
-        const unterstellt = Array.from(
-            document.querySelectorAll<HTMLInputElement>("#fuehrungsstelleAbschnitte .fuehrungsstelle-abschnitt")
-        ).map(input => input.value.trim());
-        const beginn = wert("fuehrungsstelleBeginn");
+        const abschnitte = this.getAbschnittZeilen();
+        const beuebteStelle = this.wert("fuehrungsstelleBeuebteStelle");
+        const uebergeordnet = this.wert("fuehrungsstelleUebergeordnet");
+        const beginn = this.wert("fuehrungsstelleBeginn");
+        const stellen: Record<string, string> = {};
+        const merke = (funkrufname: string, stelle: string): void => {
+            if (funkrufname && stelle) {
+                stellen[funkrufname] = stelle;
+            }
+        };
+        merke(beuebteStelle, this.wert("fuehrungsstelleBeuebteStelleName"));
+        merke(uebergeordnet, this.wert("fuehrungsstelleUebergeordnetName"));
+        abschnitte.forEach(zeile => merke(zeile.funkrufname, zeile.stelle));
         return {
-            beuebteStelle: wert("fuehrungsstelleBeuebteStelle"),
-            uebergeordnet: wert("fuehrungsstelleUebergeordnet"),
-            unterstellt,
-            ...(beginn ? { beginn } : {})
+            beuebteStelle,
+            uebergeordnet,
+            unterstellt: abschnitte.map(zeile => zeile.funkrufname),
+            ...(beginn ? { beginn } : {}),
+            ...(Object.keys(stellen).length > 0 ? { stellen } : {})
         };
     }
 
-    public renderAbschnitte(namen: string[], grenzen: AbschnittsGrenzen): void {
+    /** Die Abschnittszeilen, wie sie gerade im Formular stehen (getrimmt). */
+    public getAbschnittZeilen(): AbschnittZeile[] {
+        return Array.from(
+            document.querySelectorAll<HTMLElement>("#fuehrungsstelleAbschnitte .fuehrungsstelle-abschnitt-zeile")
+        ).map(zeile => ({
+            funkrufname: (zeile.querySelector<HTMLInputElement>(".fuehrungsstelle-abschnitt")?.value ?? "").trim(),
+            stelle: (zeile.querySelector<HTMLInputElement>(".fuehrungsstelle-abschnitt-stelle")?.value ?? "").trim()
+        }));
+    }
+
+    private wert(id: string): string {
+        return ((document.getElementById(id) as HTMLInputElement | null)?.value ?? "").trim();
+    }
+
+    private setWert(id: string, wert: string): void {
+        const input = document.getElementById(id) as HTMLInputElement | null;
+        if (input) {
+            input.value = wert;
+        }
+    }
+
+    public renderAbschnitte(zeilen: AbschnittZeile[], grenzen: AbschnittsGrenzen): void {
         const container = document.getElementById("fuehrungsstelleAbschnitte");
         if (!container) {
             return;
         }
         container.innerHTML = "";
-        namen.forEach((name, index) => {
-            container.appendChild(this.buildAbschnittZeile(name, index, namen.length <= grenzen.min));
+        zeilen.forEach((zeile, index) => {
+            container.appendChild(this.buildAbschnittZeile(zeile, index, zeilen.length <= grenzen.min));
         });
         const hinzufuegen = document.getElementById("fuehrungsstelleAbschnittHinzufuegen") as HTMLButtonElement | null;
         if (hinzufuegen) {
-            hinzufuegen.disabled = namen.length >= grenzen.max;
+            hinzufuegen.disabled = zeilen.length >= grenzen.max;
         }
         const hinweis = document.getElementById("fuehrungsstelleAbschnitteHinweis");
         if (hinweis) {
@@ -108,9 +142,9 @@ export class GeneratorFuehrungsstellenForm {
         }
     }
 
-    private buildAbschnittZeile(name: string, index: number, entfernenGesperrt: boolean): HTMLElement {
+    private buildAbschnittZeile(daten: AbschnittZeile, index: number, entfernenGesperrt: boolean): HTMLElement {
         const zeile = document.createElement("div");
-        zeile.className = "input-group input-group-sm mb-1";
+        zeile.className = "input-group input-group-sm mb-1 fuehrungsstelle-abschnitt-zeile";
         const label = document.createElement("span");
         label.className = "input-group-text";
         label.textContent = `EA ${index + 1}`;
@@ -118,8 +152,16 @@ export class GeneratorFuehrungsstellenForm {
         input.type = "text";
         input.className = "form-control fuehrungsstelle-abschnitt";
         input.dataset["index"] = String(index);
-        input.value = name;
+        input.value = daten.funkrufname;
+        input.placeholder = "Funkrufname";
         input.setAttribute("aria-label", `Funkrufname Einsatzabschnitt ${index + 1}`);
+        const stelle = document.createElement("input");
+        stelle.type = "text";
+        stelle.className = "form-control fuehrungsstelle-abschnitt-stelle";
+        stelle.dataset["index"] = String(index);
+        stelle.value = daten.stelle;
+        stelle.placeholder = "Stellenname";
+        stelle.setAttribute("aria-label", `Stellenname Einsatzabschnitt ${index + 1}`);
         const entfernen = document.createElement("button");
         entfernen.type = "button";
         entfernen.className = "btn btn-outline-secondary fuehrungsstelle-abschnitt-entfernen";
@@ -127,7 +169,7 @@ export class GeneratorFuehrungsstellenForm {
         entfernen.textContent = "×";
         entfernen.setAttribute("aria-label", `Einsatzabschnitt ${index + 1} entfernen`);
         entfernen.disabled = entfernenGesperrt;
-        zeile.append(label, input, entfernen);
+        zeile.append(label, input, stelle, entfernen);
         return zeile;
     }
 

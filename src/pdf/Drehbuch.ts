@@ -84,19 +84,19 @@ export class Drehbuch extends BasePDF {
     private drawRollenTabelle(startY: number): number {
         const zuordnung = verteileStraenge(this.drehbuch.straenge.length, this.konfiguration.unterstellt.length);
         const rows: string[][] = [
-            ["Beübte Führungsstelle", this.konfiguration.beuebteStelle, "wird beübt, kennt das Drehbuch nicht", ""]
+            ["Beübte Führungsstelle", this.rufnameMitStelle(this.konfiguration.beuebteStelle), "wird beübt, kennt das Drehbuch nicht", ""]
         ];
         this.konfiguration.unterstellt.forEach((name, abschnittIndex) => {
             const einsatzstellen = this.drehbuch.straenge
                 .filter((_, strangIndex) => zuordnung[strangIndex] === abschnittIndex)
                 .map(strang => strang.bezeichnung)
                 .join("\n");
-            rows.push([`Einsatzabschnitt ${abschnittIndex + 1}`, name, einsatzstellen, ""]);
+            rows.push([`Einsatzabschnitt ${abschnittIndex + 1}`, this.rufnameMitStelle(name), einsatzstellen, ""]);
         });
-        rows.push(["Übergeordnete Stelle", this.konfiguration.uebergeordnet, this.drehbuch.uebergeordnet.bezeichnung, ""]);
+        rows.push(["Übergeordnete Stelle", this.rufnameMitStelle(this.konfiguration.uebergeordnet), this.drehbuch.uebergeordnet.bezeichnung, ""]);
 
         (this.pdf as any).autoTable({
-            head: [["Rolle", "Funkrufname", "Einsatzstellen / Bezeichnung", "Gespielt von"]],
+            head: [["Rolle", "Funkrufname / Stellenname", "Einsatzstellen / Bezeichnung", "Gespielt von"]],
             body: rows,
             startY,
             theme: "grid",
@@ -112,6 +112,12 @@ export class Drehbuch extends BasePDF {
             headStyles: { fillColor: [200, 200, 200] }
         });
         return this.naechsteY();
+    }
+
+    /** Funkrufname, darunter der eingetragene Stellenname. */
+    private rufnameMitStelle(funkrufname: string): string {
+        const stelle = this.konfiguration.stellen?.[funkrufname];
+        return stelle ? `${funkrufname}\n${stelle}` : funkrufname;
     }
 
     /** Fließtext als einspaltige Tabelle, damit autoTable den Seitenumbruch übernimmt. */

@@ -55,7 +55,8 @@ function baueUebung(unterstellt = ["EA 11", "EA 12"], seed = "fuehrungsstelle-te
         beuebteStelle: "EL 10",
         uebergeordnet: "Kater Test",
         unterstellt,
-        beginn: "09:00"
+        beginn: "09:00",
+        stellen: { "EL 10": "Einsatzleitung", "Kater Test": "Führungsstab" }
     };
     return uebung;
 }
@@ -79,12 +80,23 @@ describe("GenerationService Führungsstellen-Übung", () => {
         expect(uebung.spielModus).toBe("xZeit");
         expect(uebung.anmeldungAktiv).toBe(false);
         expect(uebung.szenarioSlug).toBeUndefined();
-        expect(uebung.teilnehmerStellen).toEqual({
-            "EL 10": "Beübte Führungsstelle",
-            "Kater Test": "Führungsstab",
-            "EA 11": "Einsatzstelle 1, Einsatzstelle 3",
-            "EA 12": "Einsatzstelle 2, Einsatzstelle 4"
-        });
+        // Stellennamen kommen nur aus der Besetzung: Auf den Vordrucken steht
+        // der Stellenname des Empfängers als Anschrift, sonst der Funkrufname.
+        expect(uebung.teilnehmerStellen).toEqual({ "EL 10": "Einsatzleitung", "Kater Test": "Führungsstab" });
+    });
+
+    it("bereinigt die Stellennamen: getrimmt, ohne leere Werte und ohne fremde Funkrufnamen", () => {
+        const uebung = baueUebung([" EA 11 ", "EA 12"]);
+        uebung.fuehrungsstelle!.stellen = { " EA 11 ": " Abschnitt Nord ", "EL 10": "  ", "Heros Fremd": "Nicht dabei" };
+        new GenerationService().generateFuehrungsstelle(uebung, baueDrehbuch());
+        expect(uebung.fuehrungsstelle?.stellen).toEqual({ "EA 11": "Abschnitt Nord" });
+        expect(uebung.teilnehmerStellen).toEqual({ "EA 11": "Abschnitt Nord" });
+
+        const ohne = baueUebung();
+        ohne.fuehrungsstelle!.stellen = { "EL 10": "" };
+        new GenerationService().generateFuehrungsstelle(ohne, baueDrehbuch());
+        expect(ohne.fuehrungsstelle).not.toHaveProperty("stellen");
+        expect(ohne.teilnehmerStellen).toEqual({});
     });
 
     it("verteilt Stränge reihum und löst die Platzhalter je Rolle auf", () => {
@@ -118,7 +130,11 @@ describe("GenerationService Führungsstellen-Übung", () => {
         expect(stab.map(n => n.weg)).toEqual(["drucker", "email", "funk"]);
         expect(stab.map(n => n.xZeitSlot)).toEqual([5, 10, 11]);
         expect(stab[0]?.meldeart).toBe("auftrag");
-        expect(stab[1]).not.toHaveProperty("betreff", undefined);
+        // Funk-Nachrichten tragen keinen Betreff-Schlüssel — Firestore lehnt
+        // undefined in der verschachtelten nachrichten-Map ab.
+        alleNachrichten(uebung)
+            .filter(({ nachricht }) => nachricht.weg === "funk")
+            .forEach(({ nachricht }) => expect(Object.keys(nachricht)).not.toContain("betreff"));
     });
 
     it("nummeriert szenarioNr global entlang der entzerrten Zeitachse", () => {
@@ -134,14 +150,16 @@ describe("GenerationService Führungsstellen-Übung", () => {
         }
     });
 
-    it("summiert die Stärkemeldungen bei der beübten Stelle, ohne Texte zu verändern", () => {
+    it("führt keine Soll-Stärke und verändert keine Texte", () => {
         const uebung = baueUebung();
         new GenerationService().generateFuehrungsstelle(uebung, baueDrehbuch());
 
-        // Stab 1/2/9 + Stränge 0/1/4, 0/1/5, 0/1/6, 0/1/7 = 1/6/31 -> 38
-        expect(uebung.loesungsStaerken?.["EL 10"]).toBe("1/6/31/38");
+        // Die Drehbücher melden laufende Stände derselben Einheit; eine Summe
+        // aller Treffer wäre eine Zahl, die nirgends im Drehbuch steht.
+        expect(uebung.loesungsStaerken).toEqual({});
         alleNachrichten(uebung).forEach(({ nachricht }) => {
             expect(nachricht.nachricht).not.toContain("Aktuelle Stärke:");
+            expect(nachricht).not.toHaveProperty("staerken");
         });
         expect(uebung.loesungswoerter).toEqual({});
     });

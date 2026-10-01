@@ -113,11 +113,21 @@ export function ersetzeFuehrungsstellenPlatzhalter(
     strangNamen: Record<string, string>,
     eigenerAbschnitt?: string
 ): string {
-    return text
-        .replace(/\{\{el\}\}/g, konfiguration.beuebteStelle)
-        .replace(/\{\{stab\}\}/g, konfiguration.uebergeordnet)
-        .replace(/\{\{ea\}\}/g, eigenerAbschnitt ?? konfiguration.uebergeordnet)
-        .replace(/\{\{ea:([a-z0-9-]+)\}\}/g, (treffer, key: string) => strangNamen[key] ?? treffer);
+    // Ein Durchgang mit Funktions-Ersetzung: Funkrufnamen mit „$" oder einem
+    // eingesetzten Platzhalter werden weder von String.replace gedeutet noch
+    // ein zweites Mal ersetzt.
+    return text.replace(/\{\{(el|stab|ea)(?::([a-z0-9-]+))?\}\}/g, (treffer, rolle: string, key: string | undefined) => {
+        if (rolle === "el") {
+            return konfiguration.beuebteStelle;
+        }
+        if (rolle === "stab") {
+            return konfiguration.uebergeordnet;
+        }
+        if (key !== undefined) {
+            return strangNamen[key] ?? treffer;
+        }
+        return eigenerAbschnitt ?? konfiguration.uebergeordnet;
+    });
 }
 
 export interface FuehrungsstellenHinweise {

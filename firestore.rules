@@ -165,14 +165,16 @@ function istOptionalesGueltig(daten) {
 
 function istFuehrungsstelle(wert) {
   return wert is map
-         && wert.keys().hasOnly(['slug', 'beuebteStelle', 'uebergeordnet', 'unterstellt', 'beginn'])
+         && wert.keys().hasOnly(['slug', 'beuebteStelle', 'uebergeordnet', 'unterstellt', 'beginn', 'stellen'])
          && wert.keys().hasAll(['slug', 'beuebteStelle', 'uebergeordnet', 'unterstellt'])
          && istText(wert.slug, 64)
          && istText(wert.beuebteStelle, 100)
          && istText(wert.uebergeordnet, 100)
          && wert.unterstellt is list
          && wert.unterstellt.size() <= 8
-         && optionalOk(wert, 'beginn', istText(wert.beginn, 5));
+         && optionalOk(wert, 'beginn', istText(wert.beginn, 5))
+         // Stellenname je Funkrufname; höchstens eine Stelle je Rolle (1 + 8 + 1).
+         && optionalOk(wert, 'stellen', wert.stellen is map && wert.stellen.size() <= 10);
 }
 
 // Die stat*-Felder speisen die Aggregations-Queries des Admin-Dashboards.

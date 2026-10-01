@@ -86,16 +86,29 @@ export class GenerationService {
         uebung.funksprueche = [];
         uebung.verwendeteVorlagen = [];
         uebung.teilnehmerListe = fuehrungsstellenTeilnehmerListe(konfiguration);
-        uebung.teilnehmerStellen = this.fuehrungsstellenStellen(drehbuch, konfiguration);
+        // Stellennamen wie in der klassischen Übung: Was eingetragen ist, steht
+        // auf den Vordrucken als Anschrift; nichts wird aus dem Drehbuch erfunden.
+        uebung.teilnehmerStellen = { ...(konfiguration.stellen ?? {}) };
         uebung.nachrichten = this.verteileNachrichtenNachDrehbuch(drehbuch, konfiguration);
-        this.finalisiere(uebung);
+        // Keine Soll-Stärke: Die Drehbücher melden laufende Stände derselben
+        // Einheit (Anmeldung, Änderung, Abschlussstand) und Teilsummen; eine
+        // Addition aller Treffer ergäbe eine Zahl, die nirgends im Drehbuch steht.
+        this.finalisiere(uebung, false);
     }
 
-    /** Schritte, die jeder Generierungspfad zum Schluss durchläuft. */
-    private finalisiere(uebung: FunkUebung): void {
+    /**
+     * Schritte, die jeder Generierungspfad zum Schluss durchläuft. Ohne
+     * `mitStaerken` bleibt die Soll-Stärke leer, die Leitungsansicht blendet
+     * die Spalte dann aus.
+     */
+    private finalisiere(uebung: FunkUebung, mitStaerken = true): void {
         this.ensureJoinCodes(uebung);
         this.updateChecksum(uebung);
-        this.berechneLoesungsStaerken(uebung);
+        if (mitStaerken) {
+            this.berechneLoesungsStaerken(uebung);
+        } else {
+            uebung.loesungsStaerken = {};
+        }
         // Erst hier, weil die Art von `staerken` und `loesungsbuchstaben` abhängt
         // und beide vorher gefüllt werden.
         this.markiereNachrichtenArt(uebung);
@@ -130,27 +143,37 @@ export class GenerationService {
         if (new Set(alle).size !== alle.length) {
             throw new Error("Die Funkrufnamen der Führungsstellen-Übung müssen eindeutig sein.");
         }
+        const stellen = this.bereinigeStellen(roh.stellen, alle);
+        if (stellen) {
+            konfiguration.stellen = stellen;
+        } else {
+            delete konfiguration.stellen;
+        }
         uebung.fuehrungsstelle = konfiguration;
         return konfiguration;
     }
 
-    /** Stellennamen aus den Rollen: Die Abschnitte tragen ihre Einsatzstellen. */
-    private fuehrungsstellenStellen(
-        drehbuch: FuehrungsstellenUebung,
-        konfiguration: FuehrungsstellenKonfiguration
-    ): Record<string, string> {
-        const stellen: Record<string, string> = {
-            [konfiguration.beuebteStelle]: "Beübte Führungsstelle",
-            [konfiguration.uebergeordnet]: drehbuch.uebergeordnet.bezeichnung
-        };
-        const zuordnung = verteileStraenge(drehbuch.straenge.length, konfiguration.unterstellt.length);
-        konfiguration.unterstellt.forEach((name, abschnittIndex) => {
-            const eigene = drehbuch.straenge
-                .filter((_, strangIndex) => zuordnung[strangIndex] === abschnittIndex)
-                .map(strang => strang.bezeichnung);
-            stellen[name] = eigene.join(", ");
+    /**
+     * Stellennamen auf die Rollen der Übung eindampfen: getrimmt, ohne leere
+     * Werte und ohne Reste umbenannter Funkrufnamen. Liefert undefined, wenn
+     * nichts übrig bleibt, damit kein leeres Objekt gespeichert wird.
+     */
+    private bereinigeStellen(
+        roh: Record<string, string> | undefined,
+        rollen: string[]
+    ): Record<string, string> | undefined {
+        if (!roh) {
+            return undefined;
+        }
+        const stellen: Record<string, string> = {};
+        Object.entries(roh).forEach(([name, stelle]) => {
+            const funkrufname = name.trim();
+            const stellenname = typeof stelle === "string" ? stelle.trim() : "";
+            if (rollen.includes(funkrufname) && stellenname.length > 0) {
+                stellen[funkrufname] = stellenname;
+            }
         });
-        return stellen;
+        return Object.keys(stellen).length > 0 ? stellen : undefined;
     }
 
     /**

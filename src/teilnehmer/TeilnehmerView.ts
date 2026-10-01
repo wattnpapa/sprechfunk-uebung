@@ -560,6 +560,7 @@ export class TeilnehmerView {
         }
         if (zustand.kind === "faellig" && zustand.aktuelle) {
             const n = zustand.aktuelle;
+            const hinweise = renderFuehrungsstellenHinweise(n);
             const weitere = zustand.weitereFaellig > 0
                 ? `<div class="text-warning small mt-2">+${zustand.weitereFaellig} weitere Meldung(en) fällig</div>`
                 : "";
@@ -571,7 +572,7 @@ export class TeilnehmerView {
                             <span class="text-muted small">noch ${zustand.offen} offen</span>
                         </div>
                         <div class="text-muted small mt-2">an: ${escapeHtml(n.empfaenger.join(", "))}</div>
-                        <p class="fs-5 mt-1 mb-3">${this.renderArtBadge(n)}${escapeHtml(n.nachricht).replace(/\\n/g, "<br>").replace(/\n/g, "<br>")}</p>
+                        <div class="fs-5 mt-1 mb-3">${this.renderArtBadge(n)}${hinweise.kopf}${escapeHtml(n.nachricht).replace(/\\n/g, "<br>").replace(/\n/g, "<br>")}${hinweise.fuss}</div>
                         <button class="btn btn-success btn-lg w-100" data-fokus-uebertragen="${n.id}">
                             ✓ Als übertragen markieren
                         </button>

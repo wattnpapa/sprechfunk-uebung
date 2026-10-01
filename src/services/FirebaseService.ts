@@ -898,9 +898,33 @@ function parseFuehrungsstellenKonfiguration(roh: unknown): FuehrungsstellenKonfi
     if (!slug || !beuebteStelle || !uebergeordnet || unterstellt.length === 0) {
         return undefined;
     }
-    const beginn = nichtLeererText(obj["beginn"]);
-    const beginnGueltig = beginn !== undefined && /^\d{1,2}:\d{2}$/.test(beginn);
-    return { slug, beuebteStelle, uebergeordnet, unterstellt, ...(beginnGueltig ? { beginn } : {}) };
+    const beginn = parseBeginn(obj["beginn"]);
+    const stellen = parseStellen(obj["stellen"]);
+    return {
+        slug, beuebteStelle, uebergeordnet, unterstellt,
+        ...(beginn ? { beginn } : {}),
+        ...(stellen ? { stellen } : {})
+    };
+}
+
+/** Übungsbeginn „HH:MM“; alles andere wird verworfen. */
+function parseBeginn(roh: unknown): string | undefined {
+    const beginn = nichtLeererText(roh);
+    return beginn !== undefined && /^\d{1,2}:\d{2}$/.test(beginn) ? beginn : undefined;
+}
+
+/** Stellenname je Funkrufname; nur Einträge mit Text auf beiden Seiten. */
+function parseStellen(roh: unknown): Record<string, string> | undefined {
+    if (!roh || typeof roh !== "object" || Array.isArray(roh)) {
+        return undefined;
+    }
+    const stellen: Record<string, string> = {};
+    Object.entries(roh as Record<string, unknown>).forEach(([name, stelle]) => {
+        if (name.trim() !== "" && nichtLeererText(stelle) !== undefined) {
+            stellen[name] = stelle as string;
+        }
+    });
+    return Object.keys(stellen).length > 0 ? stellen : undefined;
 }
 
 function nichtLeererText(wert: unknown): string | undefined {

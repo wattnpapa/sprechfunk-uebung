@@ -3,7 +3,7 @@ import { FUNKSPRUCH_VORLAGEN } from "../data/funkspruchVorlagen";
 import { store } from "../state/store";
 import { FirebaseService } from "../services/FirebaseService";
 import { GenerationService } from "../services/GenerationService";
-import { GeneratorView } from "./GeneratorView";
+import { type AbschnittZeile, GeneratorView } from "./GeneratorView";
 import { GeneratorStateService, type LoesungswortOption } from "./GeneratorStateService";
 import { GeneratorStatsService } from "./GeneratorStatsService";
 import { GeneratorPreviewService } from "./GeneratorPreviewService";
@@ -31,13 +31,26 @@ export class GeneratorController {
     /** Entwertet überholte Info-Fetches bei schnellem Szenario-Wechsel. */
     private szenarioInfoToken = 0;
     private fuehrungsstelleInfoToken = 0;
+    /**
+     * Teilnehmer des Formulars, bevor eine Führungsstellen-Übung die Liste mit
+     * ihren Rollen überschreibt; beim Wechsel auf eine andere Quelle kommt
+     * die Liste zurück.
+     */
+    private teilnehmerVorFuehrungsstelle: { liste: string[]; stellen: Record<string, string> } | null = null;
     /** Abschnittsspanne des gewählten Drehbuchs; bis zum ersten Laden großzügig. */
     private fuehrungsstelleGrenzen: AbschnittsGrenzen = { min: 1, max: 8 };
     /** Vorbelegung der Rollen: Führungsstelle, Zugtrupps als Abschnitte, Katastrophenschutzstab. */
     private static readonly FUEHRUNGSSTELLE_VORBELEGUNG: FuehrungsstellenRollenFormular = {
         beuebteStelle: "Heros Musterstadt 10",
         uebergeordnet: "Kater Musterstadt",
-        unterstellt: ["Heros Musterstadt 21/10", "Heros Musterstadt 22/10", "Heros Musterstadt 23/10"]
+        unterstellt: ["Heros Musterstadt 21/10", "Heros Musterstadt 22/10", "Heros Musterstadt 23/10"],
+        stellen: {
+            "Heros Musterstadt 10": "Einsatzleitung",
+            "Kater Musterstadt": "Führungsstab",
+            "Heros Musterstadt 21/10": "Einsatzabschnitt 1",
+            "Heros Musterstadt 22/10": "Einsatzabschnitt 2",
+            "Heros Musterstadt 23/10": "Einsatzabschnitt 3"
+        }
     };
     private showStellenname = false;
     private firebaseService: FirebaseService;
@@ -108,6 +121,7 @@ export class GeneratorController {
         const uebungId = params.length >= 1 ? (params[0] ?? null) : null;
         const uebung = await this.loadUebung(uebungId);
         this.funkUebung = uebung;
+        this.teilnehmerVorFuehrungsstelle = null;
         this.isFreshExercise = !uebungId;
         this.initialConfigFingerprint = this.createConfigFingerprint(this.funkUebung);
         this.updateUI();
@@ -134,8 +148,13 @@ export class GeneratorController {
                 // das auch zeigen, nicht nur der Hinweistext.
                 this.view.selectLoesungswortOption("none");
                 this.stateService.resetLoesungswoerter(this.funkUebung);
-                this.renderTeilnehmer(false);
             }
+            if (source !== "fuehrungsstelle") {
+                this.stelleTeilnehmerWiederHer();
+            }
+            // Immer neu zeichnen, damit Tabelle und Teilnehmerliste der Übung
+            // nach einem Quellenwechsel nicht auseinanderlaufen.
+            this.renderTeilnehmer(false);
             if (source === "szenario") {
                 void this.updateSzenarioInfo();
             }
@@ -216,8 +235,8 @@ export class GeneratorController {
             void this.updateFuehrungsstelleInfo();
         });
         this.view.bindFuehrungsstellenAbschnittEvents(
-            () => this.aendereAbschnitte(namen => [...namen, this.naechsterAbschnittName(namen)]),
-            index => this.aendereAbschnitte(namen => namen.filter((_, i) => i !== index))
+            () => this.aendereAbschnitte(zeilen => [...zeilen, this.naechsterAbschnitt(zeilen)]),
+            index => this.aendereAbschnitte(zeilen => zeilen.filter((_, i) => i !== index))
         );
     }
 
@@ -352,10 +371,14 @@ export class GeneratorController {
         }
 
         // 1. Daten aus View übernehmen
+        const vorherigeBesetzung = this.funkUebung.fuehrungsstelle;
         const source = this.uebernimmFormular();
 
         // 2./3. Prüfen und generieren, je nach Quelle
         if (!(await this.generiereNachQuelle(source))) {
+            // Eine abgelehnte Rollenbesetzung darf nicht neben dem Ergebnis des
+            // letzten erfolgreichen Laufs stehen bleiben (Drehbuch-PDF, ZIP).
+            this.funkUebung.fuehrungsstelle = vorherigeBesetzung;
             return;
         }
 
@@ -452,6 +475,7 @@ export class GeneratorController {
         this.stateService.resetLoesungswoerter(this.funkUebung);
         this.funkUebung.funksprueche = [];
         this.funkUebung.verwendeteVorlagen = [];
+        this.sichereTeilnehmerVorFuehrungsstelle();
         try {
             this.generationService.generateFuehrungsstelle(this.funkUebung, drehbuch);
         } catch (error) {
@@ -459,6 +483,26 @@ export class GeneratorController {
             return false;
         }
         return true;
+    }
+
+    private sichereTeilnehmerVorFuehrungsstelle(): void {
+        if (this.teilnehmerVorFuehrungsstelle) {
+            return;
+        }
+        this.teilnehmerVorFuehrungsstelle = {
+            liste: [...this.funkUebung.teilnehmerListe],
+            stellen: { ...(this.funkUebung.teilnehmerStellen ?? {}) }
+        };
+    }
+
+    private stelleTeilnehmerWiederHer(): void {
+        const gesichert = this.teilnehmerVorFuehrungsstelle;
+        if (!gesichert) {
+            return;
+        }
+        this.funkUebung.teilnehmerListe = [...gesichert.liste];
+        this.funkUebung.teilnehmerStellen = { ...gesichert.stellen };
+        this.teilnehmerVorFuehrungsstelle = null;
     }
 
     private async loadFuehrungsstellenUebung(slug: string): Promise<FuehrungsstellenUebung | null> {
@@ -507,18 +551,24 @@ export class GeneratorController {
     }
 
     /** Abschnittsliste ändern und in die Spanne des Drehbuchs bringen (auffüllen oder kürzen). */
-    private aendereAbschnitte(aenderung: (namen: string[]) => string[]): void {
-        const namen = aenderung(this.view.getFuehrungsstellenRollen().unterstellt);
-        while (namen.length < this.fuehrungsstelleGrenzen.min) {
-            namen.push(this.naechsterAbschnittName(namen));
+    /** Abschnittsliste ändern; die Zeilen kommen aus dem Formular, damit getippte Stellennamen erhalten bleiben. */
+    private aendereAbschnitte(aenderung: (zeilen: AbschnittZeile[]) => AbschnittZeile[]): void {
+        const zeilen = aenderung(this.view.getFuehrungsstellenAbschnitte());
+        while (zeilen.length < this.fuehrungsstelleGrenzen.min) {
+            zeilen.push(this.naechsterAbschnitt(zeilen));
         }
-        this.view.renderFuehrungsstellenAbschnitte(namen.slice(0, this.fuehrungsstelleGrenzen.max), this.fuehrungsstelleGrenzen);
+        this.view.renderFuehrungsstellenAbschnitte(zeilen.slice(0, this.fuehrungsstelleGrenzen.max), this.fuehrungsstelleGrenzen);
     }
 
-    private naechsterAbschnittName(vorhandene: string[]): string {
+    private naechsterAbschnitt(vorhandene: AbschnittZeile[]): AbschnittZeile {
+        const namen = vorhandene.map(zeile => zeile.funkrufname);
+        const nummer = vorhandene.length + 1;
         const vorbelegung = GeneratorController.FUEHRUNGSSTELLE_VORBELEGUNG.unterstellt;
-        const kandidat = vorbelegung[vorhandene.length] ?? `Heros Musterstadt 2${vorhandene.length + 1}/10`;
-        return vorhandene.includes(kandidat) ? `Einsatzabschnitt ${vorhandene.length + 1}` : kandidat;
+        const kandidat = vorbelegung[vorhandene.length] ?? `Heros Musterstadt 2${nummer}/10`;
+        return {
+            funkrufname: namen.includes(kandidat) ? `Einsatzabschnitt ${nummer}` : kandidat,
+            stelle: `Einsatzabschnitt ${nummer}`
+        };
     }
 
     /** Lädt und validiert ein Szenario-JSON; Ergebnisse werden gecacht. */

@@ -1,4 +1,4 @@
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import {
     erlaubtePlatzhalter,
     FuehrungsstellenParseError,
@@ -139,5 +139,59 @@ describe("parseFuehrungsstellenUebung", () => {
         const drehbuch = gueltigesDrehbuch();
         (drehbuch["uebergeordnet"] as { nachrichten: Record<string, unknown>[] }).nachrichten[1]!["text"] = "Für {{ea}}.";
         expect(fehlerVon(drehbuch).join("\n")).toContain("uebergeordnet.nachrichten[1].text: unbekannter Platzhalter");
+    });
+
+    it("meldet eine ungültige Dauer genau einmal statt jede Nachricht als außerhalb der Dauer", () => {
+        const drehbuch = gueltigesDrehbuch();
+        drehbuch["dauerMinuten"] = "180";
+        const fehler = fehlerVon(drehbuch);
+        expect(fehler).toHaveLength(1);
+        expect(fehler[0]).toContain("dauerMinuten");
+    });
+
+    it("prüft die Sortierung auch über Nachrichten mit anderen Fehlern", () => {
+        const drehbuch = gueltigesDrehbuch();
+        const straenge = drehbuch["straenge"] as { nachrichten: Record<string, unknown>[] }[];
+        straenge[0]!.nachrichten[0]!["zeit"] = 30;      // 30 vor 20 …
+        straenge[0]!.nachrichten[1]!["text"] = "";      // … und die zweite Nachricht ist sonst fehlerhaft
+        const gesamt = fehlerVon(drehbuch).join("\n");
+        expect(gesamt).toContain("straenge[0].nachrichten[1].text fehlt");
+        expect(gesamt).toContain("zeit (20) liegt vor der vorherigen Nachricht (30)");
+    });
+
+    it("verlangt bei ungültigem Weg keinen Betreff und meldet den Strang-Weg direkt an der Nachricht", () => {
+        const drehbuch = gueltigesDrehbuch();
+        const straenge = drehbuch["straenge"] as { nachrichten: Record<string, unknown>[] }[];
+        straenge[0]!.nachrichten[1]!["weg"] = "Funk";
+        straenge[1]!.nachrichten[1]!["weg"] = "email";
+        straenge[1]!.nachrichten[1]!["betreff"] = "Mit Betreff";
+        const fehler = fehlerVon(drehbuch);
+        expect(fehler.filter(f => f.includes("betreff fehlt"))).toHaveLength(0);
+        expect(fehler.join("\n")).toContain("straenge[0].nachrichten[1]: weg muss");
+        expect(fehler.join("\n")).toContain("straenge[1].nachrichten[1]: Stränge senden nur über funk");
+    });
+});
+
+describe("ladeFuehrungsstellenUebung", () => {
+    it("lädt, prüft und cacht ein Drehbuch; Fehler werden nicht gecacht", async () => {
+        const { ladeFuehrungsstellenUebung } = await import("../../src/services/FuehrungsstellenUebungService");
+        const roh = { ...gueltigesDrehbuch(), slug: "hochwasser-fuehrungsstelle" };
+        const fetchMock = vi.fn()
+            .mockResolvedValueOnce({ ok: false, status: 404 })
+            .mockResolvedValueOnce({ ok: true, json: async () => ({ slug: "hochwasser-fuehrungsstelle" }) })
+            .mockResolvedValueOnce({ ok: true, json: async () => roh });
+        vi.stubGlobal("fetch", fetchMock);
+
+        await expect(ladeFuehrungsstellenUebung("hochwasser-fuehrungsstelle")).rejects.toThrow("HTTP 404");
+        await expect(ladeFuehrungsstellenUebung("hochwasser-fuehrungsstelle")).rejects.toThrow(FuehrungsstellenParseError);
+        const geladen = await ladeFuehrungsstellenUebung("hochwasser-fuehrungsstelle");
+        expect(geladen.slug).toBe("hochwasser-fuehrungsstelle");
+        // Zweiter Erfolg kommt aus dem Cache.
+        await ladeFuehrungsstellenUebung("hochwasser-fuehrungsstelle");
+        expect(fetchMock).toHaveBeenCalledTimes(3);
+        expect(fetchMock).toHaveBeenLastCalledWith("assets/fuehrungsstellen/hochwasser-fuehrungsstelle.json");
+
+        await expect(ladeFuehrungsstellenUebung("gibt-es-nicht")).rejects.toThrow("Unbekannte Führungsstellen-Übung");
+        vi.unstubAllGlobals();
     });
 });

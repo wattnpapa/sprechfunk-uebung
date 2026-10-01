@@ -2,6 +2,15 @@ import type { FunkUebung } from "../models/FunkUebung";
 import type { Nachricht } from "../types/Nachricht";
 import { formatNatoDate } from "../utils/date";
 import { VordruckDaten } from "../vordruck/VordruckDaten";
+import type { Uebermittlungsweg } from "../vordruck/felder";
+import type { UebermittlungsWeg as FuehrungsstellenWeg } from "../types/FuehrungsstellenUebung";
+
+/** Weg einer Führungsstellen-Nachricht im Vokabular des Vordrucks. */
+const WEG_ZU_VORDRUCK: Record<FuehrungsstellenWeg, Uebermittlungsweg> = {
+    funk: "funk",
+    drucker: "telefax",
+    email: "dfue"
+};
 
 /**
  * Übersetzt Übung, Teilnehmer und Nachricht in `VordruckDaten`.
@@ -32,7 +41,14 @@ export function vordruckDatenAusUebung(
         return stelle && stelle.trim().length > 0 ? stelle : funkrufname;
     });
 
-    daten.inhalt = nachricht.nachricht;
+    // Ausdruck und E-Mail einer Führungsstellen-Übung tragen Betreff und Weg;
+    // auf dem Vordruck steht der Betreff als erste Zeile.
+    daten.inhalt = nachricht.betreff
+        ? `Betreff: ${nachricht.betreff}\n${nachricht.nachricht}`
+        : nachricht.nachricht;
+    if (nachricht.weg) {
+        daten.uebermittlungsweg = WEG_ZU_VORDRUCK[nachricht.weg];
+    }
     daten.absender = teilnehmer;
     daten.verfasser = teilnehmer;
     if (nachricht.art) {

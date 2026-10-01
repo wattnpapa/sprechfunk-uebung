@@ -51,6 +51,15 @@ describe("utils/fuehrungsstelle", () => {
         expect(ersetzeFuehrungsstellenPlatzhalter("{{ea}}", konfiguration, {})).toBe("Kater");
     });
 
+    it("übernimmt Funkrufnamen mit Dollarzeichen und Platzhaltertext unverändert", () => {
+        const konfiguration = { beuebteStelle: "EL $& 10", uebergeordnet: "Kater $$ 1" };
+        expect(ersetzeFuehrungsstellenPlatzhalter("An {{el}} von {{stab}}", konfiguration, {}))
+            .toBe("An EL $& 10 von Kater $$ 1");
+        // Ein eingesetzter Name wird nicht ein zweites Mal ersetzt.
+        expect(ersetzeFuehrungsstellenPlatzhalter("{{el}} und {{stab}}", { beuebteStelle: "{{stab}}", uebergeordnet: "Stab" }, {}))
+            .toBe("{{stab}} und Stab");
+    });
+
     it("baut Kennzeichnung und erwartete Reaktion als HTML, leer ohne Führungsstellen-Felder", () => {
         expect(renderFuehrungsstellenHinweise({})).toEqual({ kopf: "", fuss: "" });
         const hinweise = renderFuehrungsstellenHinweise({
