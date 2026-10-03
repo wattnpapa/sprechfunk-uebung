@@ -265,8 +265,43 @@ ${karten}
 }
 
 /**
+ * Alle Werkzeuge desselben Autors, in fester Reihenfolge. Das eigene Projekt
+ * steht bewusst mit drin: die Zeile ist auf allen Werkzeugen gleich.
+ */
+export const WERKZEUGE = [
+    { domain: "erfassungsbogen.app", href: "https://erfassungsbogen.app/" },
+    { domain: "fmbauplaner.app", href: "https://fmbauplaner.app/" },
+    { domain: "nachrichtenvordruck.app", href: "https://nachrichtenvordruck.app/" },
+    { domain: "sprechfunk-uebung.de", href: "https://sprechfunk-uebung.de/" }
+];
+
+const EIGENE_DOMAIN = "sprechfunk-uebung.de";
+
+/**
+ * Letzte Zeile des Footers: die Werkzeuge nebeneinander. Der Mittelpunkt ist
+ * ein eigenes Element außerhalb der Links und aria-hidden – sonst würde er mit
+ * unterstrichen und von Screenreadern vorgelesen.
+ *
+ * Absolute URLs, damit dieselbe Zeile auch in die 404-Seite passt, die unter
+ * beliebigen Pfaden ausgeliefert wird.
+ */
+export function renderWerkzeugleiste() {
+    const links = WERKZEUGE.map(werkzeug => {
+        const extern = werkzeug.domain === EIGENE_DOMAIN
+            ? ""
+            : ' target="_blank" rel="noopener noreferrer"';
+        return `        <a class="footer-werkzeug" href="${werkzeug.href}"${extern}>${escapeHtml(werkzeug.domain)}</a>`;
+    }).join(`\n        <span class="footer-werkzeuge-trenner" aria-hidden="true">·</span>\n`);
+
+    return `      <nav class="footer-werkzeuge" aria-label="Weitere Werkzeuge" data-testid="footer-werkzeuge">
+${links}
+      </nav>`;
+}
+
+/**
  * Footer in Spalten (AP-04). Die meistgefragten Inhaltsseiten stehen in der
- * Wissen-Spalte, damit sie sitewide verlinkt sind.
+ * Wissen-Spalte, damit sie sitewide verlinkt sind. Darunter, als letztes
+ * Element, die Werkzeugleiste.
  */
 export function renderFooter(aktuellerSlug) {
     const link = (slug, text, testid) =>
@@ -324,6 +359,7 @@ ${spalte.eintraege.join("\n")}
       <div class="row g-4">
 ${markup}
       </div>
+${renderWerkzeugleiste()}
     </div>
 </footer>
 `;

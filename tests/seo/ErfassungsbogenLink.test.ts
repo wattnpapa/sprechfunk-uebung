@@ -6,10 +6,13 @@ import { SITE_PAGES } from "../../scripts/site-pages.mjs";
 
 /**
  * erfassungsbogen.app ist ein zweites BOS-Werkzeug desselben Autors und wird
- * bewusst nur von genau zwei Stellen aus verlinkt – als redaktioneller
- * Fließtext-Link, nicht als Footer- oder Navigationslink auf allen Seiten
- * (AP-11). Der Test hält beide Zusicherungen fest: die Links existieren, und
- * es kommen nicht schleichend weitere Seiten dazu.
+ * im Fließtext bewusst nur von genau zwei Stellen aus verlinkt (AP-11). Der
+ * Test hält beide Zusicherungen fest: die Links existieren, und es kommen nicht
+ * schleichend weitere Seiten dazu.
+ *
+ * Seit 2026-10 steht die Domain zusätzlich sitewide in der Werkzeugleiste des
+ * Footers. Die entsteht erst beim Build und taucht in den hier geprüften
+ * Quelldateien nicht auf; geprüft wird sie in FooterWerkzeuge.test.ts.
  */
 
 const root = path.resolve(__dirname, "..", "..");
@@ -76,9 +79,8 @@ describe("Kontextuelle Links auf erfassungsbogen.app (AP-11)", () => {
     });
 
     it("verlinkt erfassungsbogen.app von genau zwei Seiten aus", () => {
-        // Kein Footer- oder Navigationslink auf allen Seiten: taucht der Link
-        // auf weiteren Seiten auf, ist das eine bewusste redaktionelle
-        // Entscheidung und gehört hier ergänzt.
+        // Nur Fließtext: taucht der Link im Text weiterer Seiten auf, ist das
+        // eine bewusste redaktionelle Entscheidung und gehört hier ergänzt.
         const verlinkende = seiten
             .filter(seite => erfassungsbogenLinks(leseSeite(seite.source)).length > 0)
             .map(seite => seite.slug)

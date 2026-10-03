@@ -1957,6 +1957,35 @@ select option {
     text-decoration-color: currentcolor;
 }
 
+/* Werkzeugleiste: letzte Zeile des Footers, abgesetzt durch eine feine Linie.
+   Schriftgrad erbt sie vom Footer (Nebentext, mobil eine Stufe kleiner). */
+.main-footer .footer-werkzeuge {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: center;
+    column-gap: 0.5rem;
+    margin-top: 1.25rem;
+    padding-top: 0.75rem;
+    border-top: var(--strich) solid var(--linie);
+}
+
+.main-footer .footer-werkzeug {
+    display: inline-flex;
+    align-items: center;
+    min-height: calc(2.25rem + var(--ziel));
+    color: var(--text-2);
+    overflow-wrap: anywhere;
+}
+
+.main-footer .footer-werkzeug:hover {
+    color: var(--akzent);
+}
+
+.main-footer .footer-werkzeuge-trenner {
+    color: var(--text-2);
+}
+
 @media (max-width: 768px) {
     .main-footer {
         padding: 0.55rem 0.8rem;
@@ -3068,6 +3097,18 @@ html:has(> body[data-theme="startrek"]) {
 [data-theme="startrek"] .main-footer a {
     color: var(--lcars-himmel);
     text-decoration-color: var(--lcars-himmel);
+}
+
+/* --linie ist hier schwarz auf Schwarz; die Trennlinie braucht die starke
+   Linienfarbe. Domains bleiben klein geschrieben, trotz Versalien im Footer. */
+[data-theme="startrek"] .main-footer .footer-werkzeuge {
+    border-top-color: var(--linie-stark);
+    text-transform: none;
+}
+
+[data-theme="startrek"] .main-footer .footer-werkzeug:hover {
+    color: var(--akzent);
+    text-decoration-color: currentcolor;
 }
 
 /*

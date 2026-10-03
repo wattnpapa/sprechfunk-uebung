@@ -4,6 +4,7 @@ import path from "node:path";
 import { promisify } from "node:util";
 import { buildSitemap, canonicalUrl, SITEMAP_PAGES, SITE_PAGES, SITE_URL, STATIC_SUBPAGES } from "./site-pages.mjs";
 import { renderPageWithStructuredData } from "./lib/render-page.mjs";
+import { renderWerkzeugleiste } from "./lib/navigation.mjs";
 import { createGitRunner, resolveLastmod } from "./lib/lastmod.mjs";
 import { ersterSatz, extractMetaDescription } from "./lib/page-metadata.mjs";
 import { ARCHIV_VORLAGEN } from "./lib/funkspruch-daten.mjs";
@@ -91,7 +92,19 @@ await writeFile(
     await withStructuredData(startseite, indexHtml.replace(generatorPlaceholder, markupMatch[1])),
     "utf8"
 );
-await cp(path.join(root, "src", "404.html"), path.join(dist, "404.html"));
+// Die 404-Seite behält ihren eigenen, absolut verlinkten Footer (sie wird unter
+// beliebigen Pfaden ausgeliefert); nur die Werkzeugleiste kommt aus derselben
+// Quelle wie auf allen anderen Seiten.
+const WERKZEUGE_PLATZHALTER = "<!-- FOOTER:WERKZEUGE -->";
+const html404 = await readFile(path.join(root, "src", "404.html"), "utf8");
+if (!html404.includes(WERKZEUGE_PLATZHALTER)) {
+    throw new Error(`src/404.html: Platzhalter ${WERKZEUGE_PLATZHALTER} fehlt`);
+}
+await writeFile(
+    path.join(dist, "404.html"),
+    html404.replace(WERKZEUGE_PLATZHALTER, renderWerkzeugleiste().trimStart()),
+    "utf8"
+);
 await cp(path.join(root, "howto.md"), path.join(dist, "howto.md"));
 // style.css minifiziert ausliefern: Die Datei geht nicht durch den
 // Rollup-Graph, weil auch die statischen Inhaltsseiten sie referenzieren.
