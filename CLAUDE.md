@@ -84,9 +84,9 @@ Each mode is a self-contained module with an `index.ts` entry:
 - `FirebaseService` — all Firestore reads/writes; handles missing-index errors with fallback
 - `pdfGenerator` / `pdfA4Service` / `pdfDebriefService` / `pdfZipService` — PDF and ZIP export
 - Nachrichten- und Meldevordruck are drawn by the external package `bos-nachrichtenvordruck`
-  (repo `wattnpapa/bos-nachrichtenvordruck`, pinned by commit in `package.json`, embeds the
+  (repo `wattnpapa/bos-nachrichtenvordruck`, pinned by tag in `package.json`, embeds the
   form images). `src/pdf/vordruckDaten.ts` is the only adapter from `Uebung`/`Nachricht` to
-  its `VordruckDaten`; field geometry or rendering changes go into that repo, then bump the pin.
+  its `VordruckDaten`; field geometry or rendering changes go into that repo, tag a release there, then bump the pin.
 - `errorMonitoring` — global runtime error capture, forwarded to Sentry when available
 - `featureFlags` — runtime feature toggles via localStorage/URL params
 
