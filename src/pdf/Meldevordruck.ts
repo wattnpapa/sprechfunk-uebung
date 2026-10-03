@@ -2,15 +2,14 @@ import { FunkUebung } from "../models/FunkUebung";
 import { jsPDF } from "jspdf";
 import { BasePDFTeilnehmer } from "./BasePDFTeilnehmer";
 import { Nachricht } from "../types/Nachricht";
-import { zeichneMeldevordruck } from "../vordruck/MeldevordruckRenderer";
-import type { VordruckDaten } from "../vordruck/VordruckDaten";
+import { zeichneMeldevordruck, type VordruckDaten } from "bos-nachrichtenvordruck";
 import { vordruckDatenAusUebung } from "./vordruckDaten";
 
 /**
  * Meldevordruck einer Übungsnachricht.
  *
  * Wie beim Nachrichtenvordruck bildet die Klasse nur Übung und Nachricht auf
- * `VordruckDaten` ab; gezeichnet wird in `src/vordruck/`.
+ * `VordruckDaten` ab; gezeichnet wird im Paket `bos-nachrichtenvordruck`.
  */
 export class Meldevordruck extends BasePDFTeilnehmer {
 

@@ -113,6 +113,7 @@
     "@popperjs/core": "^2.11.8",
     "@types/marked": "^6.0.0",
     "bootstrap": "^5.3.8",
+    "bos-nachrichtenvordruck": "github:wattnpapa/bos-nachrichtenvordruck#a30f56261f86b5a652f68a5bc2ed21020cd8020d",
     "chart.js": "^4.5.1",
     "firebase": "^12.19.0",
     "jspdf": "^4.2.1",

@@ -1,8 +1,7 @@
 import type { FunkUebung } from "../models/FunkUebung";
 import type { Nachricht } from "../types/Nachricht";
 import { formatNatoDate } from "../utils/date";
-import { VordruckDaten } from "../vordruck/VordruckDaten";
-import type { Uebermittlungsweg } from "../vordruck/felder";
+import { VordruckDaten, type Uebermittlungsweg } from "bos-nachrichtenvordruck";
 import type { UebermittlungsWeg as FuehrungsstellenWeg } from "../types/FuehrungsstellenUebung";
 
 /** Weg einer Führungsstellen-Nachricht im Vokabular des Vordrucks. */
@@ -16,8 +15,8 @@ const WEG_ZU_VORDRUCK: Record<FuehrungsstellenWeg, Uebermittlungsweg> = {
  * Übersetzt Übung, Teilnehmer und Nachricht in `VordruckDaten`.
  *
  * Das ist die einzige Stelle, an der die Vordrucke die Begriffe der
- * Sprechfunkübung berühren – `src/vordruck/` bleibt dadurch frei davon und
- * lässt sich später als eigenständiges Paket herauslösen.
+ * Sprechfunkübung berühren – das Paket `bos-nachrichtenvordruck` bleibt
+ * dadurch frei davon und lässt sich in anderen Projekten verwenden.
  */
 export function vordruckDatenAusUebung(
     teilnehmer: string,

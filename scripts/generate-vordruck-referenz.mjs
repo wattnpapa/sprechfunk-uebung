@@ -1,6 +1,6 @@
 // Erzeugt eine Referenz-PDF zum Ausrichten der Vordruck-Koordinaten.
 //
-//   npm run build            # dist/assets/*.png werden als Hintergrund gebraucht
+//   npm run build            # die Harness-Seite wird aus dist/ ausgeliefert
 //   npm run vordruck:referenz
 //
 // Ergebnis: vordruck-referenz.pdf (gitignored) mit vier A5-Seiten:
@@ -73,7 +73,7 @@ import { jsPDF } from "jspdf";
 import { FunkUebung } from ${JSON.stringify(path.join(repoRoot, "src/models/FunkUebung.ts"))};
 import { Nachrichtenvordruck } from ${JSON.stringify(path.join(repoRoot, "src/pdf/Nachrichtenvordruck.ts"))};
 import { Meldevordruck } from ${JSON.stringify(path.join(repoRoot, "src/pdf/Meldevordruck.ts"))};
-import { NACHRICHTENVORDRUCK_ANKREUZFELDER } from ${JSON.stringify(path.join(repoRoot, "src/vordruck/felder.ts"))};
+import { NACHRICHTENVORDRUCK_ANKREUZFELDER } from "bos-nachrichtenvordruck";
 
 const SEITE_BREITE = 148;
 const SEITE_HOEHE = 210;
@@ -233,7 +233,7 @@ window.__vordruckReferenz = function (optionen) {
     // die im Übungsbetrieb nicht belegt werden. Die Klasse selbst kreuzt hier
     // nichts an (leere Belegung, keine Art), alle Kreuze kommen aus der Liste.
     if (optionen.alleFelder) {
-        const bezeichnung = "Alle Felder – src/vordruck/felder.ts";
+        const bezeichnung = "Alle Felder – bos-nachrichtenvordruck";
         const felderEintraege = Object.entries(NACHRICHTENVORDRUCK_ANKREUZFELDER)
             .map(([name, position], index) => ({
                 seite: bezeichnung,
