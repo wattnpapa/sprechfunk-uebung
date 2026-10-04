@@ -129,24 +129,22 @@ export class Uebungsleitung extends BasePDF {
     }
 
     private createTeilnehmerRow(teilnehmer: string): string[] {
-        const teilnehmerLocalData = this.getTeilnehmerLocalData(teilnehmer);
-        const anmeldeZeit = teilnehmerLocalData?.angemeldetUm
-            ? formatNatoDate(teilnehmerLocalData.angemeldetUm)
-            : "";
-
-        const staerkeIst = (teilnehmerLocalData?.teilstaerken ?? []).some(wert => String(wert ?? "").trim() !== "")
-            ? (teilnehmerLocalData?.teilstaerken ?? []).map(wert => String(wert ?? "").trim() || "-").join("/")
-            : "";
-
+        const stand = this.getTeilnehmerLocalData(teilnehmer) ?? {};
         return [
             this.getTeilnehmerAnzeige(teilnehmer),
-            anmeldeZeit,
+            stand.angemeldetUm ? formatNatoDate(stand.angemeldetUm) : "",
             this.funkUebung.loesungswoerter?.[teilnehmer] ?? "",
-            teilnehmerLocalData?.loesungswortGesendet ?? "",
+            stand.loesungswortGesendet ?? "",
             this.funkUebung.loesungsStaerken?.[teilnehmer] ?? "0/0/0/0",
-            staerkeIst,
-            teilnehmerLocalData?.notizen ?? ""
+            this.staerkeIst(stand.teilstaerken),
+            stand.notizen ?? ""
         ];
+    }
+
+    /** Empfangene Teilstärken als „a/b/c/d“, leer solange nichts eingetragen ist. */
+    private staerkeIst(teilstaerken: string[] | undefined): string {
+        const werte = (teilstaerken ?? []).map(wert => String(wert ?? "").trim());
+        return werte.some(wert => wert !== "") ? werte.map(wert => wert || "-").join("/") : "";
     }
 
     private getTeilnehmerAnzeige(teilnehmer: string): string {
