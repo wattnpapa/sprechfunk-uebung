@@ -1,5 +1,7 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { JSDOM } from "jsdom";
+import { readFileSync } from "node:fs";
+import path from "node:path";
 import { AppView } from "../../src/core/AppView";
 
 // THW-Review 2026-10-04 (new-user P2-5, stress-test P2-4, workflow F9):
@@ -63,4 +65,37 @@ describe("AppView – Hauptnavigation je Rolle", () => {
         new AppView().applyAppMode("generator");
         expect(details(doc).open).toBe(false);
     });
+
+    it("nimmt den Ladehinweis für Teilnehmer-/Leitungs-Links ab, sobald die Route gilt", () => {
+        const doc = setup(false);
+        doc.documentElement.classList.add("app-route-laedt");
+        new AppView().applyAppMode("teilnehmer");
+        expect(doc.documentElement.classList.contains("app-route-laedt")).toBe(false);
+    });
+});
+
+// offline P2-2: Bei langsamem Netz zeigte ein Teilnehmer-Link sekundenlang
+// das Generator-Formular. Das Inline-Skript in index.html markiert solche
+// Links, bevor irgendetwas gezeichnet wird.
+describe("index.html – Ladehinweis vor dem Bundle", () => {
+    const html = readFileSync(path.resolve(__dirname, "..", "..", "src", "index.html"), "utf8");
+    const skript = /<p id="appLadehinweis"[^>]*>[^<]*<\/p>\s*<script>([\s\S]*?)<\/script>/.exec(html)?.[1] ?? "";
+
+    const markiert = (hash: string) => {
+        const dom = new JSDOM(`<html><body><script>${skript}</script></body></html>`, {
+            url: `https://sprechfunk-uebung.de/${hash}`,
+            runScripts: "dangerously"
+        });
+        return dom.window.document.documentElement.classList.contains("app-route-laedt");
+    };
+
+    it("steht im HTML", () => {
+        expect(skript).toContain("app-route-laedt");
+    });
+
+    it.each(["#/teilnehmer/u1/T1", "#/teilnehmer?uc=AB&tc=CD", "#/uebungsleitung/u1", "#/admin", "#teilnehmer/u1/T1"])(
+        "markiert %s", hash => expect(markiert(hash)).toBe(true));
+
+    it.each(["", "#/generator", "#kopfdaten", "#teilnehmer", "#/teilnehmerX"])(
+        "lässt %s in Ruhe", hash => expect(markiert(hash)).toBe(false));
 });

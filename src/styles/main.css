@@ -1302,6 +1302,23 @@ select option {
     box-shadow: inset 4px 0 0 var(--warn-linie);
 }
 
+/* --- Ladehinweis für Teilnehmer-/Leitungs-Links (src/index.html) -------- */
+
+.app-ladehinweis {
+    display: none;
+    font-size: var(--t-l, 1.15rem);
+    color: var(--text-2);
+}
+
+.app-route-laedt .app-ladehinweis {
+    display: block;
+}
+
+.app-route-laedt #mainAppArea,
+.app-route-laedt #seoIntroArea {
+    display: none !important;
+}
+
 /* --- Kurzmeldungen (Toast) ----------------------------------------------- */
 
 .app-toast-container {

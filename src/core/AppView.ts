@@ -58,6 +58,8 @@ export class AppView {
         setDisplay(document.getElementById("seoIntroArea"), mode === "generator" ? "block" : "none");
 
         this.setzeNavigationsZustand(mode);
+        // Ladehinweis aus index.html: ab jetzt gilt die Route.
+        document.documentElement?.classList.remove("app-route-laedt");
     }
 
     /**
