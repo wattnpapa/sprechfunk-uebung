@@ -153,14 +153,24 @@ export function toLeitungPublicLiveDoc(storage: UebungsleitungStorage): LeitungP
         if (status.statusGeaendertUm) {
             entry.geaendertUm = status.statusGeaendertUm;
         }
+        if (status.nachgetragen && status.abgesetztUm) {
+            entry.nachgetragen = true;
+        }
         nachrichten[key] = entry;
     });
 
-    return {
+    const doc: LeitungPublicLiveDoc = {
         version: LIVE_STATUS_VERSION,
         lastUpdated: storage.lastUpdated,
         nachrichten
     };
+    if (storage.xZeitBasis) {
+        doc.xZeitBasis = storage.xZeitBasis;
+    }
+    if (storage.xZeitBasisGeaendertUm) {
+        doc.xZeitBasisGeaendertUm = storage.xZeitBasisGeaendertUm;
+    }
+    return doc;
 }
 
 export function toLeitungLiveDoc(storage: UebungsleitungStorage): LeitungLiveDoc {
@@ -206,11 +216,53 @@ export function mergeLeitungPublicLiveDoc(
             delete next.abgesetztUm;
         }
         setOptional(next, "statusGeaendertUm", remoteEntry.geaendertUm);
+        setOptional(next, "nachgetragen", remoteEntry.nachgetragen && remoteEntry.abgesetztUm ? true : undefined);
         nachrichten[key] = next;
         changed = true;
     });
 
-    return { merged: { ...local, nachrichten }, changed };
+    const merged: UebungsleitungStorage = { ...local, nachrichten };
+    // Die X-Zeit-Basis setzt ein beliebiger Leitungs-Arbeitsplatz; die jüngste gilt.
+    if (isNewer(remote.xZeitBasisGeaendertUm, local.xZeitBasisGeaendertUm)) {
+        setOptional(merged, "xZeitBasis", remote.xZeitBasis || undefined);
+        setOptional(merged, "xZeitBasisGeaendertUm", remote.xZeitBasisGeaendertUm);
+        changed = true;
+    }
+
+    return { merged, changed };
+}
+
+/**
+ * Übernimmt die verbindliche X-Zeit-Basis der Übungsleitung in den
+ * Teilnehmer-Cache. Eine eigene Basis des Teilnehmers bleibt nur stehen, wenn
+ * er sie **nach** der letzten Vorgabe der Leitung bewusst gesetzt hat
+ * (Last-Write-Wins über `xZeitBasisGeaendertUm`). Löscht die Leitung ihre
+ * Vorgabe, verschwindet nur eine von ihr übernommene Basis.
+ */
+export function uebernehmeLeitungsBasis(
+    local: TeilnehmerStorage,
+    remote: Pick<LeitungPublicLiveDoc, "xZeitBasis" | "xZeitBasisGeaendertUm">
+): { merged: TeilnehmerStorage; changed: boolean } {
+    if (!isNewer(remote.xZeitBasisGeaendertUm, local.xZeitBasisGeaendertUm)) {
+        return { merged: local, changed: false };
+    }
+    const merged: TeilnehmerStorage = { ...local };
+    if (remote.xZeitBasis) {
+        if (local.xZeitBasis === remote.xZeitBasis && local.xZeitBasisQuelle === "leitung") {
+            return { merged: local, changed: false };
+        }
+        merged.xZeitBasis = remote.xZeitBasis;
+        merged.xZeitBasisQuelle = "leitung";
+        setOptional(merged, "xZeitBasisGeaendertUm", remote.xZeitBasisGeaendertUm);
+        return { merged, changed: true };
+    }
+    if (local.xZeitBasisQuelle !== "leitung") {
+        return { merged: local, changed: false };
+    }
+    delete merged.xZeitBasis;
+    delete merged.xZeitBasisQuelle;
+    setOptional(merged, "xZeitBasisGeaendertUm", remote.xZeitBasisGeaendertUm);
+    return { merged, changed: true };
 }
 
 export function mergeLeitungLiveDoc(
@@ -298,41 +350,72 @@ export function buildEffektiveNachrichtenStatus(
 
 export interface TeilnehmerFortschritt {
     teilnehmer: string;
+    /** Vom Teilnehmer selbst als übertragen gemeldet. */
     gemeldet: number;
+    /** Von der Übungsleitung als abgesetzt bestätigt. */
+    bestaetigt: number;
+    /** Erledigt aus einer der beiden Quellen – das ist der Fortschritt. */
+    erledigt: number;
     gesamt: number;
+    /** Letzte Markierung, egal ob vom Teilnehmer oder von der Leitung. */
     letzteMeldungUm?: string;
+    /** Letzte Änderung am Live-Dokument des Teilnehmers – „zuletzt gesehen“. */
+    zuletztGesehenUm?: string;
     /** `true`, sobald der Teilnehmer überhaupt Daten gesendet hat. */
     online: boolean;
 }
 
 /**
- * Fortschritt je Teilnehmer aus den Live-Dokumenten – Basis für die
- * Nachzügler-Erkennung in der Teilnehmer-Tabelle der Übungsleitung.
+ * Fortschritt je Teilnehmer aus Teilnehmer-Meldungen und Bestätigungen der
+ * Leitung – Basis für Fortschrittsspalte und Nachzügler-Erkennung. Beide
+ * Quellen zählen, getrennt ausgewiesen (THW-Review workflow F3).
  */
 export function buildTeilnehmerFortschritt(
     teilnehmerListe: string[],
     nachrichtenProTeilnehmer: Record<string, number>,
-    teilnehmerDocs: TeilnehmerLiveDoc[]
+    teilnehmerDocs: TeilnehmerLiveDoc[],
+    leitungStatus: Record<string, NachrichtenStatus> = {}
 ): Record<string, TeilnehmerFortschritt> {
     const byName = new Map<string, TeilnehmerLiveDoc>();
     teilnehmerDocs.forEach(doc => byName.set(doc.teilnehmer, doc));
 
     return teilnehmerListe.reduce<Record<string, TeilnehmerFortschritt>>((acc, name) => {
         const doc = byName.get(name);
-        const eintraege = Object.values(doc?.nachrichten ?? {}).filter(n => n.uebertragen);
-        const letzteMeldungUm = eintraege
-            .map(n => n.uebertragenUm)
-            .filter((v): v is string => Boolean(v))
-            .sort((a, b) => timestamp(b) - timestamp(a))[0];
+        const gemeldeteNr = new Set<string>();
+        const zeiten: string[] = [];
+        Object.entries(doc?.nachrichten ?? {}).forEach(([nr, n]) => {
+            if (!n.uebertragen) {
+                return;
+            }
+            gemeldeteNr.add(nr);
+            if (n.uebertragenUm) {
+                zeiten.push(n.uebertragenUm);
+            }
+        });
+        const prefix = `${name}__`;
+        const bestaetigteNr = new Set<string>();
+        Object.entries(leitungStatus).forEach(([key, status]) => {
+            if (key.startsWith(prefix) && status.abgesetztUm) {
+                bestaetigteNr.add(key.slice(prefix.length));
+                zeiten.push(status.abgesetztUm);
+            }
+        });
+        const erledigt = new Set([...gemeldeteNr, ...bestaetigteNr]).size;
+        const letzteMeldungUm = zeiten.sort((a, b) => timestamp(b) - timestamp(a))[0];
 
         const fortschritt: TeilnehmerFortschritt = {
             teilnehmer: name,
-            gemeldet: eintraege.length,
+            gemeldet: gemeldeteNr.size,
+            bestaetigt: bestaetigteNr.size,
+            erledigt,
             gesamt: nachrichtenProTeilnehmer[name] ?? 0,
             online: Boolean(doc)
         };
         if (letzteMeldungUm) {
             fortschritt.letzteMeldungUm = letzteMeldungUm;
+        }
+        if (doc?.lastUpdated && timestamp(doc.lastUpdated) > 0) {
+            fortschritt.zuletztGesehenUm = doc.lastUpdated;
         }
         acc[name] = fortschritt;
         return acc;

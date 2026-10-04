@@ -215,7 +215,7 @@ describe("LiveStatusService – Firestore-Modus", () => {
         installWindow(installLocalStorage());
         const snapshots: { onNext: (snap: unknown) => void; onError: (e: unknown) => void }[] = [];
         firestoreMocks.onSnapshot.mockImplementation(
-            (_ref: unknown, onNext: (snap: unknown) => void, onError: (e: unknown) => void) => {
+            (_ref: unknown, _opts: unknown, onNext: (snap: unknown) => void, onError: (e: unknown) => void) => {
                 snapshots.push({ onNext, onError });
                 return vi.fn();
             }
@@ -265,7 +265,7 @@ describe("LiveStatusService – Firestore-Modus", () => {
         vi.spyOn(console, "warn").mockImplementation(() => {});
         let onError: ((e: unknown) => void) | undefined;
         firestoreMocks.onSnapshot.mockImplementation(
-            (_ref: unknown, _onNext: unknown, handler: (e: unknown) => void) => {
+            (_ref: unknown, _opts: unknown, _onNext: unknown, handler: (e: unknown) => void) => {
                 onError = handler;
                 return vi.fn();
             }
@@ -341,5 +341,141 @@ describe("LiveStatusService – Firestore-Modus", () => {
         service.dispose();
 
         expect(unsubscribe).toHaveBeenCalledTimes(3);
+    });
+
+    it("abonniert mit Metadaten und meldet Cache-Snapshots als offline", async () => {
+        installWindow(installLocalStorage());
+        const snapshots: ((snap: unknown) => void)[] = [];
+        firestoreMocks.onSnapshot.mockImplementation(
+            (_ref: unknown, opts: unknown, onNext: (snap: unknown) => void) => {
+                expect(opts).toEqual({ includeMetadataChanges: true });
+                snapshots.push(onNext);
+                return vi.fn();
+            }
+        );
+
+        const { LiveStatusService } = await loadService();
+        const service = new LiveStatusService({} as never, "u1");
+        const daten: unknown[] = [];
+        service.subscribeLeitungPublic(d => daten.push(d));
+
+        const snap = (fromCache: boolean) => ({
+            exists: () => true,
+            data: () => ({ version: 1, nachrichten: {} }),
+            metadata: { fromCache }
+        });
+        snapshots[0]?.(snap(false));
+        expect(service.getState()).toBe("live");
+
+        // Funkloch: Firestore liefert nur noch den Cache.
+        snapshots[0]?.(snap(true));
+        expect(service.getState()).toBe("offline");
+        // Reiner Metadaten-Wechsel löst kein erneutes Rendern aus.
+        expect(daten).toHaveLength(1);
+
+        snapshots[0]?.(snap(false));
+        expect(service.getState()).toBe("live");
+    });
+
+    it("reicht Sammel-Snapshots nur bei echten Änderungen weiter", async () => {
+        installWindow(installLocalStorage());
+        let onNext: ((snap: unknown) => void) | undefined;
+        firestoreMocks.onSnapshot.mockImplementation(
+            (_ref: unknown, _opts: unknown, handler: (snap: unknown) => void) => {
+                onNext = handler;
+                return vi.fn();
+            }
+        );
+        const { LiveStatusService } = await loadService();
+        const service = new LiveStatusService({} as never, "u1");
+        const aufrufe: unknown[] = [];
+        service.subscribeAlleTeilnehmer(docs => aufrufe.push(docs));
+
+        const snap = (aenderungen: number) => ({
+            docs: [{ id: "teilnehmer-A1", data: () => ({ teilnehmer: "A" }) }],
+            docChanges: () => new Array(aenderungen).fill({}),
+            metadata: { fromCache: false }
+        });
+        onNext?.(snap(1));
+        onNext?.(snap(0));
+        onNext?.(snap(1));
+        expect(aufrufe).toHaveLength(2);
+    });
+
+    it("zeigt offline, solange der Server einen Schreibvorgang nicht bestätigt", async () => {
+        vi.useFakeTimers();
+        installWindow(installLocalStorage());
+        let bestaetigen: () => void = () => {};
+        firestoreMocks.setDoc.mockImplementationOnce(() => new Promise<void>(resolve => {
+            bestaetigen = resolve;
+        }));
+
+        const { LiveStatusService, SCHREIB_TIMEOUT_MS } = await loadService();
+        const service = new LiveStatusService({} as never, "u1");
+        const zustaende: string[] = [];
+        service.onStateChange(state => zustaende.push(state));
+
+        service.publishLeitungPublic({ version: 1, lastUpdated: "a", nachrichten: {} });
+        const ergebnis = service.flush(1000);
+        await vi.advanceTimersByTimeAsync(1000);
+        // Ohne Bestätigung meldet flush mit Timeout `false` …
+        await expect(ergebnis).resolves.toBe(false);
+        expect(service.getOffeneAenderungen()).toBe(1);
+        expect(service.getState()).toBe("verbinde");
+
+        // … und nach dem Schreib-Timeout schlägt die Anzeige auf offline um.
+        await vi.advanceTimersByTimeAsync(SCHREIB_TIMEOUT_MS);
+        expect(service.getState()).toBe("offline");
+
+        bestaetigen();
+        await vi.advanceTimersByTimeAsync(0);
+        expect(service.getState()).toBe("live");
+        expect(service.getOffeneAenderungen()).toBe(0);
+        expect(zustaende).toEqual(["verbinde", "offline", "live"]);
+
+        service.dispose();
+        vi.useRealTimers();
+    });
+
+    it("folgt den online/offline-Ereignissen des Browsers und reicht danach nach", async () => {
+        vi.useFakeTimers();
+        const store = installLocalStorage();
+        installWindow(store);
+        vi.stubGlobal("navigator", { onLine: false });
+
+        const { LiveStatusService } = await loadService();
+        const service = new LiveStatusService({} as never, "u1");
+        expect(service.getState()).toBe("offline");
+
+        service.publishLeitungPublic({ version: 1, lastUpdated: "a", nachrichten: {} });
+        vi.stubGlobal("navigator", { onLine: true });
+        window.dispatchEvent(new Event("online"));
+        await vi.advanceTimersByTimeAsync(0);
+        expect(firestoreMocks.setDoc).toHaveBeenCalledTimes(1);
+        expect(service.getState()).toBe("live");
+
+        window.dispatchEvent(new Event("offline"));
+        expect(service.getState()).toBe("offline");
+
+        service.dispose();
+        window.dispatchEvent(new Event("online"));
+        expect(service.getState()).toBe("offline");
+        vi.useRealTimers();
+    });
+
+    it("hebt einen Fehlerzustand nach erfolgreichem Schreiben wieder auf", async () => {
+        installWindow(installLocalStorage());
+        vi.spyOn(console, "warn").mockImplementation(() => {});
+        firestoreMocks.setDoc.mockRejectedValueOnce(new Error("permission-denied"));
+
+        const { LiveStatusService } = await loadService();
+        const service = new LiveStatusService({} as never, "u1");
+        service.publishLeitungPublic({ version: 1, lastUpdated: "a", nachrichten: {} });
+        await expect(service.flush()).resolves.toBe(false);
+        expect(service.getState()).toBe("fehler");
+
+        service.publishLeitungPublic({ version: 1, lastUpdated: "b", nachrichten: {} });
+        await expect(service.flush(5000)).resolves.toBe(true);
+        expect(service.getState()).toBe("live");
     });
 });

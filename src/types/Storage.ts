@@ -10,9 +10,15 @@ export interface TeilnehmerStorage {
      * fällige Meldung mit Countdown. Reine Ansichtseinstellung, gerätelokal.
      */
     fokusModus?: boolean;
-    xZeitBasis?: string; // HH:MM – vom Teilnehmer selbst gesetzt
+    xZeitBasis?: string; // HH:MM – von der Übungsleitung übernommen oder selbst gesetzt
     /** Zeitpunkt der letzten Änderung an xZeitBasis (Basis für Live-Sync-Merge). */
     xZeitBasisGeaendertUm?: string;
+    /**
+     * Herkunft von `xZeitBasis`: `leitung` = verbindliche Vorgabe der
+     * Übungsleitung übernommen, `eigen` = bewusste Abweichung dieses Teilnehmers.
+     * Fehlt bei älteren Ständen (dann wie `eigen`). Gerätelokal.
+     */
+    xZeitBasisQuelle?: "leitung" | "eigen";
 }
 
 export interface NachrichtenStatusTeilnehmer {
@@ -32,11 +38,14 @@ export interface UebungsleitungStorage {
     teilnehmer: Record<string, TeilnehmerStatus>;
     nachrichten: Record<string, NachrichtenStatus>;
     /**
-     * HH:MM – von der Übungsleitung im Cockpit gesetzter Übungsbeginn.
-     * Bewusst gerätelokal; ohne eigenen Wert greift das Cockpit auf die
-     * früheste Teilnehmer-Basis aus den Live-Meldungen zurück.
+     * HH:MM – von der Übungsleitung im Cockpit verbindlich gesetzter
+     * Übungsbeginn. Wird über `leitung-public` an alle Leitungs-Arbeitsplätze
+     * und Teilnehmer verteilt. Basen einzelner Rollenspieler werden nie
+     * stillschweigend übernommen, nur als Vorschlag angeboten.
      */
     xZeitBasis?: string;
+    /** Zeitpunkt der letzten Änderung an `xZeitBasis` (Live-Sync-Merge). */
+    xZeitBasisGeaendertUm?: string;
 }
 
 export interface TeilnehmerStatus {
@@ -64,6 +73,11 @@ export interface NachrichtenStatus {
     notiz?: string;
     /** Zeitpunkt der letzten Änderung an `abgesetztUm` (Live-Sync-Merge). */
     statusGeaendertUm?: string;
+    /**
+     * `abgesetztUm` wurde von Hand eingetragen (Papier-Nachtrag/Korrektur).
+     * Solche Zeiten zählen nicht für Tempo und ETA.
+     */
+    nachgetragen?: boolean;
     /** Zeitpunkt der letzten Änderung an `notiz` (Live-Sync-Merge). */
     notizGeaendertUm?: string;
 }

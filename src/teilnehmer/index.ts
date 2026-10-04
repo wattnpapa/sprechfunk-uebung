@@ -12,8 +12,8 @@ import { Nachricht } from "../types/Nachricht";
 import { uiFeedback } from "../core/UiFeedback";
 import { debounce } from "../utils/debounce";
 import { LiveStatusService } from "../services/LiveStatusService";
-import { mergeTeilnehmerLiveDoc, toTeilnehmerLiveDoc } from "../services/liveStatusMerge";
-import type { LeitungBestaetigung } from "../types/LiveStatus";
+import { mergeTeilnehmerLiveDoc, toTeilnehmerLiveDoc, uebernehmeLeitungsBasis } from "../services/liveStatusMerge";
+import type { LeitungBestaetigung, LeitungPublicLiveDoc } from "../types/LiveStatus";
 
 type DocMode = "table" | "meldevordruck" | "nachrichtenvordruck";
 
@@ -49,6 +49,8 @@ export class TeilnehmerController {
     private liveStatus: LiveStatusService | null = null;
     /** Bestätigungen der Übungsleitung, Key = `${funkrufname}__${nachrichtenNr}`. */
     private leitungBestaetigungen: Record<string, LeitungBestaetigung> = {};
+    /** Verbindliche X-Zeit-Basis der Übungsleitung, sobald sie eine gesetzt hat. */
+    private leitungXZeitBasis: string | null = null;
     private disposeListener: (() => void) | null = null;
 
     constructor(db: Firestore) {
@@ -120,6 +122,7 @@ export class TeilnehmerController {
             if (this.storage.xZeitBasis) {
                 this.startXZeitTicker();
             }
+            this.zeigeXZeitHerkunft();
             this.view.bindFokusEvents(
                 checked => this.setFokusModus(checked),
                 id => this.toggleUebertragen(id, true)
@@ -179,6 +182,7 @@ export class TeilnehmerController {
 
         live.subscribeLeitungPublic(remote => {
             this.leitungBestaetigungen = remote?.nachrichten ?? {};
+            this.uebernehmeXZeitDerLeitung(remote);
             this.renderNachrichten();
         });
 
@@ -234,20 +238,85 @@ export class TeilnehmerController {
         };
     }
 
+    /**
+     * Die Übungsleitung setzt die X-Zeit-Basis verbindlich für alle; die
+     * Teilnehmer übernehmen sie ohne eigenes Zutun (THW-Review workflow F2).
+     */
+    private uebernehmeXZeitDerLeitung(remote: LeitungPublicLiveDoc | null): void {
+        this.leitungXZeitBasis = remote?.xZeitBasis ?? null;
+        if (!remote || !this.storage || this.uebung?.spielModus !== "xZeit") {
+            this.zeigeXZeitHerkunft();
+            return;
+        }
+        const { merged, changed } = uebernehmeLeitungsBasis(this.storage, remote);
+        if (changed) {
+            this.storage = merged;
+            saveTeilnehmerStorage(this.storage);
+            this.view.setXZeitBasisInputValue(this.storage.xZeitBasis ?? "");
+            this.publishStatus();
+            if (this.storage.xZeitBasis) {
+                this.startXZeitTicker();
+            } else {
+                this.stopXZeitTicker();
+            }
+        }
+        this.zeigeXZeitHerkunft();
+    }
+
+    /** Sichtbar machen, woher die Basis stammt – Leitung oder eigene Abweichung. */
+    private zeigeXZeitHerkunft(): void {
+        if (typeof document === "undefined" || !this.storage || this.uebung?.spielModus !== "xZeit") {
+            return;
+        }
+        const input = document.getElementById("xZeitBasisInput");
+        if (!input) {
+            return;
+        }
+        let hinweis = document.getElementById("xZeitBasisHerkunft");
+        if (!hinweis) {
+            hinweis = document.createElement("small");
+            hinweis.id = "xZeitBasisHerkunft";
+            hinweis.className = "text-body-secondary w-100";
+            input.parentElement?.appendChild(hinweis);
+        }
+        const basis = this.storage.xZeitBasis;
+        if (basis && this.storage.xZeitBasisQuelle === "leitung") {
+            hinweis.textContent = `X-Zeit ${basis} – von der Übungsleitung gesetzt.`;
+        } else if (basis && this.leitungXZeitBasis && basis !== this.leitungXZeitBasis) {
+            hinweis.textContent = `Eigene Basis ${basis} – die Übungsleitung hat ${this.leitungXZeitBasis} festgelegt.`;
+        } else if (!basis) {
+            hinweis.textContent = "Warte auf die X-Zeit der Übungsleitung – oder starte erst, wenn sie „X-Zeit jetzt“ funkt.";
+        } else {
+            hinweis.textContent = "";
+        }
+    }
+
     private setXZeitBasis(value: string): void {
         if (!this.storage) {
             return;
+        }
+        // Eine eigene Basis neben der verbindlichen der Leitung nur als bewusste Abweichung.
+        if (this.leitungXZeitBasis && value !== this.leitungXZeitBasis) {
+            const ok = uiFeedback.confirm(
+                `Die Übungsleitung hat die X-Zeit ${this.leitungXZeitBasis} für alle festgelegt. Willst du wirklich mit einer eigenen Basis (${value || "keine"}) weiterarbeiten?`
+            );
+            if (!ok) {
+                this.view.setXZeitBasisInputValue(this.storage.xZeitBasis ?? "");
+                return;
+            }
         }
         if (value) {
             this.storage.xZeitBasis = value;
         } else {
             delete this.storage.xZeitBasis;
         }
+        this.storage.xZeitBasisQuelle = value && value === this.leitungXZeitBasis ? "leitung" : "eigen";
         this.storage.xZeitBasisGeaendertUm = new Date().toISOString();
         saveTeilnehmerStorage(this.storage);
         this.publishStatus();
         this.renderNachrichten();
         this.startXZeitTicker();
+        this.zeigeXZeitHerkunft();
     }
 
     /** Fokus-Modus ist eine reine Ansichtseinstellung dieses Geräts. */

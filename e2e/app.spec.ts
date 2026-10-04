@@ -800,6 +800,25 @@ test("@uebungsleitung uebungsleitung filters by sender, empfaenger and nachricht
     await expect(page.locator("#uebungsleitungNachrichten tbody tr")).toContainText("Meldepunkt erreicht.");
 });
 
+test("@uebungsleitung double click on 'abgesetzt' keeps the message abgesetzt", async ({ page }) => {
+    await page.goto("/#/uebungsleitung/u1");
+
+    const zeile = page.locator("#uebungsleitungNachrichten tbody tr").first();
+    await zeile.locator("button[data-action='abgesetzt']").dblclick();
+    await expect(zeile).toHaveClass(/status-ok-row/);
+    // Die Rücknahme steht in einer anderen Spalte und ist kurz gesperrt.
+    await expect(zeile.locator("button[data-action='reset']")).toBeDisabled();
+    await expect(zeile.locator("button[data-action='reset']")).toBeEnabled({ timeout: 5000 });
+    await expect(zeile).toHaveClass(/status-ok-row/);
+});
+
+test("@uebungsleitung unknown exercise id shows a message instead of empty cards", async ({ page }) => {
+    await page.goto("/#/uebungsleitung/gibt-es-nicht");
+
+    await expect(page.getByTestId("uebungsleitung-ladefehler")).toContainText("nicht gefunden");
+    await expect(page.locator("#uebungsleitungNachrichten")).toBeHidden();
+});
+
 test("@teilnehmer teilnehmer route renders seeded messages and toggles status chip", async ({ page }) => {
     await page.goto("/#/teilnehmer/u1/A1B2");
 

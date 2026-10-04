@@ -15,12 +15,15 @@ vi.mock("../../src/core/chart", () => {
     return { Chart: FakeChart };
 });
 
-import { UebungsleitungView } from "../../src/uebungsleitung/UebungsleitungView";
+import { RUECKGAENGIG_MS, UebungsleitungView } from "../../src/uebungsleitung/UebungsleitungView";
 import { captureFieldFocus, restoreFieldFocus } from "../../src/utils/focus";
 
 const setDom = () => {
     const dom = new JSDOM(`
       <div id="uebungsleitungMeta"></div>
+      <div id="uebungsleitungLageBody"></div>
+      <div id="uebungsleitungGefahrenbereichBody"></div>
+      <div id="uebungsleitungUndo" class="d-none"></div>
       <div id="uebungsleitungTeilnehmer"></div>
       <div id="uebungsleitungNachrichten"></div>
       <div id="nachrichtenProgressBar"></div>
@@ -38,7 +41,9 @@ const setDom = () => {
         <span id="cockpitPlanBadge"></span>
         <input id="cockpitXZeitBasisInput">
         <button id="btn-cockpit-xzeit-jetzt"></button>
+        <button id="btn-cockpit-xzeit-vorschlag" class="d-none"></button>
         <small id="cockpitBasisHinweis"></small>
+        <small id="cockpitAbweichungen"></small>
       </div>
     `);
     vi.stubGlobal("window", dom.window);
@@ -75,7 +80,7 @@ describe("UebungsleitungView", () => {
         view.bindMetaEvents(onPdf, onReset, onUebersicht);
 
         expect(document.getElementById("uebungsleitungMeta")?.innerHTML).toContain("&lt;b&gt;XSS&lt;/b&gt;");
-        expect(document.getElementById("uebungsleitungMeta")?.textContent).toContain("Übungscode:");
+        expect(document.getElementById("uebungsleitungMeta")?.textContent).toContain("Übungscode");
         expect(document.getElementById("uebungsleitungMeta")?.textContent).toContain("AB12CD");
         (document.getElementById("exportUebungsleitungPdf") as HTMLButtonElement).click();
         (document.getElementById("resetUebungsleitungLocalData") as HTMLButtonElement).click();
@@ -578,6 +583,8 @@ describe("UebungsleitungView – Live-Status", () => {
                 A: {
                     teilnehmer: "A",
                     gemeldet: 2,
+                    bestaetigt: 0,
+                    erledigt: 2,
                     gesamt: 4,
                     online: true,
                     letzteMeldungUm: "2026-07-26T10:05:00.000Z"
@@ -593,7 +600,7 @@ describe("UebungsleitungView – Live-Status", () => {
         it("weist Teilnehmer ohne Meldung als noch nicht übertragen aus", () => {
             const view = new UebungsleitungView();
             view.renderTeilnehmerListe(uebung(["A"]), {}, false, {
-                A: { teilnehmer: "A", gemeldet: 0, gesamt: 0, online: true }
+                A: { teilnehmer: "A", gemeldet: 0, bestaetigt: 0, erledigt: 0, gesamt: 0, online: true }
             });
 
             expect(document.getElementById("uebungsleitungTeilnehmer")?.textContent)
@@ -603,9 +610,9 @@ describe("UebungsleitungView – Live-Status", () => {
         it("markiert Nachzügler gegenüber dem Median der Gruppe", () => {
             const view = new UebungsleitungView();
             view.renderTeilnehmerListe(uebung(["A", "B", "C"]), {}, false, {
-                A: { teilnehmer: "A", gemeldet: 8, gesamt: 10, online: true },
-                B: { teilnehmer: "B", gemeldet: 8, gesamt: 10, online: true },
-                C: { teilnehmer: "C", gemeldet: 1, gesamt: 10, online: true }
+                A: { teilnehmer: "A", gemeldet: 8, bestaetigt: 0, erledigt: 8, gesamt: 10, online: true },
+                B: { teilnehmer: "B", gemeldet: 8, bestaetigt: 0, erledigt: 8, gesamt: 10, online: true },
+                C: { teilnehmer: "C", gemeldet: 1, bestaetigt: 0, erledigt: 1, gesamt: 10, online: true }
             });
 
             const container = document.getElementById("uebungsleitungTeilnehmer");
@@ -616,8 +623,8 @@ describe("UebungsleitungView – Live-Status", () => {
         it("markiert niemanden, solange zu wenige Teilnehmer melden", () => {
             const view = new UebungsleitungView();
             view.renderTeilnehmerListe(uebung(["A", "B"]), {}, false, {
-                A: { teilnehmer: "A", gemeldet: 8, gesamt: 10, online: true },
-                B: { teilnehmer: "B", gemeldet: 0, gesamt: 10, online: true }
+                A: { teilnehmer: "A", gemeldet: 8, bestaetigt: 0, erledigt: 8, gesamt: 10, online: true },
+                B: { teilnehmer: "B", gemeldet: 0, bestaetigt: 0, erledigt: 0, gesamt: 10, online: true }
             });
 
             expect(document.getElementById("uebungsleitungTeilnehmer")?.textContent)
@@ -627,7 +634,7 @@ describe("UebungsleitungView – Live-Status", () => {
         it("markiert erst beim Anstieg eine neue Meldung aus dem Netz", () => {
             const view = new UebungsleitungView();
             const stand = (gemeldet: number) => ({
-                A: { teilnehmer: "A", gemeldet, gesamt: 4, online: true }
+                A: { teilnehmer: "A", gemeldet, bestaetigt: 0, erledigt: gemeldet, gesamt: 4, online: true }
             });
             const zeile = () => document.querySelector("#uebungsleitungTeilnehmer tbody tr");
 
@@ -650,7 +657,7 @@ describe("UebungsleitungView – Live-Status", () => {
             try {
                 const view = new UebungsleitungView();
                 const stand = (gemeldet: number) => ({
-                    A: { teilnehmer: "A", gemeldet, gesamt: 4, online: true }
+                    A: { teilnehmer: "A", gemeldet, bestaetigt: 0, erledigt: gemeldet, gesamt: 4, online: true }
                 });
                 const balken = () => document.querySelector("#uebungsleitungTeilnehmer .progress-bar") as HTMLElement;
 
@@ -687,9 +694,13 @@ describe("UebungsleitungView – Live-Status", () => {
             expect(badge?.textContent).toContain("live");
             expect(badge?.className).toContain("bg-success");
 
-            view.updateLiveSyncState("fehler");
-            expect(badge?.textContent).toContain("offline");
+            view.updateLiveSyncState("offline", 3);
+            expect(badge?.textContent).toContain("offline – wird nachgereicht (3 offen)");
             expect(badge?.className).toContain("bg-warning");
+
+            view.updateLiveSyncState("fehler");
+            expect(badge?.textContent).toContain("wird nicht übertragen");
+            expect(badge?.className).toContain("bg-danger");
 
             view.updateLiveSyncState("aus");
             expect(badge?.textContent).toContain("aus");
@@ -803,5 +814,349 @@ describe("UebungsleitungView – Cockpit", () => {
 
         view.setCockpitBasisInputValue("15:00");
         expect(input.value).toBe("15:00");
+    });
+});
+
+describe("UebungsleitungView – THW-Review", () => {
+    beforeEach(() => {
+        vi.clearAllMocks();
+        setDom();
+    });
+
+    const basisOptionen = {
+        hideAbgesetzt: false,
+        senderFilter: "",
+        empfaengerFilter: "",
+        textFilter: ""
+    };
+    const zeile = (planNr: number) =>
+        document.querySelector(`#uebungsleitungNachrichten tr[data-plan-nr="${planNr}"]`) as HTMLElement;
+
+    it("trennt Aktion und Rücknahme räumlich und unterscheidet Aktion von Zustand", () => {
+        const view = new UebungsleitungView();
+        view.renderNachrichtenListe({
+            ...basisOptionen,
+            nachrichten: [
+                { nr: 1, sender: "A", empfaenger: ["B"], text: "offen", planNr: 1 },
+                { nr: 2, sender: "A", empfaenger: ["B"], text: "erledigt", planNr: 2 }
+            ],
+            nachrichtenStatus: { "A__2": { abgesetztUm: "2026-10-04T17:12:00.000Z", erledigtUm: "2026-10-04T17:12:00.000Z" } }
+        });
+
+        const offen = zeile(1);
+        const aktion = offen.querySelector("button[data-action='abgesetzt']") as HTMLButtonElement;
+        expect(aktion.textContent).toBe("Als abgesetzt markieren");
+        expect(aktion.textContent).not.toContain("✓");
+        expect(aktion.className).not.toContain("success");
+        // Die Aktion steht in der Statusspalte (2.), die Rücknahme in der letzten.
+        expect(aktion.closest("td")?.cellIndex).toBe(1);
+
+        const erledigt = zeile(2);
+        expect(erledigt.querySelector("button[data-action='abgesetzt']")).toBeNull();
+        expect(erledigt.cells[1]?.querySelector("button")).toBeNull();
+        expect(erledigt.cells[1]?.textContent).toContain("✓ abgesetzt");
+        const reset = erledigt.querySelector("button[data-action='reset']") as HTMLButtonElement;
+        expect(reset.textContent).toBe("zurücknehmen");
+        expect(reset.closest("td")?.cellIndex).toBe(erledigt.cells.length - 1);
+    });
+
+    it("sperrt die Rücknahme direkt nach dem Markieren", () => {
+        const view = new UebungsleitungView();
+        const onReset = vi.fn();
+        view.renderNachrichtenListe({
+            ...basisOptionen,
+            nachrichten: [{ nr: 1, sender: "A", empfaenger: ["B"], text: "x", planNr: 1 }],
+            nachrichtenStatus: { "A__1": { abgesetztUm: "2026-10-04T17:12:00.000Z" } },
+            ruecknahmeGesperrt: new Set(["A__1"])
+        });
+        view.bindNachrichtenEvents({
+            onAbgesetzt: vi.fn(), onReset, onNotiz: vi.fn(), onFilterSender: vi.fn(),
+            onFilterEmpfaenger: vi.fn(), onToggleHide: vi.fn(), onFilterText: vi.fn()
+        });
+
+        const reset = zeile(1).querySelector("button[data-action='reset']") as HTMLButtonElement;
+        expect(reset.disabled).toBe(true);
+        reset.dispatchEvent(new window.MouseEvent("click", { bubbles: true }));
+        expect(onReset).not.toHaveBeenCalled();
+    });
+
+    it("zeigt eindeutige Plan-Nummer, Soll-Uhrzeit und Fälligkeit als Text", () => {
+        const view = new UebungsleitungView();
+        view.renderNachrichtenListe({
+            ...basisOptionen,
+            nachrichten: [
+                { nr: 1, sender: "A", empfaenger: ["B"], text: "a", xZeitSlot: 3, planNr: 1 },
+                { nr: 1, sender: "B", empfaenger: ["A"], text: "b", xZeitSlot: 10, planNr: 2 },
+                { nr: 2, sender: "A", empfaenger: ["B"], text: "c", xZeitSlot: 15, planNr: 3 }
+            ],
+            nachrichtenStatus: {},
+            sollUhrzeit: { "A__1": "09:03", "B__1": "09:10", "A__2": "09:15" },
+            faelligkeit: {
+                "A__1": { zustand: "ueberfaellig", sollMs: 0, minuten: 7 },
+                "B__1": { zustand: "faellig", sollMs: 0, minuten: 0 },
+                "A__2": { zustand: "spaeter", sollMs: 0, minuten: 5 }
+            }
+        });
+
+        expect(zeile(1).dataset["planZustand"]).toBe("ueberfaellig");
+        expect(zeile(1).className).toContain("plan-zeile--ueberfaellig");
+        expect(zeile(1).textContent).toContain("überfällig 7 min");
+        expect(zeile(1).textContent).toContain("09:03");
+        expect(zeile(1).textContent).toContain("X+3");
+        expect(zeile(2).textContent).toContain("jetzt fällig");
+        expect(zeile(3).textContent).toContain("in 5 min");
+        expect(zeile(2).cells[0]?.textContent).toContain("2");
+        expect(zeile(2).cells[0]?.textContent).toContain("Abs.-Nr. 1");
+    });
+
+    it("klappt Notizen erst auf Wunsch auf und lässt Zeiten nachtragen", () => {
+        const view = new UebungsleitungView();
+        const onNotiz = vi.fn();
+        const onZeitNachtragen = vi.fn();
+        view.renderNachrichtenListe({
+            ...basisOptionen,
+            nachrichten: [
+                { nr: 1, sender: "A", empfaenger: ["B"], text: "a", planNr: 1 },
+                { nr: 2, sender: "A", empfaenger: ["B"], text: "b", planNr: 2 }
+            ],
+            nachrichtenStatus: { "A__2": { notiz: "steht schon" } }
+        });
+        view.bindNachrichtenEvents({
+            onAbgesetzt: vi.fn(), onReset: vi.fn(), onZeitNachtragen, onNotiz, onFilterSender: vi.fn(),
+            onFilterEmpfaenger: vi.fn(), onToggleHide: vi.fn(), onFilterText: vi.fn()
+        });
+
+        expect(zeile(1).querySelector("textarea")).toBeNull();
+        expect(zeile(2).querySelector("textarea")?.value).toBe("steht schon");
+        (zeile(1).querySelector("button[data-action='notiz-oeffnen']") as HTMLButtonElement).click();
+        const textarea = zeile(1).querySelector("textarea.nachricht-notiz") as HTMLTextAreaElement;
+        textarea.value = "neu";
+        textarea.dispatchEvent(new window.Event("input", { bubbles: true }));
+        expect(onNotiz).toHaveBeenCalledWith("A", 1, "neu");
+
+        (zeile(1).querySelector("button[data-action='zeit-bearbeiten']") as HTMLButtonElement).click();
+        const input = zeile(1).querySelector("input.ul-zeit-input") as HTMLInputElement;
+        expect(input).toBeTruthy();
+        // Die aufgeklappte Notiz bleibt nach dem Neuaufbau offen.
+        expect(zeile(1).querySelector("textarea.nachricht-notiz")).toBeTruthy();
+        input.value = "19:05";
+        (zeile(1).querySelector("button[data-action='zeit-speichern']") as HTMLButtonElement).click();
+        expect(onZeitNachtragen).toHaveBeenCalledWith("A", 1, "19:05");
+
+        (zeile(2).querySelector("button[data-action='zeit-bearbeiten']") as HTMLButtonElement).click();
+        const zweite = zeile(2).querySelector("input.ul-zeit-input") as HTMLInputElement;
+        zweite.dispatchEvent(new window.KeyboardEvent("keydown", { key: "Escape", bubbles: true }));
+        expect(zeile(2).querySelector("input.ul-zeit-input")).toBeNull();
+    });
+
+    it("unterscheidet „gemeldet (TN)“ vom bestätigten Zustand", () => {
+        const view = new UebungsleitungView();
+        view.renderNachrichtenListe({
+            ...basisOptionen,
+            nachrichten: [{ nr: 1, sender: "A", empfaenger: ["B"], text: "x", planNr: 1 }],
+            nachrichtenStatus: { "A__1": { gemeldetUm: "2026-10-04T17:11:00.000Z", erledigtUm: "2026-10-04T17:11:00.000Z" } }
+        });
+        const chip = zeile(1).querySelector(".status-chip") as HTMLElement;
+        expect(chip.className).toContain("status-chip--gemeldet");
+        expect(chip.className).not.toContain("status-chip--ok");
+        expect(zeile(1).className).toContain("status-gemeldet-row");
+        expect(zeile(1).querySelector("button[data-action='abgesetzt']")?.textContent).toBe("Bestätigen");
+    });
+
+    it("zeigt die Lage mit offen je Teilnehmer, nächsten Nachrichten und Sprüngen", () => {
+        const view = new UebungsleitungView();
+        const onGemeldeteBestaetigen = vi.fn();
+        const onToggleHide = vi.fn();
+        view.renderNachrichtenListe({
+            ...basisOptionen,
+            nachrichten: [{ nr: 1, sender: "A", empfaenger: ["B"], text: "x", planNr: 4 }],
+            nachrichtenStatus: {},
+            faelligkeit: { "A__1": { zustand: "ueberfaellig", sollMs: 0, minuten: 2 } }
+        });
+        const scroll = vi.fn();
+        zeile(4).scrollIntoView = scroll;
+        view.bindLageEvents({ onGemeldeteBestaetigen, onToggleHide });
+        view.renderLage({
+            teilnehmer: [
+                { teilnehmer: "A", offen: 3, gesamt: 5, nurGemeldet: 1 },
+                { teilnehmer: "B", offen: 0, gesamt: 2, nurGemeldet: 0 }
+            ],
+            naechste: [{ planNr: 4, sender: "A", empfaenger: ["B"], faelligkeit: { zustand: "ueberfaellig", sollMs: new Date(2026, 9, 4, 9, 3).getTime(), minuten: 2 } }],
+            zuBestaetigen: 1,
+            hideAbgesetzt: false,
+            ueberfaellig: 1
+        });
+
+        const lage = document.getElementById("uebungsleitungLageBody") as HTMLElement;
+        expect(lage.textContent).toContain("A: 3 offen, 1 zu bestätigen");
+        expect(lage.textContent).toContain("B: fertig");
+        expect(lage.textContent).toContain("Nr. 4 · A → B · 09:03 · überfällig 2 min");
+
+        (lage.querySelector("[data-action='zu-plan-nr']") as HTMLButtonElement).click();
+        expect(scroll).toHaveBeenCalled();
+        (lage.querySelector("[data-action='zu-ueberfaellig']") as HTMLButtonElement).click();
+        expect(scroll).toHaveBeenCalledTimes(2);
+        (lage.querySelector("[data-action='gemeldete-bestaetigen']") as HTMLButtonElement).click();
+        expect(onGemeldeteBestaetigen).toHaveBeenCalled();
+        (lage.querySelector("[data-action='lage-hide']") as HTMLButtonElement).click();
+        expect(onToggleHide).toHaveBeenCalledWith(true);
+        const auswertung = document.getElementById("nachrichtenAuswertung") as HTMLElement;
+        auswertung.scrollIntoView = vi.fn();
+        (lage.querySelector("[data-action='zu-auswertung']") as HTMLButtonElement).click();
+        expect(auswertung.scrollIntoView).toHaveBeenCalled();
+    });
+
+    it("bietet nach einer Rücknahme ein Rückgängig an, das von selbst verschwindet", () => {
+        vi.useFakeTimers();
+        const view = new UebungsleitungView();
+        const onUndo = vi.fn();
+        const leiste = document.getElementById("uebungsleitungUndo") as HTMLElement;
+
+        view.zeigeRueckgaengig("„Abgesetzt“ zurückgenommen.", onUndo);
+        expect(leiste.classList.contains("d-none")).toBe(false);
+        (leiste.querySelector("[data-action='undo']") as HTMLButtonElement).click();
+        expect(onUndo).toHaveBeenCalledTimes(1);
+        expect(leiste.classList.contains("d-none")).toBe(true);
+
+        view.zeigeRueckgaengig("noch einmal", onUndo);
+        vi.advanceTimersByTime(RUECKGAENGIG_MS + 10);
+        expect(leiste.classList.contains("d-none")).toBe(true);
+        expect(onUndo).toHaveBeenCalledTimes(1);
+        vi.useRealTimers();
+    });
+
+    it("zeigt bei falscher Übungs-ID eine Meldung mit Weiter-Weg statt leerer Karten", () => {
+        document.body.innerHTML = `
+          <div id="uebungsleitungArea">
+            <div class="card"><div id="uebungsleitungMeta"></div></div>
+            <div class="card" id="andere"><div id="uebungsleitungTeilnehmer"></div></div>
+          </div>`;
+        const view = new UebungsleitungView();
+        view.showLadefehler("Übung nicht gefunden.", "abc<1>");
+
+        const meta = document.getElementById("uebungsleitungMeta") as HTMLElement;
+        expect(meta.textContent).toContain("Übung nicht gefunden.");
+        expect(meta.innerHTML).toContain("abc&lt;1&gt;");
+        expect(meta.querySelector("a[href='#/admin']")).toBeTruthy();
+        expect(document.getElementById("andere")?.classList.contains("d-none")).toBe(true);
+    });
+
+    it("beschriftet den Rücksetz-Knopf nach seiner Reichweite und setzt ihn von den Exporten ab", () => {
+        const view = new UebungsleitungView();
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        view.renderMeta({ name: "Ü", datum: new Date(), teilnehmerListe: [], nachrichten: {} } as any, "u1");
+        const btn = document.getElementById("resetUebungsleitungLocalData") as HTMLButtonElement;
+        expect(document.getElementById("uebungsleitungMeta")?.contains(btn)).toBe(false);
+
+        view.setResetModus(true);
+        expect(btn.textContent).toContain("für alle");
+        expect(btn.textContent).not.toContain("Lokale");
+        view.setResetModus(false);
+        expect(btn.textContent).toContain("auf diesem Gerät");
+    });
+
+    it("bietet den geplanten Beginn als Vorschlag an und springt vom Plan-Badge", () => {
+        const view = new UebungsleitungView();
+        const onVorschlag = vi.fn();
+        const onBadge = vi.fn();
+        view.bindCockpitEvents(vi.fn(), vi.fn(), onVorschlag, onBadge);
+        view.updateCockpit({
+            uhrzeit: "08:50:00", laufzeitMs: null, ist: 0, gesamt: 3, soll: null,
+            basisHinweis: "Geplanter Übungsbeginn", vorschlag: "09:00", abweichungen: ["Kater 10 (08:55)"]
+        });
+
+        const btn = document.getElementById("btn-cockpit-xzeit-vorschlag") as HTMLButtonElement;
+        expect(btn.classList.contains("d-none")).toBe(false);
+        expect(btn.textContent).toBe("09:00 übernehmen");
+        btn.click();
+        expect(onVorschlag).toHaveBeenCalledWith("09:00");
+        expect(document.getElementById("cockpitAbweichungen")?.textContent).toContain("Kater 10 (08:55)");
+
+        (document.getElementById("cockpitPlanBadge") as HTMLElement).click();
+        expect(onBadge).toHaveBeenCalled();
+
+        view.updateCockpit({ uhrzeit: "", laufzeitMs: null, ist: 0, gesamt: 3, soll: null, basisHinweis: "" });
+        expect(btn.classList.contains("d-none")).toBe(true);
+    });
+
+    it("stellt die beübte Stelle getrennt und ohne Code oder Anmeldung dar", () => {
+        const view = new UebungsleitungView();
+        view.renderTeilnehmerListe({
+            teilnehmerListe: ["EA 1", "Stelle"],
+            teilnehmerIds: { AAAA: "Stelle", BBBB: "EA 1" },
+            uebungCode: "ABCDEF",
+            nachrichten: { "EA 1": [{ id: 1, empfaenger: ["Stelle"], nachricht: "x" }] },
+            fuehrungsstelle: { slug: "s", beuebteStelle: "Stelle", uebergeordnet: "Stab", unterstellt: ["EA 1"] }
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        } as any, {}, false);
+
+        const zeilen = document.querySelectorAll("#uebungsleitungTeilnehmer tbody tr");
+        const beuebt = zeilen[0] as HTMLElement;
+        expect(beuebt.dataset["beuebt"]).toBe("1");
+        expect(beuebt.textContent).toContain("beübte Stelle");
+        expect(beuebt.textContent).toContain("empfängt 1 Einspielungen");
+        expect(beuebt.textContent).not.toContain("AAAA");
+        expect(beuebt.querySelector("[data-action='anmelden']")).toBeNull();
+        expect(zeilen[1]?.textContent).toContain("BBBB");
+    });
+
+    it("koppelt die Anmeldeanzeige an den Funkspruch und bietet eine Rücknahme", () => {
+        const view = new UebungsleitungView();
+        const onAnmeldungZuruecknehmen = vi.fn();
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const uebung: any = { teilnehmerListe: ["A", "B", "C"], nachrichten: {} };
+        view.renderTeilnehmerListe(uebung, {}, false, {}, {
+            anmeldung: {
+                A: { angemeldetUm: "2026-10-04T17:01:00.000Z", quelle: "funkspruch" },
+                B: { angemeldetUm: "2026-10-04T17:02:00.000Z", quelle: "teilnehmer" },
+                C: {}
+            }
+        });
+        view.bindTeilnehmerEvents({
+            onAnmelden: vi.fn(), onAnmeldungZuruecknehmen, onLoesungswort: vi.fn(), onStaerke: vi.fn(),
+            onNotiz: vi.fn(), onToggleDetails: vi.fn(), onDownloadDebrief: vi.fn()
+        });
+        const zeilen = document.querySelectorAll("#uebungsleitungTeilnehmer tbody tr");
+        expect(zeilen[0]?.textContent).toContain("über Anmelde-Funkspruch");
+        (zeilen[0]?.querySelector("[data-action='anmeldung-zuruecknehmen']") as HTMLButtonElement).click();
+        expect(onAnmeldungZuruecknehmen).toHaveBeenCalledWith("A");
+        expect(zeilen[1]?.textContent).toContain("vom Teilnehmer gemeldet");
+        expect(zeilen[1]?.querySelector("[data-action='anmeldung-zuruecknehmen']")).toBeNull();
+        expect(zeilen[2]?.querySelector("[data-action='anmelden']")?.textContent?.trim()).toBe("Anmeldung erhalten");
+    });
+
+    it("weist Teilnehmer- und Leitungsanteil aus und erkennt ein stilles Gerät", () => {
+        const view = new UebungsleitungView();
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const uebung: any = { teilnehmerListe: ["A", "B"], nachrichten: {} };
+        const jetztMs = Date.parse("2026-10-04T17:30:00.000Z");
+        view.renderTeilnehmerListe(uebung, {}, false, {
+            A: {
+                teilnehmer: "A", gemeldet: 1, bestaetigt: 2, erledigt: 3, gesamt: 8, online: true,
+                letzteMeldungUm: "2026-10-04T17:10:00.000Z", zuletztGesehenUm: "2026-10-04T17:10:00.000Z"
+            },
+            B: { teilnehmer: "B", gemeldet: 0, bestaetigt: 2, erledigt: 2, gesamt: 8, online: false, letzteMeldungUm: "2026-10-04T17:25:00.000Z" }
+        }, { jetztMs });
+
+        const zeilen = document.querySelectorAll("#uebungsleitungTeilnehmer tbody tr");
+        expect(zeilen[0]?.textContent).toContain("TN 1 · Leitung 2");
+        expect(zeilen[0]?.textContent).toContain("seit 20 min nichts vom Gerät");
+        // Ohne Gerät, aber von der Leitung abgehakt: Fortschritt statt „keine Meldung“.
+        expect(zeilen[1]?.textContent).not.toContain("keine Meldung");
+        expect(zeilen[1]?.textContent).toContain("kein Live-Gerät");
+    });
+
+    it("behält die seitliche Scrollposition der Tabelle beim Neuaufbau", () => {
+        const view = new UebungsleitungView();
+        const optionen = {
+            ...basisOptionen,
+            nachrichten: [{ nr: 1, sender: "A", empfaenger: ["B"], text: "x", planNr: 1 }],
+            nachrichtenStatus: {}
+        };
+        view.renderNachrichtenListe(optionen);
+        const tabelle = () => document.querySelector("#uebungsleitungNachrichten .table-responsive") as HTMLElement;
+        tabelle().scrollLeft = 120;
+        view.renderNachrichtenListe(optionen);
+        expect(tabelle().scrollLeft).toBe(120);
     });
 });

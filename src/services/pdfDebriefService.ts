@@ -2,7 +2,15 @@
 import { jsPDF } from "jspdf";
 import { FunkUebung } from "../models/FunkUebung";
 import { formatNatoDate } from "../utils/date";
-import { UebungsleitungStorage } from "../types/Storage";
+import { NachrichtenStatus, UebungsleitungStorage } from "../types/Storage";
+
+/**
+ * Nachrichtenstatus im Debrief. Die Übungsleitung reicht den effektiven Status
+ * herein: neben der Bestätigung der Leitung (`abgesetztUm`) auch die
+ * Selbstmeldung des Teilnehmers (`gemeldetUm`). Beide werden getrennt
+ * ausgewiesen und beide zählen als erledigt (THW-Review workflow F3).
+ */
+type DebriefNachrichtenStatus = NachrichtenStatus & { gemeldetUm?: string };
 
 function drawDebriefHeader(pdf: jsPDF, funkUebung: FunkUebung, teilnehmer: string): number {
     const pageWidth = pdf.internal.pageSize.getWidth();
@@ -51,23 +59,58 @@ function buildDebriefSummaryRow(
     ];
 }
 
-function buildDebriefSentRows(
+function formatBestaetigt(status: DebriefNachrichtenStatus | undefined): string {
+    if (!status?.abgesetztUm) {
+        return "–";
+    }
+    return `${formatNatoDate(status.abgesetztUm)}${status.nachgetragen ? " (nachgetragen)" : ""}`;
+}
+
+export function buildDebriefSentRows(
     funkUebung: FunkUebung,
     storage: UebungsleitungStorage,
     teilnehmer: string
 ): string[][] {
     const rows = (funkUebung.nachrichten[teilnehmer] ?? []).map(msg => {
         const key = `${teilnehmer}__${msg.id}`;
-        const status = storage.nachrichten[key];
+        const status = storage.nachrichten[key] as DebriefNachrichtenStatus | undefined;
+        const erledigt = Boolean(status?.abgesetztUm || status?.gemeldetUm);
         return [
             String(msg.id),
             msg.empfaenger.join(", "),
             msg.nachricht,
-            status?.abgesetztUm ? formatNatoDate(status.abgesetztUm) : "offen",
+            status?.gemeldetUm ? formatNatoDate(status.gemeldetUm) : "–",
+            formatBestaetigt(status),
+            erledigt ? "erledigt" : "offen",
             status?.notiz ?? ""
         ];
     });
-    return rows.length ? rows : [["–", "–", "Keine gesendeten Nachrichten", "–", "–"]];
+    return rows.length ? rows : [["–", "–", "Keine gesendeten Nachrichten", "–", "–", "–", "–"]];
+}
+
+/** Zählung für die Kopfzeile: erledigt gesamt, davon gemeldet bzw. bestätigt. */
+export function zaehleDebrief(
+    funkUebung: FunkUebung,
+    storage: UebungsleitungStorage,
+    teilnehmer: string
+): { gesamt: number; erledigt: number; gemeldet: number; bestaetigt: number } {
+    const liste = funkUebung.nachrichten[teilnehmer] ?? [];
+    let erledigt = 0;
+    let gemeldet = 0;
+    let bestaetigt = 0;
+    liste.forEach(msg => {
+        const status = storage.nachrichten[`${teilnehmer}__${msg.id}`] as DebriefNachrichtenStatus | undefined;
+        if (status?.gemeldetUm) {
+            gemeldet++;
+        }
+        if (status?.abgesetztUm) {
+            bestaetigt++;
+        }
+        if (status?.gemeldetUm || status?.abgesetztUm) {
+            erledigt++;
+        }
+    });
+    return { gesamt: liste.length, erledigt, gemeldet, bestaetigt };
 }
 
 function buildDebriefReceivedRows(funkUebung: FunkUebung, teilnehmer: string): [string, string, string][] {
@@ -115,9 +158,18 @@ export async function generateTeilnehmerDebriefPdfBlob(
         headStyles: { fillColor: [200, 200, 200] }
     });
 
+    const zaehlung = zaehleDebrief(funkUebung, storage, teilnehmer);
+    pdf.setFont("helvetica", "normal");
+    pdf.setFontSize(10);
+    pdf.text(
+        `Gesendet: ${zaehlung.erledigt} von ${zaehlung.gesamt} erledigt – vom Teilnehmer gemeldet: ${zaehlung.gemeldet}, von der Übungsleitung bestätigt: ${zaehlung.bestaetigt}`,
+        marginX,
+        (pdf as any).lastAutoTable.finalY + 6
+    );
+
     (pdf as any).autoTable({
-        startY: (pdf as any).lastAutoTable.finalY + 6,
-        head: [["Nr", "Empfänger", "Nachricht", "Abgesetzt", "Notiz Übungsleitung"]],
+        startY: (pdf as any).lastAutoTable.finalY + 9,
+        head: [["Nr", "Empfänger", "Nachricht", "Gemeldet (TN)", "Bestätigt (Leitung)", "Stand", "Notiz Übungsleitung"]],
         body: buildDebriefSentRows(funkUebung, storage, teilnehmer),
         margin: { left: marginX, right: marginX },
         tableWidth: "auto",

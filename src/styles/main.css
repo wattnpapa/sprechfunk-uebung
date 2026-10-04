@@ -864,9 +864,14 @@ select option {
     min-width: 170px;
 }
 
+#uebungsleitungNachrichten .table th:nth-child(2),
+#uebungsleitungNachrichten .table td:nth-child(2) {
+    min-width: 170px;
+}
+
 #uebungsleitungNachrichten .table th:nth-child(5),
 #uebungsleitungNachrichten .table td:nth-child(5) {
-    min-width: 190px;
+    min-width: 220px;
 }
 
 /* --- Navigation / Schrittanzeige: Unterstrich statt Pille ---------------- */
@@ -1739,6 +1744,128 @@ select option {
 
 #uebungsleitungNachrichten table tbody tr:not(:first-child) td {
     border-top: 3px solid var(--linie);
+}
+
+/* Statuszelle: Zustand oben, Aktion bzw. Herkunft darunter. Feste Mindesthöhe,
+   damit die Zeile nach dem Bestätigen nicht springt. */
+.ul-status-zelle {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.25rem;
+    min-height: 4.6rem;
+}
+
+.status-chip--fest {
+    cursor: default;
+}
+
+/* „gemeldet (TN)“ ist ein Vorschlag, kein erledigter Zustand: gestrichelt
+   statt gefüllt – auch in Graustufen von „✓ abgesetzt“ zu unterscheiden. */
+.status-chip--gemeldet {
+    background: var(--flaeche);
+    color: var(--text);
+    border-style: dashed;
+    border-color: var(--gut-linie);
+    cursor: default;
+}
+
+.status-gemeldet-row > td {
+    background-color: var(--flaeche) !important;
+    color: var(--text) !important;
+    box-shadow: inset 4px 0 0 var(--gut-linie);
+}
+
+.status-pending-row.plan-zeile--ueberfaellig > td {
+    box-shadow: inset 8px 0 0 var(--alarm);
+}
+
+.status-pending-row.plan-zeile--faellig > td {
+    box-shadow: inset 8px 0 0 var(--warn-linie);
+}
+
+.plan-badge {
+    font-weight: 700;
+    border: var(--strich) solid transparent;
+}
+
+.plan-badge--ueberfaellig {
+    background: var(--alarm-fond);
+    color: var(--alarm);
+    border-color: var(--alarm-linie);
+}
+
+.plan-badge--faellig {
+    background: var(--warn-fond);
+    color: var(--warn-text);
+    border-color: var(--warn-linie);
+}
+
+.plan-badge--spaeter {
+    background: var(--flaeche-2);
+    color: var(--text-2);
+    border-color: var(--linie-fein);
+}
+
+.plan-zeile--ziel > td {
+    outline: 3px solid var(--text);
+    outline-offset: -3px;
+}
+
+.uebungsleitung-beuebt > td {
+    background-color: var(--flaeche-2) !important;
+}
+
+.lage-chip {
+    display: inline-block;
+    padding: 0.15rem 0.5rem;
+    border: var(--strich) solid var(--linie);
+    border-radius: var(--radius);
+    font-size: var(--t-xs, 0.85rem);
+}
+
+.lage-chip--fertig {
+    color: var(--text-2);
+    border-style: dashed;
+}
+
+/* Kennzahlen in fester Breite: wachsende Texte schieben die Tabelle nicht. */
+#nachrichtenStatsStrip .badge {
+    max-width: 100%;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.uebungsleitung-undo {
+    position: fixed;
+    left: 50%;
+    bottom: 1rem;
+    transform: translateX(-50%);
+    z-index: 1080;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    max-width: calc(100vw - 2rem);
+    padding: 0.6rem 0.9rem;
+    border-radius: var(--radius);
+    background: var(--text);
+    color: var(--flaeche);
+}
+
+.uebungsleitung-undo.d-none {
+    display: none;
+}
+
+/* Grobe Zeiger (Finger, Handschuh): Aktionen der Übungsleitung mindestens 44 px. */
+@media (pointer: coarse) {
+    #uebungsleitungNachrichten .ul-aktion,
+    #uebungsleitungNachrichten [data-action="reset"],
+    #uebungsleitungNachrichten [data-action="zeit-bearbeiten"],
+    #uebungsleitungTeilnehmer [data-action="anmelden"],
+    #uebungsleitungTeilnehmer [data-action="anmeldung-zuruecknehmen"] {
+        min-height: 44px;
+    }
 }
 
 /* --- Teilnehmer: Dokumentenansicht --------------------------------------- */
