@@ -7,7 +7,7 @@ import { FunkUebung } from "../../src/models/FunkUebung";
 import { FirebaseService } from "../../src/services/FirebaseService";
 import { GenerationService } from "../../src/services/GenerationService";
 import { parseFuehrungsstellenUebung } from "../../src/services/FuehrungsstellenUebungService";
-import { toTeilnehmerLiveDoc } from "../../src/services/liveStatusMerge";
+import { toLeitungPublicLiveDoc, toTeilnehmerLiveDoc } from "../../src/services/liveStatusMerge";
 import hochwasser from "../../assets/fuehrungsstellen/hochwasser-fuehrungsstelle.json";
 
 /**
@@ -177,6 +177,17 @@ describe.skipIf(!emulatorHost)("firestore.rules im Emulator", () => {
         }, "A1B2");
         const db = (env as RulesTestEnvironment).unauthenticatedContext().firestore();
         await expect(setDoc(doc(db, "uebungen", "klassisch-10", "status", "teilnehmer-A1B2"), status)).resolves.toBeUndefined();
+        // Verbindliche X-Zeit-Basis und Papier-Nachtrag im Dokument der Leitung.
+        const leitung = toLeitungPublicLiveDoc({
+            version: 1,
+            uebungId: "klassisch-10",
+            lastUpdated: jetzt,
+            teilnehmer: {},
+            nachrichten: { "Heros Ort1 21/10__1": { abgesetztUm: jetzt, statusGeaendertUm: jetzt, nachgetragen: true } },
+            xZeitBasis: "09:00",
+            xZeitBasisGeaendertUm: jetzt
+        });
+        await expect(setDoc(doc(db, "uebungen", "klassisch-10", "status", "leitung-public"), leitung)).resolves.toBeUndefined();
     });
 
     it(`bleibt mit ${RESERVE_AUSDRUECKE} zusätzlichen Gliedern unter dem Ausdrucks-Limit`, async () => {

@@ -669,3 +669,84 @@ describe("TeilnehmerController", () => {
         vi.useRealTimers();
     });
 });
+
+describe("TeilnehmerController – gemeinsame X-Zeit", () => {
+    const SPAET = "2026-10-04T17:30:00.000Z";
+
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    async function xZeitController(storage: any) {
+        const { TeilnehmerController } = await import("../../src/teilnehmer");
+        const c = new TeilnehmerController({} as never);
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const intern = c as any;
+        intern.uebung = { spielModus: "xZeit", nachrichten: { A: [] } };
+        intern.teilnehmerName = "A";
+        intern.teilnehmerId = "T1";
+        intern.storage = storage;
+        intern.liveStatus = { enabled: true, publishTeilnehmerStatus: mocks.publishTeilnehmerStatus };
+        return intern;
+    }
+
+    const hinweis = { id: "", className: "", textContent: "" };
+
+    beforeEach(() => {
+        vi.clearAllMocks();
+        hinweis.textContent = "";
+        const input = { parentElement: { appendChild: vi.fn() } };
+        vi.stubGlobal("document", {
+            getElementById: (id: string) => {
+                if (id === "xZeitBasisInput") return input;
+                if (id === "xZeitBasisHerkunft") return hinweis;
+                return null;
+            },
+            createElement: () => hinweis
+        });
+    });
+
+    it("übernimmt die Basis der Übungsleitung ohne eigenes Zutun", async () => {
+        const c = await xZeitController({ nachrichten: {}, xZeitBasis: "19:18", xZeitBasisGeaendertUm: "2026-10-04T17:00:00.000Z" });
+
+        c.uebernehmeXZeitDerLeitung({ version: 1, lastUpdated: SPAET, nachrichten: {}, xZeitBasis: "19:30", xZeitBasisGeaendertUm: SPAET });
+
+        expect(c.storage.xZeitBasis).toBe("19:30");
+        expect(c.storage.xZeitBasisQuelle).toBe("leitung");
+        expect(mocks.setXZeitBasisInputValue).toHaveBeenCalledWith("19:30");
+        expect(mocks.saveTeilnehmerStorage).toHaveBeenCalled();
+        expect(mocks.publishTeilnehmerStatus).toHaveBeenCalled();
+        expect(hinweis.textContent).toContain("von der Übungsleitung gesetzt");
+        c.stopXZeitTicker();
+    });
+
+    it("verlangt für eine eigene Basis neben der Vorgabe eine bewusste Bestätigung", async () => {
+        const c = await xZeitController({ nachrichten: {}, xZeitBasis: "19:30", xZeitBasisGeaendertUm: SPAET, xZeitBasisQuelle: "leitung" });
+        c.leitungXZeitBasis = "19:30";
+
+        mocks.uiConfirm.mockReturnValueOnce(false);
+        c.setXZeitBasis("19:40");
+        expect(c.storage.xZeitBasis).toBe("19:30");
+        expect(mocks.setXZeitBasisInputValue).toHaveBeenCalledWith("19:30");
+
+        mocks.uiConfirm.mockReturnValueOnce(true);
+        c.setXZeitBasis("19:40");
+        expect(c.storage.xZeitBasis).toBe("19:40");
+        expect(c.storage.xZeitBasisQuelle).toBe("eigen");
+        expect(hinweis.textContent).toContain("Eigene Basis 19:40");
+
+        // Dieselbe Uhrzeit wie die Leitung braucht keine Rückfrage.
+        mocks.uiConfirm.mockClear();
+        c.setXZeitBasis("19:30");
+        expect(mocks.uiConfirm).not.toHaveBeenCalled();
+        expect(c.storage.xZeitBasisQuelle).toBe("leitung");
+        c.stopXZeitTicker();
+    });
+
+    it("ignoriert die Vorgabe außerhalb des X-Zeit-Modus und weist ohne Basis auf die Leitung hin", async () => {
+        const c = await xZeitController({ nachrichten: {} });
+        c.uebernehmeXZeitDerLeitung(null);
+        expect(hinweis.textContent).toContain("Warte auf die X-Zeit der Übungsleitung");
+
+        c.uebung.spielModus = "klassisch";
+        c.uebernehmeXZeitDerLeitung({ version: 1, lastUpdated: SPAET, nachrichten: {}, xZeitBasis: "19:30", xZeitBasisGeaendertUm: SPAET });
+        expect(c.storage.xZeitBasis).toBeUndefined();
+    });
+});

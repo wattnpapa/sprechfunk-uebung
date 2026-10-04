@@ -128,19 +128,24 @@
                         <div class="small text-body-secondary">Fortschritt</div>
                         <div class="d-flex align-items-center gap-2">
                             <span class="fs-4 fw-semibold font-monospace" id="cockpitFortschritt">–</span>
-                            <span class="badge bg-secondary" id="cockpitPlanBadge" title="Vergleich mit dem X-Zeit-Zeitplan">–</span>
+                            <button type="button" class="badge border-0 bg-secondary" id="cockpitPlanBadge" title="Vergleich mit dem X-Zeit-Zeitplan – antippen springt zur ersten überfälligen Nachricht">–</button>
                         </div>
                     </div>
                     <div class="col-12 col-lg-4">
-                        <label class="small text-body-secondary" for="cockpitXZeitBasisInput">X-Zeit-Basis (Übungsbeginn)</label>
-                        <div class="d-flex align-items-center gap-2">
+                        <label class="small text-body-secondary" for="cockpitXZeitBasisInput">X-Zeit-Basis (Übungsbeginn, gilt für alle)</label>
+                        <div class="d-flex flex-wrap align-items-center gap-2">
                             <input type="time" class="form-control form-control-sm" id="cockpitXZeitBasisInput" style="width:130px;">
                             <button class="btn btn-sm btn-outline-primary text-nowrap" id="btn-cockpit-xzeit-jetzt" type="button">Jetzt starten</button>
+                            <button class="btn btn-sm btn-primary text-nowrap d-none" id="btn-cockpit-xzeit-vorschlag" type="button" data-testid="cockpit-vorschlag"></button>
                         </div>
-                        <small class="text-body-secondary" id="cockpitBasisHinweis"></small>
+                        <small class="text-body-secondary d-block" id="cockpitBasisHinweis"></small>
+                        <small class="text-body-secondary d-block" id="cockpitAbweichungen"></small>
                     </div>
                 </div>
             </div>
+        </div>
+        <div class="card mb-3" id="uebungsleitungLage" data-testid="uebungsleitung-lage">
+            <div class="card-body py-2" id="uebungsleitungLageBody"></div>
         </div>
         <div class="card mb-3">
             <div class="card-header"><h2 class="h4 mb-0"><i class="fas fa-users"></i> Teilnehmer</h2></div>
@@ -148,9 +153,9 @@
         </div>
         <div class="card">
             <div class="card-header">
-                <div class="d-flex justify-content-between align-items-center">
+                <div class="d-flex flex-wrap justify-content-between align-items-center gap-2">
                     <h2 class="h4 mb-0"><i class="fas fa-list"></i> Nachrichtenplan</h2>
-                    <div class="d-flex align-items-center gap-2" style="min-width:340px;">
+                    <div class="d-flex flex-wrap align-items-center gap-2" style="min-width:min(340px, 100%);">
                         <small class="text-body-secondary text-nowrap mb-0" id="nachrichtenProgressLabel" aria-live="polite">0 / 0</small>
                         <div class="progress flex-grow-1" style="height: 10px;">
                             <div id="nachrichtenProgressBar" class="progress-bar bg-success" role="progressbar" style="width: 0%;"></div>
@@ -160,14 +165,18 @@
                 </div>
                 <div id="nachrichtenStatsStrip" class="d-flex flex-wrap gap-2 mt-2">
                     <span class="badge bg-secondary" id="uebungsleitungLiveSyncBadge" aria-live="polite" title="Status der Live-Meldungen der Teilnehmer">Live-Status: –</span>
-                    <small class="badge text-bg-secondary" id="nachrichtenTempoLabel">Tempo: –</small>
-                    <small class="badge text-bg-secondary" id="nachrichtenLoadLabel">Funklast: –</small>
-                    <small class="badge text-bg-secondary" id="nachrichtenHeatmapLabel">Heatmap 5m: –</small>
+                    <small class="badge text-bg-secondary" id="nachrichtenTempoLabel" title="Tempo: abgesetzte Nachrichten pro Minute, gemittelt über die letzten sechs (ohne nachgetragene Zeiten)">Tempo: –</small>
+                    <small class="badge text-bg-secondary" id="nachrichtenLoadLabel" title="Funklast: wer bisher am meisten gesendet (S) und empfangen (E) hat">Funklast: –</small>
+                    <small class="badge text-bg-secondary" id="nachrichtenHeatmapLabel" title="Heatmap: erledigte Nachrichten je 5 Minuten">Heatmap 5m: –</small>
                 </div>
             </div>
             <div class="card-body" id="uebungsleitungNachrichten"></div>
         </div>
+        <div class="card mt-4 border-danger-subtle" id="uebungsleitungGefahrenbereich">
+            <div class="card-body" id="uebungsleitungGefahrenbereichBody"></div>
+        </div>
     </div>
+    <div id="uebungsleitungUndo" class="uebungsleitung-undo d-none" role="status" aria-live="polite"></div>
 </div>
 
 <div id="teilnehmerArea" data-testid="route-teilnehmer" style="display:none;">

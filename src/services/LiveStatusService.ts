@@ -22,10 +22,26 @@ import { featureFlags } from "./featureFlags";
 type PlainDoc = Record<string, unknown>;
 type Unsubscribe = () => void;
 
+/**
+ * Wird zu jedem Snapshot gemeldet, auch wenn sich nur die Metadaten ändern.
+ * `ausCache` heißt: Firestore hat den Server nicht erreicht und liefert den
+ * lokal bekannten Stand.
+ */
+type MetaCallback = (ausCache: boolean) => void;
+
 interface LiveStatusBackend {
     write(docId: string, data: PlainDoc): Promise<void>;
-    subscribeDoc(docId: string, onData: (data: PlainDoc | null) => void, onError: (e: unknown) => void): Unsubscribe;
-    subscribeCollection(onData: (docs: { id: string; data: PlainDoc }[]) => void, onError: (e: unknown) => void): Unsubscribe;
+    subscribeDoc(
+        docId: string,
+        onData: (data: PlainDoc | null) => void,
+        onError: (e: unknown) => void,
+        onMeta: MetaCallback
+    ): Unsubscribe;
+    subscribeCollection(
+        onData: (docs: { id: string; data: PlainDoc }[]) => void,
+        onError: (e: unknown) => void,
+        onMeta: MetaCallback
+    ): Unsubscribe;
 }
 
 /** Entfernt `undefined`-Werte und leere Keys rekursiv – Firestore lehnt beides ab. */
@@ -56,21 +72,53 @@ class FirestoreBackend implements LiveStatusBackend {
         await setDoc(this.docRef(docId), sanitizeForFirestore(data) as DocumentData);
     }
 
-    subscribeDoc(docId: string, onData: (data: PlainDoc | null) => void, onError: (e: unknown) => void): Unsubscribe {
+    /**
+     * Mit `includeMetadataChanges`, damit ein Wechsel auf den lokalen Cache
+     * (Funkloch) sichtbar wird. Reine Metadaten-Snapshots lösen kein neues
+     * Rendern aus – die Daten werden nur weitergereicht, wenn sie sich ändern.
+     */
+    subscribeDoc(
+        docId: string,
+        onData: (data: PlainDoc | null) => void,
+        onError: (e: unknown) => void,
+        onMeta: MetaCallback
+    ): Unsubscribe {
+        let letzterStand: string | undefined;
         return onSnapshot(
             this.docRef(docId),
-            snapshot => onData(snapshot.exists() ? (snapshot.data() as PlainDoc) : null),
+            { includeMetadataChanges: true },
+            snapshot => {
+                onMeta(Boolean(snapshot.metadata?.fromCache));
+                const data = snapshot.exists() ? (snapshot.data() as PlainDoc) : null;
+                const stand = JSON.stringify(data);
+                if (stand === letzterStand) {
+                    return;
+                }
+                letzterStand = stand;
+                onData(data);
+            },
             onError
         );
     }
 
     subscribeCollection(
         onData: (docs: { id: string; data: PlainDoc }[]) => void,
-        onError: (e: unknown) => void
+        onError: (e: unknown) => void,
+        onMeta: MetaCallback
     ): Unsubscribe {
+        let erster = true;
         return onSnapshot(
             collection(this.db, "uebungen", this.uebungId, STATUS_COLLECTION),
-            snapshot => onData(snapshot.docs.map(d => ({ id: d.id, data: d.data() as PlainDoc }))),
+            { includeMetadataChanges: true },
+            snapshot => {
+                onMeta(Boolean(snapshot.metadata?.fromCache));
+                const aenderungen = typeof snapshot.docChanges === "function" ? snapshot.docChanges().length : 1;
+                if (!erster && aenderungen === 0) {
+                    return;
+                }
+                erster = false;
+                onData(snapshot.docs.map(d => ({ id: d.id, data: d.data() as PlainDoc })));
+            },
             onError
         );
     }
@@ -130,14 +178,28 @@ class LocalBackend implements LiveStatusBackend {
         };
     }
 
-    subscribeDoc(docId: string, onData: (data: PlainDoc | null) => void): Unsubscribe {
-        return this.listen(() => onData(this.readAll()[docId] ?? null));
+    /** Der localStorage ist nie „aus dem Cache“ – den Netzzustand liefert der Browser. */
+    subscribeDoc(
+        docId: string,
+        onData: (data: PlainDoc | null) => void,
+        _onError: (e: unknown) => void,
+        onMeta: MetaCallback
+    ): Unsubscribe {
+        return this.listen(() => {
+            onMeta(false);
+            onData(this.readAll()[docId] ?? null);
+        });
     }
 
-    subscribeCollection(onData: (docs: { id: string; data: PlainDoc }[]) => void): Unsubscribe {
-        return this.listen(() =>
-            onData(Object.entries(this.readAll()).map(([id, data]) => ({ id, data })))
-        );
+    subscribeCollection(
+        onData: (docs: { id: string; data: PlainDoc }[]) => void,
+        _onError: (e: unknown) => void,
+        onMeta: MetaCallback
+    ): Unsubscribe {
+        return this.listen(() => {
+            onMeta(false);
+            onData(Object.entries(this.readAll()).map(([id, data]) => ({ id, data })));
+        });
     }
 }
 
@@ -155,11 +217,30 @@ function isLocalMockMode(): boolean {
 const PUBLISH_DEBOUNCE_MS = 400;
 
 /**
+ * Ein `setDoc` ohne Netz lehnt im Firestore-Web-SDK nicht ab, es wartet auf die
+ * Bestätigung des Servers. Bleibt sie so lange aus, gilt die Verbindung als weg.
+ */
+export const SCHREIB_TIMEOUT_MS = 6000;
+
+function browserMeldetOffline(): boolean {
+    return typeof navigator !== "undefined" && navigator.onLine === false;
+}
+
+/**
  * Live-Sync des Übungsstatus über `uebungen/{uebungId}/status`.
  *
  * Schreibvorgänge sind bewusst "fire and forget": Der lokale Cache bleibt die
- * Quelle für die Anzeige, damit die Übung bei Netzproblemen weiterläuft. Fehler
- * schlagen sich nur im Sync-Status nieder.
+ * Quelle für die Anzeige, damit die Übung bei Netzproblemen weiterläuft.
+ *
+ * Der Sync-Zustand hängt an der Bestätigung durch den Server, nicht am
+ * Anstoßen eines Schreibvorgangs (THW-Review offline-resilience P0-1):
+ *
+ * - `live`     – der Server hat bestätigt bzw. liefert frische Daten
+ * - `offline`  – Browser offline, Schreiben seit {@link SCHREIB_TIMEOUT_MS}
+ *                unbestätigt oder Snapshots nur aus dem Cache; Änderungen
+ *                liegen lokal und werden nachgereicht
+ * - `fehler`   – der Server lehnt ab (z. B. Regeln); wird **nicht** nachgereicht
+ * - `verbinde` – noch keine Antwort; `aus` – Sync deaktiviert
  */
 export class LiveStatusService {
     private backend: LiveStatusBackend | null = null;
@@ -169,19 +250,37 @@ export class LiveStatusService {
     private state: LiveSyncState = "aus";
     private stateListeners: ((state: LiveSyncState) => void)[] = [];
 
+    /** Schreibvorgänge, die angestoßen, aber vom Server noch nicht bestätigt sind. */
+    private unbestaetigt = 0;
+    /** Mindestens ein unbestätigter Schreibvorgang wartet länger als der Timeout. */
+    private haengt = false;
+    private browserOffline = false;
+    /** Abonnements, deren letzter Snapshot nur aus dem lokalen Cache kam. */
+    private ausCache = new Set<number>();
+    private fehler = false;
+    private kontakt = false;
+    private naechsteAboId = 0;
+    private onBrowserOnline = () => this.setBrowserOffline(false);
+    private onBrowserOffline = () => this.setBrowserOffline(true);
+
     constructor(db: Firestore | null, uebungId: string) {
         if (!featureFlags.isEnabled("enableLiveStatusSync") || !uebungId) {
             return;
         }
         if (isLocalMockMode()) {
             this.backend = new LocalBackend(uebungId);
-            this.state = "verbinde";
+        } else if (db) {
+            this.backend = new FirestoreBackend(db, uebungId);
+        }
+        if (!this.backend) {
             return;
         }
-        if (db) {
-            this.backend = new FirestoreBackend(db, uebungId);
-            this.state = "verbinde";
+        this.browserOffline = browserMeldetOffline();
+        if (typeof window !== "undefined" && typeof window.addEventListener === "function") {
+            window.addEventListener("online", this.onBrowserOnline);
+            window.addEventListener("offline", this.onBrowserOffline);
         }
+        this.state = this.berechneZustand();
     }
 
     public get enabled(): boolean {
@@ -192,12 +291,31 @@ export class LiveStatusService {
         return this.state;
     }
 
+    /** Anzahl der Dokumente, die noch nicht beim Server angekommen sind. */
+    public getOffeneAenderungen(): number {
+        return this.unbestaetigt + this.pendingWrites.size;
+    }
+
     public onStateChange(listener: (state: LiveSyncState) => void): void {
         this.stateListeners.push(listener);
         listener(this.state);
     }
 
-    private setState(state: LiveSyncState): void {
+    private berechneZustand(): LiveSyncState {
+        if (!this.backend) {
+            return "aus";
+        }
+        if (this.fehler) {
+            return "fehler";
+        }
+        if (this.browserOffline || this.haengt || this.ausCache.size > 0) {
+            return "offline";
+        }
+        return this.kontakt ? "live" : "verbinde";
+    }
+
+    private aktualisiereZustand(): void {
+        const state = this.berechneZustand();
         if (this.state === state) {
             return;
         }
@@ -205,9 +323,25 @@ export class LiveStatusService {
         this.stateListeners.forEach(l => l(state));
     }
 
+    private setBrowserOffline(offline: boolean): void {
+        this.browserOffline = offline;
+        this.aktualisiereZustand();
+        if (!offline && this.pendingWrites.size > 0) {
+            void this.flush();
+        }
+    }
+
     private handleError(error: unknown): void {
         console.warn("⚠️ Live-Sync des Übungsstatus nicht verfügbar", error);
-        this.setState("fehler");
+        this.fehler = true;
+        this.aktualisiereZustand();
+    }
+
+    /** Frische Antwort vom Server (bzw. vom Mock): ein früherer Fehler ist vorbei. */
+    private bestaetigt(): void {
+        this.fehler = false;
+        this.kontakt = true;
+        this.aktualisiereZustand();
     }
 
     // --- Schreiben ------------------------------------------------------
@@ -226,11 +360,41 @@ export class LiveStatusService {
         }, PUBLISH_DEBOUNCE_MS);
     }
 
-    /** Schreibt alle anstehenden Dokumente sofort. */
-    public async flush(): Promise<void> {
+    private async schreibe(backend: LiveStatusBackend, docId: string, data: PlainDoc): Promise<boolean> {
+        this.unbestaetigt++;
+        const timer = setTimeout(() => {
+            this.haengt = true;
+            this.aktualisiereZustand();
+        }, SCHREIB_TIMEOUT_MS);
+        try {
+            await backend.write(docId, data);
+            this.bestaetigt();
+            return true;
+        } catch (error) {
+            this.handleError(error);
+            return false;
+        } finally {
+            clearTimeout(timer);
+            this.unbestaetigt--;
+            if (this.unbestaetigt === 0) {
+                this.haengt = false;
+            }
+            this.aktualisiereZustand();
+        }
+    }
+
+    /**
+     * Schreibt alle anstehenden Dokumente sofort.
+     *
+     * @param timeoutMs Wartet höchstens so lange auf die Bestätigung des Servers.
+     * @returns `true`, wenn alle Dokumente bestätigt wurden; `false` bei Fehler
+     *          oder wenn die Bestätigung bis zum Timeout ausblieb. Unbestätigte
+     *          Schreibvorgänge laufen im Hintergrund weiter.
+     */
+    public async flush(timeoutMs?: number): Promise<boolean> {
         const backend = this.backend;
         if (!backend) {
-            return;
+            return true;
         }
         if (this.flushTimer !== null) {
             clearTimeout(this.flushTimer);
@@ -239,13 +403,19 @@ export class LiveStatusService {
         const writes = Array.from(this.pendingWrites.entries());
         this.pendingWrites.clear();
 
-        for (const [docId, data] of writes) {
-            try {
-                await backend.write(docId, data);
-                this.setState("live");
-            } catch (error) {
-                this.handleError(error);
-            }
+        const alle = Promise.all(writes.map(([docId, data]) => this.schreibe(backend, docId, data)))
+            .then(ergebnisse => ergebnisse.every(Boolean));
+        if (timeoutMs === undefined) {
+            return alle;
+        }
+        let timer: ReturnType<typeof setTimeout> | undefined;
+        const abgelaufen = new Promise<boolean>(resolve => {
+            timer = setTimeout(() => resolve(false), timeoutMs);
+        });
+        try {
+            return await Promise.race([alle, abgelaufen]);
+        } finally {
+            clearTimeout(timer);
         }
     }
 
@@ -263,20 +433,36 @@ export class LiveStatusService {
 
     // --- Lesen ----------------------------------------------------------
 
-    public subscribeLeitungPublic(onDoc: (liveDoc: LeitungPublicLiveDoc | null) => void): void {
+    /** Meta-Rückruf je Abonnement: merkt sich, ob es gerade nur Cache-Daten sieht. */
+    private metaFuer(): MetaCallback {
+        const id = this.naechsteAboId++;
+        return ausCache => {
+            if (ausCache) {
+                this.ausCache.add(id);
+                this.aktualisiereZustand();
+                return;
+            }
+            this.ausCache.delete(id);
+            this.bestaetigt();
+        };
+    }
+
+    private abonniereDoc<T>(docId: string, onDoc: (liveDoc: T | null) => void): void {
         if (!this.backend) {
             return;
         }
         this.unsubscribers.push(
             this.backend.subscribeDoc(
-                LEITUNG_PUBLIC_DOC_ID,
-                data => {
-                    this.setState("live");
-                    onDoc(data ? (data as unknown as LeitungPublicLiveDoc) : null);
-                },
-                error => this.handleError(error)
+                docId,
+                data => onDoc(data ? (data as unknown as T) : null),
+                error => this.handleError(error),
+                this.metaFuer()
             )
         );
+    }
+
+    public subscribeLeitungPublic(onDoc: (liveDoc: LeitungPublicLiveDoc | null) => void): void {
+        this.abonniereDoc(LEITUNG_PUBLIC_DOC_ID, onDoc);
     }
 
     /** Eigenes Teilnehmer-Dokument – damit ein Gerätewechsel den Verlauf mitbringt. */
@@ -284,35 +470,11 @@ export class LiveStatusService {
         teilnehmerId: string,
         onDoc: (liveDoc: TeilnehmerLiveDoc | null) => void
     ): void {
-        if (!this.backend) {
-            return;
-        }
-        this.unsubscribers.push(
-            this.backend.subscribeDoc(
-                teilnehmerDocId(teilnehmerId),
-                data => {
-                    this.setState("live");
-                    onDoc(data ? (data as unknown as TeilnehmerLiveDoc) : null);
-                },
-                error => this.handleError(error)
-            )
-        );
+        this.abonniereDoc(teilnehmerDocId(teilnehmerId), onDoc);
     }
 
     public subscribeLeitungInternal(onDoc: (liveDoc: LeitungLiveDoc | null) => void): void {
-        if (!this.backend) {
-            return;
-        }
-        this.unsubscribers.push(
-            this.backend.subscribeDoc(
-                LEITUNG_DOC_ID,
-                data => {
-                    this.setState("live");
-                    onDoc(data ? (data as unknown as LeitungLiveDoc) : null);
-                },
-                error => this.handleError(error)
-            )
-        );
+        this.abonniereDoc(LEITUNG_DOC_ID, onDoc);
     }
 
     /**
@@ -326,7 +488,6 @@ export class LiveStatusService {
         this.unsubscribers.push(
             this.backend.subscribeCollection(
                 docs => {
-                    this.setState("live");
                     onDocs(
                         docs
                             .filter(d => d.id.startsWith(TEILNEHMER_DOC_PREFIX))
@@ -334,7 +495,8 @@ export class LiveStatusService {
                             .filter(d => typeof d.teilnehmer === "string" && d.teilnehmer.length > 0)
                     );
                 },
-                error => this.handleError(error)
+                error => this.handleError(error),
+                this.metaFuer()
             )
         );
     }
@@ -353,5 +515,9 @@ export class LiveStatusService {
             this.flushTimer = null;
         }
         this.pendingWrites.clear();
+        if (typeof window !== "undefined" && typeof window.removeEventListener === "function") {
+            window.removeEventListener("online", this.onBrowserOnline);
+            window.removeEventListener("offline", this.onBrowserOffline);
+        }
     }
 }

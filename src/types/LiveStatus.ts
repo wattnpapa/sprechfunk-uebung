@@ -40,6 +40,8 @@ export interface TeilnehmerLiveDoc {
 export interface LeitungBestaetigung {
     abgesetztUm?: string;
     geaendertUm?: string;
+    /** Zeit von Hand eingetragen (Papier-Nachtrag), nicht beim Funken geklickt. */
+    nachgetragen?: boolean;
 }
 
 /** Bestätigungen der Übungsleitung – für Teilnehmer sichtbar. */
@@ -48,6 +50,13 @@ export interface LeitungPublicLiveDoc {
     lastUpdated: string;
     /** Key = `${sender}__${nachrichtenNr}`. */
     nachrichten: Record<string, LeitungBestaetigung>;
+    /**
+     * Verbindliche X-Zeit-Basis ("HH:MM"), von der Übungsleitung gesetzt. Die
+     * Teilnehmer übernehmen sie; eine eigene Basis ist nur bewusste Abweichung.
+     */
+    xZeitBasis?: string;
+    /** Zeitpunkt der letzten Änderung an `xZeitBasis` – auch beim Löschen. */
+    xZeitBasisGeaendertUm?: string;
 }
 
 export interface LeitungNotiz {
@@ -64,4 +73,13 @@ export interface LeitungLiveDoc {
     nachrichtenNotizen: Record<string, LeitungNotiz>;
 }
 
-export type LiveSyncState = "aus" | "verbinde" | "live" | "fehler";
+/**
+ * Zustand des Live-Sync aus Sicht dieses Geräts (siehe LiveStatusService):
+ *
+ * - `aus`      – Sync deaktiviert, es zählt nur dieses Gerät
+ * - `verbinde` – noch keine Antwort vom Server
+ * - `live`     – der Server hat die letzten Änderungen bestätigt
+ * - `offline`  – keine Verbindung; Änderungen liegen lokal und werden nachgereicht
+ * - `fehler`   – der Server lehnt ab; Änderungen werden **nicht** übertragen
+ */
+export type LiveSyncState = "aus" | "verbinde" | "live" | "offline" | "fehler";

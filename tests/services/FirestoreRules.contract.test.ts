@@ -110,12 +110,16 @@ describe("firestore.rules Feldvertrag", () => {
             uebungId: "u1",
             lastUpdated: jetzt,
             teilnehmer: { "Heros Jever 21/10": { angemeldetUm: jetzt, geaendertUm: jetzt } },
+            // Die verbindliche X-Zeit-Basis der Leitung geht über leitung-public.
+            xZeitBasis: "09:00",
+            xZeitBasisGeaendertUm: jetzt,
             nachrichten: {
                 "Heros Jever 21/10__1": {
                     abgesetztUm: jetzt,
                     statusGeaendertUm: jetzt,
                     notiz: "n",
-                    notizGeaendertUm: jetzt
+                    notizGeaendertUm: jetzt,
+                    nachgetragen: true
                 }
             }
         };

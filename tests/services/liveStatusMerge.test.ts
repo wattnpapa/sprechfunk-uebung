@@ -8,7 +8,8 @@ import {
     mergeTeilnehmerLiveDoc,
     toLeitungLiveDoc,
     toLeitungPublicLiveDoc,
-    toTeilnehmerLiveDoc
+    toTeilnehmerLiveDoc,
+    uebernehmeLeitungsBasis
 } from "../../src/services/liveStatusMerge";
 import type { TeilnehmerStorage, UebungsleitungStorage } from "../../src/types/Storage";
 import type { TeilnehmerLiveDoc } from "../../src/types/LiveStatus";
@@ -251,5 +252,115 @@ describe("buildTeilnehmerFortschritt", () => {
         expect(result["A"]?.online).toBe(true);
         expect(result["A"]?.gemeldet).toBe(2);
         expect(result["A"]?.letzteMeldungUm).toBe(SPAET);
+    });
+});
+
+describe("Gemeinsame X-Zeit-Basis", () => {
+    it("veröffentlicht die Basis der Leitung samt Zeitstempel und Nachtrag-Kennung", () => {
+        const doc = toLeitungPublicLiveDoc(leitungStorage({
+            xZeitBasis: "19:30",
+            xZeitBasisGeaendertUm: FRUEH,
+            nachrichten: { "A__1": { abgesetztUm: FRUEH, statusGeaendertUm: FRUEH, nachgetragen: true } }
+        }));
+
+        expect(doc.xZeitBasis).toBe("19:30");
+        expect(doc.xZeitBasisGeaendertUm).toBe(FRUEH);
+        expect(doc.nachrichten["A__1"]?.nachgetragen).toBe(true);
+    });
+
+    it("führt die Basis zwischen Leitungs-Arbeitsplätzen zusammen (jüngste gilt)", () => {
+        const local = leitungStorage({ xZeitBasis: "19:00", xZeitBasisGeaendertUm: FRUEH });
+
+        const neuer = mergeLeitungPublicLiveDoc(local, {
+            version: 1, lastUpdated: SPAET, nachrichten: {}, xZeitBasis: "19:30", xZeitBasisGeaendertUm: SPAET
+        });
+        expect(neuer.changed).toBe(true);
+        expect(neuer.merged.xZeitBasis).toBe("19:30");
+
+        const aelter = mergeLeitungPublicLiveDoc(neuer.merged, {
+            version: 1, lastUpdated: FRUEH, nachrichten: {}, xZeitBasis: "18:00", xZeitBasisGeaendertUm: FRUEH
+        });
+        expect(aelter.changed).toBe(false);
+
+        const geloescht = mergeLeitungPublicLiveDoc(neuer.merged, {
+            version: 1, lastUpdated: SPAET, nachrichten: {}, xZeitBasisGeaendertUm: "2026-07-26T10:06:00.000Z"
+        });
+        expect(geloescht.merged.xZeitBasis).toBeUndefined();
+    });
+
+    it("übernimmt die Nachtrag-Kennung einer Bestätigung", () => {
+        const { merged } = mergeLeitungPublicLiveDoc(leitungStorage(), {
+            version: 1,
+            lastUpdated: SPAET,
+            nachrichten: { "A__1": { abgesetztUm: FRUEH, geaendertUm: SPAET, nachgetragen: true } }
+        });
+        expect(merged.nachrichten["A__1"]?.nachgetragen).toBe(true);
+    });
+
+    it("übernimmt beim Teilnehmer die verbindliche Basis der Leitung", () => {
+        const local = teilnehmerStorage({ xZeitBasis: "19:18", xZeitBasisGeaendertUm: FRUEH, xZeitBasisQuelle: "eigen" });
+
+        const { merged, changed } = uebernehmeLeitungsBasis(local, { xZeitBasis: "19:30", xZeitBasisGeaendertUm: SPAET });
+
+        expect(changed).toBe(true);
+        expect(merged.xZeitBasis).toBe("19:30");
+        expect(merged.xZeitBasisQuelle).toBe("leitung");
+        expect(merged.xZeitBasisGeaendertUm).toBe(SPAET);
+        // Unverändert bei erneutem Empfang derselben Vorgabe.
+        expect(uebernehmeLeitungsBasis(merged, { xZeitBasis: "19:30", xZeitBasisGeaendertUm: SPAET }).changed).toBe(false);
+    });
+
+    it("lässt eine danach bewusst gesetzte eigene Basis stehen", () => {
+        const local = teilnehmerStorage({
+            xZeitBasis: "19:40",
+            xZeitBasisGeaendertUm: "2026-07-26T10:10:00.000Z",
+            xZeitBasisQuelle: "eigen"
+        });
+
+        const { merged, changed } = uebernehmeLeitungsBasis(local, { xZeitBasis: "19:30", xZeitBasisGeaendertUm: SPAET });
+
+        expect(changed).toBe(false);
+        expect(merged.xZeitBasis).toBe("19:40");
+    });
+
+    it("löscht beim Zurücknehmen der Vorgabe nur eine übernommene Basis", () => {
+        const uebernommen = teilnehmerStorage({ xZeitBasis: "19:30", xZeitBasisGeaendertUm: FRUEH, xZeitBasisQuelle: "leitung" });
+        const eigen = teilnehmerStorage({ xZeitBasis: "19:18", xZeitBasisGeaendertUm: FRUEH, xZeitBasisQuelle: "eigen" });
+        const remote = { xZeitBasisGeaendertUm: SPAET };
+
+        const a = uebernehmeLeitungsBasis(uebernommen, remote);
+        expect(a.changed).toBe(true);
+        expect(a.merged.xZeitBasis).toBeUndefined();
+        expect(a.merged.xZeitBasisQuelle).toBeUndefined();
+
+        const b = uebernehmeLeitungsBasis(eigen, remote);
+        expect(b.changed).toBe(false);
+        expect(b.merged.xZeitBasis).toBe("19:18");
+    });
+});
+
+describe("buildTeilnehmerFortschritt – beide Quellen", () => {
+    it("zählt Teilnehmer-Meldungen und Bestätigungen der Leitung getrennt und vereint", () => {
+        const result = buildTeilnehmerFortschritt(["A", "B"], { A: 4, B: 2 }, [
+            {
+                version: 1,
+                teilnehmerId: "9F3K",
+                teilnehmer: "A",
+                lastUpdated: SPAET,
+                nachrichten: {
+                    "1": { uebertragen: true, uebertragenUm: FRUEH },
+                    "2": { uebertragen: true, uebertragenUm: FRUEH }
+                }
+            }
+        ], {
+            "A__2": { abgesetztUm: FRUEH },
+            "A__3": { abgesetztUm: SPAET },
+            "B__1": { abgesetztUm: FRUEH },
+            "B__2": { statusGeaendertUm: SPAET }
+        });
+
+        expect(result["A"]).toMatchObject({ gemeldet: 2, bestaetigt: 2, erledigt: 3, letzteMeldungUm: SPAET, zuletztGesehenUm: SPAET });
+        // Ohne Gerät, aber von der Leitung abgehakt: trotzdem Fortschritt.
+        expect(result["B"]).toMatchObject({ online: false, gemeldet: 0, bestaetigt: 1, erledigt: 1 });
     });
 });

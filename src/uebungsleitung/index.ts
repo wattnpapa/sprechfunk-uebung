@@ -3,7 +3,7 @@ import { UebungsleitungView } from "./UebungsleitungView";
 import { FirebaseService } from "../services/FirebaseService";
 import { store } from "../state/store";
 import { router } from "../core/router";
-import { TeilnehmerStatus, UebungsleitungStorage } from "../types/Storage";
+import { NachrichtenStatus, TeilnehmerStatus, UebungsleitungStorage } from "../types/Storage";
 import type { Firestore } from "firebase/firestore";
 import {FunkUebung} from "../models/FunkUebung";
 import { uiFeedback } from "../core/UiFeedback";
@@ -25,6 +25,22 @@ import {
 import type { TeilnehmerLiveDoc } from "../types/LiveStatus";
 import type { NachrichtArt } from "../types/Nachricht";
 import { berechneSollFortschritt, fruehesteBasis, parseHHMMtoMs } from "../utils/xzeit";
+import {
+    anmeldeNachrichtKey,
+    anmeldeZustand,
+    berechneFaelligkeit,
+    faelligFensterMs,
+    formatUhrzeit,
+    lageJeTeilnehmer,
+    naechsteOffene,
+    schaetzeEnde,
+    sortiereNachrichtenplan,
+    statusKey,
+    uhrzeitZuIso,
+    vergibPlanNummern,
+    type AnmeldeZustand,
+    type Faelligkeit
+} from "./lagebild";
 
 interface FlattenedNachricht {
     nr: number;
@@ -34,12 +50,15 @@ interface FlattenedNachricht {
     xZeitSlot?: number;
     art?: NachrichtArt;
     szenarioNr?: number;
+    planNr?: number;
 }
 
 interface SentNachricht {
     sender: string;
     empfaenger: string[];
     ts: number;
+    /** Zeit von Hand nachgetragen – zählt nicht fürs Tempo. */
+    nachgetragen?: boolean;
 }
 
 interface TimelineEvent {
@@ -48,13 +67,22 @@ interface TimelineEvent {
     nr: number;
 }
 
+/**
+ * Nach „als abgesetzt markieren“ bleibt die Rücknahme dieser Zeile so lange
+ * gesperrt – ein Doppeltipp darf die Markierung nicht still wieder aufheben.
+ */
+export const RUECKNAHME_SPERRE_MS = 1500;
+
+/** Wartezeit auf die Serverbestätigung beim Zurücksetzen für alle. */
+const RESET_BESTAETIGUNG_MS = 10000;
+
 export class UebungsleitungController {
     private view: UebungsleitungView;
     private firebaseService: FirebaseService;
     private uebungId: string | null = null;
     private uebung: FunkUebung | null = null;
     private storage: UebungsleitungStorage | null = null;
-    
+
     // State for filters
     private hideAbgesetzt = false;
     private senderFilter = "";
@@ -73,6 +101,10 @@ export class UebungsleitungController {
     private teilnehmerLiveDocs: TeilnehmerLiveDoc[] = [];
     private disposeListener: (() => void) | null = null;
     private cockpitInterval: ReturnType<typeof setInterval> | null = null;
+    /** Zeilen, deren Rücknahme nach dem Markieren kurz gesperrt ist (Key → bis). */
+    private ruecknahmeGesperrtBis = new Map<string, number>();
+    /** Minute des letzten Plan-Renderns – die Fälligkeit ändert sich minütlich. */
+    private letzteFaelligkeitsMinute = -1;
 
     constructor(db: Firestore) {
         this.view = new UebungsleitungView();
@@ -85,14 +117,25 @@ export class UebungsleitungController {
         this.uebungId = params[0] ?? null;
 
         if (!this.uebungId) {
-            // Error handling via View? Or simple alert/console for now.
-            console.error("Keine Übungs-ID");
+            this.view.showLadefehler("Im Link fehlt die Übungs-ID. Öffne die Übungsleitung über den Link aus dem Generator oder über die Liste der gespeicherten Übungen.");
             return;
         }
 
-        this.uebung = await this.firebaseService.getUebung(this.uebungId);
+        try {
+            this.uebung = await this.firebaseService.getUebung(this.uebungId);
+        } catch (error) {
+            console.error("Übung konnte nicht geladen werden", error);
+            this.view.showLadefehler(
+                "Die Übung konnte nicht geladen werden – vermutlich gibt es gerade keine Verbindung. Prüfe das Netz und lade die Seite neu. Der ausgedruckte Nachrichtenplan bleibt die Rückfallebene.",
+                this.uebungId
+            );
+            return;
+        }
         if (!this.uebung) {
-            console.error("Übung nicht gefunden");
+            this.view.showLadefehler(
+                "Übung nicht gefunden. Prüfe den Link – vielleicht ist er abgeschnitten, vertippt oder die Übung wurde gelöscht.",
+                this.uebungId
+            );
             return;
         }
 
@@ -114,6 +157,7 @@ export class UebungsleitungController {
 
         this.view.bindTeilnehmerEvents({
             onAnmelden: name => this.markAngemeldet(name),
+            onAnmeldungZuruecknehmen: name => this.anmeldungZuruecknehmen(name),
             onLoesungswort: (name, val) => this.updateLoesungswort(name, val),
             onStaerke: (name, idx, val) => this.updateStaerke(name, idx, val),
             onNotiz: (name, val) => this.updateNotiz(name, val),
@@ -124,23 +168,33 @@ export class UebungsleitungController {
         this.view.bindNachrichtenEvents({
             onAbgesetzt: (sender, nr) => this.markNachrichtAbgesetzt(sender, nr),
             onReset: (sender, nr) => this.resetNachricht(sender, nr),
+            onZeitNachtragen: (sender, nr, hhmm) => this.zeitNachtragen(sender, nr, hhmm),
             onNotiz: (sender, nr, val) => this.updateNachrichtNotiz(sender, nr, val),
             onFilterSender: val => {
-                this.senderFilter = val; this.renderNachrichten(); 
+                this.senderFilter = val; this.renderNachrichten();
             },
             onFilterEmpfaenger: val => {
-                this.empfaengerFilter = val; this.renderNachrichten(); 
+                this.empfaengerFilter = val; this.renderNachrichten();
             },
-            onToggleHide: val => {
-                this.hideAbgesetzt = val; this.renderNachrichten(); 
-            },
+            onToggleHide: val => this.setHideAbgesetzt(val),
             onFilterText: val => {
                 this.textFilter = val; this.debouncedRenderNachrichten();
             }
         });
 
+        this.view.bindLageEvents({
+            onGemeldeteBestaetigen: () => this.gemeldeteBestaetigen(),
+            onToggleHide: val => this.setHideAbgesetzt(val)
+        });
+
         this.startLiveSync();
+        this.view.setResetModus(Boolean(this.liveStatus?.enabled));
         this.initCockpit();
+    }
+
+    private setHideAbgesetzt(val: boolean): void {
+        this.hideAbgesetzt = val;
+        this.renderNachrichten();
     }
 
     /**
@@ -164,10 +218,15 @@ export class UebungsleitungController {
                 const value = `${hh}:${mm}`;
                 this.view.setCockpitBasisInputValue(value);
                 this.setCockpitBasis(value);
-            }
+            },
+            value => {
+                this.view.setCockpitBasisInputValue(value);
+                this.setCockpitBasis(value);
+            },
+            () => this.view.scrollZuPlanZustand("ueberfaellig")
         );
         this.updateCockpit();
-        this.cockpitInterval = setInterval(() => this.updateCockpit(), 1000);
+        this.cockpitInterval = setInterval(() => this.tickCockpit(), 1000);
         // Eigener Aufräum-Hook: der Listener aus startLiveSync fehlt, wenn der
         // Live-Sync deaktiviert ist – der Ticker darf trotzdem nicht weiterlaufen.
         window.addEventListener("hashchange", () => {
@@ -178,6 +237,19 @@ export class UebungsleitungController {
         }, { once: true });
     }
 
+    private tickCockpit(): void {
+        this.updateCockpit();
+        // Überfällig / jetzt fällig / später ändert sich nur minütlich.
+        const minute = Math.floor(Date.now() / 60000);
+        if (minute !== this.letzteFaelligkeitsMinute) {
+            this.renderNachrichten();
+        }
+    }
+
+    /**
+     * Setzt die verbindliche X-Zeit-Basis. Sie geht über `leitung-public` an
+     * alle Leitungs-Arbeitsplätze und Teilnehmer.
+     */
     private setCockpitBasis(value: string): void {
         if (!this.storage) {
             return;
@@ -187,20 +259,36 @@ export class UebungsleitungController {
         } else {
             delete this.storage.xZeitBasis;
         }
+        this.storage.xZeitBasisGeaendertUm = new Date().toISOString();
         this.save();
         this.updateCockpit();
+        this.renderNachrichten();
     }
 
     /**
-     * Eigene Basis der Leitung; ohne sie die früheste Basis, die ein
-     * Teilnehmer per Live-Meldung gesetzt hat.
+     * Nur die Basis der Leitung ist verbindlich. Basen einzelner Rollenspieler
+     * werden nie stillschweigend übernommen (THW-Review workflow F2).
      */
-    private effektiveXZeitBasis(): { basis: string; quelle: "leitung" | "teilnehmer" } | null {
-        if (this.storage?.xZeitBasis) {
-            return { basis: this.storage.xZeitBasis, quelle: "leitung" };
+    private effektiveXZeitBasis(): string | null {
+        return this.storage?.xZeitBasis || null;
+    }
+
+    /** Vorschlag für die Basis: geplanter Beginn aus dem Generator, sonst früheste Teilnehmer-Basis. */
+    private basisVorschlag(): { basis: string; quelle: "plan" | "teilnehmer" } | null {
+        const beginn = this.uebung?.fuehrungsstelle?.beginn;
+        if (beginn && parseHHMMtoMs(beginn) !== null) {
+            return { basis: beginn, quelle: "plan" };
         }
         const abgeleitet = fruehesteBasis(this.teilnehmerLiveDocs.map(doc => doc.xZeitBasis));
         return abgeleitet ? { basis: abgeleitet, quelle: "teilnehmer" } : null;
+    }
+
+    /** Rollen, die mit einer anderen Basis laufen als der verbindlichen. */
+    private abweichendeBasen(basis: string | null): string[] {
+        return this.teilnehmerLiveDocs
+            .filter(doc => doc.xZeitBasis && doc.xZeitBasis !== basis)
+            .map(doc => `${doc.teilnehmer} (${doc.xZeitBasis})`)
+            .sort();
     }
 
     private updateCockpit(): void {
@@ -217,25 +305,29 @@ export class UebungsleitungController {
         let ist = 0;
         Object.entries(this.uebung.nachrichten ?? {}).forEach(([sender, msgs]) => {
             msgs.forEach(msg => {
-                if (effektiv[`${sender}__${msg.id}`]?.erledigtUm) {
+                if (effektiv[statusKey(sender, msg.id)]?.erledigtUm) {
                     ist++;
                 }
             });
         });
 
-        const basisInfo = this.effektiveXZeitBasis();
-        const basisMs = basisInfo ? parseHHMMtoMs(basisInfo.basis, now) : null;
+        const basis = this.effektiveXZeitBasis();
+        const basisMs = basis ? parseHHMMtoMs(basis, now) : null;
         const laufzeitMs = basisMs !== null ? now.getTime() - basisMs : null;
         const soll = basisMs !== null
             ? berechneSollFortschritt(alleNachrichten, basisMs, now.getTime())
             : null;
 
-        let basisHinweis = "Noch keine X-Zeit-Basis – „Jetzt starten“ oder auf Teilnehmer warten.";
-        if (basisInfo?.quelle === "leitung") {
-            basisHinweis = `Basis ${basisInfo.basis} von der Übungsleitung gesetzt.`;
-        } else if (basisInfo?.quelle === "teilnehmer") {
-            basisHinweis = `Basis ${basisInfo.basis} aus Teilnehmer-Meldung übernommen.`;
+        const vorschlag = this.basisVorschlag();
+        let basisHinweis = "Noch keine verbindliche X-Zeit-Basis – setze sie hier, die Teilnehmer übernehmen sie.";
+        if (basis) {
+            basisHinweis = `Basis ${basis} von der Übungsleitung gesetzt – gilt für alle Teilnehmer.`;
+        } else if (vorschlag?.quelle === "plan") {
+            basisHinweis = `Geplanter Übungsbeginn laut Generator: ${vorschlag.basis}. Erst mit „Übernehmen“ verbindlich.`;
+        } else if (vorschlag?.quelle === "teilnehmer") {
+            basisHinweis = `Ein Rollenspieler hat selbst ${vorschlag.basis} gesetzt – nicht übernommen.`;
         }
+        const vorschlagAnbieten = vorschlag && vorschlag.basis !== basis ? vorschlag.basis : null;
 
         this.view.updateCockpit({
             uhrzeit,
@@ -243,7 +335,9 @@ export class UebungsleitungController {
             ist,
             gesamt: alleNachrichten.length,
             soll,
-            basisHinweis
+            basisHinweis,
+            vorschlag: vorschlagAnbieten,
+            abweichungen: this.abweichendeBasen(basis)
         });
     }
 
@@ -263,7 +357,7 @@ export class UebungsleitungController {
             return;
         }
 
-        live.onStateChange(state => this.view.updateLiveSyncState(state));
+        live.onStateChange(state => this.view.updateLiveSyncState(state, live.getOffeneAenderungen()));
 
         live.subscribeAlleTeilnehmer(docs => {
             this.teilnehmerLiveDocs = docs;
@@ -275,12 +369,18 @@ export class UebungsleitungController {
             if (!remote || !this.storage) {
                 return;
             }
+            const vorher = this.storage.xZeitBasis;
             const { merged, changed } = mergeLeitungPublicLiveDoc(this.storage, remote);
             if (!changed) {
                 return;
             }
             this.storage = merged;
             saveUebungsleitungStorage(this.storage);
+            if (this.storage.xZeitBasis !== vorher) {
+                this.view.setCockpitBasisInputValue(this.storage.xZeitBasis ?? "");
+                this.updateCockpit();
+            }
+            this.renderTeilnehmer();
             this.renderNachrichten();
         });
 
@@ -337,12 +437,13 @@ export class UebungsleitungController {
             this.uebung,
             this.storage.teilnehmer,
             this.showStaerkeDetails,
-            this.buildFortschritt()
+            this.buildFortschritt(),
+            { anmeldung: this.buildAnmeldungen() }
         );
         restoreFieldFocus(focusSnapshot);
     }
 
-    /** Fortschritt je Teilnehmer aus den Live-Meldungen – Basis für Nachzügler-Erkennung. */
+    /** Fortschritt je Teilnehmer aus Live-Meldungen und Bestätigungen der Leitung. */
     private buildFortschritt(): Record<string, TeilnehmerFortschritt> {
         if (!this.uebung) {
             return {};
@@ -355,8 +456,22 @@ export class UebungsleitungController {
         return buildTeilnehmerFortschritt(
             this.uebung.teilnehmerListe ?? [],
             nachrichtenProTeilnehmer,
-            this.teilnehmerLiveDocs
+            this.teilnehmerLiveDocs,
+            this.storage?.nachrichten ?? {}
         );
+    }
+
+    /** Anmeldung je Teilnehmer – aus Tabelle, Anmelde-Funkspruch oder Selbstmeldung. */
+    private buildAnmeldungen(): Record<string, AnmeldeZustand> {
+        if (!this.uebung || !this.storage) {
+            return {};
+        }
+        const effektiv = this.buildEffektivenStatus();
+        return (this.uebung.teilnehmerListe ?? []).reduce<Record<string, AnmeldeZustand>>((acc, name) => {
+            const key = anmeldeNachrichtKey(this.uebung as FunkUebung, name);
+            acc[name] = anmeldeZustand(this.storage?.teilnehmer[name], key ? effektiv[key] : undefined);
+            return acc;
+        }, {});
     }
 
     /**
@@ -367,18 +482,13 @@ export class UebungsleitungController {
         return buildEffektiveNachrichtenStatus(this.storage?.nachrichten ?? {}, this.teilnehmerLiveDocs);
     }
 
-    private renderNachrichten() {
-        if (!this.uebung || !this.storage) {
-            return;
+    /** Alle Nachrichten als Plan: stabil sortiert und fortlaufend nummeriert. */
+    private buildPlan(): FlattenedNachricht[] {
+        if (!this.uebung) {
+            return [];
         }
-
-        // Die Tabelle wird komplett neu gebaut – Fokus und Cursor eines gerade
-        // bearbeiteten Feldes (Notiz, Suchfeld) müssen das überleben.
-        const focusSnapshot = captureFieldFocus();
-
-        // Build flat list
         const nachrichten: FlattenedNachricht[] = [];
-        Object.entries(this.uebung.nachrichten).forEach(([sender, msgs]) => {
+        Object.entries(this.uebung.nachrichten ?? {}).forEach(([sender, msgs]) => {
             msgs.forEach(msg => {
                 nachrichten.push({
                     nr: msg.id,
@@ -395,21 +505,68 @@ export class UebungsleitungController {
                 });
             });
         });
-        // Szenario-Übungen tragen mit szenarioNr eine globale Erzählreihenfolge;
-        // ohne sie gilt wie bisher die Rundenlogik über die Nachrichtennummern.
-        nachrichten.sort((a, b) => (a.szenarioNr ?? a.nr) - (b.szenarioNr ?? b.nr));
+        return vergibPlanNummern(sortiereNachrichtenplan(nachrichten));
+    }
 
-        const storage = this.storage;
-        if (!storage) {
+    /** Fälligkeit je offener Zeile – nur im X-Zeit-Modus mit verbindlicher Basis. */
+    private buildFaelligkeit(
+        nachrichten: FlattenedNachricht[],
+        effektiv: Record<string, EffektiverNachrichtenStatus>,
+        now: Date
+    ): Record<string, Faelligkeit> {
+        const basis = this.effektiveXZeitBasis();
+        if (this.uebung?.spielModus !== "xZeit" || !basis) {
+            return {};
+        }
+        const basisMs = parseHHMMtoMs(basis, now);
+        if (basisMs === null) {
+            return {};
+        }
+        const fenster = faelligFensterMs(this.uebung.xZeitIntervallMinuten);
+        return nachrichten.reduce<Record<string, Faelligkeit>>((acc, n) => {
+            const key = statusKey(n.sender, n.nr);
+            if (n.xZeitSlot === undefined || effektiv[key]?.erledigtUm) {
+                return acc;
+            }
+            acc[key] = berechneFaelligkeit(n.xZeitSlot, basisMs, now.getTime(), fenster);
+            return acc;
+        }, {});
+    }
+
+    /** Soll-Uhrzeit je Zeile, sobald eine verbindliche Basis gesetzt ist. */
+    private buildSollUhrzeiten(nachrichten: FlattenedNachricht[], now: Date): Record<string, string> {
+        const basis = this.effektiveXZeitBasis();
+        const basisMs = basis ? parseHHMMtoMs(basis, now) : null;
+        if (this.uebung?.spielModus !== "xZeit" || basisMs === null) {
+            return {};
+        }
+        return nachrichten.reduce<Record<string, string>>((acc, n) => {
+            if (n.xZeitSlot !== undefined) {
+                acc[statusKey(n.sender, n.nr)] = formatUhrzeit(basisMs + n.xZeitSlot * 60000);
+            }
+            return acc;
+        }, {});
+    }
+
+    private renderNachrichten() {
+        if (!this.uebung || !this.storage) {
             return;
         }
+
+        // Die Tabelle wird komplett neu gebaut – Fokus und Cursor eines gerade
+        // bearbeiteten Feldes (Notiz, Suchfeld) müssen das überleben.
+        const focusSnapshot = captureFieldFocus();
+        const now = new Date();
+        this.letzteFaelligkeitsMinute = Math.floor(now.getTime() / 60000);
+
+        const nachrichten = this.buildPlan();
 
         // Fortschritt zählt jede Nachricht, die Teilnehmer oder Leitung markiert hat.
         const effektiv = this.buildEffektivenStatus();
         let done = 0;
         let nurGemeldet = 0;
         nachrichten.forEach(n => {
-            const status = effektiv[`${n.sender}__${n.nr}`];
+            const status = effektiv[statusKey(n.sender, n.nr)];
             if (!status?.erledigtUm) {
                 return;
             }
@@ -429,13 +586,43 @@ export class UebungsleitungController {
             this.calculateHeatmapLabel(heatmapBins)
         );
 
+        const faelligkeit = this.buildFaelligkeit(nachrichten, effektiv, now);
+        const nowMs = now.getTime();
+        const gesperrt = new Set<string>();
+        this.ruecknahmeGesperrtBis.forEach((bis, key) => {
+            if (bis > nowMs) {
+                gesperrt.add(key);
+            } else {
+                this.ruecknahmeGesperrtBis.delete(key);
+            }
+        });
+
         this.view.renderNachrichtenListe({
             nachrichten,
             nachrichtenStatus: effektiv,
             hideAbgesetzt: this.hideAbgesetzt,
             senderFilter: this.senderFilter,
             empfaengerFilter: this.empfaengerFilter,
-            textFilter: this.textFilter
+            textFilter: this.textFilter,
+            faelligkeit,
+            sollUhrzeit: this.buildSollUhrzeiten(nachrichten, now),
+            ruecknahmeGesperrt: gesperrt
+        });
+        this.view.renderLage({
+            teilnehmer: lageJeTeilnehmer(nachrichten, effektiv),
+            naechste: naechsteOffene(nachrichten, effektiv, 3).map(n => {
+                const key = statusKey(n.sender, n.nr);
+                const f = faelligkeit[key];
+                return {
+                    planNr: n.planNr ?? n.nr,
+                    sender: n.sender,
+                    empfaenger: n.empfaenger,
+                    ...(f ? { faelligkeit: f } : {})
+                };
+            }),
+            zuBestaetigen: nurGemeldet,
+            hideAbgesetzt: this.hideAbgesetzt,
+            ueberfaellig: Object.values(faelligkeit).filter(f => f.zustand === "ueberfaellig").length
         });
         this.view.updateHeatmap(heatmapBins);
         this.view.updateTeilnehmerTimeline(this.buildTeilnehmerTimeline(nachrichten, effektiv));
@@ -443,6 +630,11 @@ export class UebungsleitungController {
         restoreFieldFocus(focusSnapshot);
     }
 
+    /**
+     * Ende der Übung. Im X-Zeit-Modus mit Basis ist der Zeitplan die bessere
+     * Grundlage; sonst eine Hochrechnung, aber erst ab einer Mindeststichprobe
+     * (THW-Review command P2-1).
+     */
     private calculateEtaLabel(
         nachrichten: FlattenedNachricht[],
         effektiv: Record<string, EffektiverNachrichtenStatus> = this.buildEffektivenStatus()
@@ -451,36 +643,26 @@ export class UebungsleitungController {
             return "ETA: –";
         }
 
-        const sentTimestamps = nachrichten
-            .map(n => effektiv[`${n.sender}__${n.nr}`]?.erledigtUm ?? "")
-            .map(iso => Date.parse(iso))
-            .filter(ts => Number.isFinite(ts))
-            .sort((a, b) => a - b);
-
-        if (sentTimestamps.length < 2) {
-            return "ETA: –";
+        const offen = nachrichten.filter(n => !effektiv[statusKey(n.sender, n.nr)]?.erledigtUm).length;
+        const basis = this.effektiveXZeitBasis();
+        const basisMs = basis ? parseHHMMtoMs(basis) : null;
+        const slots = nachrichten.map(n => n.xZeitSlot).filter((s): s is number => s !== undefined);
+        if (this.uebung?.spielModus === "xZeit" && basisMs !== null && slots.length && offen > 0) {
+            return `Ende laut Plan: ${formatUhrzeit(basisMs + Math.max(...slots) * 60000)} (noch ${offen} offen)`;
         }
 
-        const first = sentTimestamps[0];
-        const last = sentTimestamps[sentTimestamps.length - 1];
-        if (first === undefined || last === undefined) {
-            return "ETA: –";
+        const zeitstempel = nachrichten
+            .map(n => effektiv[statusKey(n.sender, n.nr)])
+            .filter(s => s?.erledigtUm && !(s.nachgetragen && !s.gemeldetUm))
+            .map(s => Date.parse(s?.erledigtUm ?? ""));
+        const eta = schaetzeEnde(zeitstempel, nachrichten.length, offen);
+        if (eta.etaMs === null) {
+            return eta.stichprobe > 0 ? "ETA: – (zu wenig Daten)" : "ETA: –";
         }
-        const intervals = sentTimestamps.length - 1;
-        const avgIntervalMs = (last - first) / intervals;
-        if (avgIntervalMs <= 0) {
-            return "ETA: –";
+        if (eta.grund === "fertig") {
+            return `ETA: ${formatNatoDate(eta.etaMs)} (Rest: 0 min)`;
         }
-
-        const remainingMessages = nachrichten.length - sentTimestamps.length;
-        if (remainingMessages <= 0) {
-            return `ETA: ${formatNatoDate(last)} (Rest: 0 min)`;
-        }
-
-        const remainingMs = Math.round(avgIntervalMs * remainingMessages);
-        const remainingMinutes = Math.max(1, Math.round(remainingMs / 60000));
-        const etaTs = last + remainingMs;
-        return `ETA: ${formatNatoDate(etaTs)} (Rest: ${remainingMinutes} min)`;
+        return `ETA: ${formatNatoDate(eta.etaMs)} (Rest: ${eta.restMinuten} min, aus ${eta.stichprobe} Nachrichten)`;
     }
 
     private collectSentNachrichten(
@@ -493,11 +675,13 @@ export class UebungsleitungController {
 
         return nachrichten
             .map(n => {
-                const iso = effektiv[`${n.sender}__${n.nr}`]?.erledigtUm ?? "";
+                const status = effektiv[statusKey(n.sender, n.nr)];
+                const iso = status?.erledigtUm ?? "";
                 return {
                     sender: n.sender,
                     empfaenger: n.empfaenger,
-                    ts: Date.parse(iso)
+                    ts: Date.parse(iso),
+                    ...(status?.nachgetragen && !status.gemeldetUm ? { nachgetragen: true } : {})
                 };
             })
             .filter(n => Number.isFinite(n.ts))
@@ -505,11 +689,12 @@ export class UebungsleitungController {
     }
 
     private calculateTempoLabel(sentNachrichten: SentNachricht[]): string {
-        if (sentNachrichten.length < 2) {
+        const echtzeit = sentNachrichten.filter(n => !n.nachgetragen);
+        if (echtzeit.length < 3) {
             return "Tempo: –";
         }
 
-        const sample = sentNachrichten.slice(-6);
+        const sample = echtzeit.slice(-6);
         const first = sample[0];
         const last = sample[sample.length - 1];
         if (!first || !last) {
@@ -607,7 +792,7 @@ export class UebungsleitungController {
         participants.forEach(name => timeline.set(name, []));
 
         nachrichten.forEach(n => {
-            const ts = Date.parse(effektiv[`${n.sender}__${n.nr}`]?.erledigtUm ?? "");
+            const ts = Date.parse(effektiv[statusKey(n.sender, n.nr)]?.erledigtUm ?? "");
             if (!Number.isFinite(ts)) {
                 return;
             }
@@ -669,14 +854,72 @@ export class UebungsleitungController {
         return entry;
     }
 
+    private anmeldeKey(name: string): string | null {
+        return this.uebung ? anmeldeNachrichtKey(this.uebung, name) : null;
+    }
+
+    /**
+     * „Anmeldung erhalten“ und der Anmelde-Funkspruch sind ein Vorgang: Wer
+     * angemeldet wird, dessen Anmelde-Funkspruch gilt als abgesetzt.
+     */
     private markAngemeldet(name: string) {
+        const entry = this.touchTeilnehmer(name);
+        if (!entry || !this.storage) {
+            return;
+        }
+        const jetzt = new Date().toISOString();
+        entry.angemeldetUm = jetzt;
+        const key = this.anmeldeKey(name);
+        if (key && !this.storage.nachrichten[key]?.abgesetztUm) {
+            const status = this.storage.nachrichten[key] || {};
+            status.abgesetztUm = jetzt;
+            status.statusGeaendertUm = jetzt;
+            delete status.nachgetragen;
+            this.storage.nachrichten[key] = status;
+            this.sperreRuecknahme(key);
+        }
+        this.save();
+        this.renderTeilnehmer();
+        this.renderNachrichten();
+    }
+
+    /**
+     * Nimmt eine versehentlich gesetzte Anmeldung zurück – samt der Bestätigung
+     * des Anmelde-Funkspruchs – und bietet ein Rückgängig an.
+     */
+    private anmeldungZuruecknehmen(name: string) {
+        if (!this.storage) {
+            return;
+        }
+        const key = this.anmeldeKey(name);
+        const vorherTeilnehmer: TeilnehmerStatus = { ...(this.storage.teilnehmer[name] ?? {}) };
+        const vorherNachricht: NachrichtenStatus | undefined = key && this.storage.nachrichten[key]
+            ? { ...this.storage.nachrichten[key] }
+            : undefined;
         const entry = this.touchTeilnehmer(name);
         if (!entry) {
             return;
         }
-        entry.angemeldetUm = new Date().toISOString();
+        delete entry.angemeldetUm;
+        if (key) {
+            this.loescheAbgesetzt(key);
+        }
         this.save();
         this.renderTeilnehmer();
+        this.renderNachrichten();
+        this.view.zeigeRueckgaengig(`Anmeldung von ${name} zurückgenommen.`, () => {
+            if (!this.storage) {
+                return;
+            }
+            const jetzt = new Date().toISOString();
+            this.storage.teilnehmer[name] = { ...vorherTeilnehmer, geaendertUm: jetzt };
+            if (key && vorherNachricht) {
+                this.storage.nachrichten[key] = { ...vorherNachricht, statusGeaendertUm: jetzt };
+            }
+            this.save();
+            this.renderTeilnehmer();
+            this.renderNachrichten();
+        });
     }
 
     private updateLoesungswort(name: string, val: string) {
@@ -712,13 +955,33 @@ export class UebungsleitungController {
         this.renderTeilnehmer();
     }
 
+    /**
+     * Debrief-Daten: neben den Bestätigungen der Leitung auch die
+     * Selbstmeldungen der Teilnehmer (`gemeldetUm`) und die Anmeldung aus dem
+     * Anmelde-Funkspruch – getrennt ausgewiesen (THW-Review workflow F3).
+     */
+    private buildDebriefStorage(): UebungsleitungStorage | null {
+        if (!this.storage) {
+            return null;
+        }
+        const anmeldungen = this.buildAnmeldungen();
+        const teilnehmer: Record<string, TeilnehmerStatus> = { ...this.storage.teilnehmer };
+        Object.entries(anmeldungen).forEach(([name, zustand]) => {
+            if (zustand.angemeldetUm) {
+                teilnehmer[name] = { ...(teilnehmer[name] ?? {}), angemeldetUm: zustand.angemeldetUm };
+            }
+        });
+        return { ...this.storage, teilnehmer, nachrichten: this.buildEffektivenStatus() };
+    }
+
     private async downloadTeilnehmerDebrief(name: string) {
-        if (!this.uebung || !this.storage) {
+        const debriefStorage = this.buildDebriefStorage();
+        if (!this.uebung || !debriefStorage) {
             return;
         }
         try {
             const pdfGenerator = await ladePdfGenerator();
-            const blob = await pdfGenerator.generateTeilnehmerDebriefPdfBlob(this.uebung, this.storage, name);
+            const blob = await pdfGenerator.generateTeilnehmerDebriefPdfBlob(this.uebung, debriefStorage, name);
             const link = document.createElement("a");
             link.href = URL.createObjectURL(blob);
             link.download = `Debrief_${pdfGenerator.sanitizeFileName(name)}_${pdfGenerator.sanitizeFileName(this.uebung.name)}.pdf`;
@@ -732,33 +995,158 @@ export class UebungsleitungController {
         }
     }
 
+    private sperreRuecknahme(key: string): void {
+        this.ruecknahmeGesperrtBis.set(key, Date.now() + RUECKNAHME_SPERRE_MS);
+        // Nach Ablauf neu zeichnen, damit „zurücknehmen“ erscheint.
+        setTimeout(() => this.renderNachrichten(), RUECKNAHME_SPERRE_MS + 50);
+    }
+
+    private istRuecknahmeGesperrt(key: string): boolean {
+        return (this.ruecknahmeGesperrtBis.get(key) ?? 0) > Date.now();
+    }
+
     private markNachrichtAbgesetzt(sender: string, nr: number) {
         if (!this.storage) {
             return;
         }
-        const now = new Date().toISOString();
-        const key = `${sender}__${nr}`;
+        const key = statusKey(sender, nr);
         const entry = this.storage.nachrichten[key] || {};
+        if (entry.abgesetztUm) {
+            // Doppelklick: schon abgesetzt, nichts umschalten.
+            return;
+        }
+        const now = new Date().toISOString();
         entry.abgesetztUm = now;
         entry.statusGeaendertUm = now;
+        delete entry.nachgetragen;
         this.storage.nachrichten[key] = entry;
+        this.sperreRuecknahme(key);
+        if (key === this.anmeldeKey(sender) && !this.storage.teilnehmer[sender]?.angemeldetUm) {
+            const teilnehmer = this.touchTeilnehmer(sender);
+            if (teilnehmer) {
+                teilnehmer.angemeldetUm = now;
+            }
+            this.renderTeilnehmer();
+        }
         this.save();
         this.renderNachrichten();
     }
 
+    private loescheAbgesetzt(key: string): void {
+        const entry = this.storage?.nachrichten[key];
+        if (entry) {
+            delete entry.abgesetztUm;
+            delete entry.nachgetragen;
+            // Zeitstempel bleibt gesetzt, damit das Zurücksetzen den Merge gewinnt.
+            entry.statusGeaendertUm = new Date().toISOString();
+        }
+    }
+
+    /**
+     * Nimmt „abgesetzt“ zurück. Gesperrt direkt nach dem Markieren; danach mit
+     * Rückgängig, das den ursprünglichen Zeitpunkt wiederherstellt.
+     */
     private resetNachricht(sender: string, nr: number) {
         if (!this.storage) {
             return;
         }
-        const key = `${sender}__${nr}`;
-        const entry = this.storage.nachrichten[key];
-        if (entry) {
-            delete entry.abgesetztUm;
-            // Zeitstempel bleibt gesetzt, damit das Zurücksetzen den Merge gewinnt.
-            entry.statusGeaendertUm = new Date().toISOString();
+        const key = statusKey(sender, nr);
+        if (this.istRuecknahmeGesperrt(key)) {
+            return;
+        }
+        const vorher: NachrichtenStatus | undefined = this.storage.nachrichten[key]
+            ? { ...this.storage.nachrichten[key] }
+            : undefined;
+        this.loescheAbgesetzt(key);
+        const istAnmeldung = key === this.anmeldeKey(sender);
+        const vorherAngemeldet = this.storage.teilnehmer[sender]?.angemeldetUm;
+        if (istAnmeldung && vorherAngemeldet) {
+            const teilnehmer = this.touchTeilnehmer(sender);
+            if (teilnehmer) {
+                delete teilnehmer.angemeldetUm;
+            }
+            this.renderTeilnehmer();
         }
         this.save();
         this.renderNachrichten();
+        if (!vorher?.abgesetztUm) {
+            return;
+        }
+        this.view.zeigeRueckgaengig(`„Abgesetzt“ für ${sender} Nr. ${nr} zurückgenommen.`, () => {
+            if (!this.storage) {
+                return;
+            }
+            const jetzt = new Date().toISOString();
+            this.storage.nachrichten[key] = { ...this.storage.nachrichten[key], ...vorher, statusGeaendertUm: jetzt };
+            if (istAnmeldung && vorherAngemeldet) {
+                const teilnehmer = this.touchTeilnehmer(sender);
+                if (teilnehmer) {
+                    teilnehmer.angemeldetUm = vorherAngemeldet;
+                }
+                this.renderTeilnehmer();
+            }
+            this.save();
+            this.renderNachrichten();
+        });
+    }
+
+    /**
+     * Papier-Nachtrag: setzt bzw. korrigiert die Absetzzeit von Hand (HH:MM).
+     * Solche Zeiten sind gekennzeichnet und zählen nicht fürs Tempo.
+     */
+    private zeitNachtragen(sender: string, nr: number, hhmm: string) {
+        if (!this.storage) {
+            return;
+        }
+        const key = statusKey(sender, nr);
+        const entry = this.storage.nachrichten[key] || {};
+        const iso = uhrzeitZuIso(hhmm, entry.abgesetztUm);
+        if (!iso) {
+            uiFeedback.error("Bitte die Uhrzeit als HH:MM eintragen, z. B. 19:05.");
+            return;
+        }
+        entry.abgesetztUm = iso;
+        entry.nachgetragen = true;
+        entry.statusGeaendertUm = new Date().toISOString();
+        this.storage.nachrichten[key] = entry;
+        if (key === this.anmeldeKey(sender) && !this.storage.teilnehmer[sender]?.angemeldetUm) {
+            const teilnehmer = this.touchTeilnehmer(sender);
+            if (teilnehmer) {
+                teilnehmer.angemeldetUm = iso;
+            }
+            this.renderTeilnehmer();
+        }
+        this.save();
+        this.renderNachrichten();
+    }
+
+    /**
+     * Übernimmt alle vom Teilnehmer gemeldeten, noch unbestätigten Nachrichten
+     * mit dem Zeitpunkt der Teilnehmer-Meldung.
+     */
+    private gemeldeteBestaetigen() {
+        if (!this.storage) {
+            return;
+        }
+        const jetzt = new Date().toISOString();
+        let anzahl = 0;
+        Object.entries(this.buildEffektivenStatus()).forEach(([key, status]) => {
+            if (!status.gemeldetUm || status.abgesetztUm || !this.storage) {
+                return;
+            }
+            const entry = this.storage.nachrichten[key] || {};
+            entry.abgesetztUm = status.gemeldetUm;
+            entry.statusGeaendertUm = jetzt;
+            this.storage.nachrichten[key] = entry;
+            anzahl++;
+        });
+        if (!anzahl) {
+            return;
+        }
+        this.save();
+        this.renderTeilnehmer();
+        this.renderNachrichten();
+        uiFeedback.success(`${anzahl} gemeldete Nachricht${anzahl === 1 ? "" : "en"} bestätigt.`);
     }
 
     private updateNachrichtNotiz(sender: string, nr: number, val: string) {
@@ -781,7 +1169,7 @@ export class UebungsleitungController {
         if (!this.uebung || !this.storage) {
             return;
         }
-        
+
         try {
             const { jsPDF } = await import("jspdf");
             const { Uebungsleitung } = await import("../pdf/Uebungsleitung");
@@ -789,7 +1177,7 @@ export class UebungsleitungController {
             const pdf = new jsPDF({ orientation: "landscape", unit: "mm", format: "a4" });
             const pdfDoc = new Uebungsleitung(this.uebung, pdf, this.storage);
             pdfDoc.draw();
-            
+
             const filename = `Uebungsleitung_${this.uebung.name}_${this.uebung.id}.pdf`.replace(/\s+/g, "_");
             pdf.save(filename);
         } catch (err) {
@@ -813,10 +1201,29 @@ export class UebungsleitungController {
         }
     }
 
+    /** Was beim Zurücksetzen verloren geht – für eine konkrete Rückfrage. */
+    private zaehleVerlust(): { abgesetzt: number; notizen: number; anmeldungen: number } {
+        const nachrichten = Object.values(this.storage?.nachrichten ?? {});
+        const teilnehmer = Object.values(this.storage?.teilnehmer ?? {});
+        return {
+            abgesetzt: nachrichten.filter(n => n.abgesetztUm).length,
+            notizen: nachrichten.filter(n => n.notiz).length + teilnehmer.filter(t => t.notizen).length,
+            anmeldungen: teilnehmer.filter(t => t.angemeldetUm).length
+        };
+    }
+
     private resetData() {
-        const message = this.liveStatus?.enabled
-            ? "Wirklich alle Daten der Übungsleitung zurücksetzen? Das wirkt auch für Teilnehmer und weitere Leitungs-Arbeitsplätze."
-            : "Wirklich alle lokalen Daten zurücksetzen?";
+        const live = Boolean(this.liveStatus?.enabled);
+        const zustand = this.liveStatus?.getState();
+        if (live && (zustand === "offline" || zustand === "fehler")) {
+            uiFeedback.error("Zurücksetzen für alle braucht eine Verbindung. Gerade ist keine da – es wurde nichts gelöscht.");
+            return;
+        }
+        const verlust = this.zaehleVerlust();
+        const umfang = `${verlust.abgesetzt} abgesetzte Nachrichten, ${verlust.notizen} Notizen und ${verlust.anmeldungen} Anmeldungen`;
+        const message = live
+            ? `Übungsstand für ALLE zurücksetzen?\n\nGelöscht werden ${umfang} – auf allen Leitungs-Arbeitsplätzen und bei allen Teilnehmern. Das lässt sich nicht rückgängig machen.\n\nTipp: Vorher „Übungsleitung als PDF“ sichern.`
+            : `Daten der Übungsleitung auf diesem Gerät löschen?\n\nGelöscht werden ${umfang}. Das lässt sich nicht rückgängig machen.`;
         if (!uiFeedback.confirm(message)) {
             return;
         }
@@ -826,7 +1233,8 @@ export class UebungsleitungController {
     /**
      * Setzt lokal und – falls aktiv – auch remote zurück. Remote werden dazu
      * Zurücksetz-Marker mit aktuellem Zeitstempel geschrieben; ein leeres Dokument
-     * würde vom Last-Write-Wins-Merge nicht gewinnen.
+     * würde vom Last-Write-Wins-Merge nicht gewinnen. Ohne Bestätigung des
+     * Servers wird lokal nichts gelöscht und nicht neu geladen.
      */
     private async performReset(): Promise<void> {
         if (!this.uebungId) {
@@ -856,7 +1264,11 @@ export class UebungsleitungController {
             };
             this.liveStatus.publishLeitungPublic(toLeitungPublicLiveDoc(cleared));
             this.liveStatus.publishLeitungInternal(toLeitungLiveDoc(cleared));
-            await this.liveStatus.flush();
+            const bestaetigt = await this.liveStatus.flush(RESET_BESTAETIGUNG_MS);
+            if (!bestaetigt) {
+                uiFeedback.error("Der Server hat das Zurücksetzen nicht bestätigt. Es wird nachgereicht, sobald wieder Verbindung besteht – lade die Seite bis dahin nicht neu.");
+                return;
+            }
         }
         localStorage.removeItem(`sprechfunk:uebungsleitung:${this.uebungId}`);
         window.location.reload();
@@ -883,7 +1295,7 @@ export class UebungsleitungController {
 export async function initUebungsleitung(db: Firestore): Promise<void> {
     const controller = new UebungsleitungController(db);
     await controller.init();
-    
+
     // Make area visible
     const area = document.getElementById("uebungsleitungArea");
     if (area) {

@@ -4,15 +4,28 @@ import { formatNatoDate } from "../utils/date";
 import { TeilnehmerStatus } from "../types/Storage";
 import { escapeHtml } from "../utils/html";
 import type { TeilnehmerFortschritt } from "../services/liveStatusMerge";
+import type { AnmeldeZustand } from "./lagebild";
 
 type TeilnehmerCallbacks = {
     onAnmelden: (name: string) => void;
+    onAnmeldungZuruecknehmen?: (name: string) => void;
     onLoesungswort: (name: string, val: string) => void;
     onStaerke: (name: string, idx: number, val: string) => void;
     onNotiz: (name: string, val: string) => void;
     onToggleDetails: () => void;
     onDownloadDebrief: (name: string) => void;
 };
+
+/** Zusatzangaben zur Teilnehmertabelle, die nicht im Übungsdokument stehen. */
+export interface TeilnehmerZusatz {
+    /** Anmeldung je Teilnehmer – aus Tabelle, Anmelde-Funkspruch oder Selbstmeldung. */
+    anmeldung?: Record<string, AnmeldeZustand>;
+    /** Bezugszeit für „vor N min“ – für Tests einstellbar. */
+    jetztMs?: number;
+}
+
+/** Ab so vielen Minuten ohne neue Meldung bei offenen Nachrichten wird nachgefragt. */
+export const STILL_SEIT_MINUTEN = 10;
 
 export class UebungsleitungTeilnehmerView {
     /**
@@ -30,7 +43,8 @@ export class UebungsleitungTeilnehmerView {
         uebung: Uebung,
         teilnehmerStatus: Record<string, TeilnehmerStatus>,
         showStaerkeDetails: boolean,
-        fortschritt: Record<string, TeilnehmerFortschritt> = {}
+        fortschritt: Record<string, TeilnehmerFortschritt> = {},
+        zusatz: TeilnehmerZusatz = {}
     ): void {
         const container = document.getElementById("uebungsleitungTeilnehmer");
         if (!container) {
@@ -49,8 +63,16 @@ export class UebungsleitungTeilnehmerView {
         const showStaerke = Object.keys(staerken).length > 0;
         const codeByTeilnehmer = this.buildCodeByTeilnehmer(uebung.teilnehmerIds);
         // Nachzügler: alle, die spürbar hinter dem Median der Gruppe liegen.
-        const nachzuegler = this.findeNachzuegler(teilnehmerListe, fortschritt);
-        const rows = teilnehmerListe.map(name =>
+        const beuebteStelle = uebung.fuehrungsstelle?.beuebteStelle;
+        const nachzuegler = this.findeNachzuegler(teilnehmerListe.filter(n => n !== beuebteStelle), fortschritt);
+        const jetztMs = zusatz.jetztMs ?? Date.now();
+        // Die beübte Stelle steht oben und getrennt: sie wird beübt, spielt nicht ein.
+        const sortiert = beuebteStelle && teilnehmerListe.includes(beuebteStelle)
+            ? [beuebteStelle, ...teilnehmerListe.filter(n => n !== beuebteStelle)]
+            : teilnehmerListe;
+        const rows = sortiert.map(name => name === beuebteStelle
+            ? this.renderBeuebteStelleRow(uebung, name, showLoesungswort, showStaerke)
+            :
             this.renderTeilnehmerRow({
                 uebung,
                 name,
@@ -62,7 +84,9 @@ export class UebungsleitungTeilnehmerView {
                 staerken,
                 codeByTeilnehmer,
                 fortschritt: fortschritt[name],
-                istNachzuegler: nachzuegler.has(name)
+                istNachzuegler: nachzuegler.has(name),
+                anmeldung: zusatz.anmeldung?.[name],
+                jetztMs
             })
         ).join("");
 
@@ -108,10 +132,10 @@ export class UebungsleitungTeilnehmerView {
     private merkeStand(teilnehmerListe: string[], fortschritt: Record<string, TeilnehmerFortschritt>): void {
         teilnehmerListe.forEach(name => {
             const eintrag = fortschritt[name];
-            this.letzterStand.set(name, eintrag?.gemeldet ?? 0);
-            if (eintrag?.online) {
+            this.letzterStand.set(name, eintrag?.erledigt ?? 0);
+            if (eintrag && (eintrag.online || eintrag.erledigt > 0)) {
                 const gesamt = eintrag.gesamt;
-                this.letzterProzent.set(name, gesamt > 0 ? Math.round((eintrag.gemeldet / gesamt) * 100) : 0);
+                this.letzterProzent.set(name, gesamt > 0 ? Math.round((eintrag.erledigt / gesamt) * 100) : 0);
             }
         });
     }
@@ -147,6 +171,7 @@ export class UebungsleitungTeilnehmerView {
                 return;
             }
             this.handleAnmelden(target, callbacks.onAnmelden);
+            this.handleAnmeldungZuruecknehmen(target, callbacks.onAnmeldungZuruecknehmen);
             this.handleToggleDetails(target, callbacks.onToggleDetails);
             this.handleDownloadDebrief(target, callbacks.onDownloadDebrief);
         });
@@ -186,6 +211,8 @@ export class UebungsleitungTeilnehmerView {
         codeByTeilnehmer: Record<string, string>;
         fortschritt: TeilnehmerFortschritt | undefined;
         istNachzuegler: boolean;
+        anmeldung?: AnmeldeZustand | undefined;
+        jetztMs: number;
     }): string {
         const {
             uebung,
@@ -198,7 +225,9 @@ export class UebungsleitungTeilnehmerView {
             staerken,
             codeByTeilnehmer,
             fortschritt,
-            istNachzuegler
+            istNachzuegler,
+            anmeldung,
+            jetztMs
         } = options;
 
         const safeName = escapeHtml(name);
@@ -213,8 +242,8 @@ export class UebungsleitungTeilnehmerView {
         return `
           <tr class="${zeilenKlassen}"${istNachzuegler ? " data-nachzuegler=\"1\"" : ""}>
             <td>${nameHtml}</td>
-            <td>${this.renderFortschrittCell(name, fortschritt, istNachzuegler)}</td>
-            <td>${this.renderAnmeldeCell(name, status)}</td>
+            <td>${this.renderFortschrittCell(name, fortschritt, istNachzuegler, jetztMs)}</td>
+            <td>${this.renderAnmeldeCell(name, anmeldung ?? (status?.angemeldetUm ? { angemeldetUm: status.angemeldetUm, quelle: "leitung" } : {}))}</td>
             ${showLoesungswort ? this.renderLoesungswortCell(name, status, loesungswoerter) : ""}
             ${showStaerke ? this.renderStaerkeCell({ uebung, name, status, staerken, showStaerkeDetails }) : ""}
             <td>
@@ -224,7 +253,7 @@ export class UebungsleitungTeilnehmerView {
                 placeholder="Notiz…"
                 data-action="notiz"
                 data-teilnehmer="${this.escapeAttr(name)}"
-              >${status?.notizen ?? ""}</textarea>
+              >${escapeHtml(status?.notizen ?? "")}</textarea>
             </td>
             <td>
               <button
@@ -236,6 +265,33 @@ export class UebungsleitungTeilnehmerView {
             </td>
           </tr>
         `;
+    }
+
+    /**
+     * Die beübte Stelle einer Führungsstellen-Übung bekommt keinen
+     * Teilnehmerlink und meldet sich nicht an – sie wird beübt
+     * (THW-Review command P2-2).
+     */
+    private renderBeuebteStelleRow(uebung: Uebung, name: string, showLoesungswort: boolean, showStaerke: boolean): string {
+        const stelle = uebung.teilnehmerStellen?.[name] ?? uebung.fuehrungsstelle?.stellen?.[name];
+        const eingehend = Object.entries(uebung.nachrichten ?? {})
+            .reduce((summe, [sender, liste]) => summe + (sender === name
+                ? 0
+                : liste.filter(n => n.empfaenger.includes(name) || n.empfaenger.includes("Alle")).length), 0);
+        const leer = "<td class=\"text-body-secondary\">–</td>";
+        return `
+          <tr class="uebungsleitung-teilnehmer-zeile uebungsleitung-beuebt" data-beuebt="1">
+            <td>
+              <span class="badge bg-primary mb-1">beübte Stelle</span><br>
+              ${stelle ? `<strong>${escapeHtml(stelle)}</strong><br><small class="text-muted">${escapeHtml(name)}</small>` : `<strong>${escapeHtml(name)}</strong>`}
+            </td>
+            <td><small>empfängt ${eingehend} Einspielungen</small></td>
+            <td><small class="text-body-secondary">kein Teilnehmerlink – wird beübt</small></td>
+            ${showLoesungswort ? leer : ""}
+            ${showStaerke ? leer : ""}
+            ${leer}
+            ${leer}
+          </tr>`;
     }
 
     private renderTeilnehmerName(
@@ -283,13 +339,13 @@ export class UebungsleitungTeilnehmerView {
     ): Set<string> {
         const aktive = teilnehmerListe
             .map(name => fortschritt[name])
-            .filter((f): f is TeilnehmerFortschritt => Boolean(f?.online));
+            .filter((f): f is TeilnehmerFortschritt => Boolean(f?.online || (f?.erledigt ?? 0) > 0));
         if (aktive.length < 3) {
             return new Set();
         }
 
         const quoten = aktive
-            .map(f => (f.gesamt > 0 ? f.gemeldet / f.gesamt : 0))
+            .map(f => (f.gesamt > 0 ? f.erledigt / f.gesamt : 0))
             .sort((a, b) => a - b);
         const mitte = Math.floor(quoten.length / 2);
         const median = quoten.length % 2 === 0
@@ -301,7 +357,7 @@ export class UebungsleitungTeilnehmerView {
 
         return new Set(
             aktive
-                .filter(f => (f.gesamt > 0 ? f.gemeldet / f.gesamt : 0) < median / 2)
+                .filter(f => (f.gesamt > 0 ? f.erledigt / f.gesamt : 0) < median / 2)
                 .map(f => f.teilnehmer)
         );
     }
@@ -313,20 +369,31 @@ export class UebungsleitungTeilnehmerView {
      */
     private hatNeueMeldung(name: string, fortschritt?: TeilnehmerFortschritt): boolean {
         const vorher = this.letzterStand.get(name);
-        return vorher !== undefined && (fortschritt?.gemeldet ?? 0) > vorher;
+        return vorher !== undefined && (fortschritt?.erledigt ?? 0) > vorher;
     }
 
-    private renderFortschrittCell(name: string, fortschritt?: TeilnehmerFortschritt, istNachzuegler?: boolean): string {
-        if (!fortschritt?.online) {
-            return "<span class=\"badge bg-secondary\" title=\"Noch keine Live-Meldung von diesem Teilnehmer\">keine Meldung</span>";
+    /**
+     * Fortschritt aus beiden Quellen: was der Teilnehmer gemeldet und was die
+     * Leitung bestätigt hat, getrennt ausgewiesen (THW-Review workflow F3).
+     */
+    private renderFortschrittCell(
+        name: string,
+        fortschritt?: TeilnehmerFortschritt,
+        istNachzuegler?: boolean,
+        jetztMs: number = Date.now()
+    ): string {
+        if (!fortschritt || (!fortschritt.online && fortschritt.erledigt === 0)) {
+            return "<span class=\"badge bg-secondary\" title=\"Noch keine Live-Meldung von diesem Teilnehmer und nichts von der Leitung abgehakt\">keine Meldung</span>";
         }
 
-        const { gemeldet, gesamt, letzteMeldungUm } = fortschritt;
-        const percent = gesamt > 0 ? Math.round((gemeldet / gesamt) * 100) : 0;
+        const { erledigt, gemeldet, bestaetigt, gesamt, letzteMeldungUm } = fortschritt;
+        const percent = gesamt > 0 ? Math.round((erledigt / gesamt) * 100) : 0;
         const barCss = istNachzuegler ? "bg-warning" : "bg-success";
+        const herkunft = `<small class="text-body-secondary d-block">TN ${gemeldet} · Leitung ${bestaetigt}</small>`;
+        const geraet = this.renderGeraetHinweis(fortschritt, jetztMs);
         const letzte = letzteMeldungUm
-            ? `<small class="text-body-secondary">zuletzt ${formatNatoDate(letzteMeldungUm)}</small>`
-            : "<small class=\"text-body-secondary\">noch nichts übertragen</small>";
+            ? `<small class="text-body-secondary">zuletzt ${formatNatoDate(letzteMeldungUm)}</small>${herkunft}${geraet}`
+            : `<small class="text-body-secondary">noch nichts übertragen</small>${geraet}`;
         // Der Balken startet auf dem zuletzt gezeigten Wert und bekommt den
         // neuen erst im nächsten Frame; so legt er die Strecke sichtbar zurück.
         const start = this.letzterProzent.get(name) ?? percent;
@@ -336,21 +403,56 @@ export class UebungsleitungTeilnehmerView {
               <div class="progress-bar ${barCss}" style="transform:scaleX(${start / 100})" data-fortschritt="${percent}"></div>
             </div>
             <div class="d-flex justify-content-between align-items-center mt-1">
-              <small><strong>${gemeldet}</strong> / ${gesamt}</small>
+              <small><strong>${erledigt}</strong> / ${gesamt}</small>
               ${istNachzuegler ? "<span class=\"badge bg-warning text-dark\">Nachzügler</span>" : ""}
             </div>
             ${letzte}
         `;
     }
 
-    private renderAnmeldeCell(name: string, status?: TeilnehmerStatus): string {
-        if (status?.angemeldetUm) {
-            return `<span class="badge bg-success">${formatNatoDate(status.angemeldetUm)}</span>`;
+    /**
+     * „Wie lange nichts vom Gerät?“ – unterscheidet ein Funkloch von einem
+     * Teilnehmer, der gerade nur nichts absetzt (THW-Review offline P2-1).
+     */
+    private renderGeraetHinweis(fortschritt: TeilnehmerFortschritt, jetztMs: number): string {
+        if (!fortschritt.online || !fortschritt.zuletztGesehenUm) {
+            return fortschritt.online ? "" : "<small class=\"text-body-secondary d-block\">kein Live-Gerät</small>";
+        }
+        const minuten = Math.floor((jetztMs - Date.parse(fortschritt.zuletztGesehenUm)) / 60000);
+        if (!Number.isFinite(minuten) || minuten < 1) {
+            return "";
+        }
+        if (minuten >= STILL_SEIT_MINUTEN && fortschritt.erledigt < fortschritt.gesamt) {
+            return `<small class="d-block text-warning-emphasis fw-semibold" title="Seit ${minuten} Minuten keine Änderung vom Gerät – Funkloch oder Pause? Per Funk nachfragen.">seit ${minuten} min nichts vom Gerät</small>`;
+        }
+        return `<small class="text-body-secondary d-block">Gerät vor ${minuten} min</small>`;
+    }
+
+    /**
+     * Anmeldung und Anmelde-Funkspruch sind ein Vorgang. „Anmeldung erhalten“
+     * statt „Anmelden“, damit es nicht wie ein Login aussieht; die Rücknahme
+     * steht abgesetzt daneben (THW-Review error-recovery P1-2).
+     */
+    private renderAnmeldeCell(name: string, anmeldung: AnmeldeZustand): string {
+        const safeName = this.escapeAttr(name);
+        if (anmeldung.angemeldetUm) {
+            const quelle = anmeldung.quelle === "funkspruch"
+                ? "über Anmelde-Funkspruch"
+                : anmeldung.quelle === "teilnehmer"
+                    ? "vom Teilnehmer gemeldet"
+                    : "";
+            const ruecknahme = anmeldung.quelle === "teilnehmer"
+                ? ""
+                : `<button type="button" class="btn btn-sm btn-link px-0 text-danger d-block" data-action="anmeldung-zuruecknehmen" data-teilnehmer="${safeName}">Anmeldung zurücknehmen</button>`;
+            return `<span class="badge bg-success">angemeldet ${formatNatoDate(anmeldung.angemeldetUm)}</span>
+                    ${quelle ? `<small class="text-body-secondary d-block">${quelle}</small>` : ""}
+                    ${ruecknahme}`;
         }
         return `<button class="btn btn-sm btn-outline-primary"
                     data-action="anmelden"
-                    data-teilnehmer="${name}">
-                    Anmelden
+                    data-teilnehmer="${safeName}"
+                    title="Der Teilnehmer hat sich im Funk angemeldet – sein Anmelde-Funkspruch gilt damit als abgesetzt">
+                    Anmeldung erhalten
                   </button>`;
     }
 
@@ -363,15 +465,15 @@ export class UebungsleitungTeilnehmerView {
             <td>
               <div class="mb-1">
                 <small class="text-muted">Soll:</small>
-                <strong>${loesungswoerter[name] ?? "–"}</strong>
+                <strong>${escapeHtml(loesungswoerter[name] ?? "–")}</strong>
               </div>
               <input
                 type="text"
                 class="form-control form-control-sm"
                 placeholder="Empfangenes Lösungswort"
                 data-action="loesungswort"
-                data-teilnehmer="${name}"
-                value="${status?.loesungswortGesendet ?? ""}"
+                data-teilnehmer="${this.escapeAttr(name)}"
+                value="${this.escapeAttr(status?.loesungswortGesendet ?? "")}"
               />
             </td>
         `;
@@ -387,25 +489,33 @@ export class UebungsleitungTeilnehmerView {
         }
     ): string {
         const { uebung, name, status, staerken, showStaerkeDetails } = options;
-        const inputs = [0, 1, 2, 3].map(i => `
+        const felder = [
+            { kurz: "F", lang: "Führer" },
+            { kurz: "UF", lang: "Unterführer" },
+            { kurz: "H", lang: "Helfer" },
+            { kurz: "Ges", lang: "Gesamt" }
+        ];
+        const inputs = felder.map((feld, i) => `
                   <input
                     type="text"
                     class="form-control form-control-sm text-center"
                     style="width:3rem"
                     maxlength="3"
-                    placeholder="-"
+                    placeholder="${feld.kurz}"
+                    title="Empfangene Stärke: ${feld.lang}"
+                    aria-label="Empfangene Stärke ${feld.lang}"
                     data-action="staerke"
-                    data-teilnehmer="${name}"
+                    data-teilnehmer="${this.escapeAttr(name)}"
                     data-index="${i}"
-                    value="${status?.teilstaerken?.[i] ?? ""}"
+                    value="${this.escapeAttr(status?.teilstaerken?.[i] ?? "")}"
                   />
                 `).join("");
 
         return `
             <td>
               <div class="mb-1">
-                <small class="text-muted">Soll:</small>
-                <span style="float: right;"><strong>${staerken[name] ?? "–"}</strong></span>
+                <small class="text-muted" title="Führer / Unterführer / Helfer / Gesamt">Soll (F/UF/H/Ges):</small>
+                <span style="float: right;"><strong>${escapeHtml(staerken[name] ?? "–")}</strong></span>
                 ${this.renderStaerkeDetails(uebung, name, showStaerkeDetails)}
               </div>
               <div class="d-flex gap-1">${inputs}</div>
@@ -463,6 +573,14 @@ export class UebungsleitungTeilnehmerView {
         const teilnehmer = btn?.dataset["teilnehmer"];
         if (teilnehmer) {
             onAnmelden(teilnehmer);
+        }
+    }
+
+    private handleAnmeldungZuruecknehmen(target: HTMLElement, onZuruecknehmen?: (name: string) => void): void {
+        const btn = target.closest("button[data-action=\"anmeldung-zuruecknehmen\"]") as HTMLElement | null;
+        const teilnehmer = btn?.dataset["teilnehmer"];
+        if (teilnehmer && onZuruecknehmen) {
+            onZuruecknehmen(teilnehmer);
         }
     }
 

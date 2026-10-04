@@ -337,8 +337,11 @@ describe("TeilnehmerView", () => {
         expect(badge?.textContent).toContain("live");
         expect(badge?.className).toContain("bg-success");
 
+        view.updateLiveSyncState("offline");
+        expect(badge?.textContent).toContain("offline – wird nachgereicht");
+
         view.updateLiveSyncState("fehler");
-        expect(badge?.textContent).toContain("offline");
+        expect(badge?.textContent).toContain("wird nicht übertragen");
 
         view.updateLiveSyncState("verbinde");
         expect(badge?.textContent).toContain("verbinde");

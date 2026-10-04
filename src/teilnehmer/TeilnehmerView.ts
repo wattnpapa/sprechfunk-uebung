@@ -292,7 +292,8 @@ export class TeilnehmerView {
             aus: { text: "Sync: aus", css: "bg-secondary", title: "Live-Übertragung deaktiviert – Status bleibt nur auf diesem Gerät." },
             verbinde: { text: "Sync: verbinde…", css: "bg-secondary", title: "Verbindung zur Übungsleitung wird aufgebaut." },
             live: { text: "Sync: live", css: "bg-success", title: "Status wird live an die Übungsleitung übertragen." },
-            fehler: { text: "Sync: offline", css: "bg-warning text-dark", title: "Keine Verbindung – Status wird lokal gespeichert und später übertragen." }
+            offline: { text: "Sync: offline – wird nachgereicht", css: "bg-warning text-dark", title: "Keine Verbindung – Status wird auf diesem Gerät gespeichert und übertragen, sobald wieder Netz da ist." },
+            fehler: { text: "Sync: Fehler – wird nicht übertragen", css: "bg-danger", title: "Der Server lehnt die Übertragung ab – der Status bleibt nur auf diesem Gerät. Melde ihn per Funk." }
         };
         const label = labels[state];
         badge.className = `badge ${label.css}`;
