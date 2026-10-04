@@ -24,6 +24,7 @@ describe("NatoClock", () => {
         vi.advanceTimersByTime(1000);
 
         expect(element.textContent).toBe(formatNatoDate(new Date(), true));
+        expect((element as { title?: string }).title).toContain("Datum-Zeit-Gruppe");
         vi.useRealTimers();
     });
 
