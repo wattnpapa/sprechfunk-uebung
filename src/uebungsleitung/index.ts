@@ -781,20 +781,21 @@ export class UebungsleitungController {
         if (!this.uebung || !this.storage) {
             return;
         }
-        
-        try {
-            const { jsPDF } = await import("jspdf");
-            const { Uebungsleitung } = await import("../pdf/Uebungsleitung");
 
-            const pdf = new jsPDF({ orientation: "landscape", unit: "mm", format: "a4" });
-            const pdfDoc = new Uebungsleitung(this.uebung, pdf, this.storage);
-            pdfDoc.draw();
-            
-            const filename = `Uebungsleitung_${this.uebung.name}_${this.uebung.id}.pdf`.replace(/\s+/g, "_");
-            pdf.save(filename);
+        // Über den PDF-Dienst statt mit eigenem jsPDF: nur dort ist das
+        // autoTable-Plugin angemeldet. Vorher scheiterte der Export als erste
+        // Aktion einer frischen Ansicht (THW-Review 2026-10-04, B2).
+        let pdfGenerator: Awaited<ReturnType<typeof ladePdfGenerator>>;
+        try {
+            pdfGenerator = await ladePdfGenerator();
+        } catch {
+            return; // ladePdfGenerator hat die Meldung schon gezeigt
+        }
+        try {
+            pdfGenerator.downloadUebungsleitungPDF(this.uebung, this.storage);
         } catch (err) {
             console.error(err);
-            uiFeedback.error("Fehler beim PDF Export");
+            uiFeedback.error("PDF der Übungsleitung konnte nicht erstellt werden. Der leere Plan liegt auch im Druckdaten-ZIP des Generators (Uebungsleitung.pdf).");
         }
     }
 

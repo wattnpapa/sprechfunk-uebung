@@ -2,6 +2,7 @@
 import { jsPDF } from "jspdf";
 import { applyPlugin } from "jspdf-autotable";
 import type { Nachricht } from "../types/Nachricht";
+import type { Uebung } from "../types/Uebung";
 
 import { DeckblattTeilnehmer } from "../pdf/DeckblattTeilnehmer.js";
 import { FunkUebung } from "../models/FunkUebung.js";
@@ -335,15 +336,33 @@ class PDFGenerator {
     }
 
     /**
-     * Erstellt das PDF für die Übungsleitung.
+     * Erstellt das PDF für die Übungsleitung. Mit `stand` (Übungsleitungs-
+     * Ansicht) trägt es Anmeldezeiten, Notizen und Abgesetzt-Zeiten; ohne
+     * (Generator/ZIP) bleibt es ein leerer Papierplan zum Mitschreiben.
+     *
+     * Läuft bewusst über diesen Dienst: sein Konstruktor meldet das
+     * autoTable-Plugin bei jsPDF an. Ein direkt importiertes jsPDF hat es
+     * nicht (THW-Review 2026-10-04, B2).
      */
-    generateInstructorPDFBlob(funkUebung: FunkUebung) {
+    generateInstructorPDFBlob(funkUebung: FunkUebung | Uebung, stand: UebungsleitungStorage | null = null) {
         const pdf = new jsPDF({ orientation: "landscape", unit: "mm", format: "a4" });
 
-        const uebungsLeitung = new Uebungsleitung(funkUebung, pdf);
+        const uebungsLeitung = new Uebungsleitung(funkUebung, pdf, stand);
         uebungsLeitung.draw();
 
         return uebungsLeitung.blob();
+    }
+
+    /** Lädt das Übungsleitungs-PDF mit aktuellem Stand herunter. */
+    downloadUebungsleitungPDF(uebung: Uebung, stand: UebungsleitungStorage | null): void {
+        const blob = this.generateInstructorPDFBlob(uebung, stand);
+        const link = document.createElement("a");
+        link.href = URL.createObjectURL(blob);
+        link.download = `Uebungsleitung_${uebung.name}_${uebung.id}.pdf`.replace(/\s+/g, "_");
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        URL.revokeObjectURL(link.href);
     }
 
     sanitizeFileName(name: string) {
