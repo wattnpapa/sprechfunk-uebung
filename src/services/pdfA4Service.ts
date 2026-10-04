@@ -66,7 +66,7 @@ function generateAllA4PairPrintBlob(
     funkUebung: FunkUebung,
     drawMessage: DrawMessageFn
 ): Blob {
-    const pdf = new jsPDF("l", "mm", "a4");
+    const pdf = new jsPDF({ orientation: "l", unit: "mm", format: "a4", compress: true });
     const parts = funkUebung.teilnehmerListe;
     for (let i = 0; i < parts.length; i += 2) {
         const left = parts[i];
@@ -105,7 +105,7 @@ function generateA4BlobsByTeilnehmer(
         const nachrichten = funkUebung.nachrichten[teilnehmer] || [];
         const totalA5Pages = 1 + nachrichten.length;
         const half = Math.ceil(totalA5Pages / 2);
-        const pdf = new jsPDF({ orientation: "landscape", unit: "mm", format: "a4" });
+        const pdf = new jsPDF({ orientation: "landscape", unit: "mm", format: "a4", compress: true });
 
         const renderIndex = (pageIndex: number, offsetX: number) => {
             if (pageIndex < 0 || pageIndex >= totalA5Pages) {

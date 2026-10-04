@@ -1,4 +1,5 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
+import { inflateSync } from "node:zlib";
 import { qrMatrix } from "../../scripts/lib/qrcode.mjs";
 import {
     STANDARD_BASIS_URL,
@@ -63,7 +64,24 @@ describe("pdf/zugang – Hilfsfunktionen", () => {
 });
 
 describe("Ausdrucke mit Zugangsdaten (echtes jsPDF)", () => {
-    const pdfText = async (blob: Blob) => Buffer.from(await blob.arrayBuffer()).toString("latin1");
+    /** Text aller Inhaltsströme; die PDFs sind seit P3 Flate-komprimiert. */
+    const pdfText = async (blob: Blob) => {
+        const roh = Buffer.from(await blob.arrayBuffer());
+        const text = roh.toString("latin1");
+        const teile: string[] = [];
+        const muster = /stream\r?\n/g;
+        let treffer: RegExpExecArray | null;
+        while ((treffer = muster.exec(text)) !== null) {
+            const start = treffer.index + treffer[0].length;
+            const ende = text.indexOf("endstream", start);
+            try {
+                teile.push(inflateSync(roh.subarray(start, ende)).toString("latin1"));
+            } catch {
+                // Bilddaten o. Ä. – nicht relevant
+            }
+        }
+        return teile.join("\n");
+    };
 
     const uebung = () => {
         const u = new FunkUebung("test");
@@ -109,5 +127,10 @@ describe("Ausdrucke mit Zugangsdaten (echtes jsPDF)", () => {
         const blobs = await pdfGenerator.generateTeilnehmerPDFsBlob(u);
         const text = await pdfText(blobs.get("Heros 1")!);
         expect(text).not.toContain("(Teilnehmercode)");
+    });
+
+    it("Vordrucke sind komprimiert (P3: vorher rund 1,9 MB je Datei)", async () => {
+        const blobs = await pdfGenerator.generateMeldevordruckPDFsBlob(uebung());
+        expect(blobs.get("Heros 1")!.size).toBeLessThan(200_000);
     });
 });

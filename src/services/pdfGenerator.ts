@@ -57,7 +57,7 @@ class PDFGenerator {
         const blobMap = new Map();
 
         funkUebung.teilnehmerListe.forEach(teilnehmer => {
-            const pdf = new jsPDF({ orientation: "landscape", unit: "mm", format: "a4" });
+            const pdf = new jsPDF({ orientation: "landscape", unit: "mm", format: "a4", compress: true });
 
             const teilnehmerPdf = new Teilnehmer(teilnehmer, funkUebung, pdf);
             teilnehmerPdf.draw();
@@ -74,7 +74,7 @@ class PDFGenerator {
      * in der Reihenfolge der Teilnehmerverwaltung.
      */
     async generateAllTeilnehmerUebersichtPrintBlob(funkUebung: FunkUebung): Promise<Blob> {
-        const pdf = new jsPDF({ orientation: "landscape", unit: "mm", format: "a4" });
+        const pdf = new jsPDF({ orientation: "landscape", unit: "mm", format: "a4", compress: true });
 
         funkUebung.teilnehmerListe.forEach((teilnehmer: string, index: number) => {
             if (index > 0) {
@@ -145,7 +145,7 @@ class PDFGenerator {
         funkUebung.teilnehmerListe.forEach((teilnehmer: string) => {
             const nachrichten = funkUebung.nachrichten[teilnehmer] || [];
 
-            const pdf = new jsPDF("p", "mm", "a5");
+            const pdf = new jsPDF({ orientation: "p", unit: "mm", format: "a5", compress: true });
             // Deckblatt als erste Seite
             const deckblatt = new DeckblattTeilnehmer(teilnehmer, funkUebung, pdf);
             deckblatt.draw();
@@ -176,7 +176,7 @@ class PDFGenerator {
         hideFooter = false
     ): Promise<{ blob: Blob; totalPages: number }> {
         const nachrichten = funkUebung.nachrichten[teilnehmer] || [];
-        const pdf = new jsPDF("p", "mm", "a5");
+        const pdf = new jsPDF({ orientation: "p", unit: "mm", format: "a5", compress: true });
         const deckblatt = new DeckblattTeilnehmer(teilnehmer, funkUebung, pdf);
         deckblatt.draw();
 
@@ -213,7 +213,7 @@ class PDFGenerator {
             throw new Error("Ungültige Seite");
         }
 
-        const pdf = new jsPDF("p", "mm", "a5");
+        const pdf = new jsPDF({ orientation: "p", unit: "mm", format: "a5", compress: true });
         const msg = nachrichten[page - 1];
         if (!msg) {
             throw new Error("Nachricht nicht gefunden");
@@ -248,7 +248,7 @@ class PDFGenerator {
         funkUebung.teilnehmerListe.forEach((teilnehmer: string) => {
             const nachrichten = funkUebung.nachrichten[teilnehmer] || [];
 
-            const pdf = new jsPDF("p", "mm", "a5"); // A5 Hochformat
+            const pdf = new jsPDF({ orientation: "p", unit: "mm", format: "a5", compress: true }); // A5 Hochformat
             // Deckblatt als erste Seite
             const deckblatt = new DeckblattTeilnehmer(teilnehmer, funkUebung, pdf);
             deckblatt.draw();
@@ -277,7 +277,7 @@ class PDFGenerator {
         hideFooter = false
     ): Promise<{ blob: Blob; totalPages: number }> {
         const nachrichten = funkUebung.nachrichten[teilnehmer] || [];
-        const pdf = new jsPDF("p", "mm", "a5");
+        const pdf = new jsPDF({ orientation: "p", unit: "mm", format: "a5", compress: true });
         const deckblatt = new DeckblattTeilnehmer(teilnehmer, funkUebung, pdf);
         deckblatt.draw();
 
@@ -314,7 +314,7 @@ class PDFGenerator {
             throw new Error("Ungültige Seite");
         }
 
-        const pdf = new jsPDF("p", "mm", "a5");
+        const pdf = new jsPDF({ orientation: "p", unit: "mm", format: "a5", compress: true });
         const msg = nachrichten[page - 1];
         if (!msg) {
             throw new Error("Nachricht nicht gefunden");
@@ -345,7 +345,7 @@ class PDFGenerator {
      * nicht (THW-Review 2026-10-04, B2).
      */
     generateInstructorPDFBlob(funkUebung: FunkUebung | Uebung, stand: UebungsleitungStorage | null = null) {
-        const pdf = new jsPDF({ orientation: "landscape", unit: "mm", format: "a4" });
+        const pdf = new jsPDF({ orientation: "landscape", unit: "mm", format: "a4", compress: true });
 
         const uebungsLeitung = new Uebungsleitung(funkUebung, pdf, stand);
         uebungsLeitung.draw();
@@ -379,7 +379,7 @@ class PDFGenerator {
             return null;
         }
         const geladen = drehbuch ?? await ladeFuehrungsstellenUebung(slug);
-        const pdf = new jsPDF({ orientation: "landscape", unit: "mm", format: "a4" });
+        const pdf = new jsPDF({ orientation: "landscape", unit: "mm", format: "a4", compress: true });
         const dokument = new Drehbuch(funkUebung, geladen, pdf);
         dokument.draw();
         return dokument.blob();
@@ -405,7 +405,7 @@ class PDFGenerator {
      * jeweils mit Deckblatt als Trennblatt.
      */
     async generatePlainNachrichtenvordruckPrintBlob(funkUebung: FunkUebung) {
-        const pdf = new jsPDF({ orientation: "p", unit: "mm", format: "a5" });
+        const pdf = new jsPDF({ orientation: "p", unit: "mm", format: "a5", compress: true });
         let seiteBelegt = false;
         funkUebung.teilnehmerListe.forEach(teilnehmer => {
             const msgs = funkUebung.nachrichten[teilnehmer] || [];
@@ -431,7 +431,7 @@ class PDFGenerator {
      * jeweils mit Deckblatt als Trennblatt.
      */
     async generatePlainMeldevordruckPrintBlob(funkUebung: FunkUebung) {
-        const pdf = new jsPDF({ orientation: "p", unit: "mm", format: "a5" });
+        const pdf = new jsPDF({ orientation: "p", unit: "mm", format: "a5", compress: true });
         let seiteBelegt = false;
         funkUebung.teilnehmerListe.forEach((teilnehmer: string) => {
             const msgs = funkUebung.nachrichten[teilnehmer] || [];
@@ -520,7 +520,7 @@ class PDFGenerator {
      * Erstellt eine Druck-PDF mit allen Nachrichtenvordrucken inkl. Deckblatt pro Teilnehmer.
      */
     async generateAllNachrichtenvordruckPrintBlob(funkUebung: FunkUebung) {
-        const pdf = new jsPDF("p", "mm", "a5");
+        const pdf = new jsPDF({ orientation: "p", unit: "mm", format: "a5", compress: true });
         let seiteBelegt = false;
         funkUebung.teilnehmerListe.forEach((teilnehmer: string) => {
             const nachrichten = funkUebung.nachrichten[teilnehmer] || [];
@@ -545,7 +545,7 @@ class PDFGenerator {
      * Erstellt eine Druck-PDF mit allen Meldevordrucken inkl. Deckblatt pro Teilnehmer.
      */
     async generateAllMeldevordruckPrintBlob(funkUebung: FunkUebung) {
-        const pdf = new jsPDF("p", "mm", "a5");
+        const pdf = new jsPDF({ orientation: "p", unit: "mm", format: "a5", compress: true });
         let seiteBelegt = false;
         funkUebung.teilnehmerListe.forEach((teilnehmer: string) => {
             const nachrichten = funkUebung.nachrichten[teilnehmer] || [];
