@@ -51,13 +51,20 @@ export default {
           ],
           dest: 'dist/files'
         },
+        // Legacy-Build von pdf.js (gleiche Version): enthält core-js-Polyfills
+        // für sehr neue APIs wie Map.prototype.getOrInsertComputed, die der
+        // moderne Build voraussetzt. Ohne sie bleibt die Vordruck-Vorschau in
+        // älteren Browsern (gemessen: Chromium 141), älterem Safari und
+        // Android-WebView leer
+        // (THW-Review 2026-10-04, B1). Mehrkosten: rund 110 kB, nur beim
+        // Öffnen der Vorschau geladen.
         {
-          src: 'node_modules/pdfjs-dist/build/pdf.min.mjs',
+          src: 'node_modules/pdfjs-dist/legacy/build/pdf.min.mjs',
           dest: 'dist/pdfjs',
           rename: 'pdf.min.js'
         },
         {
-          src: 'node_modules/pdfjs-dist/build/pdf.worker.min.mjs',
+          src: 'node_modules/pdfjs-dist/legacy/build/pdf.worker.min.mjs',
           dest: 'dist/pdfjs',
           rename: 'pdf.worker.min.js'
         }

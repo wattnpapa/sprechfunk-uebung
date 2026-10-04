@@ -29,10 +29,18 @@ const loadPdfJs = async (): Promise<PdfJsModule> => {
             const pdf = mod as PdfJsModule;
             pdf.GlobalWorkerOptions.workerSrc = workerUrl;
             return pdf;
+        }).catch((err: unknown) => {
+            // Ein Fehlschlag (z. B. kurz kein Netz) darf nicht bis zum
+            // Neuladen haften bleiben: beim nächsten Blättern neu versuchen.
+            pdfJsPromise = null;
+            throw err;
         });
     }
     return pdfJsPromise;
 };
+
+/** Platzhalter im Vordruck-Fenster, wenn die Vorschau nicht gezeichnet werden kann. */
+const VORSCHAU_FEHLER_ID = "teilnehmerPdfFehler";
 
 /**
  * Standzeit der abgehenden Zeile: Verzug (380 ms) plus Dauer (--takt-kurz,
@@ -762,6 +770,9 @@ export class TeilnehmerView {
         this.togglePdfModal(showPdf);
     }
 
+    /** Objekt-URL des Vordrucks für den Ausweg „PDF öffnen“, wird je Seite ersetzt. */
+    private vorschauFallbackUrl: string | null = null;
+
     public async renderPdfPage(blob: Blob, page: number, totalPages: number) {
         const canvas = document.getElementById("teilnehmerPdfCanvas") as HTMLCanvasElement | null;
         const container = document.getElementById("teilnehmerPdfView");
@@ -769,7 +780,20 @@ export class TeilnehmerView {
         const prevBtn = document.getElementById("btn-doc-prev") as HTMLButtonElement | null;
         const nextBtn = document.getElementById("btn-doc-next") as HTMLButtonElement | null;
 
-        if (canvas && container) {
+        if (label) {
+            label.textContent = `Seite ${page} / ${totalPages}`;
+        }
+        if (prevBtn) {
+            prevBtn.disabled = page <= 1;
+        }
+        if (nextBtn) {
+            nextBtn.disabled = page >= totalPages;
+        }
+
+        if (!canvas || !container) {
+            return;
+        }
+        try {
             // ensure layout is measured correctly after modal/render changes
             await new Promise(resolve => requestAnimationFrame(() => resolve(null)));
             await new Promise(resolve => requestAnimationFrame(() => resolve(null)));
@@ -800,16 +824,41 @@ export class TeilnehmerView {
                 ctx.clearRect(0, 0, canvas.width, canvas.height);
                 await pdfPage.render({ canvasContext: ctx, viewport: hiResViewport }).promise;
             }
+            this.zeigeVorschauFehler(container, canvas, null);
+        } catch (err) {
+            console.error("Vordruck-Vorschau fehlgeschlagen:", err);
+            this.zeigeVorschauFehler(container, canvas, blob);
         }
-        if (label) {
-            label.textContent = `Seite ${page} / ${totalPages}`;
+    }
+
+    /**
+     * Zeigt statt eines leeren Rahmens eine Meldung mit Ausweg, wenn pdf.js
+     * die Seite nicht zeichnen kann (alter Browser, kein Netz beim ersten
+     * Laden). `blob === null` räumt die Meldung nach Erfolg wieder ab.
+     */
+    private zeigeVorschauFehler(container: HTMLElement, canvas: HTMLCanvasElement, blob: Blob | null): void {
+        if (this.vorschauFallbackUrl) {
+            URL.revokeObjectURL(this.vorschauFallbackUrl);
+            this.vorschauFallbackUrl = null;
         }
-        if (prevBtn) {
-            prevBtn.disabled = page <= 1;
+        container.querySelector(`#${VORSCHAU_FEHLER_ID}`)?.remove();
+        if (!blob) {
+            canvas.classList.remove("d-none");
+            return;
         }
-        if (nextBtn) {
-            nextBtn.disabled = page >= totalPages;
-        }
+        canvas.classList.add("d-none");
+        this.vorschauFallbackUrl = URL.createObjectURL(blob);
+        const hinweis = document.createElement("div");
+        hinweis.id = VORSCHAU_FEHLER_ID;
+        hinweis.className = "alert alert-warning m-3 teilnehmer-doc-fehler";
+        hinweis.setAttribute("role", "alert");
+        hinweis.innerHTML = `
+            <p class="mb-2"><strong>Die Vorschau lässt sich hier nicht anzeigen.</strong></p>
+            <p class="mb-3">Öffne den Vordruck als PDF oder arbeite mit der Tabelle weiter.
+            Ohne Netz hilft auch der Ausdruck aus dem ZIP.</p>
+            <a class="btn btn-primary" href="${this.vorschauFallbackUrl}" target="_blank" rel="noopener"
+               data-testid="vordruck-pdf-oeffnen">Vordruck als PDF öffnen</a>`;
+        container.appendChild(hinweis);
     }
 
     public setDocTransmitted(isTransmitted: boolean) {
