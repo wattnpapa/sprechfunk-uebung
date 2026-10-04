@@ -504,7 +504,13 @@ export function baueKurzGesagt(page) {
  * </section> allein hätte sieben Seiten übersprungen.
  */
 export function setzeEinleitungsbloecke(html, page) {
-    const bloecke = baueKurzGesagt(page) + baueInhaltsverzeichnis(html);
+    // Die Startseite ist die App-Hülle: ihre h2 sind Überschriften der
+    // Rollenansichten (Generator, Teilnehmer, Übungsleitung, Admin), keine
+    // Leseabschnitte. Ein Verzeichnis daraus verwies auf Ansichten, die dort
+    // gar nicht zu sehen sind, und „#teilnehmer“ schaltete die Route um
+    // (THW-Review 2026-10-04, B4).
+    const verzeichnis = page.slug === "" ? "" : baueInhaltsverzeichnis(html);
+    const bloecke = baueKurzGesagt(page) + verzeichnis;
     if (bloecke === "") return html;
 
     const h1 = html.search(/<h1[\s>]/i);
