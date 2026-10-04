@@ -640,6 +640,19 @@ code {
     --bs-btn-disabled-border-color: var(--text-3);
 }
 
+/* Dark Mode: gedämpfte Akzentfläche. Mit --akzent (#4a6fd0) war ein
+   vollbreiter Primärknopf die hellste Fläche der Seite, und im Hover lag
+   weißer Text auf --akzent-hell unter 4,5:1 (THW-Review 2026-10-04,
+   Night-Visibility Befunde 7 und 9). Kontrast zu Weiß: 5,9:1 bzw. 7,4:1. */
+[data-theme="dark"] .btn-primary {
+    --bs-btn-bg: #3d5fb8;
+    --bs-btn-border-color: #3d5fb8;
+    --bs-btn-hover-bg: #34529f;
+    --bs-btn-hover-border-color: var(--akzent-hell);
+    --bs-btn-active-bg: #34529f;
+    --bs-btn-active-border-color: var(--akzent-hell);
+}
+
 /* Bestätigend, aber nicht so schwer wie primär — die Akzentfläche bleibt
    allein der primären Aktion vorbehalten. */
 .btn-success,

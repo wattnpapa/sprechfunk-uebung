@@ -94,4 +94,23 @@ describe("Theme vor dem ersten Bild", () => {
         const { dom } = seite(vorlage, { gespeichert: "<script>", systemDunkel: true });
         expect(dom.window.document.body.getAttribute("data-theme")).toBe("dark");
     });
+
+    it("Primärknopf im Dark Mode: weißer Text mit mindestens 4,5:1, auch im Hover (Befunde 7/9)", () => {
+        const css = readFileSync(path.join(root, "src", "styles", "main.css"), "utf8");
+        const start = css.indexOf("[data-theme=\"dark\"] .btn-primary {");
+        expect(start).toBeGreaterThan(0);
+        const block = css.slice(start, css.indexOf("}", start));
+        const wert = (name: string) => new RegExp(`${name}:\\s*(#[0-9a-f]{6})`, "i").exec(block)?.[1] ?? "";
+        const leuchtdichte = (hex: string) => {
+            const kanal = (i: number) => {
+                const c = parseInt(hex.slice(i, i + 2), 16) / 255;
+                return c <= 0.04045 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4;
+            };
+            return 0.2126 * kanal(1) + 0.7152 * kanal(3) + 0.0722 * kanal(5);
+        };
+        const kontrastZuWeiss = (hex: string) => 1.05 / (leuchtdichte(hex) + 0.05);
+        for (const name of ["--bs-btn-bg", "--bs-btn-hover-bg", "--bs-btn-active-bg"]) {
+            expect(kontrastZuWeiss(wert(name)), name).toBeGreaterThanOrEqual(4.5);
+        }
+    });
 });
