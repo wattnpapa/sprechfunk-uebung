@@ -6,6 +6,8 @@ type PdfZipDeps = {
     sanitizeFileName: (name: string) => string;
     /** Nur Führungsstellen-Übungen haben ein Drehbuch; andere liefern null. */
     generateDrehbuchPDFBlob?: (funkUebung: FunkUebung) => Promise<Blob | null>;
+    /** Blatt für die beübte Stelle einer Führungsstellen-Übung; andere liefern null. */
+    generateAusgangslagePDFBlob?: (funkUebung: FunkUebung) => Promise<Blob | null>;
     generateTeilnehmerPDFsBlob: (funkUebung: FunkUebung) => Promise<Map<string, Blob>>;
     generateAllTeilnehmerUebersichtPrintBlob: (funkUebung: FunkUebung) => Promise<Blob>;
     generateInstructorPDFBlob: (funkUebung: FunkUebung) => Blob;
@@ -44,7 +46,9 @@ export function liesmichAlle(funkUebung: FunkUebung): string {
     if (funkUebung.fuehrungsstelle) {
         zeilen.push(
             "- Drehbuch_Fuehrungsstellen-Uebung.pdf: nur für Übungsleitung und Rollenspieler,",
-            "  nicht für die beübte Stelle."
+            "  nicht für die beübte Stelle.",
+            "- Ausgangslage_beuebte_Stelle.pdf: Lage, Auftrag und Funkverbindungen – das Blatt",
+            "  für die beübte Stelle, ohne Drehbuch und ohne erwartete Reaktionen."
         );
     }
     zeilen.push(
@@ -82,6 +86,12 @@ export async function generateAllPDFsAsZipBlob(
         const drehbuch = await deps.generateDrehbuchPDFBlob(funkUebung);
         if (drehbuch) {
             zip.file("Drehbuch_Fuehrungsstellen-Uebung.pdf", drehbuch);
+        }
+    }
+    if (funkUebung.fuehrungsstelle && deps.generateAusgangslagePDFBlob) {
+        const ausgangslage = await deps.generateAusgangslagePDFBlob(funkUebung);
+        if (ausgangslage) {
+            zip.file("Ausgangslage_beuebte_Stelle.pdf", ausgangslage);
         }
     }
 

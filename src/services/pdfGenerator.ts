@@ -11,6 +11,7 @@ import { Nachrichtenvordruck } from "../pdf/Nachrichtenvordruck.js";
 import { Teilnehmer } from "../pdf/Teilnehmer.js";
 import { Uebungsleitung } from "../pdf/Uebungsleitung.js";
 import { Drehbuch } from "../pdf/Drehbuch.js";
+import { Ausgangslage } from "../pdf/Ausgangslage.js";
 import { ladeFuehrungsstellenUebung } from "./FuehrungsstellenUebungService";
 import type { FuehrungsstellenUebung } from "../types/FuehrungsstellenUebung";
 import { uiFeedback } from "../core/UiFeedback";
@@ -385,6 +386,22 @@ class PDFGenerator {
         return dokument.blob();
     }
 
+    /**
+     * Blatt „Ausgangslage und Auftrag“ für die beübte Stelle einer
+     * Führungsstellen-Übung – ohne Rollen und erwartete Reaktionen.
+     */
+    async generateAusgangslagePDFBlob(funkUebung: FunkUebung, drehbuch?: FuehrungsstellenUebung): Promise<Blob | null> {
+        const slug = funkUebung.fuehrungsstelle?.slug;
+        if (!slug) {
+            return null;
+        }
+        const geladen = drehbuch ?? await ladeFuehrungsstellenUebung(slug);
+        const pdf = new jsPDF({ orientation: "p", unit: "mm", format: "a4", compress: true });
+        const dokument = new Ausgangslage(funkUebung, geladen, pdf);
+        dokument.draw();
+        return dokument.blob();
+    }
+
     async generateDrehbuchPDF(funkUebung: FunkUebung, drehbuch?: FuehrungsstellenUebung): Promise<void> {
         const blob = await this.generateDrehbuchPDFBlob(funkUebung, drehbuch);
         if (!blob) {
@@ -468,6 +485,7 @@ class PDFGenerator {
         const zipBlob = await generateAllPDFsAsZipBlob(funkUebung, {
             sanitizeFileName: this.sanitizeFileName,
             generateDrehbuchPDFBlob: this.generateDrehbuchPDFBlob.bind(this),
+            generateAusgangslagePDFBlob: this.generateAusgangslagePDFBlob.bind(this),
             generateTeilnehmerPDFsBlob: this.generateTeilnehmerPDFsBlob.bind(this),
             generateAllTeilnehmerUebersichtPrintBlob: this.generateAllTeilnehmerUebersichtPrintBlob.bind(this),
             generateInstructorPDFBlob: this.generateInstructorPDFBlob.bind(this),
