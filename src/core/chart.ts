@@ -76,6 +76,7 @@ export function themeFarben(): ThemeFarben {
 }
 
 let themeBeobachter: MutationObserver | null = null;
+let aktuelleFarben: ThemeFarben = { ...FALLBACK };
 
 /**
  * Setzt Text- und Rasterfarbe aller Diagramme aus dem aktuellen Theme und
@@ -89,11 +90,29 @@ let themeBeobachter: MutationObserver | null = null;
  * Wechsel ebenfalls.
  */
 export function wendeChartThemeAn(): void {
-    const farben = themeFarben();
-    Chart.defaults.color = farben.text2;
-    Chart.defaults.borderColor = farben.linie;
+    aktuelleFarben = themeFarben();
+    Chart.defaults.color = aktuelleFarben.text2;
+    Chart.defaults.borderColor = aktuelleFarben.linie;
     Object.values(Chart.instances).forEach(instanz => instanz.update("none"));
 }
+
+/**
+ * Achsen-Defaults als Funktionen: Chart.js kopiert die Werte von
+ * Chart.defaults.scale beim Anlegen eines Diagramms in dessen Optionen. Ein
+ * fester Farbwert bliebe dort nach einem Theme-Wechsel stehen; eine Funktion
+ * wird bei jedem Zeichnen neu ausgewertet.
+ */
+type Farbquelle = () => string;
+const achse = Chart.defaults.scale as unknown as {
+    ticks: { color: Farbquelle };
+    title: { color: Farbquelle };
+    grid: { color: Farbquelle };
+    border: { color: Farbquelle };
+};
+achse.ticks.color = () => aktuelleFarben.text2;
+achse.title.color = () => aktuelleFarben.text2;
+achse.grid.color = () => aktuelleFarben.linie;
+achse.border.color = () => aktuelleFarben.linie;
 
 /** Einmalig beim Start: Farben setzen und Theme-Wechsel beobachten. */
 export function initChartTheme(): void {

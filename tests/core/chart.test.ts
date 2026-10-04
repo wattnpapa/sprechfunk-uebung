@@ -42,6 +42,19 @@ describe("core/chart – Theme-Farben", () => {
         expect(Chart.defaults.color).toBe("#aab3c4");
         expect(Chart.defaults.borderColor).toBe("#262d3a");
         expect(update).toHaveBeenCalledWith("none");
+
+        // Achsen lesen die Farbe bei jedem Zeichnen neu (Chart.js kopiert die
+        // Achsen-Defaults beim Anlegen in die Diagrammoptionen).
+        const achse = Chart.defaults.scale as unknown as {
+            ticks: { color: () => string }; title: { color: () => string }; grid: { color: () => string };
+        };
+        expect(achse.ticks.color()).toBe("#aab3c4");
+        expect(achse.title.color()).toBe("#aab3c4");
+        expect(achse.grid.color()).toBe("#262d3a");
+        tokens({ "--text-2": "#5c6478", "--linie-fein": "#d7dce7" });
+        wendeChartThemeAn();
+        expect(achse.ticks.color()).toBe("#5c6478");
+        expect(achse.grid.color()).toBe("#d7dce7");
     });
 
     it("beobachtet den Theme-Wechsel am body", () => {
