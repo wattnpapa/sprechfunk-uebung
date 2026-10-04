@@ -27,6 +27,23 @@ import {
 // 200 kB, der ZIP-Export laeuft aber erst auf Klick. Rollup legt daraus einen
 // eigenen Chunk an, der beim Start nicht mitgeladen wird.
 
+/**
+ * Startet den Download eines Blobs. Die Objekt-URL wird erst nach einer
+ * Weile freigegeben: Browser lösen den Download asynchron auf, und eine
+ * sofort widerrufene URL kann ihn (bekannt aus Firefox) abbrechen. Der
+ * Ausdruck ist die Rückfallebene – er muss zuverlässig ankommen.
+ */
+function herunterladen(blob: Blob, dateiname: string): void {
+    const link = document.createElement("a");
+    const url = URL.createObjectURL(blob);
+    link.href = url;
+    link.download = dateiname;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    globalThis.setTimeout(() => URL.revokeObjectURL(url), 30_000);
+}
+
 class PDFGenerator {
     constructor() {
         if (typeof (jsPDF as any).API.autoTable !== "function") {
@@ -38,13 +55,7 @@ class PDFGenerator {
         this.generateTeilnehmerPDFsBlob(funkUebung).then(blobMap => {
             blobMap.forEach((blob, teilnehmer) => {
                 const fileName = `${teilnehmer}.pdf`;
-                const link = document.createElement("a");
-                link.href = URL.createObjectURL(blob);
-                link.download = fileName;
-                document.body.appendChild(link);
-                link.click();
-                document.body.removeChild(link);
-                URL.revokeObjectURL(link.href);
+                herunterladen(blob, fileName);
             });
 
             uiFeedback.success("Alle Teilnehmer PDFs wurden erfolgreich erstellt.");
@@ -89,13 +100,7 @@ class PDFGenerator {
 
     async generateAllTeilnehmerUebersichtPrint(funkUebung: FunkUebung): Promise<void> {
         const blob = await this.generateAllTeilnehmerUebersichtPrintBlob(funkUebung);
-        const link = document.createElement("a");
-        link.href = URL.createObjectURL(blob);
-        link.download = `Uebersicht_Alle_Teilnehmer_${this.sanitizeFileName(funkUebung.name)}.pdf`;
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-        URL.revokeObjectURL(link.href);
+        herunterladen(blob, `Uebersicht_Alle_Teilnehmer_${this.sanitizeFileName(funkUebung.name)}.pdf`);
     }
 
     async generateTeilnehmerDebriefPdfBlob(
@@ -125,13 +130,7 @@ class PDFGenerator {
         this.generateNachrichtenvordruckPDFsBlob(funkUebung).then(blobMap => {
             blobMap.forEach((blob, teilnehmer) => {
                 const fileName = `Nachrichtenvordruck_${teilnehmer}.pdf`;
-                const link = document.createElement("a");
-                link.href = URL.createObjectURL(blob);
-                link.download = fileName;
-                document.body.appendChild(link);
-                link.click();
-                document.body.removeChild(link);
-                URL.revokeObjectURL(link.href);
+                herunterladen(blob, fileName);
             });
 
             uiFeedback.success("Alle Nachrichtenvordruck PDFs wurden erfolgreich erstellt.");
@@ -228,13 +227,7 @@ class PDFGenerator {
         this.generateMeldevordruckPDFsBlob(funkUebung).then(blobMap => {
             blobMap.forEach((blob, teilnehmer) => {
                 const fileName = `Meldevordruck_${teilnehmer}.pdf`;
-                const link = document.createElement("a");
-                link.href = URL.createObjectURL(blob);
-                link.download = fileName;
-                document.body.appendChild(link);
-                link.click();
-                document.body.removeChild(link);
-                URL.revokeObjectURL(link.href);
+                herunterladen(blob, fileName);
             });
 
             uiFeedback.success("Alle Meldevordruck PDFs wurden erfolgreich erstellt.");
@@ -327,13 +320,7 @@ class PDFGenerator {
 
     generateInstructorPDF(funkUebung: FunkUebung) {
         const blob = this.generateInstructorPDFBlob(funkUebung);
-        const link = document.createElement("a");
-        link.href = URL.createObjectURL(blob);
-        link.download = "Uebungsleitung.pdf";
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-        URL.revokeObjectURL(link.href);
+        herunterladen(blob, "Uebungsleitung.pdf");
     }
 
     /**
@@ -357,13 +344,7 @@ class PDFGenerator {
     /** Lädt das Übungsleitungs-PDF mit aktuellem Stand herunter. */
     downloadUebungsleitungPDF(uebung: Uebung, stand: UebungsleitungStorage | null): void {
         const blob = this.generateInstructorPDFBlob(uebung, stand);
-        const link = document.createElement("a");
-        link.href = URL.createObjectURL(blob);
-        link.download = `Uebungsleitung_${uebung.name}_${uebung.id}.pdf`.replace(/\s+/g, "_");
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-        URL.revokeObjectURL(link.href);
+        herunterladen(blob, `Uebungsleitung_${uebung.name}_${uebung.id}.pdf`.replace(/\s+/g, "_"));
     }
 
     sanitizeFileName(name: string) {
@@ -408,13 +389,7 @@ class PDFGenerator {
             uiFeedback.error("Diese Übung hat kein Drehbuch.");
             return;
         }
-        const link = document.createElement("a");
-        link.href = URL.createObjectURL(blob);
-        link.download = "Drehbuch_Fuehrungsstellen-Uebung.pdf";
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-        URL.revokeObjectURL(link.href);
+        herunterladen(blob, "Drehbuch_Fuehrungsstellen-Uebung.pdf");
     }
 
     /**
@@ -503,13 +478,7 @@ class PDFGenerator {
             generateMeldevordruckPDFForTeilnehmer: this.generateMeldevordruckPDFForTeilnehmer.bind(this)
         });
 
-        const link = document.createElement("a");
-        link.href = URL.createObjectURL(zipBlob);
-        link.download = createZipDownloadName(funkUebung, this.sanitizeFileName);
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-        URL.revokeObjectURL(link.href);
+        herunterladen(zipBlob, createZipDownloadName(funkUebung, this.sanitizeFileName));
     }
 
     async generateTeilnehmerPDFsAsZip(funkUebung: FunkUebung, teilnehmer: string): Promise<Blob> {

@@ -1,4 +1,4 @@
-import { describe, expect, it } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 import pdfGenerator from "../../src/services/pdfGenerator";
 import { FunkUebung } from "../../src/models/FunkUebung";
 import type { UebungsleitungStorage } from "../../src/types/Storage";
@@ -41,5 +41,32 @@ describe("pdfGenerator – Übungsleitungs-PDF", () => {
     it("erzeugt das leere Papier-PDF für das ZIP", () => {
         const blob = pdfGenerator.generateInstructorPDFBlob(uebung());
         expect(blob.size).toBeGreaterThan(1000);
+    });
+
+    describe("Download", () => {
+        afterEach(() => {
+            vi.useRealTimers();
+            vi.unstubAllGlobals();
+            vi.restoreAllMocks();
+        });
+
+        it("lädt mit Dateinamen herunter und gibt die URL erst später frei", () => {
+            vi.useFakeTimers();
+            const link = { href: "", download: "", click: vi.fn() };
+            vi.stubGlobal("document", {
+                createElement: () => link,
+                body: { appendChild: vi.fn(), removeChild: vi.fn() }
+            });
+            vi.spyOn(URL, "createObjectURL").mockReturnValue("blob:x");
+            const revoke = vi.spyOn(URL, "revokeObjectURL").mockImplementation(() => undefined);
+
+            pdfGenerator.downloadUebungsleitungPDF(uebung(), null);
+
+            expect(link.click).toHaveBeenCalled();
+            expect(link.download).toBe("Uebungsleitung_Dienstabend_11111111-2222-3333-4444-555555555555.pdf");
+            expect(revoke).not.toHaveBeenCalled();
+            vi.advanceTimersByTime(30_000);
+            expect(revoke).toHaveBeenCalledWith("blob:x");
+        });
     });
 });
