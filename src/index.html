@@ -103,6 +103,12 @@
 <!-- Container für die verschiedenen Views. Das <main>-Landmark umfasst alle
      Routen-Bereiche inkl. Einstiegstext (Accessibility: landmark-one-main). -->
 <main id="appMain">
+<!-- Teilnehmer- und Leitungs-Links: Bis das Bundle die Route übernimmt, zeigt
+     die Seite einen Ladehinweis statt des Generator-Formulars, das bei
+     langsamem Netz sonst sekundenlang zum Ausfüllen einlädt (THW-Review
+     2026-10-04, offline P2-2). AppView.applyAppMode() nimmt die Klasse ab. -->
+<p id="appLadehinweis" class="app-ladehinweis container my-4" role="status">Übung wird geladen …</p>
+<script>if(/^#\/(teilnehmer|uebungsleitung|admin)([/?]|$)|^#(teilnehmer|uebungsleitung|admin)\//.test(location.hash))document.documentElement.classList.add("app-route-laedt");</script>
 <div id="uebungsleitungArea" data-testid="route-uebungsleitung" style="display:none;">
     <div class="container my-4 app-view-shell">
         <div class="card mb-3">

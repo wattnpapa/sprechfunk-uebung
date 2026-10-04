@@ -21,6 +21,7 @@ const mocks = vi.hoisted(() => ({
     getDocumentById: vi.fn(),
     generateDebrief: vi.fn(),
     jspdfSave: vi.fn(),
+    downloadUebungsleitungPdf: vi.fn(),
     updateLiveSyncState: vi.fn(),
     publishLeitungPublic: vi.fn(),
     publishLeitungInternal: vi.fn(),
@@ -104,6 +105,7 @@ vi.mock("../../src/core/UiFeedback", () => ({
 vi.mock("../../src/services/pdfGenerator", () => ({
     default: {
         generateTeilnehmerDebriefPdfBlob: mocks.generateDebrief,
+        downloadUebungsleitungPDF: mocks.downloadUebungsleitungPdf,
         sanitizeFileName: (v: string) => v
     }
 }));
@@ -325,7 +327,11 @@ describe("UebungsleitungController", () => {
         (c as any).storage = { teilnehmer: {}, nachrichten: {} };
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         await (c as any).exportPdf();
-        expect(mocks.jspdfSave).toHaveBeenCalled();
+        // B2: Export über den PDF-Dienst (dort ist autoTable angemeldet), mit aktuellem Stand.
+        expect(mocks.downloadUebungsleitungPdf).toHaveBeenCalledWith(
+            expect.objectContaining({ id: "u1" }),
+            expect.objectContaining({ nachrichten: {} })
+        );
 
         mocks.uiConfirm.mockReturnValueOnce(false);
         // eslint-disable-next-line @typescript-eslint/no-explicit-any

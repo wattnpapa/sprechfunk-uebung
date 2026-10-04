@@ -2,6 +2,7 @@
 import { jsPDF } from "jspdf";
 import { applyPlugin } from "jspdf-autotable";
 import type { Nachricht } from "../types/Nachricht";
+import type { Uebung } from "../types/Uebung";
 
 import { DeckblattTeilnehmer } from "../pdf/DeckblattTeilnehmer.js";
 import { FunkUebung } from "../models/FunkUebung.js";
@@ -10,6 +11,7 @@ import { Nachrichtenvordruck } from "../pdf/Nachrichtenvordruck.js";
 import { Teilnehmer } from "../pdf/Teilnehmer.js";
 import { Uebungsleitung } from "../pdf/Uebungsleitung.js";
 import { Drehbuch } from "../pdf/Drehbuch.js";
+import { Ausgangslage } from "../pdf/Ausgangslage.js";
 import { ladeFuehrungsstellenUebung } from "./FuehrungsstellenUebungService";
 import type { FuehrungsstellenUebung } from "../types/FuehrungsstellenUebung";
 import { uiFeedback } from "../core/UiFeedback";
@@ -25,6 +27,23 @@ import {
 // 200 kB, der ZIP-Export laeuft aber erst auf Klick. Rollup legt daraus einen
 // eigenen Chunk an, der beim Start nicht mitgeladen wird.
 
+/**
+ * Startet den Download eines Blobs. Die Objekt-URL wird erst nach einer
+ * Weile freigegeben: Browser lösen den Download asynchron auf, und eine
+ * sofort widerrufene URL kann ihn (bekannt aus Firefox) abbrechen. Der
+ * Ausdruck ist die Rückfallebene – er muss zuverlässig ankommen.
+ */
+function herunterladen(blob: Blob, dateiname: string): void {
+    const link = document.createElement("a");
+    const url = URL.createObjectURL(blob);
+    link.href = url;
+    link.download = dateiname;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    globalThis.setTimeout(() => URL.revokeObjectURL(url), 30_000);
+}
+
 class PDFGenerator {
     constructor() {
         if (typeof (jsPDF as any).API.autoTable !== "function") {
@@ -36,13 +55,7 @@ class PDFGenerator {
         this.generateTeilnehmerPDFsBlob(funkUebung).then(blobMap => {
             blobMap.forEach((blob, teilnehmer) => {
                 const fileName = `${teilnehmer}.pdf`;
-                const link = document.createElement("a");
-                link.href = URL.createObjectURL(blob);
-                link.download = fileName;
-                document.body.appendChild(link);
-                link.click();
-                document.body.removeChild(link);
-                URL.revokeObjectURL(link.href);
+                herunterladen(blob, fileName);
             });
 
             uiFeedback.success("Alle Teilnehmer PDFs wurden erfolgreich erstellt.");
@@ -56,7 +69,7 @@ class PDFGenerator {
         const blobMap = new Map();
 
         funkUebung.teilnehmerListe.forEach(teilnehmer => {
-            const pdf = new jsPDF({ orientation: "landscape", unit: "mm", format: "a4" });
+            const pdf = new jsPDF({ orientation: "landscape", unit: "mm", format: "a4", compress: true });
 
             const teilnehmerPdf = new Teilnehmer(teilnehmer, funkUebung, pdf);
             teilnehmerPdf.draw();
@@ -73,7 +86,7 @@ class PDFGenerator {
      * in der Reihenfolge der Teilnehmerverwaltung.
      */
     async generateAllTeilnehmerUebersichtPrintBlob(funkUebung: FunkUebung): Promise<Blob> {
-        const pdf = new jsPDF({ orientation: "landscape", unit: "mm", format: "a4" });
+        const pdf = new jsPDF({ orientation: "landscape", unit: "mm", format: "a4", compress: true });
 
         funkUebung.teilnehmerListe.forEach((teilnehmer: string, index: number) => {
             if (index > 0) {
@@ -87,13 +100,7 @@ class PDFGenerator {
 
     async generateAllTeilnehmerUebersichtPrint(funkUebung: FunkUebung): Promise<void> {
         const blob = await this.generateAllTeilnehmerUebersichtPrintBlob(funkUebung);
-        const link = document.createElement("a");
-        link.href = URL.createObjectURL(blob);
-        link.download = `Uebersicht_Alle_Teilnehmer_${this.sanitizeFileName(funkUebung.name)}.pdf`;
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-        URL.revokeObjectURL(link.href);
+        herunterladen(blob, `Uebersicht_Alle_Teilnehmer_${this.sanitizeFileName(funkUebung.name)}.pdf`);
     }
 
     async generateTeilnehmerDebriefPdfBlob(
@@ -123,13 +130,7 @@ class PDFGenerator {
         this.generateNachrichtenvordruckPDFsBlob(funkUebung).then(blobMap => {
             blobMap.forEach((blob, teilnehmer) => {
                 const fileName = `Nachrichtenvordruck_${teilnehmer}.pdf`;
-                const link = document.createElement("a");
-                link.href = URL.createObjectURL(blob);
-                link.download = fileName;
-                document.body.appendChild(link);
-                link.click();
-                document.body.removeChild(link);
-                URL.revokeObjectURL(link.href);
+                herunterladen(blob, fileName);
             });
 
             uiFeedback.success("Alle Nachrichtenvordruck PDFs wurden erfolgreich erstellt.");
@@ -144,7 +145,7 @@ class PDFGenerator {
         funkUebung.teilnehmerListe.forEach((teilnehmer: string) => {
             const nachrichten = funkUebung.nachrichten[teilnehmer] || [];
 
-            const pdf = new jsPDF("p", "mm", "a5");
+            const pdf = new jsPDF({ orientation: "p", unit: "mm", format: "a5", compress: true });
             // Deckblatt als erste Seite
             const deckblatt = new DeckblattTeilnehmer(teilnehmer, funkUebung, pdf);
             deckblatt.draw();
@@ -175,7 +176,7 @@ class PDFGenerator {
         hideFooter = false
     ): Promise<{ blob: Blob; totalPages: number }> {
         const nachrichten = funkUebung.nachrichten[teilnehmer] || [];
-        const pdf = new jsPDF("p", "mm", "a5");
+        const pdf = new jsPDF({ orientation: "p", unit: "mm", format: "a5", compress: true });
         const deckblatt = new DeckblattTeilnehmer(teilnehmer, funkUebung, pdf);
         deckblatt.draw();
 
@@ -212,7 +213,7 @@ class PDFGenerator {
             throw new Error("Ungültige Seite");
         }
 
-        const pdf = new jsPDF("p", "mm", "a5");
+        const pdf = new jsPDF({ orientation: "p", unit: "mm", format: "a5", compress: true });
         const msg = nachrichten[page - 1];
         if (!msg) {
             throw new Error("Nachricht nicht gefunden");
@@ -226,13 +227,7 @@ class PDFGenerator {
         this.generateMeldevordruckPDFsBlob(funkUebung).then(blobMap => {
             blobMap.forEach((blob, teilnehmer) => {
                 const fileName = `Meldevordruck_${teilnehmer}.pdf`;
-                const link = document.createElement("a");
-                link.href = URL.createObjectURL(blob);
-                link.download = fileName;
-                document.body.appendChild(link);
-                link.click();
-                document.body.removeChild(link);
-                URL.revokeObjectURL(link.href);
+                herunterladen(blob, fileName);
             });
 
             uiFeedback.success("Alle Meldevordruck PDFs wurden erfolgreich erstellt.");
@@ -247,7 +242,7 @@ class PDFGenerator {
         funkUebung.teilnehmerListe.forEach((teilnehmer: string) => {
             const nachrichten = funkUebung.nachrichten[teilnehmer] || [];
 
-            const pdf = new jsPDF("p", "mm", "a5"); // A5 Hochformat
+            const pdf = new jsPDF({ orientation: "p", unit: "mm", format: "a5", compress: true }); // A5 Hochformat
             // Deckblatt als erste Seite
             const deckblatt = new DeckblattTeilnehmer(teilnehmer, funkUebung, pdf);
             deckblatt.draw();
@@ -276,7 +271,7 @@ class PDFGenerator {
         hideFooter = false
     ): Promise<{ blob: Blob; totalPages: number }> {
         const nachrichten = funkUebung.nachrichten[teilnehmer] || [];
-        const pdf = new jsPDF("p", "mm", "a5");
+        const pdf = new jsPDF({ orientation: "p", unit: "mm", format: "a5", compress: true });
         const deckblatt = new DeckblattTeilnehmer(teilnehmer, funkUebung, pdf);
         deckblatt.draw();
 
@@ -313,7 +308,7 @@ class PDFGenerator {
             throw new Error("Ungültige Seite");
         }
 
-        const pdf = new jsPDF("p", "mm", "a5");
+        const pdf = new jsPDF({ orientation: "p", unit: "mm", format: "a5", compress: true });
         const msg = nachrichten[page - 1];
         if (!msg) {
             throw new Error("Nachricht nicht gefunden");
@@ -325,25 +320,31 @@ class PDFGenerator {
 
     generateInstructorPDF(funkUebung: FunkUebung) {
         const blob = this.generateInstructorPDFBlob(funkUebung);
-        const link = document.createElement("a");
-        link.href = URL.createObjectURL(blob);
-        link.download = "Uebungsleitung.pdf";
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-        URL.revokeObjectURL(link.href);
+        herunterladen(blob, "Uebungsleitung.pdf");
     }
 
     /**
-     * Erstellt das PDF für die Übungsleitung.
+     * Erstellt das PDF für die Übungsleitung. Mit `stand` (Übungsleitungs-
+     * Ansicht) trägt es Anmeldezeiten, Notizen und Abgesetzt-Zeiten; ohne
+     * (Generator/ZIP) bleibt es ein leerer Papierplan zum Mitschreiben.
+     *
+     * Läuft bewusst über diesen Dienst: sein Konstruktor meldet das
+     * autoTable-Plugin bei jsPDF an. Ein direkt importiertes jsPDF hat es
+     * nicht (THW-Review 2026-10-04, B2).
      */
-    generateInstructorPDFBlob(funkUebung: FunkUebung) {
-        const pdf = new jsPDF({ orientation: "landscape", unit: "mm", format: "a4" });
+    generateInstructorPDFBlob(funkUebung: FunkUebung | Uebung, stand: UebungsleitungStorage | null = null) {
+        const pdf = new jsPDF({ orientation: "landscape", unit: "mm", format: "a4", compress: true });
 
-        const uebungsLeitung = new Uebungsleitung(funkUebung, pdf);
+        const uebungsLeitung = new Uebungsleitung(funkUebung, pdf, stand);
         uebungsLeitung.draw();
 
         return uebungsLeitung.blob();
+    }
+
+    /** Lädt das Übungsleitungs-PDF mit aktuellem Stand herunter. */
+    downloadUebungsleitungPDF(uebung: Uebung, stand: UebungsleitungStorage | null): void {
+        const blob = this.generateInstructorPDFBlob(uebung, stand);
+        herunterladen(blob, `Uebungsleitung_${uebung.name}_${uebung.id}.pdf`.replace(/\s+/g, "_"));
     }
 
     sanitizeFileName(name: string) {
@@ -360,8 +361,24 @@ class PDFGenerator {
             return null;
         }
         const geladen = drehbuch ?? await ladeFuehrungsstellenUebung(slug);
-        const pdf = new jsPDF({ orientation: "landscape", unit: "mm", format: "a4" });
+        const pdf = new jsPDF({ orientation: "landscape", unit: "mm", format: "a4", compress: true });
         const dokument = new Drehbuch(funkUebung, geladen, pdf);
+        dokument.draw();
+        return dokument.blob();
+    }
+
+    /**
+     * Blatt „Ausgangslage und Auftrag“ für die beübte Stelle einer
+     * Führungsstellen-Übung – ohne Rollen und erwartete Reaktionen.
+     */
+    async generateAusgangslagePDFBlob(funkUebung: FunkUebung, drehbuch?: FuehrungsstellenUebung): Promise<Blob | null> {
+        const slug = funkUebung.fuehrungsstelle?.slug;
+        if (!slug) {
+            return null;
+        }
+        const geladen = drehbuch ?? await ladeFuehrungsstellenUebung(slug);
+        const pdf = new jsPDF({ orientation: "p", unit: "mm", format: "a4", compress: true });
+        const dokument = new Ausgangslage(funkUebung, geladen, pdf);
         dokument.draw();
         return dokument.blob();
     }
@@ -372,13 +389,7 @@ class PDFGenerator {
             uiFeedback.error("Diese Übung hat kein Drehbuch.");
             return;
         }
-        const link = document.createElement("a");
-        link.href = URL.createObjectURL(blob);
-        link.download = "Drehbuch_Fuehrungsstellen-Uebung.pdf";
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-        URL.revokeObjectURL(link.href);
+        herunterladen(blob, "Drehbuch_Fuehrungsstellen-Uebung.pdf");
     }
 
     /**
@@ -386,7 +397,7 @@ class PDFGenerator {
      * jeweils mit Deckblatt als Trennblatt.
      */
     async generatePlainNachrichtenvordruckPrintBlob(funkUebung: FunkUebung) {
-        const pdf = new jsPDF({ orientation: "p", unit: "mm", format: "a5" });
+        const pdf = new jsPDF({ orientation: "p", unit: "mm", format: "a5", compress: true });
         let seiteBelegt = false;
         funkUebung.teilnehmerListe.forEach(teilnehmer => {
             const msgs = funkUebung.nachrichten[teilnehmer] || [];
@@ -412,7 +423,7 @@ class PDFGenerator {
      * jeweils mit Deckblatt als Trennblatt.
      */
     async generatePlainMeldevordruckPrintBlob(funkUebung: FunkUebung) {
-        const pdf = new jsPDF({ orientation: "p", unit: "mm", format: "a5" });
+        const pdf = new jsPDF({ orientation: "p", unit: "mm", format: "a5", compress: true });
         let seiteBelegt = false;
         funkUebung.teilnehmerListe.forEach((teilnehmer: string) => {
             const msgs = funkUebung.nachrichten[teilnehmer] || [];
@@ -449,6 +460,7 @@ class PDFGenerator {
         const zipBlob = await generateAllPDFsAsZipBlob(funkUebung, {
             sanitizeFileName: this.sanitizeFileName,
             generateDrehbuchPDFBlob: this.generateDrehbuchPDFBlob.bind(this),
+            generateAusgangslagePDFBlob: this.generateAusgangslagePDFBlob.bind(this),
             generateTeilnehmerPDFsBlob: this.generateTeilnehmerPDFsBlob.bind(this),
             generateAllTeilnehmerUebersichtPrintBlob: this.generateAllTeilnehmerUebersichtPrintBlob.bind(this),
             generateInstructorPDFBlob: this.generateInstructorPDFBlob.bind(this),
@@ -466,13 +478,7 @@ class PDFGenerator {
             generateMeldevordruckPDFForTeilnehmer: this.generateMeldevordruckPDFForTeilnehmer.bind(this)
         });
 
-        const link = document.createElement("a");
-        link.href = URL.createObjectURL(zipBlob);
-        link.download = createZipDownloadName(funkUebung, this.sanitizeFileName);
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-        URL.revokeObjectURL(link.href);
+        herunterladen(zipBlob, createZipDownloadName(funkUebung, this.sanitizeFileName));
     }
 
     async generateTeilnehmerPDFsAsZip(funkUebung: FunkUebung, teilnehmer: string): Promise<Blob> {
@@ -501,7 +507,7 @@ class PDFGenerator {
      * Erstellt eine Druck-PDF mit allen Nachrichtenvordrucken inkl. Deckblatt pro Teilnehmer.
      */
     async generateAllNachrichtenvordruckPrintBlob(funkUebung: FunkUebung) {
-        const pdf = new jsPDF("p", "mm", "a5");
+        const pdf = new jsPDF({ orientation: "p", unit: "mm", format: "a5", compress: true });
         let seiteBelegt = false;
         funkUebung.teilnehmerListe.forEach((teilnehmer: string) => {
             const nachrichten = funkUebung.nachrichten[teilnehmer] || [];
@@ -526,7 +532,7 @@ class PDFGenerator {
      * Erstellt eine Druck-PDF mit allen Meldevordrucken inkl. Deckblatt pro Teilnehmer.
      */
     async generateAllMeldevordruckPrintBlob(funkUebung: FunkUebung) {
-        const pdf = new jsPDF("p", "mm", "a5");
+        const pdf = new jsPDF({ orientation: "p", unit: "mm", format: "a5", compress: true });
         let seiteBelegt = false;
         funkUebung.teilnehmerListe.forEach((teilnehmer: string) => {
             const nachrichten = funkUebung.nachrichten[teilnehmer] || [];

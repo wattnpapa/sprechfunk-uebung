@@ -25,9 +25,11 @@ import { FooterView } from "./core/FooterView";
 import { featureFlags } from "./services/featureFlags";
 import { errorMonitoring } from "./services/errorMonitoring";
 import { initFirebaseClient } from "./services/firebaseClient";
+import { vorladenPdfGenerator } from "./services/pdfGeneratorLazy";
+import { registriereServiceWorker } from "./core/serviceWorker";
 
 // Registriert die genutzten Chart.js-Bausteine (Bar + Scatter) einmalig.
-import "./core/chart";
+import { initChartTheme } from "./core/chart";
 import type { Chart } from "chart.js";
 
 declare global {
@@ -124,6 +126,12 @@ function handleRoute(): void {
     // Update UI based on mode
     appView.applyAppMode(mode);
 
+    // Teilnehmer und Übungsleitung brauchen Vordruck und Ausdrucke gerade
+    // dann, wenn das Netz wackelt: den Druckteil vorladen, solange Netz da ist.
+    if (mode === "teilnehmer" || mode === "uebungsleitung") {
+        globalThis.setTimeout(vorladenPdfGenerator, 1500);
+    }
+
     // Dispatch to specific controllers
     if (mode === "uebungsleitung") {
         const uebungId = params[0];
@@ -158,6 +166,8 @@ function handleRoute(): void {
 window.addEventListener("DOMContentLoaded", () => {
     natoClock.init();
     themeManager.init();
+    // Diagrammfarben aus dem Theme, Neuzeichnen beim Theme-Wechsel.
+    initChartTheme();
     appView.initModals();
     appView.initGlobalListeners();
     // Routing sofort starten: Die Ansicht darf nicht auf den build.json-Fetch
@@ -166,6 +176,7 @@ window.addEventListener("DOMContentLoaded", () => {
     // Versionsanzeige im Footer läuft parallel hinterher.
     handleRoute();
     void loadBuildVersion();
+    registriereServiceWorker();
 });
 
 router.subscribe(() => handleRoute());

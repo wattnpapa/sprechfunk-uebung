@@ -356,9 +356,11 @@ code {
    Fläche. Nur LCARS macht daraus ein gestaltetes Panel. */
 /* Achtung: .app-view-shell sitzt auf denselben Elementen wie .container —
    hier darf kein padding gesetzt werden, sonst fällt der Satzspiegel weg. */
+/* Bewusst ohne isolation: isolate – ein eigener Stapelkontext sperrte die
+   Bootstrap-Dialoge der Ansichten (Vordruck-Fenster) unter die fixierte
+   Kopfzeile (THW-Review 2026-10-04, glove-touch P2-3). */
 .app-view-shell {
     position: relative;
-    isolation: isolate;
     background: none;
     border: 0;
     border-radius: var(--radius);
@@ -372,7 +374,11 @@ code {
 .app-header {
     position: sticky;
     top: 0;
-    z-index: 5000;
+    /* Unter Bootstraps Modal-Ebene (Hintergrund 1050, Dialog 1055): mit 5000
+       lag der Kopf über jedem Dialog, und auf dem Smartphone verdeckte er Titel
+       und Schließen-Knopf des Vordruck-Fensters (THW-Review 2026-10-04,
+       glove-touch P2-3, stress-test P1-3, night-visibility Befund 8). */
+    z-index: 1040;
     background: var(--kopf-fond);
     color: var(--kopf-auf);
     border-bottom: 4px solid var(--kopf-linie);
@@ -644,6 +650,19 @@ code {
     --bs-btn-disabled-color: var(--auf-akzent);
     --bs-btn-disabled-bg: var(--text-3);
     --bs-btn-disabled-border-color: var(--text-3);
+}
+
+/* Dark Mode: gedämpfte Akzentfläche. Mit --akzent (#4a6fd0) war ein
+   vollbreiter Primärknopf die hellste Fläche der Seite, und im Hover lag
+   weißer Text auf --akzent-hell unter 4,5:1 (THW-Review 2026-10-04,
+   Night-Visibility Befunde 7 und 9). Kontrast zu Weiß: 5,9:1 bzw. 7,4:1. */
+[data-theme="dark"] .btn-primary {
+    --bs-btn-bg: #3d5fb8;
+    --bs-btn-border-color: #3d5fb8;
+    --bs-btn-hover-bg: #34529f;
+    --bs-btn-hover-border-color: var(--akzent-hell);
+    --bs-btn-active-bg: #34529f;
+    --bs-btn-active-border-color: var(--akzent-hell);
 }
 
 /* Bestätigend, aber nicht so schwer wie primär — die Akzentfläche bleibt
@@ -1313,6 +1332,23 @@ select option {
     box-shadow: inset 4px 0 0 var(--warn-linie);
 }
 
+/* --- Ladehinweis für Teilnehmer-/Leitungs-Links (src/index.html) -------- */
+
+.app-ladehinweis {
+    display: none;
+    font-size: var(--t-l, 1.15rem);
+    color: var(--text-2);
+}
+
+.app-route-laedt .app-ladehinweis {
+    display: block;
+}
+
+.app-route-laedt #mainAppArea,
+.app-route-laedt #seoIntroArea {
+    display: none !important;
+}
+
 /* --- Kurzmeldungen (Toast) ----------------------------------------------- */
 
 .app-toast-container {
@@ -1348,6 +1384,25 @@ select option {
 
 .app-toast.is-error {
     border-left-color: var(--alarm);
+    display: flex;
+    align-items: flex-start;
+    gap: 0.5rem;
+    pointer-events: auto;
+}
+
+/* Fehler bleiben stehen, bis sie weggetippt werden – deshalb ein
+   ausreichend großes Ziel (auch mit Handschuh). */
+.app-toast-schliessen {
+    flex: 0 0 auto;
+    min-width: 44px;
+    min-height: 44px;
+    margin: -0.5rem -0.7rem -0.5rem auto;
+    border: 0;
+    background: transparent;
+    color: var(--text);
+    font-size: 1.4rem;
+    line-height: 1;
+    cursor: pointer;
 }
 
 /* =============================================================================
@@ -3125,6 +3180,7 @@ html:has(> body[data-theme="startrek"]) {
 /* --- Ansichtsrahmen und Karten: Säule + Kopfbalken ----------------------- */
 
 [data-theme="startrek"] .app-view-shell {
+    isolation: isolate;
     background: #000;
     border: 0;
     border-radius: 0;

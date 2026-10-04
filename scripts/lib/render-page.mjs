@@ -5,6 +5,7 @@
 // Damit prüft der Vitest-Test genau den Code, der auch den Build erzeugt – eine
 // zweite Nachbildung im Test würde irgendwann auseinanderlaufen.
 
+import { setzeFruehesThema } from "./theme-init.mjs";
 import { HUB_CATEGORIES, HUB_SLUG, SITE_PAGES, SITE_URL } from "../site-pages.mjs";
 import { ogUrl } from "./og-bilder.mjs";
 import { hatDiagramm, renderDiagramm } from "./diagramme.mjs";
@@ -77,6 +78,7 @@ export function renderPageWithStructuredData({
     // ersetzt, bevor FAQ-Block und Datumszeile daran verankert werden.
     let html = quelle;
     html = ersetzeBestandszahlen(html, bestand);
+    html = setzeFruehesThema(html);
     html = setzeOgBild(html, page, title);
     html = setzeHauptnavigation(html, page);
     html = ersetzeBreadcrumb(html, page);
@@ -504,7 +506,13 @@ export function baueKurzGesagt(page) {
  * </section> allein hätte sieben Seiten übersprungen.
  */
 export function setzeEinleitungsbloecke(html, page) {
-    const bloecke = baueKurzGesagt(page) + baueInhaltsverzeichnis(html);
+    // Die Startseite ist die App-Hülle: ihre h2 sind Überschriften der
+    // Rollenansichten (Generator, Teilnehmer, Übungsleitung, Admin), keine
+    // Leseabschnitte. Ein Verzeichnis daraus verwies auf Ansichten, die dort
+    // gar nicht zu sehen sind, und „#teilnehmer“ schaltete die Route um
+    // (THW-Review 2026-10-04, B4).
+    const verzeichnis = page.slug === "" ? "" : baueInhaltsverzeichnis(html);
+    const bloecke = baueKurzGesagt(page) + verzeichnis;
     if (bloecke === "") return html;
 
     const h1 = html.search(/<h1[\s>]/i);

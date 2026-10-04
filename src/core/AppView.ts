@@ -56,5 +56,49 @@ export class AppView {
         // Der Einstiegstext der Startseite gehoert nur zur Generator-Ansicht;
         // in Teilnehmer-, Uebungsleitungs- und Admin-Ansicht wuerde er stoeren.
         setDisplay(document.getElementById("seoIntroArea"), mode === "generator" ? "block" : "none");
+
+        this.setzeNavigationsZustand(mode);
+        // Ladehinweis aus index.html: ab jetzt gilt die Route.
+        document.documentElement?.classList.remove("app-route-laedt");
+    }
+
+    /**
+     * Die Hauptnavigation steht statisch im HTML der Startseite, dort ist
+     * „Übung erstellen“ als aktuelle Seite markiert. In Teilnehmer-,
+     * Übungsleitungs- und Admin-Ansicht stimmte das nicht und lud dazu ein,
+     * die eigene Ansicht zu verlassen (THW-Review 2026-10-04). Außerdem wird
+     * die Navigation in den Übungsrollen auf dem Smartphone eingeklappt: dort
+     * zählt der erste Funkspruch, nicht die Website-Navigation.
+     */
+    private setzeNavigationsZustand(mode: AppMode): void {
+        if (typeof document.querySelector !== "function") {
+            return;
+        }
+        const startLink = document.querySelector<HTMLElement>("[data-testid=\"nav-start\"]");
+        if (startLink) {
+            const aktiv = mode === "generator";
+            startLink.classList.toggle("active", aktiv);
+            if (aktiv) {
+                startLink.setAttribute("aria-current", "page");
+            } else {
+                startLink.removeAttribute("aria-current");
+            }
+        }
+
+        const details = document.querySelector<HTMLDetailsElement>(".site-nav-details");
+        if (!details) {
+            return;
+        }
+        const schmal = typeof window.matchMedia === "function"
+            && window.matchMedia("(max-width: 767.98px)").matches;
+        const uebungsRolle = mode === "teilnehmer" || mode === "uebungsleitung";
+        if (schmal && uebungsRolle) {
+            details.open = false;
+            details.dataset["eingeklappt"] = "rolle";
+        } else if (details.dataset["eingeklappt"] === "rolle") {
+            // Nur wieder aufklappen, was hier eingeklappt wurde.
+            details.open = true;
+            delete details.dataset["eingeklappt"];
+        }
     }
 }
