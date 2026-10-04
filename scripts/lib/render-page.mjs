@@ -5,6 +5,7 @@
 // Damit prüft der Vitest-Test genau den Code, der auch den Build erzeugt – eine
 // zweite Nachbildung im Test würde irgendwann auseinanderlaufen.
 
+import { setzeFruehesThema } from "./theme-init.mjs";
 import { HUB_CATEGORIES, HUB_SLUG, SITE_PAGES, SITE_URL } from "../site-pages.mjs";
 import { ogUrl } from "./og-bilder.mjs";
 import { hatDiagramm, renderDiagramm } from "./diagramme.mjs";
@@ -77,6 +78,7 @@ export function renderPageWithStructuredData({
     // ersetzt, bevor FAQ-Block und Datumszeile daran verankert werden.
     let html = quelle;
     html = ersetzeBestandszahlen(html, bestand);
+    html = setzeFruehesThema(html);
     html = setzeOgBild(html, page, title);
     html = setzeHauptnavigation(html, page);
     html = ersetzeBreadcrumb(html, page);

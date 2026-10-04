@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { ThemeManager } from "../../src/core/ThemeManager";
+import { THEME_FARBEN, ThemeManager } from "../../src/core/ThemeManager";
 
 const makeLocalStorage = () => {
     const store = new Map<string, string>();
@@ -180,5 +180,47 @@ describe("ThemeManager", () => {
 
         matchMediaListeners[0]?.({ matches: true });
         expect(attrs.get("data-theme")).toBe("dark");
+    });
+
+    it("keeps an explicitly chosen theme when the system theme changes (B5)", () => {
+        const { document, attrs } = makeDocument();
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        (globalThis as any).document = document;
+        const matchMediaListeners: Array<(e: { matches: boolean }) => void> = [];
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        (globalThis as any).window = {
+            matchMedia: vi.fn().mockReturnValue({
+                matches: false,
+                addEventListener: (_event: string, cb: (e: { matches: boolean }) => void) => {
+                    matchMediaListeners.push(cb);
+                }
+            })
+        };
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        (globalThis as any).localStorage.setItem("theme", "dark");
+
+        new ThemeManager().init();
+        expect(attrs.get("data-theme")).toBe("dark");
+
+        matchMediaListeners[0]?.({ matches: false });
+        expect(attrs.get("data-theme")).toBe("dark");
+        matchMediaListeners[0]?.({ matches: true });
+        expect(attrs.get("data-theme")).toBe("dark");
+    });
+
+    it("sets the browser theme-color to the header colour of the theme", () => {
+        const { document } = makeDocument();
+        const meta = { content: "", setAttribute(_k: string, v: string) { this.content = v; } };
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        (document as any).querySelector = (sel: string) => (sel.includes("theme-color") ? meta : null);
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        (globalThis as any).document = document;
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        (globalThis as any).window = {
+            matchMedia: vi.fn().mockReturnValue({ matches: true, addEventListener: vi.fn() })
+        };
+
+        new ThemeManager().init();
+        expect(meta.content).toBe(THEME_FARBEN.dark);
     });
 });
