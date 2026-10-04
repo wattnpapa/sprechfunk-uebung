@@ -2,8 +2,13 @@ import { FunkUebung } from "../models/FunkUebung";
 import { ladePdfGenerator } from "../services/pdfGeneratorLazy";
 
 interface LinkRowOptions {
+    /** Fachlicher Typ, landet in data-link-type (übung, übungsleitung, teilnehmer). */
     typ: string;
+    /** Sichtbare Beschriftung des Typs; ohne Angabe der Typ selbst. */
+    badge?: string;
     name: string;
+    /** Kurzer Satz, wer den Link bekommt und was er damit tut. */
+    empfaengerHinweis?: string;
     url: string;
     mailtoUrl?: string;
     uebung?: FunkUebung;
@@ -40,7 +45,9 @@ export class GeneratorLinksRenderer {
             teilnehmerLinksContainer,
             {
                 typ: "Übung",
-                name: "-",
+                badge: "Bearbeiten",
+                name: "Übung bearbeiten",
+                empfaengerHinweis: "Nur für dich – nicht an Teilnehmer geben. Darüber kommst du zu dieser Übung zurück.",
                 url: urlUebung,
                 mailtoUrl: this.createUebungMailtoLink(uebung.name || "Sprechfunk-Übung", urlUebung),
                 uebung
@@ -50,7 +57,9 @@ export class GeneratorLinksRenderer {
             teilnehmerLinksContainer,
             {
                 typ: "Übungsleitung",
-                name: "-",
+                badge: "Überwachen",
+                name: "Übung überwachen",
+                empfaengerHinweis: "Für die Übungsleitung während der Übung.",
                 url: urlUebungLeitung,
                 mailtoUrl: this.createUebungsleitungMailtoLink(uebung.name || "Sprechfunk-Übung", urlUebungLeitung)
             }
@@ -86,6 +95,7 @@ export class GeneratorLinksRenderer {
                         }),
                         uebung,
                         codeText: `Teilnehmer Code: ${uebungCode} / ${normalizedParticipantCode}`,
+                        empfaengerHinweis: "Link oder Codes an diese Funkstelle weitergeben.",
                         copyValue: joinText,
                         ...(uebung.teilnehmerStellen?.[name] ? { stelle: uebung.teilnehmerStellen[name] } : {})
                     }
@@ -97,7 +107,7 @@ export class GeneratorLinksRenderer {
     }
 
     private appendLinkRow(container: HTMLElement, options: LinkRowOptions): void {
-        const { typ, name, url, mailtoUrl, uebung, codeText, copyValue, stelle } = options;
+        const { typ, badge, name, empfaengerHinweis, url, mailtoUrl, uebung, codeText, copyValue, stelle } = options;
         const row = document.createElement("div");
         row.className = "generator-link-row";
         row.setAttribute("data-link-type", typ.toLowerCase());
@@ -106,18 +116,24 @@ export class GeneratorLinksRenderer {
         typeCell.className = "generator-link-type";
         const typeBadge = document.createElement("span");
         typeBadge.className = `generator-link-badge ${this.getTypeBadgeClass(typ)}`;
-        typeBadge.textContent = typ;
+        typeBadge.textContent = badge ?? typ;
         typeCell.appendChild(typeBadge);
         row.appendChild(typeCell);
 
         const nameCell = document.createElement("div");
         nameCell.className = "generator-link-name";
-        nameCell.textContent = name === "-" ? "Allgemein" : name;
+        nameCell.textContent = name;
         if (stelle) {
             const stelleZeile = document.createElement("div");
             stelleZeile.className = "small text-muted";
             stelleZeile.textContent = stelle;
             nameCell.appendChild(stelleZeile);
+        }
+        if (empfaengerHinweis) {
+            const hinweisZeile = document.createElement("div");
+            hinweisZeile.className = "small generator-link-empfaenger";
+            hinweisZeile.textContent = empfaengerHinweis;
+            nameCell.appendChild(hinweisZeile);
         }
         row.appendChild(nameCell);
 
@@ -289,8 +305,10 @@ export class GeneratorLinksRenderer {
         const bodyLines = [
             "Hallo,",
             "",
-            `hier ist der Link zur Übung "${uebungsName}":`,
+            `hier ist der Link zum Bearbeiten der Übung "${uebungsName}":`,
             uebungUrl,
+            "",
+            "Der Link ist für die Vorbereitung gedacht, nicht für Teilnehmer.",
             "",
             "Viele Grüße"
         ];

@@ -207,6 +207,8 @@ await page.goto(`${BASE}/`);
 await page.waitForSelector("#funkspruchVorlage option[value='thwleer']");
 await page.locator("#nameDerUebung").fill("Zeitversetzte Übung");
 await page.locator("#rufgruppe").fill("T_OL_GOLD-1");
+// Leitung und Vorlage sind seit dem THW-Review nicht mehr vorbelegt.
+await page.locator("#leitung").fill("Heros Wind 10");
 await page.locator("#spielModusXZeit").check();
 await page.waitForSelector("#xZeitOptionsContainer", { state: "visible" });
 await page.locator("#xZeitIntervallMinuten").fill("2");

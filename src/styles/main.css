@@ -1576,6 +1576,143 @@ select option {
     }
 }
 
+/* --- Generator: Rückmeldungen (THW-Review 2026-10-04) ----------------------- */
+
+.generator-action-buttons {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--r-2);
+    justify-content: flex-end;
+}
+
+.generator-entwurf-hinweis,
+.generator-entfernt-hinweis {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--r-2);
+}
+
+.generator-entwurf-hinweis[hidden],
+.generator-entfernt-hinweis[hidden],
+.generator-fehler[hidden],
+.generator-veraltet[hidden] {
+    display: none;
+}
+
+.generator-fehler {
+    white-space: pre-line;
+}
+
+/* Veraltetes Ergebnis: Links bleiben benutzbar, sehen aber nicht mehr aktuell aus. */
+#output-container.is-veraltet .generator-link-grid {
+    opacity: 0.7;
+}
+
+.generator-link-empfaenger {
+    color: var(--text-2);
+    margin-top: 0.15rem;
+}
+
+.generator-druck-hinweis {
+    border-left: 4px solid var(--warn-linie);
+    padding-left: var(--r-2);
+}
+
+.multiselect.is-invalid .multiselect-control {
+    border-color: var(--alarm);
+}
+
+/* Teilnehmertabelle: Spalten behalten eine lesbare Mindestbreite und die
+   Tabelle scrollt in der Karte, statt die Lösungswort-Spalte abzuschneiden. */
+.generator-teilnehmer-tabelle .teilnehmer-input {
+    min-width: 11rem;
+}
+
+.generator-teilnehmer-tabelle .stellenname-input {
+    min-width: 8rem;
+}
+
+/* Längstes vordefiniertes Wort: KATASTROPHENSCHUTZ (18 Zeichen) */
+.generator-teilnehmer-tabelle .loesungswort-input {
+    min-width: calc(19ch + 1.5rem);
+}
+
+/* Mit Stellennamen oder Lösungswörtern braucht die Tabelle eine ganze Zeile;
+   die beiden anderen Karten teilen sich dann die Zeile darüber. */
+@media (min-width: 992px) {
+    .generator-setup-layout:has(#teilnehmer-body .loesungswort-input, #teilnehmer-body .stellenname-input) > .col-md-4 {
+        width: 50%;
+    }
+
+    .generator-setup-layout:has(#teilnehmer-body .loesungswort-input, #teilnehmer-body .stellenname-input) > #teilnehmerVerwaltungCard {
+        width: 100%;
+    }
+}
+
+.generator-teilnehmer-tabelle .table {
+    margin-bottom: 0;
+}
+
+/* Tippziele auf Touch-Geräten (THW-Review glove-touch P3-1/P3-2) */
+@media (pointer: coarse) {
+    .generator-setup-layout .form-check,
+    #vorlagenUploadToggle > div {
+        min-height: 44px;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .generator-setup-layout .form-check .form-check-input {
+        float: none;
+        margin: 0;
+        flex: none;
+    }
+
+    #vorlagenUploadToggle input[type="radio"],
+    .generator-setup-layout .form-check-input {
+        width: 1.35rem;
+        height: 1.35rem;
+    }
+
+    .generator-setup-layout .multiselect-chip-remove {
+        min-width: 36px;
+        min-height: 32px;
+    }
+
+    .generator-setup-layout .delete-teilnehmer,
+    .fuehrungsstelle-abschnitt-entfernen,
+    .admin-aktionen .btn,
+    #adminPrevPage,
+    #adminNextPage {
+        min-height: 44px;
+        min-width: 44px;
+    }
+}
+
+/* --- Admin ---------------------------------------------------------------- */
+
+.admin-aktionen .btn + .btn {
+    margin-left: 0.25rem;
+}
+
+/* Löschen mit Abstand zu den harmlosen Aktionen */
+.admin-aktionen .admin-loeschen {
+    margin-left: var(--r-3);
+}
+
+/* Deaktivierte Blätterknöpfe bleiben lesbar (night-visibility Befund 9:
+   2,55:1 durch die Bootstrap-Deckkraft). */
+#adminPrevPage:disabled,
+#adminNextPage:disabled {
+    opacity: 1;
+    color: var(--text-2);
+    border-color: var(--linie);
+    background-color: var(--flaeche-2);
+}
+
 /* --- Übungsleitung -------------------------------------------------------- */
 
 #uebungsleitungMeta {

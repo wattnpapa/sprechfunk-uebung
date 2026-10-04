@@ -133,6 +133,8 @@ test.describe("Download und Wiedereinlesen im Generator", () => {
             await felder.nth(i).fill(namen[i] ?? `Heros Beispielstadt 9${i}/9${i}`);
         }
         await page.locator("#nameDerUebung").fill("Archiv-Round-Trip");
+        // Die Leitung ist Pflicht und steht nicht mehr als Beispielwert im Feld.
+        await page.locator("#leitung").fill("Heros Beispielstadt 10");
 
         // Verteilung ausdrücklich setzen statt sie zu erben: validateSpruchVerteilung
         // bricht ab, sobald „Sprüche pro Teilnehmer" kleiner ist als Anmeldung

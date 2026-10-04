@@ -635,4 +635,41 @@ describe("GeneratorView", () => {
         expect(html).toContain("Einsatzstelle Nord");
         expect(html).toContain("Führungsstab");
     });
+
+    it("maskiert Teilnehmerwerte und zeigt Platzhalter statt Beispielnamen", () => {
+        const view = new GeneratorView();
+        view.render();
+        view.renderTeilnehmerSection(["\"><b>x</b>", ""], {}, {}, false);
+        const inputs = Array.from(document.querySelectorAll<HTMLInputElement>(".teilnehmer-input"));
+        expect(inputs).toHaveLength(2);
+        expect(inputs[0]?.value).toBe("\"><b>x</b>");
+        expect(document.querySelector("#teilnehmer-body b")).toBeNull();
+        expect(inputs[1]?.placeholder).toBe("Funkrufname Teilnehmer 2");
+        expect(document.querySelector(".generator-teilnehmer-tabelle")).not.toBeNull();
+    });
+
+    it("wählt ohne gespeicherte Auswahl keine Vorlage vor", () => {
+        const view = new GeneratorView();
+        view.render();
+        view.populateTemplateSelect({ thwleer: { text: "THW" }, vorlageLustig: { text: "Lustig" } }, []);
+        expect(view.getSelectedTemplates()).toEqual([]);
+        view.populateTemplateSelect({ thwleer: { text: "THW" }, vorlageLustig: { text: "Lustig" } }, ["thwleer"]);
+        expect(view.getSelectedTemplates()).toEqual(["thwleer"]);
+    });
+
+    it("beschriftet die Links danach, wer sie bekommt", () => {
+        const view = new GeneratorView();
+        view.render();
+        const u = new FunkUebung("dev");
+        u.id = "u1";
+        u.uebungCode = "K7M4Q2";
+        u.teilnehmerIds = { AB12: "Heros 21/11" };
+        view.renderLinks(u);
+        const zeilen = Array.from(document.querySelectorAll<HTMLElement>(".generator-link-row"));
+        expect(zeilen.map(z => z.dataset["linkType"])).toEqual(["übung", "übungsleitung", "teilnehmer"]);
+        expect(zeilen[0]?.textContent).toContain("Übung bearbeiten");
+        expect(zeilen[0]?.textContent).toContain("nicht an Teilnehmer");
+        expect(zeilen[1]?.textContent).toContain("Übung überwachen");
+        expect(zeilen[2]?.textContent).toContain("an diese Funkstelle weitergeben");
+    });
 });

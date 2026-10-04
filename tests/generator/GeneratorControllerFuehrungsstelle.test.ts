@@ -152,7 +152,7 @@ describe("GeneratorController Führungsstellen-Übung", () => {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         (controller as any).view = baueView();
         await controller.startUebung();
-        expect(mocks.error).toHaveBeenLastCalledWith("Das Drehbuch konnte nicht geladen werden. Bitte erneut versuchen.");
+        expect(mocks.error).toHaveBeenLastCalledWith("Das Drehbuch konnte nicht geladen werden. Prüfe die Internetverbindung und versuche es erneut.");
 
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         (controller as any).generationService.generateFuehrungsstelle = vi.fn(() => {
@@ -181,10 +181,10 @@ describe("GeneratorController Führungsstellen-Übung", () => {
             "Beschreibung des Drehbuchs.",
             "Für 2 bis 4 Einsatzabschnitte · 5 Nachrichten · 180 Minuten."
         ]);
-        // Ein Abschnitt zu wenig: mit der Vorbelegung auf das Minimum aufgefüllt,
-        // der getippte Stellenname der ersten Zeile bleibt erhalten.
+        // Ein Abschnitt zu wenig: mit einer leeren Zeile auf das Minimum aufgefüllt
+        // (Beispielnamen nur als Platzhalter), der getippte Stellenname bleibt erhalten.
         expect(view.renderFuehrungsstellenAbschnitte).toHaveBeenCalledWith(
-            [{ funkrufname: "EA 11", stelle: "Abschnitt Nord" }, { funkrufname: "Heros Musterstadt 22/10", stelle: "Einsatzabschnitt 2" }],
+            [{ funkrufname: "EA 11", stelle: "Abschnitt Nord" }, { funkrufname: "", stelle: "" }],
             { min: 2, max: 4 }
         );
     });
@@ -229,7 +229,7 @@ describe("GeneratorController Führungsstellen-Übung", () => {
         aendere((liste: Zeile[]) => [...liste, naechster(liste)]);
         expect(zeilen).toEqual([
             zeile("Heros Musterstadt 21/10", "Nord"), zeile("Heros Musterstadt 22/10"), zeile("Heros Musterstadt 23/10"),
-            zeile("Heros Musterstadt 24/10", "Einsatzabschnitt 4")
+            zeile("")
         ]);
         aendere((liste: Zeile[]) => [...liste, naechster(liste)]);
         expect(zeilen).toHaveLength(4); // Obergrenze: der fünfte wird abgeschnitten
@@ -237,10 +237,9 @@ describe("GeneratorController Führungsstellen-Übung", () => {
         aendere((liste: Zeile[]) => liste.filter((_, i) => i !== 0));
         aendere((liste: Zeile[]) => liste.filter((_, i) => i !== 0));
         expect(zeilen).toHaveLength(2); // Untergrenze: wieder aufgefüllt
-        // Vorbelegte Namen, die schon vergeben sind, werden nicht doppelt vergeben.
-        expect(naechster(["21/10", "22/10", "23/10", "24/10", "25/10"].map(n => zeile(`Heros Musterstadt ${n}`))))
-            .toEqual(zeile("Heros Musterstadt 26/10", "Einsatzabschnitt 6"));
-        expect(naechster([zeile("Heros Musterstadt 22/10")])).toEqual(zeile("Einsatzabschnitt 2", "Einsatzabschnitt 2"));
+        // Neue Zeilen sind leer: Beispiel-Funkrufnamen stehen nur als Platzhalter
+        // im Formular und landen so nicht unbemerkt auf den Vordrucken.
+        expect(naechster([zeile("Heros Musterstadt 22/10")])).toEqual(zeile(""));
     });
 
     it("stellt beim Laden einer Führungsstellen-Übung Quelle und Rollen wieder her", async () => {

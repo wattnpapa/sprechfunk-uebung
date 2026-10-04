@@ -15,6 +15,17 @@ const setParticipants = async (page: Page, names: string[]) => {
     }
 };
 
+/**
+ * Pflichtfelder einer neuen Übung: Die Leitung steht nur noch als Platzhalter
+ * im Formular, und keine Vorlage ist vorausgewählt (THW-Review new-user P1-3).
+ */
+const fillPflichtfelder = async (page: Page, vorlagen: string[] = ["thwleer"]) => {
+    await page.locator("#leitung").fill("Heros E2E 10");
+    if (vorlagen.length > 0) {
+        await page.selectOption("#funkspruchVorlage", vorlagen);
+    }
+};
+
 const makeSeedData = () => {
     const base = {
         id: "u1",
@@ -260,7 +271,7 @@ test("@generator generates exercise with extended custom participant list", asyn
         "Heros Beispielstadt 61/10"
     ]);
     await page.locator("#nameDerUebung").fill("OV Funkprobe");
-    await page.selectOption("#funkspruchVorlage", ["thwleer"]);
+    await fillPflichtfelder(page);
 
     await page.locator("#startUebungBtn").click();
 
@@ -285,6 +296,9 @@ test("@generator generates exercise from szenario source", async ({ page }) => {
 
     await page.selectOption("#szenarioAuswahl", "unwetter-sturm");
     await expect(page.locator("#szenarioInfo")).toContainText("Teilnehmer");
+    // Eine neue Übung startet mit leeren Zeilen; Funkrufnamen trägt der Nutzer ein.
+    await setParticipants(page, Array.from({ length: 7 }, (_, i) => `Heros Szenario ${i + 1}/10`));
+    await fillPflichtfelder(page, []);
 
     await page.locator("#startUebungBtn").click();
 
@@ -306,12 +320,20 @@ test("@generator generates a fuehrungsstellen-uebung with roles instead of parti
     await expect(page.locator("#fuehrungsstelleInfo")).toContainText("Einsatzabschnitte");
     await expect(page.locator("#fuehrungsstelleAbschnitte .fuehrungsstelle-abschnitt")).toHaveCount(3);
 
+    // Die Abschnitte sind leer vorbelegt; Beispielnamen stehen nur als Platzhalter.
+    const abschnitte = page.locator("#fuehrungsstelleAbschnitte .fuehrungsstelle-abschnitt");
+    for (let i = 0; i < 3; i++) {
+        await expect(abschnitte.nth(i)).toHaveValue("");
+        await abschnitte.nth(i).fill(`Heros E2E 2${i + 1}/10`);
+    }
+    await page.locator("#leitung").fill("Heros E2E Leitung");
     await page.locator("#fuehrungsstelleBeuebteStelle").fill("Heros E2E 10");
     await page.locator("#fuehrungsstelleBeuebteStelleName").fill("Einsatzleitung E2E");
     await page.locator("#fuehrungsstelleUebergeordnet").fill("Kater E2E");
     await page.locator("#fuehrungsstelleUebergeordnetName").fill("Führungsstab E2E");
     await page.getByTestId("generator-fuehrungsstelle-abschnitt-hinzufuegen").click();
     await expect(page.locator("#fuehrungsstelleAbschnitte .fuehrungsstelle-abschnitt")).toHaveCount(4);
+    await abschnitte.nth(3).fill("Heros E2E 24/10");
     await page.locator("#fuehrungsstelleBeginn").fill("09:00");
 
     await page.locator("#startUebungBtn").click();
@@ -320,6 +342,9 @@ test("@generator generates a fuehrungsstellen-uebung with roles instead of parti
     // Vier Abschnitte plus übergeordnete Stelle; die beübte Stelle bekommt keinen Zugang.
     await expect(page.locator("#links-teilnehmer-container .generator-link-row[data-link-type='teilnehmer']")).toHaveCount(5);
     await expect(page.locator("#links-teilnehmer-container")).not.toContainText("Heros E2E 10");
+    // Stattdessen ein Hinweis mit Blatt für Lage und Auftrag.
+    await expect(page.locator("#beuebteStelleHinweis")).toContainText("Heros E2E 10");
+    await expect(page.getByTestId("generator-beuebte-stelle-blatt")).toBeVisible();
     await expect(page.locator("#links-teilnehmer-container")).toContainText("Kater E2E");
     // Der Stellenname steht wie in der klassischen Übung unter dem Funkrufnamen.
     await expect(page.locator("#links-teilnehmer-container")).toContainText("Führungsstab E2E");
@@ -336,24 +361,30 @@ test("@generator blocks generation when participant names are duplicates", async
 
     await setParticipants(page, [
         "Florian Musterstadt 33/44",
-        "Florian Musterstadt 33/44"
+        "florian  musterstadt 33/44 "
     ]);
+    await fillPflichtfelder(page);
 
     await page.locator("#startUebungBtn").click();
 
     await expect(page.locator("#globalToastContainer")).toContainText("Teilnehmernamen müssen eindeutig sein.");
     await expect(page.locator("#uebung-links")).toBeHidden();
+    // Die Meldung steht dauerhaft am Feld, nicht nur im Toast.
+    await expect(page.locator("#teilnehmer-body .teilnehmer-input.is-invalid")).toHaveCount(2);
+    await expect(page.locator("#generatorFehler")).toContainText("Teilnehmernamen müssen eindeutig sein.");
 });
 
 test("@generator blocks generation when no participant name is provided", async ({ page }) => {
     await page.goto("/");
 
     await setParticipants(page, ["", ""]);
+    await fillPflichtfelder(page);
 
     await page.locator("#startUebungBtn").click();
 
     await expect(page.locator("#globalToastContainer")).toContainText("Bitte mindestens einen Teilnehmer mit Funkrufnamen angeben.");
     await expect(page.locator("#uebung-links")).toBeHidden();
+    await expect(page.locator("#teilnehmer-body .teilnehmer-input").first()).toHaveClass(/is-invalid/);
 });
 
 test("@generator individual loesungswoerter shows per-participant inputs", async ({ page }) => {
@@ -895,10 +926,16 @@ test("@generator multi-select dropdown selects, searches and removes templates v
         Array.from((el as HTMLSelectElement).selectedOptions).map(o => o.value)
     );
 
-    // Standardmaessig sind alle Vorlagen vorausgewaehlt - ohne feste Anzahl
-    // pruefen, damit neue Vorlagen den Test nicht brechen.
+    // Eine neue Übung startet ohne Vorauswahl (auch nicht „Lustige
+    // Funksprüche“). Für den Ablauf unten zwei Vorlagen über das Widget wählen.
+    await expect(chips).toHaveCount(0);
+    expect(await selectedValues()).toEqual([]);
+    await search.click();
+    await container.locator(".multiselect-option", { hasText: "Funksprüche THW Leer" }).first().click();
+    await container.locator(".multiselect-option", { hasText: "Funksprüche THW Melle" }).first().click();
+    await page.keyboard.press("Escape");
     const before = await chips.count();
-    expect(before).toBeGreaterThan(0);
+    expect(before).toBe(2);
     expect(await selectedValues()).toContain("thwleer");
 
     await search.click();
@@ -945,7 +982,7 @@ test("@generator @chart statistics tab renders the distribution chart", async ({
 
     await setParticipants(page, ["Heros E2E 11/1", "Heros E2E 11/2"]);
     await page.locator("#spruecheProTeilnehmer").fill("5");
-    await page.selectOption("#funkspruchVorlage", ["thwleer"]);
+    await fillPflichtfelder(page);
     await page.locator("#startUebungBtn").click();
 
     await expect(page.locator("#uebung-links")).toBeVisible();
@@ -966,7 +1003,7 @@ test("@generator @pdf zip download contains generated pdfs", async ({ page }) =>
 
     await setParticipants(page, ["Heros E2E 11/1", "Heros E2E 11/2"]);
     await page.locator("#spruecheProTeilnehmer").fill("3");
-    await page.selectOption("#funkspruchVorlage", ["thwleer"]);
+    await fillPflichtfelder(page);
     await page.locator("#startUebungBtn").click();
 
     await expect(page.locator("#uebung-links")).toBeVisible();

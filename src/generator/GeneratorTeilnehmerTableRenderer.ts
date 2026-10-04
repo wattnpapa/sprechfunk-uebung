@@ -1,3 +1,5 @@
+import { escapeHtml } from "../utils/html";
+
 interface RenderTeilnehmerOptions {
     teilnehmerListe: string[];
     teilnehmerStellen: Record<string, string>;
@@ -33,6 +35,7 @@ export class GeneratorTeilnehmerTableRenderer {
             <div class="form-check mb-2">
                 <input class="form-check-input" type="checkbox" id="showStellennameCheckbox" ${showStellenname ? "checked" : ""}>
                 <label class="form-check-label" for="showStellennameCheckbox">Stellenname anzeigen</label>
+                <small class="form-text text-muted d-block">Bezeichnung der Stelle, z. B. „Zugtrupp“. Steht auf den Vordrucken als Anschrift und in der Übungsleitung neben dem Funkrufnamen.</small>
             </div>
         `;
     }
@@ -47,12 +50,14 @@ export class GeneratorTeilnehmerTableRenderer {
         }
         tableHeaders += "<th style=\"width: 50px;\">Aktion</th>";
         return `
-            <table class="table table-bordered">
-                <thead class="table-dark">
-                    <tr>${tableHeaders}</tr>
-                </thead>
-                <tbody id="teilnehmer-body"></tbody>
-            </table>
+            <div class="table-responsive generator-teilnehmer-tabelle">
+                <table class="table table-bordered">
+                    <thead class="table-dark">
+                        <tr>${tableHeaders}</tr>
+                    </thead>
+                    <tbody id="teilnehmer-body"></tbody>
+                </table>
+            </div>
         `;
     }
 
@@ -67,19 +72,19 @@ export class GeneratorTeilnehmerTableRenderer {
         const { teilnehmer, index, stellenname, loesungswort, showStellenname, isIndividuell } = options;
         const stellenInput = showStellenname
             ? `<td>
-                    <input type="text" class="form-control stellenname-input" data-index="${index}" value="${stellenname}" placeholder="Name der Stelle" aria-label="Name der Stelle für Teilnehmer ${index + 1}">
+                    <input type="text" class="form-control stellenname-input" data-index="${index}" value="${escapeHtml(stellenname)}" placeholder="Name der Stelle" aria-label="Name der Stelle für Teilnehmer ${index + 1}">
                </td>`
             : "";
         const loesungswortInput = isIndividuell
-            ? `<td><input type="text" class="form-control loesungswort-input" id="loesungswort-${index}" value="${loesungswort}" placeholder="Lösungswort" aria-label="Lösungswort für Teilnehmer ${index + 1}"></td>`
+            ? `<td><input type="text" class="form-control loesungswort-input" id="loesungswort-${index}" value="${escapeHtml(loesungswort)}" placeholder="Lösungswort" aria-label="Lösungswort für Teilnehmer ${index + 1}"></td>`
             : "";
         return `
             <td>
-                <input type="text" class="form-control teilnehmer-input" data-index="${index}" value="${teilnehmer}" aria-label="Funkrufname Teilnehmer ${index + 1}">
+                <input type="text" class="form-control teilnehmer-input" data-index="${index}" value="${escapeHtml(teilnehmer)}" placeholder="Funkrufname Teilnehmer ${index + 1}" aria-label="Funkrufname Teilnehmer ${index + 1}">
             </td>
             ${stellenInput}
             ${loesungswortInput}
-            <td><button class="btn btn-danger btn-sm delete-teilnehmer" data-index="${index}" aria-label="Teilnehmer ${index + 1} entfernen"><i class="fas fa-trash" aria-hidden="true"></i></button></td>
+            <td><button class="btn btn-danger btn-sm delete-teilnehmer" data-index="${index}" aria-label="Teilnehmer ${index + 1} entfernen" title="Teilnehmer entfernen"><i class="fas fa-trash" aria-hidden="true"></i></button></td>
         `;
     }
 }

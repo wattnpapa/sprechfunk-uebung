@@ -1051,7 +1051,10 @@ describe("GeneratorController", () => {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         (controller as any).firebaseService = firebaseService;
 
-        await expect(controller.startUebung()).rejects.toThrow("Template nicht gefunden: thwleer");
+        // Der Fehler landet sichtbar beim Nutzer statt als unbehandelte Ablehnung.
+        await expect(controller.startUebung()).resolves.toBeUndefined();
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        expect((globalThis as any).alert).toHaveBeenCalledWith(expect.stringContaining("Vorlagen konnten nicht geladen werden"));
 
         expect(generationService.generate).not.toHaveBeenCalled();
         expect(firebaseService.saveUebung).not.toHaveBeenCalled();

@@ -476,7 +476,9 @@ export class GeneratorView {
             const option = document.createElement("option");
             option.value = key;
             option.textContent = value.text;
-            option.selected = selected.length === 0 || selected.includes(key);
+            // Keine Vorauswahl: Die Organisation kennt nur der Nutzer, und
+            // „Lustige Funksprüche“ sollen nie unbemerkt mitlaufen.
+            option.selected = selected.includes(key);
             selectBox.appendChild(option);
         }
         // Das Multi-Select-Widget haengt an genau diesem Event und zeichnet

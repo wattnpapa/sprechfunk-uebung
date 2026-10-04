@@ -38,17 +38,43 @@ export class GeneratorStateService {
     }
 
     removeTeilnehmer(uebung: FunkUebung, index: number): void {
-        const teilnehmer = uebung.teilnehmerListe[index];
-        if (!teilnehmer) {
+        if (index < 0 || index >= uebung.teilnehmerListe.length) {
             return;
         }
-        if (uebung.teilnehmerStellen) {
-            uebung.teilnehmerStellen = this.omitKey(uebung.teilnehmerStellen, teilnehmer);
-        }
-        if (uebung.loesungswoerter) {
-            uebung.loesungswoerter = this.omitKey(uebung.loesungswoerter, teilnehmer);
+        const teilnehmer = uebung.teilnehmerListe[index] ?? "";
+        // Leere Zeilen (Vorbelegung ohne Beispielnamen) lassen sich ebenfalls
+        // entfernen; Stellen und Lösungswörter hängen nur an echten Namen.
+        if (teilnehmer && !this.kommtNochmalVor(uebung.teilnehmerListe, teilnehmer, index)) {
+            if (uebung.teilnehmerStellen) {
+                uebung.teilnehmerStellen = this.omitKey(uebung.teilnehmerStellen, teilnehmer);
+            }
+            if (uebung.loesungswoerter) {
+                uebung.loesungswoerter = this.omitKey(uebung.loesungswoerter, teilnehmer);
+            }
         }
         uebung.teilnehmerListe.splice(index, 1);
+    }
+
+    /** Fügt einen entfernten Teilnehmer samt Stelle und Lösungswort wieder ein. */
+    restoreTeilnehmer(
+        uebung: FunkUebung,
+        eintrag: { index: number; name: string; stelle?: string | undefined; loesungswort?: string | undefined }
+    ): void {
+        const index = Math.max(0, Math.min(eintrag.index, uebung.teilnehmerListe.length));
+        uebung.teilnehmerListe.splice(index, 0, eintrag.name);
+        if (!eintrag.name) {
+            return;
+        }
+        if (eintrag.stelle) {
+            uebung.teilnehmerStellen = { ...(uebung.teilnehmerStellen ?? {}), [eintrag.name]: eintrag.stelle };
+        }
+        if (eintrag.loesungswort) {
+            uebung.loesungswoerter = { ...(uebung.loesungswoerter ?? {}), [eintrag.name]: eintrag.loesungswort };
+        }
+    }
+
+    private kommtNochmalVor(liste: string[], name: string, ausser: number): boolean {
+        return liste.some((eintrag, i) => i !== ausser && eintrag === name);
     }
 
     resetLoesungswoerter(uebung: FunkUebung): void {

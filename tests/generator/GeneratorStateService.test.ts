@@ -202,4 +202,27 @@ describe("GeneratorStateService", () => {
         svc.setIndividuelleLoesungswoerter(uebung, []);
         expect(uebung.loesungswoerter.A).toBeUndefined();
     });
+
+    it("removeTeilnehmer entfernt auch leere Zeilen und lässt Daten gleichnamiger Zeilen stehen", () => {
+        const uebung = new FunkUebung("test");
+        uebung.teilnehmerListe = ["", "A", "A"];
+        uebung.teilnehmerStellen = { A: "Trupp" };
+        const svc = new GeneratorStateService();
+        svc.removeTeilnehmer(uebung, 0);
+        expect(uebung.teilnehmerListe).toEqual(["A", "A"]);
+        svc.removeTeilnehmer(uebung, 1);
+        expect(uebung.teilnehmerStellen).toEqual({ A: "Trupp" });
+    });
+
+    it("restoreTeilnehmer fügt Name, Stelle und Lösungswort an der alten Stelle ein", () => {
+        const uebung = new FunkUebung("test");
+        uebung.teilnehmerListe = ["A", "C"];
+        const svc = new GeneratorStateService();
+        svc.restoreTeilnehmer(uebung, { index: 1, name: "B", stelle: "Trupp", loesungswort: "FUNKE" });
+        expect(uebung.teilnehmerListe).toEqual(["A", "B", "C"]);
+        expect(uebung.teilnehmerStellen).toEqual({ B: "Trupp" });
+        expect(uebung.loesungswoerter).toEqual({ B: "FUNKE" });
+        svc.restoreTeilnehmer(uebung, { index: 99, name: "" });
+        expect(uebung.teilnehmerListe).toEqual(["A", "B", "C", ""]);
+    });
 });
