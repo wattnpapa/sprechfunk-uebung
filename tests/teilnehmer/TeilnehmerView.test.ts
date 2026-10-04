@@ -129,15 +129,17 @@ describe("TeilnehmerView", () => {
         modeBtn.click();
         expect(cb.onDocViewChange).toHaveBeenCalledWith("meldevordruck");
 
-        const checkbox = document.querySelector(".btn-toggle-uebertragen") as HTMLInputElement;
-        checkbox.dispatchEvent(new window.Event("change", { bubbles: true }));
-        const chip = document.querySelector(".btn-toggle-uebertragen-chip") as HTMLButtonElement;
-        chip.click();
-        expect(cb.onToggleUebertragen).toHaveBeenCalled();
+        const absetzen = document.querySelector("[data-aktion='absetzen']") as HTMLButtonElement;
+        absetzen.click();
+        expect(cb.onToggleUebertragen).toHaveBeenCalledWith(1, true);
 
         const modal = document.getElementById("teilnehmerDocModal") as HTMLElement;
         modal.classList.add("show");
+        // Nach dem Abhaken oben läuft die Tippsperre; hier später weitermachen.
+        const spaeter = Date.now() + 5000;
+        const nowSpy = vi.spyOn(Date, "now").mockReturnValue(spaeter);
         document.dispatchEvent(new window.KeyboardEvent("keydown", { code: "Space" }));
+        nowSpy.mockRestore();
         document.dispatchEvent(new window.KeyboardEvent("keydown", { key: "ü" }));
         document.dispatchEvent(new window.KeyboardEvent("keydown", { key: "m" }));
         document.dispatchEvent(new window.KeyboardEvent("keydown", { key: "n" }));
@@ -209,10 +211,10 @@ describe("TeilnehmerView", () => {
         full.bindEvents(onToggle, vi.fn(), vi.fn(), vi.fn(), vi.fn(), vi.fn(), vi.fn(), vi.fn(), vi.fn(), vi.fn());
 
         const tbody = document.getElementById("teilnehmerNachrichtenBody") as HTMLElement;
-        tbody.innerHTML += "<input class='btn-toggle-uebertragen' data-id='x'>";
-        const invalid = tbody.querySelector("input[data-id='x']") as HTMLInputElement;
-        invalid.dispatchEvent(new window.Event("change", { bubbles: true }));
-        expect(onToggle).not.toHaveBeenCalledWith(NaN, expect.anything());
+        tbody.innerHTML += "<button data-aktion='absetzen' data-id='x'>x</button><button data-aktion='quatsch' data-id='1'>y</button>";
+        (tbody.querySelector("[data-id='x']") as HTMLButtonElement).click();
+        (tbody.querySelector("[data-aktion='quatsch']") as HTMLButtonElement).click();
+        expect(onToggle).not.toHaveBeenCalled();
     });
 
     it("ignores shortcuts while typing in the search field", () => {
@@ -305,8 +307,8 @@ describe("TeilnehmerView", () => {
         const onToggle = vi.fn();
         full.bindEvents(onToggle, vi.fn(), vi.fn(), vi.fn(), vi.fn(), vi.fn(), vi.fn(), vi.fn(), vi.fn(), vi.fn());
         const tbody = document.getElementById("teilnehmerNachrichtenBody") as HTMLElement;
-        tbody.innerHTML += "<button class='btn-toggle-uebertragen-chip' data-id='abc' data-checked='1'>x</button>";
-        const invalidChip = tbody.querySelector(".btn-toggle-uebertragen-chip[data-id='abc']") as HTMLButtonElement;
+        tbody.innerHTML += "<button data-aktion='zuruecknehmen' data-id='abc'>x</button>";
+        const invalidChip = tbody.querySelector("[data-id='abc']") as HTMLButtonElement;
         invalidChip.click();
         expect(onToggle).not.toHaveBeenCalled();
     });
@@ -341,7 +343,7 @@ describe("TeilnehmerView", () => {
         expect(badge?.textContent).toContain("offline – wird nachgereicht");
 
         view.updateLiveSyncState("fehler");
-        expect(badge?.textContent).toContain("wird nicht übertragen");
+        expect(badge?.textContent).toContain("wird nicht gesendet");
 
         view.updateLiveSyncState("verbinde");
         expect(badge?.textContent).toContain("verbinde");
@@ -516,7 +518,7 @@ describe("TeilnehmerView – Fokus-Modus", () => {
         const view = renderXZeit();
         renderMitStorage(view, { 1: { uebertragen: true }, 2: { uebertragen: true } }, "11:55");
 
-        expect(document.getElementById("teilnehmerFokusCard")?.textContent).toContain("Alle Meldungen übertragen");
+        expect(document.getElementById("teilnehmerFokusCard")?.textContent).toContain("Alle Meldungen abgesetzt");
     });
 
     it("bittet ohne Basis um den X-Zeit-Start", () => {
@@ -567,4 +569,255 @@ describe("TeilnehmerView – Fokus-Modus", () => {
         expect(document.getElementById("fokusCountdown")?.textContent).toBe("15:00");
     });
 
+    it("bietet die zuletzt abgesetzte Meldung zum Zurücknehmen an und sperrt kurz nach einem Tipp", () => {
+        const view = renderXZeit();
+        const onUebertragen = vi.fn();
+        const onZurueck = vi.fn();
+        view.bindFokusEvents(vi.fn(), onUebertragen, onZurueck);
+        const storage = {
+            hideTransmitted: false, fokusModus: true,
+            nachrichten: { 1: { uebertragen: true, uebertragenUm: "2026-07-30T11:58:00.000Z" } }
+        };
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        view.renderNachrichten([...nachrichten, { id: 3, empfaenger: ["D"], nachricht: "Dritte", xZeitSlot: 1 }], storage as any,
+            { showXZeit: true, xZeitBasis: "11:55" });
+
+        const card = document.getElementById("teilnehmerFokusCard") as HTMLElement;
+        expect(card.textContent).toContain("Zuletzt abgesetzt: Meldung 1");
+        expect(card.textContent).toContain("Als abgesetzt markieren");
+
+        // Doppeltipp: der zweite Tipp landet auf der nachrückenden Meldung und wird ignoriert.
+        (card.querySelector("[data-fokus-uebertragen='3']") as HTMLButtonElement).click();
+        (card.querySelector("[data-fokus-uebertragen='3']") as HTMLButtonElement).click();
+        expect(onUebertragen).toHaveBeenCalledTimes(1);
+
+        vi.advanceTimersByTime(1100);
+        (card.querySelector("[data-fokus-zuruecknehmen='1']") as HTMLButtonElement).click();
+        expect(onZurueck).toHaveBeenCalledWith(1);
+    });
+
+});
+
+describe("TeilnehmerView – Bedienung am Handy (THW-Review 2026-10-04)", () => {
+    beforeEach(() => {
+        setupDom();
+        vi.useFakeTimers();
+        vi.setSystemTime(new Date(2026, 9, 4, 19, 0, 0));
+    });
+
+    afterEach(() => {
+        vi.useRealTimers();
+    });
+
+    const callbacks = () => ({
+        onToggle: vi.fn(),
+        onDocToggle: vi.fn()
+    });
+
+    const renderMit = (storageNachrichten: Record<string, unknown>, hide = false) => {
+        const view = new TeilnehmerView();
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        view.renderHeader({ name: "Wellenbrecher", datum: "2026-10-04T09:00:00.000Z", rufgruppe: "RG", leitung: "L" } as any, "Alpha");
+        const cb = callbacks();
+        view.bindEvents(cb.onToggle, vi.fn(), vi.fn(), vi.fn(), vi.fn(), vi.fn(), vi.fn(), cb.onDocToggle, vi.fn(), vi.fn());
+        view.renderNachrichten(
+            [
+                { id: 1, empfaenger: ["B"], nachricht: "eins" },
+                { id: 2, empfaenger: ["C"], nachricht: "zwei" },
+                { id: 3, empfaenger: ["D"], nachricht: "drei" }
+            ],
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            { hideTransmitted: hide, nachrichten: storageNachrichten } as any
+        );
+        return { view, cb };
+    };
+
+    it("hat je Spruch genau einen Abhak-Knopf und keinen zweiten Schalter für dieselbe Aktion", () => {
+        renderMit({});
+        const zeile = document.querySelector("#teilnehmerNachrichtenBody tr") as HTMLElement;
+        expect(zeile.querySelectorAll("[data-aktion]")).toHaveLength(1);
+        expect(zeile.querySelector("input[type='checkbox']")).toBeNull();
+        expect(zeile.querySelector("[data-aktion='absetzen']")?.textContent).toContain("Als abgesetzt markieren");
+        // Der Status ist eine Anzeige, kein Knopf.
+        expect(zeile.querySelector(".status-chip")?.tagName).toBe("SPAN");
+    });
+
+    it("zeigt abgesetzte Sprüche mit Uhrzeit und einem eigenen Zurücknehmen-Knopf", () => {
+        renderMit({ 1: { uebertragen: true, uebertragenUm: new Date(2026, 9, 4, 18, 42).toISOString() } });
+        const zeile = document.querySelector("#teilnehmerNachrichtenBody tr") as HTMLElement;
+        expect(zeile.querySelector(".status-chip")?.textContent).toContain("abgesetzt 18:42");
+        expect(zeile.querySelector("[data-aktion='absetzen']")).toBeNull();
+        expect(zeile.querySelector("[data-aktion='zuruecknehmen']")).not.toBeNull();
+        expect(zeile.textContent).not.toMatch(/übertragen/i);
+    });
+
+    it("ein Doppeltipp nimmt eine Markierung nicht still zurück", () => {
+        const { view, cb } = renderMit({});
+        (document.querySelector("[data-aktion='absetzen'][data-id='2']") as HTMLButtonElement).click();
+        expect(cb.onToggle).toHaveBeenCalledWith(2, true);
+
+        // Controller rendert neu: an derselben Zeile steht jetzt "Zurücknehmen".
+        view.renderNachrichten(
+            [{ id: 2, empfaenger: ["C"], nachricht: "zwei" }],
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            { hideTransmitted: false, nachrichten: { 2: { uebertragen: true } } } as any
+        );
+        vi.advanceTimersByTime(200);
+        (document.querySelector("[data-aktion='zuruecknehmen'][data-id='2']") as HTMLButtonElement).click();
+        expect(cb.onToggle).toHaveBeenCalledTimes(1);
+
+        // Eine bewusste Korrektur nach der Sperre geht.
+        vi.advanceTimersByTime(1000);
+        (document.querySelector("[data-aktion='zuruecknehmen'][data-id='2']") as HTMLButtonElement).click();
+        expect(cb.onToggle).toHaveBeenLastCalledWith(2, false);
+    });
+
+    it("sperrt nur die eben geänderte Nachricht, nicht die nächste", () => {
+        const { cb } = renderMit({});
+        (document.querySelector("[data-aktion='absetzen'][data-id='1']") as HTMLButtonElement).click();
+        (document.querySelector("[data-aktion='absetzen'][data-id='2']") as HTMLButtonElement).click();
+        expect(cb.onToggle).toHaveBeenCalledTimes(2);
+    });
+
+    it("hebt den nächsten offenen Spruch hervor", () => {
+        renderMit({ 1: { uebertragen: true } });
+        const zeilen = document.querySelectorAll("#teilnehmerNachrichtenBody tr");
+        expect(zeilen[1]?.className).toContain("ist-naechster");
+        expect(zeilen[1]?.textContent).toContain("als Nächstes");
+        expect(zeilen[2]?.className).not.toContain("ist-naechster");
+    });
+
+    it("sagt bei „Abgesetzte ausblenden“, wie viele Sprüche verborgen sind", () => {
+        renderMit({ 1: { uebertragen: true }, 2: { uebertragen: true } }, true);
+        expect(document.getElementById("teilnehmerAusgeblendet")?.textContent).toBe("(2 ausgeblendet)");
+        expect(document.querySelectorAll("#teilnehmerNachrichtenBody tr")).toHaveLength(1);
+    });
+
+    it("zeigt einen kompakten Kopf ohne doppeltes Sprechfunkübung und mit lesbarem Datum", () => {
+        const view = new TeilnehmerView();
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        view.renderHeader({ name: "Sprechfunkübung Wellenbrecher 2026", datum: "2026-10-04T09:00:00.000Z", rufgruppe: "RG", leitung: "L" } as any, "Alpha");
+        const titel = document.querySelector(".teilnehmer-kopf .card-title")?.textContent ?? "";
+        expect(titel).toBe("Sprechfunkübung Wellenbrecher 2026");
+        expect(document.querySelector(".teilnehmer-kopf-daten")?.textContent).toContain("04.10.2026");
+        // ZIP und Zurücksetzen stehen nicht mehr im Kopf.
+        expect(document.querySelector(".teilnehmer-kopf #btn-reset-teilnehmer-data")).toBeNull();
+        expect(document.querySelector(".teilnehmer-kopf #btn-download-teilnehmer-zip")).toBeNull();
+        expect(document.querySelector(".teilnehmer-gefahr #btn-reset-teilnehmer-data")).not.toBeNull();
+    });
+
+    it("benennt das Zurücksetzen nach seiner Reichweite", () => {
+        const { view } = renderMit({});
+        view.setResetUmfang(true);
+        expect(document.getElementById("teilnehmerResetLabel")?.textContent).toContain("für alle");
+        expect(document.getElementById("teilnehmerResetHinweis")?.textContent).toContain("Übungsleitung");
+        view.setResetUmfang(false);
+        expect(document.getElementById("teilnehmerResetLabel")?.textContent).toContain("auf diesem Gerät");
+        expect(document.getElementById("teilnehmerResetLabel")?.textContent).not.toContain("Lokale");
+    });
+
+    it("Rückgängig-Hinweis: Doppeltipp-sicher, nach Ablauf verschwunden", () => {
+        const { view } = renderMit({});
+        const undo = vi.fn();
+        view.zeigeRueckgaengig("Spruch 2 als abgesetzt markiert.", undo);
+        const box = document.getElementById("teilnehmerRueckgaengig") as HTMLElement;
+        const knopf = document.getElementById("btn-teilnehmer-rueckgaengig") as HTMLButtonElement;
+        expect(box.hidden).toBe(false);
+        expect(box.textContent).toContain("Spruch 2");
+
+        knopf.click();
+        expect(undo).not.toHaveBeenCalled();
+
+        vi.advanceTimersByTime(1200);
+        knopf.click();
+        expect(undo).toHaveBeenCalledTimes(1);
+        expect(box.hidden).toBe(true);
+
+        view.zeigeRueckgaengig("x", undo);
+        vi.advanceTimersByTime(9000);
+        expect(box.hidden).toBe(true);
+    });
+
+    it("Vordruck: Touch-Knopf zum Abhaken mit Zustand und Sperre gegen Doppeltipp", () => {
+        const { view, cb } = renderMit({});
+        const knopf = document.getElementById("btn-doc-absetzen") as HTMLButtonElement;
+        view.setDocTransmitted(false);
+        expect(knopf.textContent).toContain("Als abgesetzt markieren");
+        expect(document.getElementById("teilnehmerDocStatus")?.textContent).toBe("offen");
+
+        knopf.click();
+        knopf.click();
+        expect(cb.onDocToggle).toHaveBeenCalledTimes(1);
+
+        view.setDocTransmitted(true);
+        expect(knopf.textContent).toContain("Zurücknehmen");
+        expect(document.getElementById("teilnehmerDocStatus")?.textContent).toContain("abgesetzt");
+
+        view.setDocTransmitted(false, false);
+        expect(knopf.disabled).toBe(true);
+
+        // Leertaste unterliegt derselben Sperre.
+        (document.getElementById("teilnehmerDocModal") as HTMLElement).classList.add("show");
+        vi.advanceTimersByTime(1100);
+        document.dispatchEvent(new window.KeyboardEvent("keydown", { code: "Space" }));
+        document.dispatchEvent(new window.KeyboardEvent("keydown", { code: "Space" }));
+        expect(cb.onDocToggle).toHaveBeenCalledTimes(2);
+    });
+
+    it("Vordruck: Schließen ist ein beschrifteter Knopf, die Legende nennt keine „Übertragen“-Taste", () => {
+        renderMit({});
+        const schliessen = document.getElementById("btn-doc-close") as HTMLButtonElement;
+        expect(schliessen.textContent).toContain("Schließen");
+        const legende = document.querySelector(".teilnehmer-doc-legend")?.textContent ?? "";
+        expect(legende).toContain("Leertaste");
+        expect(legende).not.toMatch(/übertragen/i);
+    });
+
+    it("hängt das Vordruck-Fenster beim Öffnen an body und räumt es beim neuen Rendern ab", () => {
+        const { view } = renderMit({});
+        view.setDocMode("meldevordruck");
+        expect(document.getElementById("teilnehmerDocModal")?.parentElement).toBe(document.body);
+        renderMit({});
+        expect(document.querySelectorAll("#teilnehmerDocModal")).toHaveLength(1);
+        void view;
+    });
+
+    it("Fehlerseite zeigt das Code-Formular mit Meldung und vorbelegtem Übungscode", () => {
+        const view = new TeilnehmerView();
+        view.renderZugangsFehler("Teilnehmer nicht in dieser Übung gefunden.", "K7M4Q2");
+        expect(document.getElementById("teilnehmerJoinForm")).not.toBeNull();
+        expect((document.getElementById("joinUebungCode") as HTMLInputElement).value).toBe("K7M4Q2");
+        const fehler = document.getElementById("teilnehmerJoinError") as HTMLElement;
+        expect(fehler.classList.contains("d-none")).toBe(false);
+        expect(fehler.textContent).toContain("nicht in dieser Übung");
+        // Code-Felder ohne Autokorrektur, mit Großbuchstaben-Tastatur.
+        const feld = document.getElementById("joinTeilnehmerCode") as HTMLInputElement;
+        expect(feld.getAttribute("autocapitalize")).toBe("characters");
+        expect(feld.getAttribute("autocorrect")).toBe("off");
+    });
+
+    it("klappt am Handy die Website-Navigation ein, am Desktop nicht", async () => {
+        vi.stubGlobal("localStorage", { getItem: () => null, setItem: () => {}, removeItem: () => {} });
+        const { klappeNavigationEin } = await import("../../src/teilnehmer/init");
+        document.body.innerHTML = "<details class=\"site-nav-details\" open><summary>Menü</summary></details>";
+        const details = document.querySelector("details") as HTMLDetailsElement;
+
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        (window as any).matchMedia = () => ({ matches: false });
+        klappeNavigationEin();
+        expect(details.hasAttribute("open")).toBe(true);
+
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        (window as any).matchMedia = () => ({ matches: true });
+        klappeNavigationEin();
+        expect(details.hasAttribute("open")).toBe(false);
+    });
+
+    it("nennt den Sync-Zustand nie „übertragen“", () => {
+        const { view } = renderMit({});
+        for (const state of ["aus", "verbinde", "live", "fehler"] as const) {
+            view.updateLiveSyncState(state);
+            expect(document.getElementById("teilnehmerLiveSyncBadge")?.getAttribute("title")).not.toMatch(/übertrag/i);
+        }
+    });
 });

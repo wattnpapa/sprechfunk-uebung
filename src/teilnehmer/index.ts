@@ -75,12 +75,29 @@ export class TeilnehmerController {
             this.view.bindJoinForm((uebungCode, teilnehmerCode) => {
                 void this.resolveJoinAndNavigate(uebungCode, teilnehmerCode);
             });
+            // Geteilter Link mit beiden Codes: direkt öffnen statt noch einmal
+            // „Zugang öffnen“ tippen zu lassen. Ersetzt den Verlaufseintrag,
+            // sonst führte „Zurück“ wieder auf den Link und gleich wieder vor.
+            if (this.sindVollstaendigeCodes(prefilledCodes.uebungCode, prefilledCodes.teilnehmerCode)) {
+                await this.resolveJoinAndNavigate(prefilledCodes.uebungCode, prefilledCodes.teilnehmerCode, true);
+            }
             return;
         }
 
-        this.uebung = await this.firebaseService.getUebung(this.uebungId);
+        try {
+            this.uebung = await this.firebaseService.getUebung(this.uebungId);
+        } catch {
+            this.view.renderZugangsFehler(
+                "Die Übung konnte nicht geladen werden. Prüfe die Internetverbindung und lade die Seite neu – oder gib die Codes erneut ein."
+            );
+            this.bindJoinFormAfterError();
+            return;
+        }
         if (!this.uebung) {
-            contentEl.innerHTML = "<div class=\"alert alert-warning\">Übung nicht gefunden.</div>";
+            this.view.renderZugangsFehler(
+                "Übung nicht gefunden. Vielleicht ist der Link unvollständig oder die Übung wurde gelöscht."
+            );
+            this.bindJoinFormAfterError();
             return;
         }
 
@@ -89,12 +106,17 @@ export class TeilnehmerController {
         this.teilnehmerName = this.uebung.teilnehmerIds ? (this.uebung.teilnehmerIds[this.teilnehmerId] ?? null) : null;
 
         if (!this.teilnehmerName) {
-            contentEl.innerHTML = "<div class=\"alert alert-danger\">Teilnehmer nicht in dieser Übung gefunden.</div>";
+            this.view.renderZugangsFehler(
+                "Teilnehmer nicht in dieser Übung gefunden. Der Teilnehmercode im Link passt nicht zu dieser Übung.",
+                this.uebung.uebungCode ?? ""
+            );
+            this.bindJoinFormAfterError();
             return;
         }
 
         this.storage = loadTeilnehmerStorage(this.uebungId, this.teilnehmerName);
         this.updateFooterInfo();
+        this.waehleFokusStandard();
 
         // Initial Render
         this.view.renderHeader(this.uebung, this.teilnehmerName);
@@ -102,6 +124,7 @@ export class TeilnehmerController {
         this.view.setDocMode(this.docMode);
 
         this.startLiveSync();
+        this.view.setResetUmfang(!!this.liveStatus?.enabled);
 
         // X-Zeit Ticker + Events
         if (this.uebung.spielModus === "xZeit") {
@@ -125,7 +148,8 @@ export class TeilnehmerController {
             this.zeigeXZeitHerkunft();
             this.view.bindFokusEvents(
                 checked => this.setFokusModus(checked),
-                id => this.toggleUebertragen(id, true)
+                id => this.toggleUebertragen(id, true),
+                id => this.toggleUebertragen(id, false)
             );
         }
 
@@ -210,7 +234,35 @@ export class TeilnehmerController {
         this.disposeListener = null;
     }
 
-    private async resolveJoinAndNavigate(uebungCode: string, teilnehmerCode: string): Promise<void> {
+    private sindVollstaendigeCodes(uebungCode: string, teilnehmerCode: string): boolean {
+        return uebungCode.length === 6 && teilnehmerCode.length === 4;
+    }
+
+    /** Nach einer Fehlerseite führt das Formular direkt weiter. */
+    private bindJoinFormAfterError(): void {
+        this.view.bindJoinForm((uebungCode, teilnehmerCode) => {
+            void this.resolveJoinAndNavigate(uebungCode, teilnehmerCode);
+        });
+    }
+
+    /**
+     * Auf schmalen Geräten ist der Fokus-Modus Standard, solange der
+     * Teilnehmer ihn nicht selbst umgeschaltet hat: ein Spruch, ein großer
+     * Knopf. Gilt nur für X-Zeit-Übungen, denn nur dort gibt es Fälligkeiten.
+     */
+    private waehleFokusStandard(): void {
+        if (!this.storage || this.uebung?.spielModus !== "xZeit" || this.storage.fokusModus !== undefined) {
+            return;
+        }
+        const mm = typeof window !== "undefined" && typeof window.matchMedia === "function"
+            ? window.matchMedia("(max-width: 576px)")
+            : null;
+        if (mm?.matches) {
+            this.storage.fokusModus = true;
+        }
+    }
+
+    private async resolveJoinAndNavigate(uebungCode: string, teilnehmerCode: string, ersetzen = false): Promise<void> {
         if (!uebungCode || !teilnehmerCode) {
             this.view.showJoinError("Bitte beide Codes eingeben.");
             return;
@@ -219,12 +271,23 @@ export class TeilnehmerController {
             this.view.showJoinError("Codeformat ungültig. Übungscode: 6 Zeichen, Teilnehmercode: 4 Zeichen.");
             return;
         }
-        const result = await this.firebaseService.resolveTeilnehmerJoinCodes(uebungCode, teilnehmerCode);
-        if (!result) {
-            this.view.showJoinError("Kombination aus Übungscode und Teilnehmercode wurde nicht gefunden.");
+        let result: Awaited<ReturnType<FirebaseService["resolveTeilnehmerJoinCodes"]>>;
+        try {
+            result = await this.firebaseService.resolveTeilnehmerJoinCodes(uebungCode, teilnehmerCode);
+        } catch {
+            this.view.showJoinError("Die Codes konnten gerade nicht geprüft werden. Prüfe die Internetverbindung und versuch es erneut.");
             return;
         }
-        window.location.hash = `#/teilnehmer/${result.uebungId}/${result.teilnehmerId}`;
+        if (!result) {
+            this.view.showJoinError("Kombination aus Übungscode und Teilnehmercode wurde nicht gefunden. Prüfe beide Codes (0 und O, 1 und I werden leicht verwechselt).");
+            return;
+        }
+        const ziel = `#/teilnehmer/${result.uebungId}/${result.teilnehmerId}`;
+        if (ersetzen && typeof window.location.replace === "function") {
+            window.location.replace(ziel);
+            return;
+        }
+        window.location.hash = ziel;
     }
 
     private getPrefilledJoinCodesFromHash(): { uebungCode: string; teilnehmerCode: string } {
@@ -415,8 +478,48 @@ export class TeilnehmerController {
         if (!this.storage) {
             return;
         }
+        const vorher = this.storage.nachrichten[id];
         this.setUebertragen(id, checked);
         this.renderNachrichten();
+        this.bieteRueckgaengigAn(id, checked, vorher);
+    }
+
+    /**
+     * Jeder Statuswechsel bekommt einige Sekunden lang ein „Rückgängig“.
+     * Wichtig vor allem bei „Abgesetzte ausblenden“ und im Fokus-Modus: dort
+     * verschwindet der Spruch nach dem Tipp aus dem Blick.
+     */
+    private bieteRueckgaengigAn(
+        id: number,
+        abgesetzt: boolean,
+        vorher: TeilnehmerStorage["nachrichten"][string] | undefined
+    ): void {
+        const text = abgesetzt
+            ? `Spruch ${id} als abgesetzt markiert.`
+            : `Spruch ${id} wieder offen.`;
+        this.view.zeigeRueckgaengig(text, () => this.stelleWiederHer(id, vorher));
+    }
+
+    /**
+     * Stellt den Eintrag vor dem letzten Wechsel wieder her, samt der
+     * ursprünglichen Absetzzeit. geaendertUm ist neu, damit der Live-Sync
+     * die Wiederherstellung nicht durch den eben gesendeten Stand ersetzt.
+     */
+    private stelleWiederHer(id: number, vorher: TeilnehmerStorage["nachrichten"][string] | undefined): void {
+        if (!this.storage) {
+            return;
+        }
+        const now = new Date().toISOString();
+        this.storage.nachrichten[id] = vorher?.uebertragen
+            ? { uebertragen: true, uebertragenUm: vorher.uebertragenUm ?? now, geaendertUm: now }
+            : { uebertragen: false, geaendertUm: now };
+        saveTeilnehmerStorage(this.storage);
+        this.publishStatus();
+        this.renderNachrichten();
+        if (this.docMode !== "table") {
+            this.invalidateDocCache();
+            void this.renderDocPage();
+        }
     }
 
     private toggleHide(checked: boolean) {
@@ -440,9 +543,11 @@ export class TeilnehmerController {
         if (!this.uebungId || !this.teilnehmerName) {
             return;
         }
+        const anzahl = Object.values(this.storage?.nachrichten ?? {}).filter(e => e?.uebertragen).length;
+        const kopf = `Wirklich alle ${anzahl} als abgesetzt markierten Funksprüche wieder auf „offen“ setzen?`;
         const message = this.liveStatus?.enabled
-            ? "Möchten Sie wirklich Ihren Übertragungsstatus für diese Übung zurücksetzen? Das wirkt auch für die Übungsleitung und Ihre anderen Geräte."
-            : "Möchten Sie wirklich alle lokalen Daten für diese Übung löschen? Ihr Übertragungsstatus geht verloren.";
+            ? `${kopf}\n\nDas gilt auch für die Übungsleitung und deine anderen Geräte: Dort erscheinen die Sprüche danach ebenfalls als offen. Eine eigene X-Zeit wird gelöscht. Das lässt sich nicht rückgängig machen.\n\nEinen einzelnen falsch markierten Spruch korrigierst du besser mit „Zurücknehmen“ in seiner Zeile.`
+            : `${kopf}\n\nDas betrifft nur dieses Gerät. Eine eigene X-Zeit wird gelöscht. Das lässt sich nicht rückgängig machen.`;
         if (!uiFeedback.confirm(message)) {
             return;
         }
@@ -482,7 +587,46 @@ export class TeilnehmerController {
         window.location.reload();
     }
 
-    private async setDocMode(mode: DocMode) {
+    /**
+     * Das Vordruck-Fenster ist ein eigener Schritt im Verlauf: „Zurück“ am
+     * Handy schließt es, statt die Teilnehmeransicht zu verlassen. Der
+     * Eintrag hat dieselbe Adresse, der Hash-Router bemerkt ihn nicht.
+     */
+    private vordruckImVerlauf = false;
+    private popstateGebunden = false;
+
+    private merkeVordruckImVerlauf(oeffnen: boolean): void {
+        const hist = typeof window !== "undefined" ? window.history : undefined;
+        if (!hist || typeof hist.pushState !== "function") {
+            return;
+        }
+        if (!this.popstateGebunden && typeof window.addEventListener === "function") {
+            this.popstateGebunden = true;
+            window.addEventListener("popstate", () => {
+                if (this.vordruckImVerlauf) {
+                    this.vordruckImVerlauf = false;
+                    if (this.docMode !== "table") {
+                        void this.setDocMode("table", true);
+                    }
+                }
+            });
+        }
+        if (oeffnen && !this.vordruckImVerlauf) {
+            hist.pushState({ teilnehmerVordruck: true }, "");
+            this.vordruckImVerlauf = true;
+        } else if (!oeffnen && this.vordruckImVerlauf) {
+            this.vordruckImVerlauf = false;
+            hist.back();
+        }
+    }
+
+    private async setDocMode(mode: DocMode, ausVerlauf = false) {
+        if (mode === "table" && this.docMode === "table") {
+            return;
+        }
+        if (!ausVerlauf) {
+            this.merkeVordruckImVerlauf(mode !== "table");
+        }
         this.docPageByMode[this.docMode] = this.docPage;
         this.docMode = mode;
         this.docPage = this.docPageByMode[mode] || 1;
@@ -561,7 +705,7 @@ export class TeilnehmerController {
 
         const currentMsg = this.getVisibleNachrichten()[this.docPage - 1];
         const isTransmitted = !!currentMsg && !!this.storage?.nachrichten[currentMsg.id]?.uebertragen;
-        this.view.setDocTransmitted(isTransmitted);
+        this.view.setDocTransmitted(isTransmitted, !!currentMsg);
 
         const blob = await this.getDocBlob(previewUebung, this.docMode, this.docPage);
 
@@ -579,8 +723,10 @@ export class TeilnehmerController {
         if (!msg || !this.storage) {
             return;
         }
-        const current = !!this.storage.nachrichten[msg.id]?.uebertragen;
+        const vorher = this.storage.nachrichten[msg.id];
+        const current = !!vorher?.uebertragen;
         this.setUebertragen(msg.id, !current);
+        this.bieteRueckgaengigAn(msg.id, !current, vorher);
         this.renderNachrichten();
         this.invalidateDocCache();
         if (this.storage.hideTransmitted && !current) {
@@ -596,7 +742,9 @@ export class TeilnehmerController {
         if (!this.storage || !this.teilnehmerName) {
             return null;
         }
-        if (this.docMode === "table" || this.docPage <= 1) {
+        // Seite 1 ist Spruch 1 — früher stand hier "<= 1", wodurch sich der
+        // erste Spruch im Vordruck nicht abhaken ließ.
+        if (this.docMode === "table" || this.docPage < 1) {
             return null;
         }
         const visible = this.getVisibleNachrichten();

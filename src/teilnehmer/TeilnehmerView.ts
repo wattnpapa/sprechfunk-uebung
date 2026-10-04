@@ -1,5 +1,4 @@
 import { Uebung } from "../types/Uebung";
-import { formatNatoDate } from "../utils/date";
 import { escapeHtml } from "../utils/html";
 import { TeilnehmerStorage } from "../types/Storage";
 import { Nachricht } from "../types/Nachricht";
@@ -40,6 +39,49 @@ const loadPdfJs = async (): Promise<PdfJsModule> => {
  */
 const ABGANG_MS = 600;
 
+/**
+ * Tippsperre nach einem Statuswechsel. Ein Doppeltipp liegt bei 100–300 ms
+ * (gemessen im THW-Review 2026-10-04); eine Sekunde fängt auch Handschuh-
+ * und Wackeltipps ab, ohne beim Abhaken des nächsten Spruchs zu bremsen.
+ */
+export const STATUS_SPERRE_MS = 1000;
+
+/** So lange bleibt der Rückgängig-Hinweis nach einem Statuswechsel stehen. */
+export const RUECKGAENGIG_MS = 8000;
+
+/** Aktion, die eine Statusschaltfläche auslöst. */
+type StatusAktion = "absetzen" | "zuruecknehmen";
+
+/** Kopfzeile ohne doppeltes „Sprechfunkübung: Sprechfunkübung …“. */
+export function teilnehmerTitel(name: string | undefined): string {
+    const n = (name || "").trim() || "–";
+    return /übung/i.test(n) ? n : `Sprechfunkübung: ${n}`;
+}
+
+/** Datum für Menschen (TT.MM.JJJJ) statt Datum-Zeit-Gruppe. */
+function formatDatumKurz(datum: Date | string | undefined): string {
+    if (!datum) {
+        return "–";
+    }
+    const d = datum instanceof Date ? datum : new Date(datum);
+    if (Number.isNaN(d.getTime())) {
+        return "–";
+    }
+    return d.toLocaleDateString("de-DE", { day: "2-digit", month: "2-digit", year: "numeric" });
+}
+
+/** Uhrzeit HH:MM eines ISO-Zeitstempels, leer bei fehlendem/ungültigem Wert. */
+function formatUhrzeit(iso: string | undefined): string {
+    if (!iso) {
+        return "";
+    }
+    const d = new Date(iso);
+    if (Number.isNaN(d.getTime())) {
+        return "";
+    }
+    return `${String(d.getHours()).padStart(2, "0")}:${String(d.getMinutes()).padStart(2, "0")}`;
+}
+
 // Eingabetypen, bei denen Tastendrücke keine Texteingabe sind (Space toggelt dort z. B. nur).
 const NON_TEXT_INPUT_TYPES = new Set([
     "checkbox", "radio", "button", "submit", "reset", "file", "range", "color", "image"
@@ -52,11 +94,48 @@ interface FokusZustand {
     weitereFaellig: number;
     offen: number;
     countdownMs: number;
+    /** Zuletzt abgesetzte Meldung, damit sie sich zurücknehmen lässt. */
+    zuletztAbgesetzt?: number;
 }
 
 export class TeilnehmerView {
     /** Merker, um die Fokus-Karte nur bei Zustandswechseln neu zu rendern. */
     private lastFokusSignature = "";
+    /** Zeitpunkt des letzten Statuswechsels je Nachricht (Tippsperre). */
+    private letzteAenderung = new Map<number, number>();
+    /**
+     * Zeitpunkt des letzten Statuswechsels überhaupt. Fokus-Karte und
+     * Vordruck wechseln danach auf den nächsten Spruch — ein zweiter Tipp
+     * dort träfe sonst einen anderen Spruch.
+     */
+    private letzteKontextAenderung = 0;
+    private rueckgaengigTimer: ReturnType<typeof setTimeout> | null = null;
+    private rueckgaengigSeit = 0;
+    private rueckgaengigAktion: (() => void) | null = null;
+
+    /** true, wenn für diese Nachricht gerade die Tippsperre läuft. */
+    public istGesperrt(id: number, jetzt = Date.now()): boolean {
+        const zuletzt = this.letzteAenderung.get(id);
+        return zuletzt !== undefined && jetzt - zuletzt < STATUS_SPERRE_MS;
+    }
+
+    /** true, solange nach irgendeinem Statuswechsel die Kontextsperre läuft. */
+    public istKontextGesperrt(jetzt = Date.now()): boolean {
+        return jetzt - this.letzteKontextAenderung < STATUS_SPERRE_MS;
+    }
+
+    /**
+     * Merkt einen Statuswechsel für die Tippsperre. `kontext` sperrt zusätzlich
+     * Fokus-Karte und Vordruck, die danach auf einen anderen Spruch springen;
+     * in der Liste bleibt jeder Spruch an seinem Platz, dort genügt die Sperre
+     * je Nachricht.
+     */
+    public merkeAenderung(id: number, kontext = true, jetzt = Date.now()): void {
+        this.letzteAenderung.set(id, jetzt);
+        if (kontext) {
+            this.letzteKontextAenderung = jetzt;
+        }
+    }
 
     private isTypingTarget(target: HTMLElement | null): boolean {
         if (!target) {
@@ -75,37 +154,50 @@ export class TeilnehmerView {
         return !NON_TEXT_INPUT_TYPES.has(type);
     }
 
-    public renderJoinForm(prefilledUebungCode = "", prefilledTeilnehmerCode = ""): void {
+    public renderJoinForm(prefilledUebungCode = "", prefilledTeilnehmerCode = "", hinweis = ""): void {
         const container = document.getElementById("teilnehmerContent");
         if (!container) {
             return;
         }
+        // Codes sind Großbuchstaben und Ziffern: Großschreib-Tastatur, keine
+        // Autokorrektur, die aus "MNTA" ein Wort macht.
+        const codeAttrs = "autocapitalize=\"characters\" autocorrect=\"off\" autocomplete=\"off\" spellcheck=\"false\"";
         container.innerHTML = `
-            <div class="card mb-4">
+            <div class="card mb-4 teilnehmer-zugang">
                 <div class="card-header">
                     <h3 class="card-title mb-0">Teilnehmer-Zugang</h3>
                 </div>
                 <div class="card-body">
-                    <p class="text-muted mb-3">Bitte Übungscode und Teilnehmercode eingeben.</p>
+                    <p class="text-muted mb-3" id="teilnehmerJoinHinweis">${hinweis ? escapeHtml(hinweis) : "Gib Übungscode und Teilnehmercode ein. Beide stehen in der Nachricht oder auf dem Zettel der Übungsleitung."}</p>
+                    <p id="teilnehmerJoinError" class="alert alert-danger mb-3 d-none" role="alert"></p>
                     <form id="teilnehmerJoinForm" class="row g-3" autocomplete="off">
                         <div class="col-md-6">
-                            <label class="form-label" for="joinUebungCode">Übungscode</label>
-                            <input class="form-control text-uppercase" id="joinUebungCode" maxlength="6" placeholder="z. B. K7M4Q2" value="${escapeHtml(prefilledUebungCode)}">
+                            <label class="form-label" for="joinUebungCode">Übungscode (6 Zeichen)</label>
+                            <input class="form-control form-control-lg text-uppercase" id="joinUebungCode" maxlength="6" placeholder="z. B. K7M4Q2" ${codeAttrs} value="${escapeHtml(prefilledUebungCode)}">
                         </div>
                         <div class="col-md-6">
-                            <label class="form-label" for="joinTeilnehmerCode">Teilnehmercode</label>
-                            <input class="form-control text-uppercase" id="joinTeilnehmerCode" maxlength="4" placeholder="z. B. 9F3K" value="${escapeHtml(prefilledTeilnehmerCode)}">
+                            <label class="form-label" for="joinTeilnehmerCode">Teilnehmercode (4 Zeichen)</label>
+                            <input class="form-control form-control-lg text-uppercase" id="joinTeilnehmerCode" maxlength="4" placeholder="z. B. 9F3K" ${codeAttrs} value="${escapeHtml(prefilledTeilnehmerCode)}">
                         </div>
                         <div class="col-12">
-                            <button type="submit" class="btn btn-primary" id="joinSubmitBtn">
+                            <button type="submit" class="btn btn-primary btn-lg teilnehmer-zugang-knopf" id="joinSubmitBtn">
                                 <i class="fas fa-right-to-bracket"></i> Zugang öffnen
                             </button>
                         </div>
                     </form>
-                    <p id="teilnehmerJoinError" class="text-danger mt-3 mb-0 d-none" aria-live="polite"></p>
                 </div>
             </div>
         `;
+    }
+
+    /**
+     * Fehlerseite mit Ausweg: statt einer Sackgasse steht das Code-Formular
+     * mit der Meldung darüber, vorbelegt mit dem, was schon bekannt ist.
+     */
+    public renderZugangsFehler(meldung: string, uebungCode = "", teilnehmerCode = ""): void {
+        this.renderJoinForm(uebungCode, teilnehmerCode,
+            "Prüfe die Codes und öffne den Zugang neu. Die Ziffer 0 und der Buchstabe O sowie 1 und I werden leicht verwechselt. Klappt es nicht, frag die Übungsleitung nach deinen Codes.");
+        this.showJoinError(meldung);
     }
 
     public bindJoinForm(onSubmit: (uebungCode: string, teilnehmerCode: string) => void): void {
@@ -152,51 +244,40 @@ export class TeilnehmerView {
             return;
         }
 
-        const safeName = escapeHtml(uebung.name || "–");
+        const safeName = escapeHtml(teilnehmerTitel(uebung.name));
         const safeTeilnehmer = escapeHtml(teilnehmer);
-        const safeDatum = escapeHtml(formatNatoDate(uebung.datum));
+        const safeDatum = escapeHtml(formatDatumKurz(uebung.datum));
         const safeRufgruppe = escapeHtml(uebung.rufgruppe || "–");
         const safeLeitung = escapeHtml(uebung.leitung || "–");
 
-        // Header Card
+        // Kompakter Kopf: auf dem Handy soll der erste Spruch ohne Scrollen
+        // sichtbar sein. Seltene Aktionen (ZIP, Zurücksetzen) stehen am Ende.
         const headerHtml = `
-            <div class="card mb-4">
-                <div class="card-header d-flex justify-content-between align-items-center">
-                    <h3 class="card-title mb-0">Sprechfunkübung: ${safeName}</h3>
-                    <div class="d-flex gap-2 align-items-center">
-                        <span id="teilnehmerLiveSyncBadge" class="badge bg-secondary" aria-live="polite" title="Status der Live-Übertragung an die Übungsleitung">Sync: –</span>
-                        <button class="btn btn-sm btn-outline-light" id="btn-download-teilnehmer-zip">
-                            <i class="fas fa-file-archive"></i> ZIP herunterladen
-                        </button>
-                        <button class="btn btn-sm btn-outline-light" id="btn-reset-teilnehmer-data">
-                            <i class="fas fa-undo"></i> Lokale Daten löschen
-                        </button>
-                    </div>
-                </div>
+            <div class="card mb-3 teilnehmer-kopf">
                 <div class="card-body">
-                    <div class="row">
-                        <div class="col-md-6">
-                            <p><strong>Eigener Funkrufname:</strong> ${safeTeilnehmer}</p>
-                            <p><strong>Datum:</strong> ${safeDatum}</p>
-                        </div>
-                        <div class="col-md-6">
-                            <p><strong>Rufgruppe:</strong> ${safeRufgruppe}</p>
-                            <p><strong>Übungsleitung:</strong> ${safeLeitung}</p>
-                        </div>
+                    <div class="teilnehmer-kopf-zeile">
+                        <h3 class="card-title mb-0">${safeName}</h3>
+                        <span id="teilnehmerLiveSyncBadge" class="badge bg-secondary" aria-live="polite" title="Verbindung zur Übungsleitung">Sync: –</span>
                     </div>
+                    <dl class="teilnehmer-kopf-daten">
+                        <div><dt>Ich</dt><dd>${safeTeilnehmer}</dd></div>
+                        <div><dt>Rufgruppe</dt><dd>${safeRufgruppe}</dd></div>
+                        <div><dt>Übungsleitung</dt><dd>${safeLeitung}</dd></div>
+                        <div class="teilnehmer-kopf-datum"><dt>Datum</dt><dd>${safeDatum}</dd></div>
+                    </dl>
                 </div>
             </div>
 
-            <div class="d-flex flex-wrap justify-content-between align-items-center mb-3 gap-2">
+            <div class="teilnehmer-werkzeug mb-2">
                 <h4 class="mb-0">Meine Funksprüche</h4>
-                <div class="btn-group" role="group" aria-label="Ansicht wählen">
-                    <button class="btn btn-outline-primary active" type="button" data-doc-view="table">Tabelle</button>
+                <div class="btn-group teilnehmer-ansicht" role="group" aria-label="Ansicht wählen">
+                    <button class="btn btn-outline-primary active" type="button" data-doc-view="table">Liste</button>
                     <button class="btn btn-outline-primary" type="button" data-doc-view="meldevordruck">Meldevordruck</button>
                     <button class="btn btn-outline-primary" type="button" data-doc-view="nachrichtenvordruck">Nachrichtenvordruck</button>
                 </div>
-                <div class="form-check form-switch">
+                <div class="form-check form-switch teilnehmer-schalter">
                     <input class="form-check-input" type="checkbox" id="toggle-hide-transmitted">
-                    <label class="form-check-label" for="toggle-hide-transmitted">Übertragene ausblenden</label>
+                    <label class="form-check-label" for="toggle-hide-transmitted">Abgesetzte ausblenden <span id="teilnehmerAusgeblendet" class="text-muted small"></span></label>
                 </div>
             </div>
             <div class="mb-2">
@@ -220,15 +301,15 @@ export class TeilnehmerView {
             </div>
             <div id="teilnehmerFokusCard" class="d-none" data-testid="teilnehmer-fokus-card"></div>` : ""}
 
-            <div id="teilnehmerTableView" class="table-responsive">
-                <table class="table table-striped table-hover align-middle">
+            <div id="teilnehmerTableView" class="table-responsive teilnehmer-liste">
+                <table class="table table-hover align-middle">
                     <thead class="table-light" id="teilnehmerTableHead">
                         <tr>
                             <th>Nr.</th>
                             <th>Empfänger</th>
                             <th>Nachricht</th>
                             ${uebung.spielModus === "xZeit" ? "<th style=\"width: 90px;\">X-Zeit</th>" : ""}
-                            <th style="width: 150px;">Status</th>
+                            <th style="width: 210px;">Status</th>
                             <th style="width: 120px;">Leitung</th>
                         </tr>
                     </thead>
@@ -236,46 +317,85 @@ export class TeilnehmerView {
                 </table>
             </div>
 
-            <div class="modal fade teilnehmer-doc-modal" id="teilnehmerDocModal" tabindex="-1" aria-hidden="true">
-                <div class="modal-dialog modal-dialog-centered modal-xl">
+            <section class="card mt-4 teilnehmer-unterlagen" aria-labelledby="teilnehmerUnterlagenTitel">
+                <div class="card-body">
+                    <h4 class="h6" id="teilnehmerUnterlagenTitel">Unterlagen für den Notfall</h4>
+                    <p class="small text-muted mb-2">Alle deine Vordrucke als ZIP-Datei. Lade sie vor der Übung herunter oder druck sie aus – fällt am Übungsort das Netz weg, hast du sie trotzdem.</p>
+                    <button class="btn btn-outline-primary" id="btn-download-teilnehmer-zip" type="button">
+                        <i class="fas fa-file-archive"></i> Alle meine Vordrucke herunterladen (ZIP)
+                    </button>
+                </div>
+            </section>
+
+            <details class="mt-4 teilnehmer-gefahr" id="teilnehmerGefahrBereich">
+                <summary>Abhak-Stand komplett zurücksetzen</summary>
+                <div class="teilnehmer-gefahr-inhalt">
+                    <p class="small mb-2" id="teilnehmerResetHinweis">Setzt alle als abgesetzt markierten Funksprüche wieder auf „offen“. Einen einzelnen falsch markierten Spruch korrigierst du mit „Zurücknehmen“ in seiner Zeile.</p>
+                    <button class="btn btn-outline-danger" id="btn-reset-teilnehmer-data" type="button">
+                        <i class="fas fa-undo"></i> <span id="teilnehmerResetLabel">Abhak-Stand zurücksetzen</span>
+                    </button>
+                </div>
+            </details>
+
+            <div id="teilnehmerRueckgaengig" class="teilnehmer-rueckgaengig" role="status" aria-live="polite" hidden>
+                <span id="teilnehmerRueckgaengigText"></span>
+                <button type="button" class="btn btn-light" id="btn-teilnehmer-rueckgaengig">Rückgängig</button>
+            </div>
+
+            <div class="modal fade teilnehmer-doc-modal" id="teilnehmerDocModal" tabindex="-1" aria-hidden="true" aria-labelledby="teilnehmerDocTitel">
+                <div class="modal-dialog modal-dialog-centered modal-xl modal-fullscreen-md-down">
                     <div class="modal-content">
                         <div class="modal-header">
-                            <h5 class="modal-title">Vordruck</h5>
-                            <div class="form-check form-switch ms-3">
-                                <input class="form-check-input" type="checkbox" id="toggle-hide-transmitted-modal">
-                                <label class="form-check-label small" for="toggle-hide-transmitted-modal">Übertragene ausblenden</label>
-                            </div>
-                            <button type="button" class="btn-close" id="btn-doc-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                            <h5 class="modal-title" id="teilnehmerDocTitel">Vordruck</h5>
+                            <button type="button" class="btn btn-outline-secondary teilnehmer-doc-schliessen" id="btn-doc-close" aria-label="Vordruck schließen">
+                                <i class="fas fa-xmark"></i> Schließen
+                            </button>
                         </div>
                         <div class="modal-body">
                             <div class="teilnehmer-doc-layout">
-                                <button class="btn btn-outline-secondary teilnehmer-doc-nav" type="button" id="btn-doc-prev">
-                                    <i class="fas fa-chevron-left"></i> Zurück
-                                </button>
                                 <div class="teilnehmer-doc-center">
                                     <div id="teilnehmerPdfView" class="teilnehmer-doc-container">
                                         <canvas id="teilnehmerPdfCanvas" class="teilnehmer-doc-canvas"></canvas>
                                     </div>
                                     <span id="teilnehmerDocPage" class="text-muted teilnehmer-doc-page" aria-live="polite"></span>
                                 </div>
-                                <button class="btn btn-outline-secondary teilnehmer-doc-nav" type="button" id="btn-doc-next">
-                                    Weiter <i class="fas fa-chevron-right"></i>
-                                </button>
-                                <div class="teilnehmer-doc-legend">
+                                <div class="teilnehmer-doc-legend" aria-label="Tastenkürzel">
                                     <div><span class="badge bg-light text-dark">←/→</span> <span class="small text-muted">Blättern</span></div>
-                                    <div><span class="badge bg-light text-dark">Space</span> <span class="small text-muted">Übertragen</span></div>
-                                    <div><span class="badge bg-light text-dark">Ü</span> <span class="small text-muted">Übertragene ausblenden</span></div>
+                                    <div><span class="badge bg-light text-dark">Leertaste</span> <span class="small text-muted">Abgesetzt / zurücknehmen</span></div>
+                                    <div><span class="badge bg-light text-dark">Ü</span> <span class="small text-muted">Abgesetzte ausblenden</span></div>
                                     <div><span class="badge bg-light text-dark">M</span> <span class="small text-muted">Meldevordruck</span></div>
                                     <div><span class="badge bg-light text-dark">N</span> <span class="small text-muted">Nachrichtenvordruck</span></div>
                                     <div><span class="badge bg-light text-dark">Esc</span> <span class="small text-muted">Schließen</span></div>
                                 </div>
                             </div>
                         </div>
+                        <div class="modal-footer teilnehmer-doc-aktionen">
+                            <div class="teilnehmer-doc-status">
+                                <span id="teilnehmerDocStatus" class="status-chip status-chip--pending">offen</span>
+                                <div class="form-check form-switch teilnehmer-schalter mb-0">
+                                    <input class="form-check-input" type="checkbox" id="toggle-hide-transmitted-modal">
+                                    <label class="form-check-label small" for="toggle-hide-transmitted-modal">Abgesetzte ausblenden</label>
+                                </div>
+                            </div>
+                            <button class="btn btn-outline-secondary teilnehmer-doc-nav" type="button" id="btn-doc-prev">
+                                <i class="fas fa-chevron-left"></i> Zurück
+                            </button>
+                            <button class="btn btn-success teilnehmer-doc-absetzen" type="button" id="btn-doc-absetzen" data-aktion="absetzen">
+                                ✓ Als abgesetzt markieren
+                            </button>
+                            <button class="btn btn-outline-secondary teilnehmer-doc-nav" type="button" id="btn-doc-next">
+                                Weiter <i class="fas fa-chevron-right"></i>
+                            </button>
+                        </div>
                     </div>
                 </div>
             </div>
         `;
 
+        // Das Vordruck-Fenster wird beim Öffnen an <body> gehängt (siehe
+        // togglePdfModal). Ein Rest aus einer früheren Ansicht muss weg, sonst
+        // gäbe es die IDs doppelt.
+        document.querySelectorAll("body > #teilnehmerDocModal").forEach(el => el.remove());
         container.innerHTML = headerHtml;
     }
 
@@ -289,16 +409,80 @@ export class TeilnehmerView {
             return;
         }
         const labels: Record<LiveSyncState, { text: string; css: string; title: string }> = {
-            aus: { text: "Sync: aus", css: "bg-secondary", title: "Live-Übertragung deaktiviert – Status bleibt nur auf diesem Gerät." },
+            aus: { text: "Sync: aus", css: "bg-secondary", title: "Keine Verbindung zur Übungsleitung eingerichtet – deine Markierungen bleiben nur auf diesem Gerät." },
             verbinde: { text: "Sync: verbinde…", css: "bg-secondary", title: "Verbindung zur Übungsleitung wird aufgebaut." },
-            live: { text: "Sync: live", css: "bg-success", title: "Status wird live an die Übungsleitung übertragen." },
-            offline: { text: "Sync: offline – wird nachgereicht", css: "bg-warning text-dark", title: "Keine Verbindung – Status wird auf diesem Gerät gespeichert und übertragen, sobald wieder Netz da ist." },
-            fehler: { text: "Sync: Fehler – wird nicht übertragen", css: "bg-danger", title: "Der Server lehnt die Übertragung ab – der Status bleibt nur auf diesem Gerät. Melde ihn per Funk." }
+            live: { text: "Sync: live", css: "bg-success", title: "Verbunden – deine Markierungen gehen an die Übungsleitung." },
+            offline: { text: "Sync: offline – wird nachgereicht", css: "bg-warning text-dark", title: "Keine Verbindung – deine Markierungen sind auf diesem Gerät gespeichert und werden gesendet, sobald wieder Netz da ist." },
+            fehler: { text: "Sync: Fehler – wird nicht gesendet", css: "bg-danger", title: "Der Server lehnt die Übermittlung ab – deine Markierungen bleiben nur auf diesem Gerät. Melde den Stand per Funk." }
         };
         const label = labels[state];
         badge.className = `badge ${label.css}`;
         badge.textContent = label.text;
         badge.setAttribute("title", label.title);
+    }
+
+    /**
+     * Beschriftet das Zurücksetzen nach seiner echten Reichweite: mit
+     * Live-Verbindung wirkt es auch bei der Übungsleitung und auf anderen
+     * Geräten, ohne nur auf diesem Gerät.
+     */
+    public setResetUmfang(live: boolean): void {
+        const label = document.getElementById("teilnehmerResetLabel");
+        const hinweis = document.getElementById("teilnehmerResetHinweis");
+        if (label) {
+            label.textContent = live
+                ? "Abhak-Stand für alle zurücksetzen"
+                : "Abhak-Stand auf diesem Gerät löschen";
+        }
+        if (hinweis) {
+            hinweis.textContent = live
+                ? "Setzt alle als abgesetzt markierten Funksprüche wieder auf „offen“ – auf diesem Gerät, auf deinen anderen Geräten und bei der Übungsleitung. Einen einzelnen falsch markierten Spruch korrigierst du besser mit „Zurücknehmen“ in seiner Zeile."
+                : "Setzt alle als abgesetzt markierten Funksprüche auf diesem Gerät wieder auf „offen“. Einen einzelnen falsch markierten Spruch korrigierst du besser mit „Zurücknehmen“ in seiner Zeile.";
+        }
+    }
+
+    /**
+     * Zeigt nach einem Statuswechsel einen Hinweis mit „Rückgängig“. Er
+     * bleibt einige Sekunden stehen; ein Tipp innerhalb der Tippsperre wird
+     * ignoriert, damit ein Doppeltipp ihn nicht gleich auslöst.
+     */
+    public zeigeRueckgaengig(text: string, onUndo: () => void): void {
+        const box = document.getElementById("teilnehmerRueckgaengig");
+        const textEl = document.getElementById("teilnehmerRueckgaengigText");
+        if (!box || !textEl) {
+            return;
+        }
+        textEl.textContent = text;
+        box.hidden = false;
+        this.rueckgaengigAktion = onUndo;
+        this.rueckgaengigSeit = Date.now();
+        if (this.rueckgaengigTimer !== null) {
+            clearTimeout(this.rueckgaengigTimer);
+        }
+        this.rueckgaengigTimer = globalThis.setTimeout(() => this.versteckeRueckgaengig(), RUECKGAENGIG_MS);
+    }
+
+    public versteckeRueckgaengig(): void {
+        const box = document.getElementById("teilnehmerRueckgaengig");
+        if (box) {
+            box.hidden = true;
+        }
+        this.rueckgaengigAktion = null;
+        if (this.rueckgaengigTimer !== null) {
+            clearTimeout(this.rueckgaengigTimer);
+            this.rueckgaengigTimer = null;
+        }
+    }
+
+    private bindRueckgaengig(): void {
+        document.getElementById("btn-teilnehmer-rueckgaengig")?.addEventListener("click", () => {
+            if (Date.now() - this.rueckgaengigSeit < STATUS_SPERRE_MS) {
+                return;
+            }
+            const aktion = this.rueckgaengigAktion;
+            this.versteckeRueckgaengig();
+            aktion?.();
+        });
     }
 
     public renderNachrichten(
@@ -312,7 +496,7 @@ export class TeilnehmerView {
             /**
              * ID der Nachricht, die diesen Aufruf ausgelöst hat, weil sie
              * gerade abgesetzt wurde. Ihre Zeile bekommt den Absetzstrich
-             * (Abschnitt 10.2 der CSS). Bei aktivem "Übertragene ausblenden"
+             * (Abschnitt 10.2 der CSS). Bei aktivem "Abgesetzte ausblenden"
              * bleibt sie zusätzlich noch kurz stehen und geht danach ab —
              * sonst wäre sie weg, bevor die Quittung sichtbar war.
              */
@@ -338,6 +522,18 @@ export class TeilnehmerView {
             toggleModal.checked = storage.hideTransmitted;
         }
 
+        const ausgeblendetHinweis = document.getElementById("teilnehmerAusgeblendet");
+        if (ausgeblendetHinweis) {
+            const anzahl = storage.hideTransmitted
+                ? nachrichten.filter(n => storage.nachrichten[n.id]?.uebertragen).length
+                : 0;
+            ausgeblendetHinweis.textContent = anzahl > 0 ? `(${anzahl} ausgeblendet)` : "";
+        }
+
+        // Ohne X-Zeit gibt es keine Fälligkeit; der erste offene Spruch der
+        // Liste ist dann der nächste.
+        const naechsterId = nachrichten.find(n => !storage.nachrichten[n.id]?.uebertragen)?.id;
+
         const rows = nachrichten
             .filter(n => {
                 const search = (document.getElementById("teilnehmerSearchInput") as HTMLInputElement | null)?.value?.trim().toLowerCase() ?? "";
@@ -355,42 +551,32 @@ export class TeilnehmerView {
             .map(n => {
                 const status = storage.nachrichten[n.id];
                 const isUebertragen = !!status?.uebertragen;
-                const toggleId = `toggle-uebertragen-${n.id}`;
                 const istAbgesetzt = isUebertragen && n.id === zuletztAbgesetzt;
                 const istAbgang = istAbgesetzt && storage.hideTransmitted;
+                const istNaechster = !isUebertragen && n.id === naechsterId;
+                const bestaetigung = bestaetigungen[String(n.id)];
                 const zeilenKlassen = [
                     isUebertragen ? "status-ok-row" : "status-pending-row",
                     istAbgesetzt ? "ist-abgesetzt" : "",
-                    istAbgang ? "ist-abgang" : ""
+                    istAbgang ? "ist-abgang" : "",
+                    istNaechster ? "ist-naechster" : ""
                 ].filter(Boolean).join(" ");
 
                 const hinweise = renderFuehrungsstellenHinweise(n);
                 const xZeitCell = showXZeit
                     ? (n.xZeitSlot !== undefined
-                        ? `<td><span class="${this.getXZeitBadgeClass(n.xZeitSlot, xZeitBasis, isUebertragen)}" data-xzeit-slot="${n.xZeitSlot}" data-n-id="${n.id}">${this.getXZeitBadgeLabel(n.xZeitSlot, xZeitBasis, isUebertragen)}</span></td>`
-                        : "<td></td>")
+                        ? `<td class="teilnehmer-zelle-xzeit"><span class="${this.getXZeitBadgeClass(n.xZeitSlot, xZeitBasis, isUebertragen)}" data-xzeit-slot="${n.xZeitSlot}" data-n-id="${n.id}">${this.getXZeitBadgeLabel(n.xZeitSlot, xZeitBasis, isUebertragen)}</span></td>`
+                        : "<td class=\"teilnehmer-zelle-xzeit\"></td>")
                     : "";
 
                 return `
-            <tr class="${zeilenKlassen}"${istAbgang ? " data-abgang=\"1\"" : ""}>
-                <td>${n.id}</td>
-                <td>${escapeHtml(n.empfaenger.join(", "))}</td>
-                <td>${this.renderArtBadge(n)}${hinweise.kopf}${escapeHtml(n.nachricht).replace(/\\n/g, "<br>").replace(/\n/g, "<br>")}${hinweise.fuss}</td>
+            <tr class="${zeilenKlassen}" data-n-id="${n.id}"${istAbgang ? " data-abgang=\"1\"" : ""}>
+                <td class="teilnehmer-zelle-nr"><span class="teilnehmer-nr-label">Nr. </span>${n.id}</td>
+                <td class="teilnehmer-zelle-empfaenger"><span class="teilnehmer-an-label">an </span>${escapeHtml(n.empfaenger.join(", "))}</td>
+                <td class="teilnehmer-zelle-text">${this.renderArtBadge(n)}${hinweise.kopf}${escapeHtml(n.nachricht).replace(/\\n/g, "<br>").replace(/\n/g, "<br>")}${hinweise.fuss}</td>
                 ${xZeitCell}
-                <td>
-                    <div class="form-check form-switch d-flex align-items-center gap-2">
-                        <button type="button"
-                            class="status-chip ${isUebertragen ? "status-chip--ok" : "status-chip--pending"} btn-toggle-uebertragen-chip"
-                            data-id="${n.id}"
-                            data-checked="${isUebertragen ? "1" : "0"}">
-                            ${isUebertragen ? "übertragen" : "offen"}
-                        </button>
-                        <input class="form-check-input btn-toggle-uebertragen" type="checkbox" 
-                            id="${toggleId}"
-                            data-id="${n.id}" ${isUebertragen ? "checked" : ""}>
-                    </div>
-                </td>
-                <td>${this.renderBestaetigungCell(bestaetigungen[String(n.id)])}</td>
+                <td class="teilnehmer-zelle-status">${this.renderStatusZelle(n.id, isUebertragen, status?.uebertragenUm, istNaechster)}</td>
+                <td class="teilnehmer-zelle-leitung${bestaetigung?.abgesetztUm ? "" : " ist-leer"}">${this.renderBestaetigungCell(bestaetigung)}</td>
             </tr>
         `;
             }).join("");
@@ -475,7 +661,7 @@ export class TeilnehmerView {
             return;
         }
         const zustand = this.buildFokusZustand(nachrichten, storage, xZeitBasis);
-        const signature = [zustand.kind, zustand.aktuelle?.id ?? "", zustand.weitereFaellig, zustand.offen].join("|");
+        const signature = [zustand.kind, zustand.aktuelle?.id ?? "", zustand.weitereFaellig, zustand.offen, zustand.zuletztAbgesetzt ?? ""].join("|");
         if (signature !== this.lastFokusSignature) {
             card.innerHTML = this.renderFokusHtml(zustand);
             this.lastFokusSignature = signature;
@@ -489,6 +675,32 @@ export class TeilnehmerView {
     }
 
     private buildFokusZustand(
+        nachrichten: Nachricht[],
+        storage: TeilnehmerStorage,
+        xZeitBasis: string | undefined
+    ): FokusZustand {
+        const zustand = this.buildFokusZustandOhneVerlauf(nachrichten, storage, xZeitBasis);
+        const zuletzt = this.findeZuletztAbgesetzt(nachrichten, storage);
+        return zuletzt !== undefined ? { ...zustand, zuletztAbgesetzt: zuletzt } : zustand;
+    }
+
+    /** Die zuletzt als abgesetzt markierte Nachricht (nach Zeitstempel). */
+    private findeZuletztAbgesetzt(nachrichten: Nachricht[], storage: TeilnehmerStorage): number | undefined {
+        let beste: { id: number; um: string } | undefined;
+        for (const n of nachrichten) {
+            const eintrag = storage.nachrichten[n.id];
+            if (!eintrag?.uebertragen) {
+                continue;
+            }
+            const um = eintrag.uebertragenUm ?? "";
+            if (!beste || um > beste.um) {
+                beste = { id: n.id, um };
+            }
+        }
+        return beste?.id;
+    }
+
+    private buildFokusZustandOhneVerlauf(
         nachrichten: Nachricht[],
         storage: TeilnehmerStorage,
         xZeitBasis: string | undefined
@@ -532,7 +744,21 @@ export class TeilnehmerView {
         };
     }
 
+    /** Zeile „Zuletzt abgesetzt: Meldung N – Zurücknehmen“ unter der Fokus-Karte. */
+    private renderFokusZuletzt(zustand: FokusZustand): string {
+        if (zustand.zuletztAbgesetzt === undefined) {
+            return "";
+        }
+        const id = zustand.zuletztAbgesetzt;
+        return `
+                        <div class="teilnehmer-fokus-zuletzt">
+                            <span class="small text-muted">Zuletzt abgesetzt: Meldung ${id}</span>
+                            <button type="button" class="btn btn-outline-secondary btn-sm" data-fokus-zuruecknehmen="${id}">Zurücknehmen</button>
+                        </div>`;
+    }
+
     private renderFokusHtml(zustand: FokusZustand): string {
+        const zuletzt = this.renderFokusZuletzt(zustand);
         if (zustand.kind === "keineBasis") {
             return `
                 <div class="card mb-3">
@@ -545,7 +771,8 @@ export class TeilnehmerView {
             return `
                 <div class="card border-success mb-3">
                     <div class="card-body text-center py-4">
-                        <span class="fs-5">✅ Alle Meldungen übertragen.</span>
+                        <span class="fs-5">✅ Alle Meldungen abgesetzt.</span>
+                        ${zuletzt}
                     </div>
                 </div>`;
         }
@@ -556,6 +783,7 @@ export class TeilnehmerView {
                         <div class="text-muted">Nächste Meldung in</div>
                         <div class="display-5 font-monospace" id="fokusCountdown">${formatCountdown(zustand.countdownMs)}</div>
                         <div class="text-muted small mt-1">X+${zustand.aktuelle.xZeitSlot} · noch ${zustand.offen} offen</div>
+                        ${zuletzt}
                     </div>
                 </div>`;
         }
@@ -563,7 +791,7 @@ export class TeilnehmerView {
             const n = zustand.aktuelle;
             const hinweise = renderFuehrungsstellenHinweise(n);
             const weitere = zustand.weitereFaellig > 0
-                ? `<div class="text-warning small mt-2">+${zustand.weitereFaellig} weitere Meldung(en) fällig</div>`
+                ? `<div class="text-warning-emphasis small mt-2">+${zustand.weitereFaellig} weitere Meldung(en) fällig</div>`
                 : "";
             return `
                 <div class="card border-primary mb-3">
@@ -574,10 +802,11 @@ export class TeilnehmerView {
                         </div>
                         <div class="text-muted small mt-2">an: ${escapeHtml(n.empfaenger.join(", "))}</div>
                         <div class="fs-5 mt-1 mb-3">${this.renderArtBadge(n)}${hinweise.kopf}${escapeHtml(n.nachricht).replace(/\\n/g, "<br>").replace(/\n/g, "<br>")}${hinweise.fuss}</div>
-                        <button class="btn btn-success btn-lg w-100" data-fokus-uebertragen="${n.id}">
-                            ✓ Als übertragen markieren
+                        <button class="btn btn-success btn-lg w-100 teilnehmer-fokus-absetzen" data-fokus-uebertragen="${n.id}">
+                            ✓ Als abgesetzt markieren
                         </button>
                         ${weitere}
+                        ${zuletzt}
                     </div>
                 </div>`;
         }
@@ -586,24 +815,37 @@ export class TeilnehmerView {
 
     public bindFokusEvents(
         onToggleFokus: (checked: boolean) => void,
-        onUebertragen: (id: number) => void
+        onUebertragen: (id: number) => void,
+        onZuruecknehmen: (id: number) => void = () => undefined
     ): void {
         document.getElementById("toggle-fokus-modus")?.addEventListener("change", e => {
             onToggleFokus((e.target as HTMLInputElement).checked);
         });
         document.getElementById("teilnehmerFokusCard")?.addEventListener("click", e => {
-            const btn = (e.target as HTMLElement).closest("[data-fokus-uebertragen]") as HTMLElement | null;
-            if (!btn) {
+            const ziel = e.target as HTMLElement;
+            const btn = ziel.closest("[data-fokus-uebertragen]") as HTMLElement | null;
+            const zurueck = ziel.closest("[data-fokus-zuruecknehmen]") as HTMLElement | null;
+            if (!btn && !zurueck) {
                 return;
             }
-            const id = Number(btn.dataset["fokusUebertragen"]);
-            if (Number.isFinite(id)) {
+            // Nach dem Abhaken rückt die nächste fällige Meldung an dieselbe
+            // Stelle: ein zweiter Tipp würde sonst sie gleich mit abhaken.
+            if (this.istKontextGesperrt()) {
+                return;
+            }
+            const id = Number(btn ? btn.dataset["fokusUebertragen"] : zurueck?.dataset["fokusZuruecknehmen"]);
+            if (!Number.isFinite(id)) {
+                return;
+            }
+            this.merkeAenderung(id);
+            if (btn) {
                 onUebertragen(id);
+            } else {
+                onZuruecknehmen(id);
             }
         });
     }
 
-    /** Zeigt an, ob die Übungsleitung den Spruch bereits als abgesetzt bestätigt hat. */
     /**
      * Kennzeichnet die Übermittlungsart. Bleibt leer, wenn die Übung ohne
      * Kennzeichnung generiert wurde.
@@ -619,7 +861,35 @@ export class TeilnehmerView {
         if (!bestaetigung?.abgesetztUm) {
             return "<span class=\"text-muted small\">–</span>";
         }
-        return `<span class="badge bg-success" title="Von der Übungsleitung bestätigt">bestätigt ${formatNatoDate(bestaetigung.abgesetztUm)}</span>`;
+        const uhrzeit = formatUhrzeit(bestaetigung.abgesetztUm);
+        return `<span class="badge bg-success" title="Von der Übungsleitung bestätigt">Leitung: bestätigt${uhrzeit ? ` ${uhrzeit}` : ""}</span>`;
+    }
+
+    /**
+     * Status und Aktion je Spruch. Bewusst getrennt: der Zustand ist eine
+     * Anzeige, die Aktion ein großer Knopf. Das Zurücknehmen ist ein eigener,
+     * kleiner Knopf an anderer Stelle — ein zweiter Tipp auf „abgesetzt“
+     * trifft also nie die Gegenaktion.
+     */
+    private renderStatusZelle(id: number, isUebertragen: boolean, uebertragenUm: string | undefined, istNaechster: boolean): string {
+        if (!isUebertragen) {
+            return `
+                <div class="teilnehmer-status-zeile">
+                    <span class="status-chip status-chip--pending">offen</span>
+                    ${istNaechster ? "<span class=\"teilnehmer-naechster-label\">als Nächstes</span>" : ""}
+                </div>
+                <button type="button" class="btn btn-success teilnehmer-absetzen" data-aktion="absetzen" data-id="${id}">
+                    ✓ Als abgesetzt markieren
+                </button>`;
+        }
+        const uhrzeit = formatUhrzeit(uebertragenUm);
+        return `
+                <div class="teilnehmer-status-zeile">
+                    <span class="status-chip status-chip--ok">✓ abgesetzt${uhrzeit ? ` ${uhrzeit}` : ""}</span>
+                    <button type="button" class="btn btn-outline-secondary btn-sm teilnehmer-zuruecknehmen" data-aktion="zuruecknehmen" data-id="${id}" aria-label="Spruch ${id} zurücknehmen (wieder offen)">
+                        Zurücknehmen
+                    </button>
+                </div>`;
     }
 
     public bindEvents(
@@ -664,6 +934,9 @@ export class TeilnehmerView {
         document.getElementById("btn-doc-prev")?.addEventListener("click", onDocPrev);
         document.getElementById("btn-doc-next")?.addEventListener("click", onDocNext);
         document.getElementById("btn-doc-close")?.addEventListener("click", onDocClose);
+        // Bootstrap schließt das Fenster auch per Hintergrund-Tipp; der
+        // Controller muss davon erfahren, sonst bleibt er im Vordruck-Modus.
+        document.getElementById("teilnehmerDocModal")?.addEventListener("hidden.bs.modal", onDocClose);
 
         document.addEventListener("keydown", e => {
             const target = e.target as HTMLElement | null;
@@ -683,6 +956,10 @@ export class TeilnehmerView {
                     return;
                 }
                 e.preventDefault();
+                if (this.istKontextGesperrt()) {
+                    return;
+                }
+                this.letzteKontextAenderung = Date.now();
                 onDocToggleCurrent();
                 return;
             }
@@ -716,37 +993,39 @@ export class TeilnehmerView {
             }
         });
 
-        // Delegation for dynamic rows
+        // Delegation für die Zeilen: „absetzen“ und „zurücknehmen“ sind zwei
+        // getrennte Knöpfe. Nach einem Wechsel ist die Nachricht kurz gesperrt,
+        // damit ein Doppeltipp den Wechsel nicht still wieder aufhebt.
         const tbody = document.getElementById("teilnehmerNachrichtenBody");
-        if (tbody) {
-            const handleToggleEvent = (event: Event) => {
-                const target = event.target as HTMLInputElement;
-                if (!target.classList.contains("btn-toggle-uebertragen")) {
-                    return;
-                }
-                const id = Number(target.dataset["id"]);
-                if (!Number.isFinite(id)) {
-                    return;
-                }
-                onToggleUebertragen(id, target.checked);
-            };
-            tbody.addEventListener("change", handleToggleEvent);
-            tbody.addEventListener("click", handleToggleEvent);
-            tbody.addEventListener("click", event => {
-                const target = event.target as HTMLElement;
-                const chip = target.closest(".btn-toggle-uebertragen-chip") as HTMLElement | null;
-                if (!chip) {
-                    return;
-                }
-                const id = Number(chip.dataset["id"]);
-                const checked = chip.dataset["checked"] === "1";
-                if (!Number.isFinite(id)) {
-                    return;
-                }
-                onToggleUebertragen(id, !checked);
-            });
-        }
+        tbody?.addEventListener("click", event => {
+            const btn = (event.target as HTMLElement).closest("[data-aktion]") as HTMLElement | null;
+            if (!btn) {
+                return;
+            }
+            const id = Number(btn.dataset["id"]);
+            const aktion = btn.dataset["aktion"] as StatusAktion | undefined;
+            if (!Number.isFinite(id) || (aktion !== "absetzen" && aktion !== "zuruecknehmen")) {
+                return;
+            }
+            if (this.istGesperrt(id)) {
+                return;
+            }
+            this.merkeAenderung(id, false);
+            onToggleUebertragen(id, aktion === "absetzen");
+        });
 
+        // Touch-Knopf im Vordruck: dieselbe Aktion wie die Leertaste. Nach dem
+        // Wechsel kann der Vordruck auf den nächsten Spruch springen (bei
+        // „Abgesetzte ausblenden“) — daher die Kontextsperre.
+        document.getElementById("btn-doc-absetzen")?.addEventListener("click", () => {
+            if (this.istKontextGesperrt()) {
+                return;
+            }
+            this.letzteKontextAenderung = Date.now();
+            onDocToggleCurrent();
+        });
+
+        this.bindRueckgaengig();
     }
 
     public setDocMode(mode: "table" | "meldevordruck" | "nachrichtenvordruck") {
@@ -813,9 +1092,27 @@ export class TeilnehmerView {
         }
     }
 
-    public setDocTransmitted(isTransmitted: boolean) {
+    /**
+     * Zustand des angezeigten Vordrucks: Statusanzeige und Touch-Knopf. Der
+     * Knopf wechselt zwischen „Als abgesetzt markieren“ und „Zurücknehmen“;
+     * ein Doppeltipp ist durch die Kontextsperre in bindEvents abgefangen.
+     */
+    public setDocTransmitted(isTransmitted: boolean, vorhanden = true) {
         const modal = document.getElementById("teilnehmerDocModal");
         modal?.classList.toggle("teilnehmer-doc-modal--done", isTransmitted);
+
+        const status = document.getElementById("teilnehmerDocStatus");
+        if (status) {
+            status.className = `status-chip ${isTransmitted ? "status-chip--ok" : "status-chip--pending"}`;
+            status.textContent = vorhanden ? (isTransmitted ? "✓ abgesetzt" : "offen") : "kein Spruch";
+        }
+        const btn = document.getElementById("btn-doc-absetzen") as HTMLButtonElement | null;
+        if (btn) {
+            btn.disabled = !vorhanden;
+            btn.dataset["aktion"] = isTransmitted ? "zuruecknehmen" : "absetzen";
+            btn.className = `btn ${isTransmitted ? "btn-outline-secondary" : "btn-success"} teilnehmer-doc-absetzen`;
+            btn.textContent = isTransmitted ? "Zurücknehmen (wieder offen)" : "✓ Als abgesetzt markieren";
+        }
     }
 
     public setXZeitBasisInputValue(value: string): void {
@@ -922,6 +1219,12 @@ export class TeilnehmerView {
         const modalEl = document.getElementById("teilnehmerDocModal");
         if (!modalEl) {
             return;
+        }
+        // Innerhalb der Ansicht bildet ein Vorfahr einen eigenen Stapel- und
+        // Positionierungskontext: das Fenster lag dann unter dem fixierten
+        // App-Kopf und war am Handy nicht bildschirmfüllend.
+        if (show && modalEl.parentElement !== document.body) {
+            document.body.appendChild(modalEl);
         }
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const bootstrapModal = (window as any).bootstrap?.Modal;

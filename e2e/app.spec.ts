@@ -602,11 +602,29 @@ test("@routing @teilnehmer route #/teilnehmer without params shows invalid link 
     await expect(page.locator("#joinTeilnehmerCode")).toBeVisible();
 });
 
-test("@routing @teilnehmer route #/teilnehmer with code params prefills join form", async ({ page }) => {
+test("@routing @teilnehmer shared link with both codes opens the participant view directly", async ({ page }) => {
     await page.goto("/#/teilnehmer?uc=k7m4q2&tc=a1b2");
 
+    await expect(page).toHaveURL(/#\/teilnehmer\/u1\/A1B2$/);
+    await expect(page.locator("#teilnehmerNachrichtenBody")).toContainText("Lage unverändert.");
+});
+
+test("@routing @teilnehmer shared link with a wrong code prefills the join form and explains", async ({ page }) => {
+    await page.goto("/#/teilnehmer?uc=k7m4q2&tc=zzzz");
+
     await expect(page.locator("#joinUebungCode")).toHaveValue("K7M4Q2");
-    await expect(page.locator("#joinTeilnehmerCode")).toHaveValue("A1B2");
+    await expect(page.locator("#joinTeilnehmerCode")).toHaveValue("ZZZZ");
+    await expect(page.locator("#teilnehmerJoinError")).toContainText("nicht gefunden");
+});
+
+test("@teilnehmer unknown participant code shows the join form instead of a dead end", async ({ page }) => {
+    await page.goto("/#/teilnehmer/u1/ZZZZ");
+
+    await expect(page.locator("#teilnehmerJoinError")).toContainText("Teilnehmer nicht in dieser Übung gefunden");
+    await expect(page.locator("#joinUebungCode")).toHaveValue("K7M4Q2");
+    await page.locator("#joinTeilnehmerCode").fill("a1b2");
+    await page.locator("#joinSubmitBtn").click();
+    await expect(page).toHaveURL(/#\/teilnehmer\/u1\/A1B2$/);
 });
 
 test("@routing @uebungsleitung route #/uebungsleitung without id still switches app mode", async ({ page }) => {
@@ -827,8 +845,45 @@ test("@teilnehmer teilnehmer route renders seeded messages and toggles status ch
     await expect(page.locator("#teilnehmerNachrichtenBody")).toContainText("Lage unverändert.");
 
     const firstRow = page.locator("#teilnehmerNachrichtenBody tr").first();
-    await firstRow.locator(".btn-toggle-uebertragen-chip").click();
+    await firstRow.locator("[data-aktion='absetzen']").click();
     await expect(firstRow).toHaveClass(/status-ok-row/);
+    await expect(page.locator("#teilnehmerRueckgaengig")).toBeVisible();
+});
+
+test.describe("@teilnehmer phone", () => {
+    test.use({ viewport: { width: 375, height: 667 }, hasTouch: true, isMobile: true });
+
+test("@teilnehmer on a phone the action is reachable without sideways swiping and survives a double tap", async ({ page }) => {
+    await page.goto("/#/teilnehmer/u1/A1B2");
+
+    const knopf = page.locator("#teilnehmerNachrichtenBody tr").first().locator("[data-aktion='absetzen']");
+    await expect(knopf).toBeVisible();
+    const box = await knopf.boundingBox();
+    expect(box).not.toBeNull();
+    if (box) {
+        expect(box.x + box.width).toBeLessThanOrEqual(375);
+        expect(box.height).toBeGreaterThanOrEqual(44);
+        expect(box.y + box.height).toBeLessThanOrEqual(667);
+        // Doppeltipp: der zweite Tipp trifft die Stelle, an der jetzt „Zurücknehmen“ stehen könnte.
+        await page.touchscreen.tap(box.x + box.width / 2, box.y + box.height / 2);
+        await page.waitForTimeout(150);
+        await page.touchscreen.tap(box.x + box.width / 2, box.y + box.height / 2);
+    }
+    await expect(page.locator("#teilnehmerNachrichtenBody tr").first()).toHaveClass(/status-ok-row/);
+    expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(375);
+
+    // Vordruck: Abhaken per Touch-Knopf, Schließen frei erreichbar, Gerätezurück schließt nur das Fenster.
+    await page.locator("[data-doc-view='meldevordruck']").click();
+    await expect(page.locator("#teilnehmerDocModal")).toHaveClass(/show/);
+    await page.locator("#btn-doc-next").click();
+    await page.locator("#btn-doc-absetzen").click();
+    await expect(page.locator("#teilnehmerDocStatus")).toContainText("abgesetzt");
+    const schliessen = await page.locator("#btn-doc-close").boundingBox();
+    expect(schliessen && schliessen.height).toBeGreaterThanOrEqual(44);
+    await page.goBack();
+    await expect(page.locator("#teilnehmerDocModal")).not.toHaveClass(/show/);
+    await expect(page).toHaveURL(/#\/teilnehmer\/u1\/A1B2$/);
+});
 });
 
 test("@teilnehmer @uebungsleitung teilnehmer status reaches the uebungsleitung live", async ({ context }) => {
@@ -840,7 +895,7 @@ test("@teilnehmer @uebungsleitung teilnehmer status reaches the uebungsleitung l
     const teilnehmer = await context.newPage();
     await teilnehmer.goto("/#/teilnehmer/u1/A1B2");
     await teilnehmer.locator("#teilnehmerNachrichtenBody tr").first()
-        .locator(".btn-toggle-uebertragen-chip").click();
+        .locator("[data-aktion='absetzen']").click();
 
     // Die Übungsleitung sieht die Selbstmeldung, ohne selbst etwas anzuklicken.
     const zeile = leitung.locator("#uebungsleitungTeilnehmer tbody tr").filter({ hasText: "16/11" });

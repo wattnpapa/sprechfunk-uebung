@@ -459,6 +459,12 @@ code {
         min-width: 0;
     }
 
+    /* Auf 375 px lief der Schriftzug unter den Menüknopf (THW-Review). */
+    .app-header-title p {
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
     .app-header-burger {
         grid-area: burger;
         justify-self: end;
@@ -1868,7 +1874,370 @@ select option {
     }
 }
 
+/* --- Teilnehmer: Kopf, Liste, Aktionen ----------------------------------- */
+/* THW-Review 2026-10-04: am Handy muss der erste Spruch samt Abhak-Knopf
+   ohne Scrollen und ohne Seitwärtswischen erreichbar sein. Deshalb ein
+   kompakter Kopf, Karten statt Tabelle unter 768 px und Touch-Ziele von
+   mindestens 44 px. */
+
+.teilnehmer-kopf .card-body {
+    padding: 0.6rem 0.9rem;
+}
+
+.teilnehmer-kopf-zeile {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.4rem 0.75rem;
+}
+
+.teilnehmer-kopf-zeile .card-title {
+    font-size: var(--t-l);
+    min-width: 0;
+    overflow-wrap: anywhere;
+}
+
+.teilnehmer-kopf-daten {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.15rem 1.1rem;
+    margin: 0.4rem 0 0;
+    font-size: var(--t-s);
+}
+
+.teilnehmer-kopf-daten > div {
+    display: flex;
+    gap: 0.35rem;
+    min-width: 0;
+}
+
+.teilnehmer-kopf-daten dt {
+    font-weight: 400;
+    color: var(--text-2);
+}
+
+.teilnehmer-kopf-daten dd {
+    margin: 0;
+    font-weight: 600;
+    overflow-wrap: anywhere;
+}
+
+.teilnehmer-werkzeug {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.5rem 1rem;
+}
+
+.teilnehmer-ansicht .btn {
+    min-height: 44px;
+}
+
+.teilnehmer-schalter {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    min-height: 44px;
+    margin: 0;
+}
+
+.teilnehmer-schalter .form-check-input {
+    width: 2.6em;
+    height: 1.4em;
+    margin-top: 0;
+    flex-shrink: 0;
+}
+
+/* Im Dark Mode war der ausgeschaltete Schalter kaum vom Grund zu trennen. */
+[data-theme="dark"] .teilnehmer-schalter .form-check-input:not(:checked),
+[data-theme="dark"] #xZeitBanner .form-check-input:not(:checked) {
+    border-color: var(--text-3);
+    background-color: var(--flaeche-2);
+    --bs-form-switch-bg: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='-4 -4 8 8'%3e%3ccircle r='3' fill='%23aab3c4'/%3e%3c/svg%3e");
+}
+
+#teilnehmerTableView .table th:last-child,
+#teilnehmerTableView .table td:last-child {
+    min-width: 0;
+}
+
+.teilnehmer-zelle-status {
+    min-width: 200px;
+}
+
+.teilnehmer-status-zeile {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.4rem 0.6rem;
+}
+
+.teilnehmer-zelle-status .status-chip,
+.teilnehmer-doc-status .status-chip {
+    cursor: default;
+}
+
+.teilnehmer-absetzen {
+    display: block;
+    width: 100%;
+    min-height: 44px;
+    margin-top: 0.4rem;
+    font-weight: 700;
+}
+
+.teilnehmer-zuruecknehmen {
+    min-height: 44px;
+    margin-left: auto;
+}
+
+.teilnehmer-naechster-label {
+    font-size: var(--t-xs);
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--akzent-hell);
+}
+
+.status-pending-row.ist-naechster > td {
+    box-shadow: inset 6px 0 0 var(--akzent-hell);
+}
+
+.teilnehmer-nr-label,
+.teilnehmer-an-label {
+    display: none;
+}
+
+.teilnehmer-fokus-zuletzt {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem 0.75rem;
+    margin-top: 1.25rem;
+    padding-top: 0.75rem;
+    border-top: var(--strich) solid var(--linie-fein);
+}
+
+.teilnehmer-fokus-zuletzt .btn {
+    min-height: 44px;
+}
+
+.teilnehmer-unterlagen .btn,
+.teilnehmer-gefahr .btn {
+    min-height: 44px;
+}
+
+/* Selten und folgenschwer: eingeklappt, abgesetzt und rot umrandet. */
+.teilnehmer-gefahr {
+    border: var(--strich) solid var(--alarm-linie);
+    background: var(--flaeche);
+    padding: 0 0.9rem;
+}
+
+.teilnehmer-gefahr > summary {
+    cursor: pointer;
+    min-height: 44px;
+    display: flex;
+    align-items: center;
+    font-weight: 600;
+    color: var(--alarm);
+}
+
+.teilnehmer-gefahr-inhalt {
+    padding-bottom: 0.9rem;
+}
+
+/* Rückgängig-Hinweis: unten fest, über dem Inhalt, eigener Knopf. */
+.teilnehmer-rueckgaengig {
+    position: fixed;
+    left: 50%;
+    bottom: max(1rem, env(safe-area-inset-bottom));
+    transform: translateX(-50%);
+    z-index: 5200;
+    display: flex;
+    align-items: center;
+    gap: 0.9rem;
+    width: min(32rem, calc(100vw - 2rem));
+    padding: 0.5rem 0.5rem 0.5rem 1rem;
+    background: var(--n-900, #11141b);
+    color: #fff;
+    border: var(--strich) solid var(--linie-stark);
+    box-shadow: 0 6px 18px rgb(0 0 0 / 30%);
+}
+
+[data-theme="dark"] .teilnehmer-rueckgaengig {
+    background: var(--flaeche-2);
+    color: var(--text);
+}
+
+.teilnehmer-rueckgaengig[hidden] {
+    display: none;
+}
+
+.teilnehmer-rueckgaengig span {
+    flex: 1 1 auto;
+}
+
+.teilnehmer-rueckgaengig .btn {
+    min-height: 44px;
+    font-weight: 700;
+}
+
+.teilnehmer-zugang-knopf {
+    min-height: 48px;
+}
+
+@media (max-width: 767.98px) {
+    .teilnehmer-zugang-knopf {
+        width: 100%;
+    }
+
+    #teilnehmerArea > .app-view-shell {
+        margin-top: 0.75rem !important;
+    }
+
+    .teilnehmer-kopf {
+        margin-bottom: 0.5rem !important;
+    }
+
+    .teilnehmer-werkzeug {
+        gap: 0.25rem 1rem;
+    }
+
+    /* Die Ansichtswahl darunter sagt schon, worum es geht; die Überschrift
+       bleibt für Screenreader erhalten. */
+    .teilnehmer-werkzeug h4 {
+        position: absolute;
+        width: 1px;
+        height: 1px;
+        overflow: hidden;
+        clip: rect(0 0 0 0);
+        white-space: nowrap;
+    }
+
+    /* Das Datum braucht während der Übung niemand; es kostet eine Zeile. */
+    .teilnehmer-kopf-datum {
+        display: none !important;
+    }
+
+    .teilnehmer-ansicht {
+        width: 100%;
+    }
+
+    .teilnehmer-ansicht .btn {
+        flex: 1 1 0;
+        padding-left: 0.3rem;
+        padding-right: 0.3rem;
+        font-size: var(--t-s);
+    }
+
+    /* Karten statt Tabelle: nichts liegt rechts außerhalb des Bildschirms. */
+    #teilnehmerTableView {
+        overflow-x: visible;
+    }
+
+    #teilnehmerTableView table,
+    #teilnehmerTableView tbody {
+        display: block;
+        width: 100%;
+        margin: 0;
+    }
+
+    #teilnehmerTableView thead {
+        display: none;
+    }
+
+    #teilnehmerTableView tbody > tr {
+        display: grid;
+        grid-template-columns: auto minmax(0, 1fr) auto;
+        gap: 0.3rem 0.6rem;
+        padding: 0.7rem 0.8rem;
+        margin-bottom: 0.75rem;
+        border: var(--strich) solid var(--linie);
+        border-left-width: 6px;
+        background: var(--flaeche);
+    }
+
+    #teilnehmerTableView tbody > tr.status-pending-row {
+        border-left-color: var(--warn-linie);
+    }
+
+    #teilnehmerTableView tbody > tr.status-ok-row {
+        border-left-color: var(--gut);
+        background: var(--gut-fond);
+    }
+
+    #teilnehmerTableView tbody > tr.ist-naechster {
+        border-left-color: var(--akzent-hell);
+    }
+
+    #teilnehmerTableView tbody > tr > td {
+        display: block;
+        padding: 0;
+        border: 0;
+        min-width: 0;
+        background: transparent !important;
+        box-shadow: none !important;
+    }
+
+    #teilnehmerTableView .teilnehmer-zelle-nr {
+        grid-column: 1;
+        font-weight: 700;
+    }
+
+    #teilnehmerTableView .teilnehmer-zelle-empfaenger {
+        grid-column: 2;
+        color: var(--text-2);
+        overflow-wrap: anywhere;
+    }
+
+    #teilnehmerTableView .teilnehmer-zelle-xzeit {
+        grid-column: 3;
+        justify-self: end;
+    }
+
+    #teilnehmerTableView .teilnehmer-zelle-text,
+    #teilnehmerTableView .teilnehmer-zelle-status,
+    #teilnehmerTableView .teilnehmer-zelle-leitung {
+        grid-column: 1 / -1;
+        min-width: 0;
+    }
+
+    #teilnehmerTableView .teilnehmer-zelle-text {
+        font-size: var(--t-l);
+        line-height: 1.4;
+    }
+
+    #teilnehmerTableView .teilnehmer-zelle-leitung.ist-leer {
+        display: none;
+    }
+
+    #teilnehmerTableView tbody > tr > td[colspan] {
+        grid-column: 1 / -1;
+        text-align: center;
+    }
+
+    .teilnehmer-nr-label,
+    .teilnehmer-an-label {
+        display: inline;
+        font-weight: 400;
+        color: var(--text-2);
+    }
+
+    .teilnehmer-absetzen {
+        min-height: 48px;
+    }
+}
+
 /* --- Teilnehmer: Dokumentenansicht --------------------------------------- */
+
+/* Über dem fixierten App-Kopf (z-index 5000), sonst liegt dessen Unterkante
+   über Titel und Schließen-Knopf. */
+.modal.teilnehmer-doc-modal {
+    z-index: 5100;
+}
 
 .teilnehmer-doc-modal .modal-dialog {
     max-width: 95vw;
@@ -1883,15 +2252,26 @@ select option {
     background: var(--gut-fond);
 }
 
+.teilnehmer-doc-modal .modal-header {
+    gap: 0.75rem;
+}
+
+.teilnehmer-doc-schliessen {
+    margin-left: auto;
+    min-height: 44px;
+    min-width: 44px;
+}
+
 .teilnehmer-doc-modal .modal-body {
     padding: var(--r-3);
     flex: 1 1 auto;
     position: relative;
+    min-height: 0;
 }
 
 .teilnehmer-doc-layout {
     display: grid;
-    grid-template-columns: auto minmax(0, 1fr) auto;
+    grid-template-columns: minmax(0, 1fr);
     gap: 16px;
     align-items: start;
     height: 100%;
@@ -1903,10 +2283,49 @@ select option {
     align-items: center;
     gap: 8px;
     height: 100%;
+    min-height: 0;
+}
+
+.teilnehmer-doc-aktionen {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr) auto;
+    grid-template-areas:
+        "status status status"
+        "prev absetzen next";
+    gap: 0.5rem;
+    justify-content: stretch;
+}
+
+.teilnehmer-doc-aktionen > * {
+    margin: 0;
+}
+
+.teilnehmer-doc-status {
+    grid-area: status;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.5rem 1rem;
+}
+
+#btn-doc-prev {
+    grid-area: prev;
+}
+
+#btn-doc-next {
+    grid-area: next;
+}
+
+.teilnehmer-doc-absetzen {
+    grid-area: absetzen;
+    min-height: 48px;
+    font-weight: 700;
 }
 
 .teilnehmer-doc-nav {
-    min-width: 120px;
+    min-width: 110px;
+    min-height: 48px;
 }
 
 .teilnehmer-doc-page {
@@ -1925,7 +2344,14 @@ select option {
     border: var(--strich) solid var(--linie);
     border-radius: var(--radius);
     padding: 6px 8px;
-    max-width: 220px;
+    max-width: 240px;
+}
+
+/* Tastenkürzel nur, wo es eine Tastatur gibt. */
+@media (hover: none), (pointer: coarse), (max-width: 767.98px) {
+    .teilnehmer-doc-legend {
+        display: none;
+    }
 }
 
 .teilnehmer-doc-container {
@@ -1948,28 +2374,34 @@ select option {
     box-shadow: none;
 }
 
-@media (max-width: 768px) {
-    .teilnehmer-doc-layout {
-        grid-template-columns: 1fr;
-        grid-template-rows: auto 1fr auto;
-        gap: 10px;
+@media (max-width: 767.98px) {
+    /* Vollbild: nichts von der Seite darunter, nichts unter dem App-Kopf. */
+    .teilnehmer-doc-modal .modal-dialog {
+        width: 100vw;
+        max-width: none;
+        height: 100%;
+        min-height: 100%;
+        margin: 0;
+        padding: 0;
+    }
+
+    .teilnehmer-doc-modal .modal-content {
+        border: 0;
+    }
+
+    .teilnehmer-doc-modal .modal-header,
+    .teilnehmer-doc-modal .modal-footer {
+        padding: 0.5rem 0.75rem;
+    }
+
+    .teilnehmer-doc-aktionen {
+        padding-bottom: max(0.5rem, env(safe-area-inset-bottom));
     }
 
     .teilnehmer-doc-nav {
         min-width: 0;
-        width: 100%;
-    }
-
-    #btn-doc-prev,
-    #btn-doc-next {
-        position: sticky;
-        bottom: 0;
-        z-index: 2;
-    }
-
-    .teilnehmer-doc-legend {
-        position: static;
-        margin-top: 6px;
+        padding-left: 0.6rem;
+        padding-right: 0.6rem;
     }
 }
 
