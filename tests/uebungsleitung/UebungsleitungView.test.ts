@@ -12,7 +12,10 @@ vi.mock("../../src/core/chart", () => {
         chartCtor(...args);
     };
     (FakeChart as unknown as { getChart: typeof getChart }).getChart = getChart;
-    return { Chart: FakeChart };
+    const themeFarben = () => ({
+        text: "#000", text2: "#555", linie: "#ddd", akzent: "#123", akzentHell: "#456", gut: "#060", warn: "#640"
+    });
+    return { Chart: FakeChart, themeFarben };
 });
 
 import { UebungsleitungView } from "../../src/uebungsleitung/UebungsleitungView";

@@ -1,4 +1,4 @@
-import { Chart } from "../core/chart";
+import { Chart, themeFarben } from "../core/chart";
 import { formatNatoDate } from "../utils/date";
 import type { LiveSyncState } from "../types/LiveStatus";
 import type { EffektiverNachrichtenStatus } from "../services/liveStatusMerge";
@@ -407,6 +407,8 @@ export class UebungsleitungNachrichtenView {
         sendPoints: TimelinePoint[],
         receivePoints: TimelinePoint[]
     ): void {
+        // Punktfarben aus dem Theme; Achsen und Raster färbt initChartTheme().
+        const farben = themeFarben();
         new Chart(canvas, {
             type: "scatter",
             data: {
@@ -416,14 +418,14 @@ export class UebungsleitungNachrichtenView {
                         data: sendPoints,
                         pointRadius: 4,
                         pointHoverRadius: 6,
-                        pointBackgroundColor: "#3b82f6"
+                        pointBackgroundColor: farben.akzentHell
                     },
                     {
                         label: "Empfangen",
                         data: receivePoints,
                         pointRadius: 4,
                         pointHoverRadius: 6,
-                        pointBackgroundColor: "#9ca3af"
+                        pointBackgroundColor: farben.warn
                     }
                 ]
             },

@@ -27,7 +27,7 @@ import { errorMonitoring } from "./services/errorMonitoring";
 import { initFirebaseClient } from "./services/firebaseClient";
 
 // Registriert die genutzten Chart.js-Bausteine (Bar + Scatter) einmalig.
-import "./core/chart";
+import { initChartTheme } from "./core/chart";
 import type { Chart } from "chart.js";
 
 declare global {
@@ -158,6 +158,8 @@ function handleRoute(): void {
 window.addEventListener("DOMContentLoaded", () => {
     natoClock.init();
     themeManager.init();
+    // Diagrammfarben aus dem Theme, Neuzeichnen beim Theme-Wechsel.
+    initChartTheme();
     appView.initModals();
     appView.initGlobalListeners();
     // Routing sofort starten: Die Ansicht darf nicht auf den build.json-Fetch
