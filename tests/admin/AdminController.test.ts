@@ -19,6 +19,7 @@ const mocks = vi.hoisted(() => ({
     renderChart: vi.fn(),
     bindListEvents: vi.fn(),
     uiError: vi.fn(),
+    uiSuccess: vi.fn(),
     uiConfirm: vi.fn(() => true)
 }));
 
@@ -49,7 +50,7 @@ vi.mock("../../src/admin/AdminView", () => ({
     }
 }));
 vi.mock("../../src/core/UiFeedback", () => ({
-    uiFeedback: { error: mocks.uiError, confirm: mocks.uiConfirm }
+    uiFeedback: { error: mocks.uiError, success: mocks.uiSuccess, confirm: mocks.uiConfirm }
 }));
 
 describe("AdminController", () => {
@@ -102,6 +103,35 @@ describe("AdminController", () => {
         await c.loescheUebung("u1");
         expect(mocks.deleteUebung).toHaveBeenCalledWith("u1");
         expect(reload).toHaveBeenCalledWith("refresh");
+    });
+
+    it("nennt in der Lösch-Rückfrage die Übung und meldet das Löschen", async () => {
+        const { AdminController } = await import("../../src/admin/index");
+        const c = new AdminController();
+        c.setDb({ db: true } as never);
+        mocks.getUebungenPaged.mockResolvedValueOnce({
+            uebungen: [{ id: "u1", name: "Dienstabend A", datum: "2026-10-06T00:00:00.000Z", rufgruppe: "RG 1", teilnehmerListe: ["A", "B"], uebungCode: "K7M4Q2" }],
+            lastVisible: null
+        });
+        mocks.getUebungenCount.mockResolvedValue(1);
+        await c.ladeAlleUebungen("initial");
+        vi.spyOn(c, "ladeAlleUebungen").mockResolvedValue();
+
+        await c.loescheUebung("u1");
+
+        const frage = mocks.uiConfirm.mock.calls.at(-1)?.[0] as string;
+        expect(frage).toContain("„Dienstabend A“");
+        expect(frage).toContain("6.10.2026");
+        expect(frage).toContain("RG 1");
+        expect(frage).toContain("2 Teilnehmer");
+        expect(frage).toContain("K7M4Q2");
+        expect(frage).toContain("nicht rückgängig");
+        expect(mocks.uiSuccess).toHaveBeenCalledWith("Übung „Dienstabend A“ gelöscht.");
+    });
+
+    it("fragt auch ohne bekannte Übungsdaten verständlich nach", async () => {
+        const { AdminController } = await import("../../src/admin/index");
+        expect(AdminController.loeschRueckfrage(undefined)).toContain("„ohne Namen“");
     });
 
     it("stays on the current page after deleting an entry", async () => {

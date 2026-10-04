@@ -50,24 +50,29 @@ export class AdminView {
             if (uebung.istStandardKonfiguration) {
                 tr.classList.add("admin-standard-uebung-row");
             }
+            // Namen, Rufgruppen und Teilnehmer stammen aus anonym schreibbaren
+            // Dokumenten und werden deshalb maskiert.
+            const id = AdminView.escapeAttribute(String(uebung.id ?? ""));
+            const name = AdminView.escapeHtml(String(uebung.name ?? ""));
+            const nameAttr = AdminView.escapeAttribute(String(uebung.name ?? "ohne Namen"));
             tr.innerHTML = `
                 <td>${uebung.createDate ? new Date(uebung.createDate).toLocaleString() : "-"}</td>
-                <td><a href="#/generator/${uebung.id}" target="_blank">${uebung.name}</a></td>
+                <td><a href="#/generator/${id}" target="_blank">${name}</a></td>
                 <td>${uebung.datum ? new Date(uebung.datum).toLocaleDateString() : "-"}</td>
-                <td>${uebung.rufgruppe}</td>
-                <td>${uebung.leitung}</td>
-                <td title="${(uebung.teilnehmerListe || []).join("\n")}">${uebung.teilnehmerListe?.length ?? 0}</td>
+                <td>${AdminView.escapeHtml(String(uebung.rufgruppe ?? ""))}</td>
+                <td>${AdminView.escapeHtml(String(uebung.leitung ?? ""))}</td>
+                <td title="${AdminView.escapeAttribute((uebung.teilnehmerListe || []).join("\n"))}">${uebung.teilnehmerListe?.length ?? 0}</td>
                 ${AdminView.merkmalZelle(spielModusMerkmal(uebung))}
                 ${AdminView.merkmalZelle(funkspruchQuelleMerkmal(uebung))}
-                <td class="text-end text-nowrap">
-                     <button class="btn btn-sm btn-outline-secondary" data-action="view" title="Übung öffnen" data-id="${uebung.id}">
-                        <i class="fa-solid fa-magnifying-glass"></i>
+                <td class="text-end text-nowrap admin-aktionen">
+                    <button class="btn btn-sm btn-outline-secondary" data-action="view" title="Übung öffnen" aria-label="Übung „${nameAttr}“ öffnen" data-id="${id}">
+                        <i class="fa-solid fa-magnifying-glass" aria-hidden="true"></i> Öffnen
                     </button>
-                    <button class="btn btn-sm btn-outline-secondary" data-action="monitor" title="Übung überwachen" data-id="${uebung.id}">
-                        <i class="fas fa-display"></i>
+                    <button class="btn btn-sm btn-outline-secondary" data-action="monitor" title="Übung überwachen" aria-label="Übung „${nameAttr}“ überwachen" data-id="${id}">
+                        <i class="fas fa-display" aria-hidden="true"></i> Überwachen
                     </button>
-                    <button class="btn btn-sm btn-danger" data-action="delete" data-id="${uebung.id}">
-                        <i class="fas fa-trash-alt"></i>
+                    <button class="btn btn-sm btn-outline-danger admin-loeschen" data-action="delete" title="Übung löschen" aria-label="Übung „${nameAttr}“ löschen" data-id="${id}">
+                        <i class="fas fa-trash-alt" aria-hidden="true"></i> Löschen
                     </button>
                 </td>
             `;

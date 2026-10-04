@@ -31,6 +31,8 @@ export class AdminController {
     /** `null` = noch nicht gewählt, `"alle"` = Jahrgänge zusammengefasst. */
     private jahrFilter: number | "alle" | null = null;
     private alleUebungenCache: Partial<Record<"all" | "test", { ts: number; data: UebungsListe }>> = {};
+    /** Die gerade angezeigten Übungen; die Lösch-Rückfrage nennt daraus Name und Datum. */
+    private angezeigteUebungen: UebungsListe = [];
     private readonly cacheTtlMs = 120000;
 
     constructor() {
@@ -155,21 +157,50 @@ export class AdminController {
         if (!service) {
             return;
         }
-        if (!uiFeedback.confirm("Möchtest du diese Übung wirklich löschen?")) {
+        const uebung = this.angezeigteUebungen.find(eintrag => eintrag.id === uebungId);
+        if (!uiFeedback.confirm(AdminController.loeschRueckfrage(uebung))) {
             return;
         }
 
         try {
             await service.deleteUebung(uebungId);
-            // console.log("✅ Übung gelöscht:", uebungId); // Removed console.log
             this.invalidateCaches();
             // Auf der aktuellen Seite bleiben statt zurück auf Seite 1 zu springen.
             this.ladeAlleUebungen("refresh");
+            uiFeedback.success(`Übung „${AdminController.uebungsName(uebung)}“ gelöscht.`);
         } catch (error) {
             console.error("❌ Fehler beim Löschen der Übung:", error);
             uiFeedback.error("Fehler beim Löschen der Übung.");
         }
     };
+
+    private static uebungsName(uebung: UebungsListe[number] | undefined): string {
+        return uebung?.name?.trim() || "ohne Namen";
+    }
+
+    /**
+     * Die Rückfrage nennt die Übung und die Folgen, statt nur „diese Übung“
+     * (THW-Review destructive-action P1-1, error-recovery P2-6).
+     */
+    static loeschRueckfrage(uebung: UebungsListe[number] | undefined): string {
+        const zeilen = [`Übung „${AdminController.uebungsName(uebung)}“ endgültig löschen?`];
+        const datum = uebung?.datum ? new Date(uebung.datum) : null;
+        const details = [
+            datum && !Number.isNaN(datum.getTime()) ? `Datum ${datum.toLocaleDateString("de-DE")}` : "",
+            uebung?.rufgruppe ? `Rufgruppe ${uebung.rufgruppe}` : "",
+            uebung?.teilnehmerListe ? `${uebung.teilnehmerListe.length} Teilnehmer` : "",
+            uebung?.uebungCode ? `Übungscode ${uebung.uebungCode}` : ""
+        ].filter(Boolean);
+        if (details.length > 0) {
+            zeilen.push(details.join(" · "));
+        }
+        zeilen.push(
+            "",
+            "Alle Teilnehmer- und Leitungs-Links dieser Übung funktionieren danach nicht mehr. " +
+            "Das lässt sich nicht rückgängig machen."
+        );
+        return zeilen.join("\n");
+    }
 
     offeneUebungsleitung(uebungId: string): void {
         window.open(`#/uebungsleitung/${uebungId}`, "_blank");
@@ -402,6 +433,7 @@ export class AdminController {
     }
 
     private zeigeSeite(uebungen: UebungsListe): void {
+        this.angezeigteUebungen = uebungen;
         this.view.renderUebungsListe(uebungen);
         this.view.renderPaginationInfo(
             this.pagination.currentPage,

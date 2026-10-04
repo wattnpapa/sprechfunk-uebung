@@ -119,6 +119,22 @@ describe("AdminView", () => {
         expect(onOnlyTestChange).toHaveBeenCalledWith(true);
     });
 
+    it("maskiert Übungsdaten und beschriftet die Aktionen", () => {
+        const view = new AdminView();
+        view.renderUebungsListe([
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            { id: "u1", name: "<img src=x onerror=alert(1)>", rufgruppe: "<b>R</b>", leitung: "L", teilnehmerListe: ["\"A"] } as any
+        ]);
+        const tbody = document.getElementById("adminUebungslisteBody") as HTMLElement;
+        expect(tbody.querySelector("img")).toBeNull();
+        expect(tbody.querySelector("b")).toBeNull();
+        const loeschen = tbody.querySelector("button[data-action='delete']") as HTMLButtonElement;
+        expect(loeschen.textContent).toContain("Löschen");
+        expect(loeschen.getAttribute("aria-label")).toContain("löschen");
+        expect(tbody.querySelector("button[data-action='view']")?.textContent).toContain("Öffnen");
+        expect(tbody.querySelector("button[data-action='monitor']")?.textContent).toContain("Überwachen");
+    });
+
     it("renders chart and destroys previous one", () => {
         getChart.mockReturnValueOnce({ destroy });
         const view = new AdminView();
