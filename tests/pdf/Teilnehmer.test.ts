@@ -173,7 +173,7 @@ describe("pdf/Teilnehmer", () => {
         };
         new Teilnehmer("Kater", u, pdf as never).draw();
         const tabelle = calls[calls.length - 1];
-        expect(tabelle?.head).toEqual([["Nr.", "Zeit", "Weg", "Nachrichtentext", "Erwartete Reaktion"]]);
-        expect(tabelle?.body).toEqual([[1, "+0:45 (09:45)", "Ausdruck", "Betreff: Nr. 1\nAuftrag", "Weitergeben"]]);
+        expect(tabelle?.head).toEqual([["Nr.", "Zeit", "Weg", "Nachrichtentext", "Erwartete Reaktion", "Erledigt (Uhrzeit)"]]);
+        expect(tabelle?.body).toEqual([[1, "+0:45 (09:45)", "Ausdruck", "Betreff: Nr. 1\nAuftrag", "Weitergeben", ""]]);
     });
 });

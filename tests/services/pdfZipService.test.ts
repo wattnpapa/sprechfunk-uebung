@@ -14,7 +14,7 @@ vi.mock("jszip", () => ({
     }
 }));
 
-const { generateAllPDFsAsZipBlob } = await import("../../src/services/pdfZipService");
+const { generateAllPDFsAsZipBlob, liesmichAlle } = await import("../../src/services/pdfZipService");
 
 function createUebung(): FunkUebung {
     const uebung = new FunkUebung("dev");
@@ -96,5 +96,21 @@ describe("services/pdfZipService Führungsstellen-Übung", () => {
         expect(deps.generateDrehbuchPDFBlob).not.toHaveBeenCalled();
         expect(zipFiles).not.toContain("Drehbuch_Fuehrungsstellen-Uebung.pdf");
     });
-});
 
+    it("legt ein LIESMICH mit Druckhinweis und Zweck der Dateien bei", async () => {
+        const uebung = createUebung();
+        uebung.uebungCode = "k7m4q2";
+        await generateAllPDFsAsZipBlob(uebung, createDeps());
+        expect(zipFiles).toContain("LIESMICH.txt");
+
+        const text = liesmichAlle(uebung);
+        expect(text).toContain("Übungscode: K7M4Q2");
+        expect(text).toContain("VOR der Übung");
+        expect(text).toContain("Uebungsleitung.pdf");
+        expect(text).toContain("Nadeldrucker");
+        expect(text).not.toContain("Drehbuch");
+
+        uebung.fuehrungsstelle = { slug: "x", beuebteStelle: "Heros Oldenburg 10", uebergeordnet: "Heros Oldenburg 20", unterstellt: [], beginn: "09:00" };
+        expect(liesmichAlle(uebung)).toContain("nicht für die beübte Stelle");
+    });
+});

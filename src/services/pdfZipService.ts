@@ -23,11 +23,52 @@ type PdfZipDeps = {
     generateMeldevordruckPDFForTeilnehmer: (funkUebung: FunkUebung, teilnehmer: string, hideBackground?: boolean, hideFooter?: boolean) => Promise<{ blob: Blob; totalPages: number }>;
 };
 
+/**
+ * Liesmich für das Druckdaten-ZIP (THW-Review 2026-10-04, workflow F9,
+ * analog-first P2-4/P3-2): 30+ Dateien ohne Hinweis, welche wofür gedacht ist
+ * und dass sie vor der Übung gedruckt werden sollten.
+ */
+export function liesmichAlle(funkUebung: FunkUebung): string {
+    const zeilen = [
+        `Druckdaten: ${funkUebung.name} (${formatNatoDate(funkUebung.datum, false)})`,
+        ...(funkUebung.uebungCode ? [`Übungscode: ${funkUebung.uebungCode.toUpperCase()}`] : []),
+        "",
+        "Druck die Unterlagen VOR der Übung aus. Sie sind die Rückfallebene, wenn Netz,",
+        "Akku oder Gerät ausfallen – auf Papier läuft die Übung vollständig weiter.",
+        "Abgehakte Sprüche und notierte Uhrzeiten lassen sich danach in der App nachtragen.",
+        "",
+        "Was wofür:",
+        "- Uebungsleitung.pdf: Teilnehmerliste mit Teilnehmercodes und Soll-/Ist-Feldern,",
+        "  danach der Nachrichtenplan mit Spalte für die Uhrzeit. Für die Übungsleitung."
+    ];
+    if (funkUebung.fuehrungsstelle) {
+        zeilen.push(
+            "- Drehbuch_Fuehrungsstellen-Uebung.pdf: nur für Übungsleitung und Rollenspieler,",
+            "  nicht für die beübte Stelle."
+        );
+    }
+    zeilen.push(
+        "- Gesamt/Übersicht_Alle_Teilnehmer.pdf: je Teilnehmer eine Übersicht mit Zugangscodes,",
+        "  QR-Code und Spalte zum Abhaken – alle Teilnehmer in einem Druckauftrag.",
+        "- Gesamt/Druck_Nachrichtenvordruck_* und Druck_Meldevordruck_*: die Vordrucke aller",
+        "  Teilnehmer mit Deckblatt je Teilnehmer, A5 einzeln oder zwei je A4-Seite.",
+        "- Gesamt/Nadeldrucker_*: nur die Einträge ohne Formular, zum Bedrucken vorhandener",
+        "  Vordruck-Blöcke. Diese Dateien sind deutlich kleiner.",
+        "- Teilnehmer/<Funkrufname>/: dieselben Unterlagen einzeln je Teilnehmer, zum Weitergeben.",
+        "",
+        "Erzeugt mit dem Sprechfunk Übungsgenerator: https://sprechfunk-uebung.de/",
+        ""
+    );
+    return zeilen.join("\r\n");
+}
+
 export async function generateAllPDFsAsZipBlob(
     funkUebung: FunkUebung,
     deps: PdfZipDeps
 ): Promise<Blob> {
     const zip = new JSZip();
+    // Steht im Wurzelverzeichnis ganz oben: das Erste, was man nach dem Entpacken sieht.
+    zip.file("LIESMICH.txt", liesmichAlle(funkUebung));
 
     const teilnehmerBlobs = await deps.generateTeilnehmerPDFsBlob(funkUebung);
     teilnehmerBlobs.forEach((blob, teilnehmer) => {

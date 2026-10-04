@@ -4,6 +4,10 @@ import { Uebung } from "../types/Uebung";
 import { jsPDF } from "jspdf";
 import { formatNatoDate } from "../utils/date";
 import { BasePDF } from "./BasePDF";
+import { appBasisUrl, teilnehmerCodeVon, uebungCodeVon, uebungsleitungUrl, zeichneQrCode } from "./zugang";
+
+/** Kantenlänge des QR-Codes auf den Leitungs-Link (mm). */
+const QR_KANTE = 24;
 
 export class Uebungsleitung extends BasePDF {
     private localData: any;
@@ -41,18 +45,55 @@ export class Uebungsleitung extends BasePDF {
         this.pdf.text(`Übungsleitung: ${this.funkUebung.leitung}`, this.pdfWidth / 2, y, { align: "center" });
         y += 8;
         this.pdf.text(`Rufgruppe: ${this.funkUebung.rufgruppe}`, this.pdfWidth / 2, y, { align: "center" });
+        y = this.drawZugangsdaten(y);
         return y + 5;
     }
 
-    private drawTeilnehmerTable(startY: number): void {
-        const wTeilnehmer = this.contentWidth * 0.21;
-        const wAnmeldung = this.contentWidth * 0.12;
-        const wLoesungswort = this.contentWidth * 0.21;
-        const wStaerke = this.contentWidth * 0.20;
-        const wBemerkungen = this.contentWidth - wTeilnehmer - wAnmeldung - wLoesungswort - wStaerke;
+    /**
+     * Wiedereinstieg vom Papier (THW-Review 2026-10-04, analog-first P2-1,
+     * workflow F5): Übungscode für Nachzügler, QR-Code auf den
+     * Leitungs-Link, die Teilnehmercodes stehen in der Tabelle.
+     */
+    private drawZugangsdaten(y: number): number {
+        const basis = appBasisUrl();
+        if (this.funkUebung.id) {
+            const x = this.pdfWidth - this.pageMarginRight - QR_KANTE;
+            zeichneQrCode(this.pdf, uebungsleitungUrl(basis, this.funkUebung.id), x, 3, QR_KANTE);
+            this.pdf.setFont("helvetica", "normal");
+            this.pdf.setFontSize(7);
+            this.pdf.text("Übungsleitung", x - 2, 12, { align: "right" });
+            this.pdf.text("wieder öffnen", x - 2, 15.5, { align: "right" });
+        }
+        const uebungCode = uebungCodeVon(this.funkUebung);
+        this.pdf.setFont("helvetica", "normal");
+        this.pdf.setFontSize(9);
+        if (uebungCode) {
+            y += 7;
+            this.pdf.text(
+                `Übungscode: ${uebungCode} – Zugang für Teilnehmer: ${basis}#/teilnehmer, dort Übungs- und Teilnehmercode eingeben.`,
+                this.pdfWidth / 2, y, { align: "center" }
+            );
+        }
+        y += 5;
+        this.pdf.text(
+            "Ohne Netz läuft die Übung auf Papier weiter: Anmeldung, Lösungswort und Stärke unter „Ist“, "
+            + "abgesetzte Sprüche mit Uhrzeit eintragen und später in der App nachtragen.",
+            this.pdfWidth / 2, y, { align: "center" }
+        );
+        return y;
+    }
 
+    private drawTeilnehmerTable(startY: number): void {
+        const wTeilnehmer = this.contentWidth * 0.19;
+        const wAnmeldung = this.contentWidth * 0.10;
+        const wLoesungswort = this.contentWidth * 0.13;
+        const wStaerke = this.contentWidth * 0.12;
+        const wBemerkungen = this.contentWidth - wTeilnehmer - wAnmeldung - 2 * wLoesungswort - 2 * wStaerke;
+
+        // „Soll“ steht vorgedruckt, „Ist“ ist das Feld für das, was über Funk
+        // ankommt – dieselben Felder wie in der Bildschirmansicht (analog-first P2-3).
         (this.pdf as any).autoTable({
-            head: [["Teilnehmer", "Anmeldung", "Lösungswort", "Stärke", "Bemerkungen"]],
+            head: [["Teilnehmer", "Anmeldung", "Lösungswort Soll", "Lösungswort Ist", "Stärke Soll", "Stärke Ist", "Bemerkungen"]],
             body: this.buildTeilnehmerRows(),
             startY,
             theme: "grid",
@@ -63,8 +104,10 @@ export class Uebungsleitung extends BasePDF {
                 0: { cellWidth: wTeilnehmer },
                 1: { cellWidth: wAnmeldung },
                 2: { cellWidth: wLoesungswort },
-                3: { cellWidth: wStaerke, cellPadding: 2, valign: "top" },
-                4: { cellWidth: wBemerkungen }
+                3: { cellWidth: wLoesungswort },
+                4: { cellWidth: wStaerke, cellPadding: 2, valign: "top" },
+                5: { cellWidth: wStaerke, cellPadding: 2, valign: "top" },
+                6: { cellWidth: wBemerkungen }
             },
             styles: {
                 fontSize: this.tableFontSize,
@@ -91,21 +134,37 @@ export class Uebungsleitung extends BasePDF {
             ? formatNatoDate(teilnehmerLocalData.angemeldetUm)
             : "";
 
+        const staerkeIst = (teilnehmerLocalData?.teilstaerken ?? []).some(wert => String(wert ?? "").trim() !== "")
+            ? (teilnehmerLocalData?.teilstaerken ?? []).map(wert => String(wert ?? "").trim() || "-").join("/")
+            : "";
+
         return [
             this.getTeilnehmerAnzeige(teilnehmer),
             anmeldeZeit,
             this.funkUebung.loesungswoerter?.[teilnehmer] ?? "",
+            teilnehmerLocalData?.loesungswortGesendet ?? "",
             this.funkUebung.loesungsStaerken?.[teilnehmer] ?? "0/0/0/0",
+            staerkeIst,
             teilnehmerLocalData?.notizen ?? ""
         ];
     }
 
     private getTeilnehmerAnzeige(teilnehmer: string): string {
         const stellenName = this.funkUebung.teilnehmerStellen?.[teilnehmer];
-        return stellenName ? `${stellenName}\n${teilnehmer}` : teilnehmer;
+        const name = stellenName ? `${stellenName}\n${teilnehmer}` : teilnehmer;
+        // Teilnehmercode zum Weitergeben an Nachzügler; die beübte Stelle hat keinen Zugang.
+        const code = this.funkUebung.fuehrungsstelle?.beuebteStelle === teilnehmer
+            ? null
+            : teilnehmerCodeVon(this.funkUebung, teilnehmer);
+        return code ? `${name}\nCode: ${code}` : name;
     }
 
-    private getTeilnehmerLocalData(teilnehmer: string): { angemeldetUm?: string; notizen?: string } | null {
+    private getTeilnehmerLocalData(teilnehmer: string): {
+        angemeldetUm?: string;
+        notizen?: string;
+        loesungswortGesendet?: string;
+        teilstaerken?: string[];
+    } | null {
         const localTeilnehmer = this.localData?.teilnehmer;
         if (!localTeilnehmer || typeof localTeilnehmer !== "object") {
             return null;
@@ -130,7 +189,7 @@ export class Uebungsleitung extends BasePDF {
         const istSzenario = !!this.funkUebung.szenarioSlug || !!this.funkUebung.fuehrungsstelle;
 
         (this.pdf as any).autoTable({
-            head: [["Nr", "Empfänger", "Sender", "Nachricht", "Zeit"]],
+            head: [["Nr", "Empfänger", "Sender", "Nachricht", "Abgesetzt (Uhrzeit)"]],
             body: tableData,
             startY: this.pageMarginTop + 5,
             theme: "grid",
