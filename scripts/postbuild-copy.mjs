@@ -6,6 +6,7 @@ import { buildSitemap, canonicalUrl, SITEMAP_PAGES, SITE_PAGES, SITE_URL, STATIC
 import { renderPageWithStructuredData } from "./lib/render-page.mjs";
 import { renderWerkzeugleiste } from "./lib/navigation.mjs";
 import { setzeFruehesThema } from "./lib/theme-init.mjs";
+import { baueServiceWorker, buildVersion } from "./lib/service-worker.mjs";
 import { createGitRunner, resolveLastmod } from "./lib/lastmod.mjs";
 import { ersterSatz, extractMetaDescription } from "./lib/page-metadata.mjs";
 import { ARCHIV_VORLAGEN } from "./lib/funkspruch-daten.mjs";
@@ -211,3 +212,11 @@ try {
 } catch {
     // ignore if bundle.css does not exist yet
 }
+
+// Service Worker (offline: App-Hülle aus dem Cache). Erst hier, nach dem
+// Umschreiben von bundle.css: die Version ist ein Hash über die
+// ausgelieferten Kerndateien, jede Änderung daran erzeugt einen neuen Worker.
+const kernDateien = await Promise.all(
+    ["bundle.js", "bundle.css", "style.css", "index.html"].map(datei => readFile(path.join(dist, datei)))
+);
+await writeFile(path.join(dist, "sw.js"), baueServiceWorker({ version: buildVersion(kernDateien) }), "utf8");
