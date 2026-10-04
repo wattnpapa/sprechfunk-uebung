@@ -1337,6 +1337,25 @@ select option {
 
 .app-toast.is-error {
     border-left-color: var(--alarm);
+    display: flex;
+    align-items: flex-start;
+    gap: 0.5rem;
+    pointer-events: auto;
+}
+
+/* Fehler bleiben stehen, bis sie weggetippt werden – deshalb ein
+   ausreichend großes Ziel (auch mit Handschuh). */
+.app-toast-schliessen {
+    flex: 0 0 auto;
+    min-width: 44px;
+    min-height: 44px;
+    margin: -0.5rem -0.7rem -0.5rem auto;
+    border: 0;
+    background: transparent;
+    color: var(--text);
+    font-size: 1.4rem;
+    line-height: 1;
+    cursor: pointer;
 }
 
 /* =============================================================================

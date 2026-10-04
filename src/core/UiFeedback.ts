@@ -51,12 +51,28 @@ export class UiFeedback {
         const toast = document.createElement("div");
         toast.className = `app-toast is-${variant}`;
         toast.textContent = message;
-        container.appendChild(toast);
-        globalThis.setTimeout(() => toast.classList.add("is-visible"), 10);
-        globalThis.setTimeout(() => {
+        const ausblenden = () => {
             toast.classList.remove("is-visible");
             globalThis.setTimeout(() => toast.remove(), 220);
-        }, 2500);
+        };
+        if (variant === "error") {
+            // Fehler bleiben stehen, bis sie weggetippt werden: wer gerade
+            // funkt, verpasst eine Meldung, die nach 2,5 s verschwindet
+            // (THW-Review 2026-10-04, offline P2-3, error-recovery P2-1).
+            toast.setAttribute("role", "alert");
+            const schliessen = document.createElement("button");
+            schliessen.type = "button";
+            schliessen.className = "app-toast-schliessen";
+            schliessen.setAttribute("aria-label", "Meldung schließen");
+            schliessen.textContent = "×";
+            schliessen.addEventListener("click", ausblenden);
+            toast.appendChild(schliessen);
+        }
+        container.appendChild(toast);
+        globalThis.setTimeout(() => toast.classList.add("is-visible"), 10);
+        if (variant !== "error") {
+            globalThis.setTimeout(ausblenden, 2500);
+        }
     }
 }
 
