@@ -142,9 +142,9 @@ const teilnehmerCode = /tc=([A-Z0-9]+)/.exec(teilnehmerLink)?.[1];
 await page.goto(`${BASE}/#/teilnehmer/${uebungId}/${teilnehmerCode}`);
 await page.reload(); // Hash-Navigation allein löst den Routenwechsel nicht aus
 await page.waitForSelector("#teilnehmerNachrichtenBody tr");
-// Zwei Nachrichten als übertragen markieren, damit der Status sichtbar wird
-await page.locator("#teilnehmerNachrichtenBody tr").nth(0).locator(".btn-toggle-uebertragen-chip").click();
-await page.locator("#teilnehmerNachrichtenBody tr").nth(1).locator(".btn-toggle-uebertragen-chip").click();
+// Zwei Nachrichten als abgesetzt markieren, damit der Status sichtbar wird
+await page.locator("#teilnehmerNachrichtenBody tr").nth(0).locator("[data-aktion='absetzen']").click();
+await page.locator("#teilnehmerNachrichtenBody tr").nth(1).locator("[data-aktion='absetzen']").click();
 await page.waitForTimeout(500);
 await shot(page.locator("#teilnehmerArea"), "teilnehmer-uebersicht");
 

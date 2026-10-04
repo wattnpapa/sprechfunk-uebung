@@ -25,6 +25,10 @@ const mocks = vi.hoisted(() => ({
     updateLiveSyncState: vi.fn(),
     setXZeitBasisInputValue: vi.fn(),
     bindXZeitEvents: vi.fn(),
+    bindFokusEvents: vi.fn(),
+    renderZugangsFehler: vi.fn(),
+    setResetUmfang: vi.fn(),
+    zeigeRueckgaengig: vi.fn(),
     publishTeilnehmerStatus: vi.fn(),
     subscribeEigenenStatus: vi.fn(),
     subscribeLeitungPublic: vi.fn(),
@@ -60,6 +64,10 @@ vi.mock("../../src/teilnehmer/TeilnehmerView", () => ({
         updateLiveSyncState = mocks.updateLiveSyncState;
         setXZeitBasisInputValue = mocks.setXZeitBasisInputValue;
         bindXZeitEvents = mocks.bindXZeitEvents;
+        bindFokusEvents = mocks.bindFokusEvents;
+        renderZugangsFehler = mocks.renderZugangsFehler;
+        setResetUmfang = mocks.setResetUmfang;
+        zeigeRueckgaengig = mocks.zeigeRueckgaengig;
     }
 }));
 
@@ -208,17 +216,88 @@ describe("TeilnehmerController", () => {
         mocks.getUebung.mockResolvedValueOnce(null);
         const controller2 = new TeilnehmerController({} as never);
         await controller2.init();
-        expect(content.innerHTML).toContain("Übung nicht gefunden");
+        // Fehlerseiten sind keine Sackgasse: sie zeigen das Code-Formular.
+        expect(mocks.renderZugangsFehler).toHaveBeenLastCalledWith(expect.stringContaining("Übung nicht gefunden"));
+        expect(mocks.bindJoinForm).toHaveBeenCalledTimes(2);
 
         mocks.parseHash.mockReturnValueOnce({ params: ["u1", "t1"] });
         mocks.getUebung.mockResolvedValueOnce({
             id: "u1",
+            uebungCode: "K7M4Q2",
             teilnehmerIds: { other: "Alpha" },
             nachrichten: {}
         });
         const controller3 = new TeilnehmerController({} as never);
         await controller3.init();
-        expect(content.innerHTML).toContain("Teilnehmer nicht in dieser Übung gefunden");
+        // Der Übungscode ist bekannt und wird vorbelegt.
+        expect(mocks.renderZugangsFehler).toHaveBeenLastCalledWith(
+            expect.stringContaining("Teilnehmer nicht in dieser Übung gefunden"), "K7M4Q2"
+        );
+        expect(mocks.bindJoinForm).toHaveBeenCalledTimes(3);
+
+        // Ladefehler (z. B. ohne Netz) führt ebenfalls zum Formular mit Hinweis.
+        mocks.parseHash.mockReturnValueOnce({ params: ["u1", "t1"] });
+        mocks.getUebung.mockRejectedValueOnce(new Error("client is offline"));
+        const controller4 = new TeilnehmerController({} as never);
+        await controller4.init();
+        expect(mocks.renderZugangsFehler).toHaveBeenLastCalledWith(expect.stringContaining("nicht geladen"));
+    });
+
+    it("öffnet einen geteilten Link mit beiden Codes direkt und ersetzt den Verlaufseintrag", async () => {
+        const { TeilnehmerController } = await import("../../src/teilnehmer");
+        vi.stubGlobal("document", {
+            getElementById: (id: string) => (id === "teilnehmerContent" ? { innerHTML: "" } : null),
+            createElement: () => ({ href: "", download: "", click: vi.fn() }),
+            body: { appendChild: vi.fn(), removeChild: vi.fn() }
+        });
+        const replace = vi.fn();
+        vi.stubGlobal("window", {
+            addEventListener: vi.fn(),
+            location: { hash: "#/teilnehmer?uc=k7m4q2&tc=a1b2", replace }
+        });
+        mocks.parseHash.mockReturnValueOnce({ params: [] });
+        const controller = new TeilnehmerController({} as never);
+        const resolve = vi.fn().mockResolvedValue({ uebungId: "u1", teilnehmerId: "A1B2", teilnehmerName: "Alpha" });
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        (controller as any).firebaseService = { resolveTeilnehmerJoinCodes: resolve };
+
+        await controller.init();
+
+        expect(resolve).toHaveBeenCalledWith("K7M4Q2", "A1B2");
+        expect(replace).toHaveBeenCalledWith("#/teilnehmer/u1/A1B2");
+    });
+
+    it("zeigt bei geteiltem Link mit falschen Codes das vorbelegte Formular samt Fehler", async () => {
+        const { TeilnehmerController } = await import("../../src/teilnehmer");
+        vi.stubGlobal("document", {
+            getElementById: (id: string) => (id === "teilnehmerContent" ? { innerHTML: "" } : null),
+            createElement: () => ({ href: "", download: "", click: vi.fn() }),
+            body: { appendChild: vi.fn(), removeChild: vi.fn() }
+        });
+        const replace = vi.fn();
+        vi.stubGlobal("window", {
+            addEventListener: vi.fn(),
+            location: { hash: "#/teilnehmer?uc=k7m4q2&tc=zzzz", replace }
+        });
+        mocks.parseHash.mockReturnValueOnce({ params: [] });
+        const controller = new TeilnehmerController({} as never);
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        (controller as any).firebaseService = { resolveTeilnehmerJoinCodes: vi.fn().mockResolvedValue(null) };
+
+        await controller.init();
+
+        expect(mocks.renderJoinForm).toHaveBeenCalledWith("K7M4Q2", "ZZZZ");
+        expect(mocks.showJoinError).toHaveBeenCalledWith(expect.stringContaining("nicht gefunden"));
+        expect(replace).not.toHaveBeenCalled();
+    });
+
+    it("meldet einen Verbindungsfehler beim Prüfen der Codes verständlich", async () => {
+        const controller = await makeController();
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        (controller as any).firebaseService = { resolveTeilnehmerJoinCodes: vi.fn().mockRejectedValue(new Error("offline")) };
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        await (controller as any).resolveJoinAndNavigate("ABC123", "A1B2");
+        expect(mocks.showJoinError).toHaveBeenCalledWith(expect.stringContaining("Internetverbindung"));
     });
 
     it("init prefills join form from hash query parameters", async () => {
@@ -231,11 +310,13 @@ describe("TeilnehmerController", () => {
         });
         vi.stubGlobal("window", {
             addEventListener: vi.fn(),
-            location: { hash: "#/teilnehmer?uc=k7m4q2&tc=a1b2" }
+            location: { hash: "#/teilnehmer?uc=k7m4q2&tc=a1b2", replace: vi.fn() }
         });
         mocks.parseHash.mockReturnValueOnce({ params: [] });
 
         const controller = new TeilnehmerController({} as never);
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        (controller as any).firebaseService = { resolveTeilnehmerJoinCodes: vi.fn().mockResolvedValue(null) };
         await controller.init();
 
         expect(mocks.renderJoinForm).toHaveBeenCalledWith("K7M4Q2", "A1B2");
@@ -301,6 +382,142 @@ describe("TeilnehmerController", () => {
         expect(mocks.setDocMode).toHaveBeenCalledWith("table");
         expect(mocks.bindEvents).toHaveBeenCalled();
         expect(footer.textContent).toBe("u1");
+        // Beschriftung des Zurücksetzens folgt der echten Reichweite (Live-Sync aktiv).
+        expect(mocks.setResetUmfang).toHaveBeenCalledWith(true);
+    });
+
+    it("macht den Fokus-Modus auf schmalen Geräten zum Standard, ohne eine eigene Wahl zu überschreiben", async () => {
+        const { TeilnehmerController } = await import("../../src/teilnehmer");
+        vi.stubGlobal("document", {
+            getElementById: (id: string) => (id === "teilnehmerContent" ? { innerHTML: "" } : null),
+            createElement: () => ({ href: "", download: "", click: vi.fn() }),
+            body: { appendChild: vi.fn(), removeChild: vi.fn() }
+        });
+        vi.stubGlobal("window", {
+            addEventListener: vi.fn(),
+            location: { reload: vi.fn() },
+            matchMedia: () => ({ matches: true })
+        });
+        const uebung = {
+            id: "u1", name: "Ü", spielModus: "xZeit",
+            teilnehmerIds: { tid1: "Alpha" }, nachrichten: { Alpha: [] }
+        };
+        const leer = () => ({ version: 1, uebungId: "u1", teilnehmer: "Alpha", lastUpdated: "", nachrichten: {}, hideTransmitted: false });
+
+        mocks.parseHash.mockReturnValueOnce({ params: ["u1", "tid1"] });
+        mocks.getUebung.mockResolvedValueOnce(uebung);
+        const storage: { fokusModus?: boolean } = leer();
+        mocks.loadTeilnehmerStorage.mockReturnValueOnce(storage);
+        await new TeilnehmerController({} as never).init();
+        expect(storage.fokusModus).toBe(true);
+
+        mocks.parseHash.mockReturnValueOnce({ params: ["u1", "tid1"] });
+        mocks.getUebung.mockResolvedValueOnce(uebung);
+        const eigeneWahl = { ...leer(), fokusModus: false };
+        mocks.loadTeilnehmerStorage.mockReturnValueOnce(eigeneWahl);
+        await new TeilnehmerController({} as never).init();
+        expect(eigeneWahl.fokusModus).toBe(false);
+
+        // Ohne X-Zeit gibt es keine Fälligkeit, also keinen Fokus-Standard.
+        mocks.parseHash.mockReturnValueOnce({ params: ["u1", "tid1"] });
+        mocks.getUebung.mockResolvedValueOnce({ ...uebung, spielModus: undefined });
+        const klassisch: { fokusModus?: boolean } = leer();
+        mocks.loadTeilnehmerStorage.mockReturnValueOnce(klassisch);
+        await new TeilnehmerController({} as never).init();
+        expect(klassisch.fokusModus).toBeUndefined();
+
+        // Das Zurücknehmen im Fokus-Modus ist verdrahtet.
+        const fokusArgs = mocks.bindFokusEvents.mock.calls.at(-1);
+        expect(fokusArgs?.[2]).toBeTypeOf("function");
+    });
+
+    it("bietet nach jedem Statuswechsel Rückgängig an und stellt die alte Absetzzeit wieder her", async () => {
+        const controller = await makeController();
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const c = controller as any;
+        c.storage.nachrichten[4] = { uebertragen: true, uebertragenUm: "2026-10-04T18:00:00.000Z", geaendertUm: "2026-10-04T18:00:00.000Z" };
+
+        c.toggleUebertragen(4, false);
+        expect(c.storage.nachrichten[4].uebertragen).toBe(false);
+        expect(mocks.zeigeRueckgaengig).toHaveBeenLastCalledWith("Spruch 4 wieder offen.", expect.any(Function));
+
+        const undo = mocks.zeigeRueckgaengig.mock.calls.at(-1)?.[1] as () => void;
+        undo();
+        expect(c.storage.nachrichten[4].uebertragen).toBe(true);
+        expect(c.storage.nachrichten[4].uebertragenUm).toBe("2026-10-04T18:00:00.000Z");
+        expect(c.storage.nachrichten[4].geaendertUm > "2026-10-04T18:00:00.000Z").toBe(true);
+
+        c.toggleUebertragen(5, true);
+        expect(mocks.zeigeRueckgaengig).toHaveBeenLastCalledWith("Spruch 5 als abgesetzt markiert.", expect.any(Function));
+        (mocks.zeigeRueckgaengig.mock.calls.at(-1)?.[1] as () => void)();
+        expect(c.storage.nachrichten[5]).toMatchObject({ uebertragen: false });
+    });
+
+    it("lässt im Vordruck auch den ersten Spruch abhaken", async () => {
+        const controller = await makeController();
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const c = controller as any;
+        vi.spyOn(c, "renderDocPage").mockResolvedValue(undefined);
+        c.docMode = "meldevordruck";
+        c.docPage = 1;
+        c.uebung.nachrichten.Alpha = [{ id: 1, empfaenger: ["B"], nachricht: "eins" }];
+
+        c.toggleCurrentDocMessage();
+
+        expect(c.storage.nachrichten[1]?.uebertragen).toBe(true);
+        expect(mocks.zeigeRueckgaengig).toHaveBeenCalled();
+    });
+
+    it("nennt im Rückfragetext Anzahl und Reichweite, in Du-Form", async () => {
+        const controller = await makeController();
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const c = controller as any;
+        c.uebungId = "u1";
+        c.storage.nachrichten = { 1: { uebertragen: true }, 2: { uebertragen: true }, 3: { uebertragen: false } };
+        mocks.uiConfirm.mockReturnValueOnce(false);
+        c.liveStatus = { enabled: true };
+        c.resetData();
+        const text = mocks.uiConfirm.mock.calls.at(-1)?.[0] as string;
+        expect(text).toContain("alle 2 als abgesetzt markierten");
+        expect(text).toContain("Übungsleitung");
+        expect(text).not.toMatch(/\bSie\b|\bIhr/);
+
+        mocks.uiConfirm.mockReturnValueOnce(false);
+        c.liveStatus = null;
+        c.resetData();
+        expect(mocks.uiConfirm.mock.calls.at(-1)?.[0]).toContain("nur dieses Gerät");
+    });
+
+    it("behandelt das Vordruck-Fenster als eigenen Schritt im Verlauf", async () => {
+        const controller = await makeController();
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const c = controller as any;
+        vi.spyOn(c, "renderDocPage").mockResolvedValue(undefined);
+        vi.spyOn(c, "preloadPages").mockImplementation(() => {});
+        const listeners: Record<string, () => void> = {};
+        const verlauf = { pushState: vi.fn(), back: vi.fn() };
+        vi.stubGlobal("window", {
+            history: verlauf,
+            addEventListener: (name: string, cb: () => void) => { listeners[name] = cb; },
+            location: { reload: vi.fn() }
+        });
+
+        await c.setDocMode("meldevordruck");
+        expect(verlauf.pushState).toHaveBeenCalledTimes(1);
+        // Wechsel zwischen den Vordrucken legt keinen weiteren Eintrag an.
+        await c.setDocMode("nachrichtenvordruck");
+        expect(verlauf.pushState).toHaveBeenCalledTimes(1);
+
+        // Zurück am Gerät schließt das Fenster, ohne erneut zurückzugehen.
+        listeners["popstate"]?.();
+        await Promise.resolve();
+        expect(c.docMode).toBe("table");
+        expect(verlauf.back).not.toHaveBeenCalled();
+
+        // Schließen per Knopf nimmt den eigenen Verlaufseintrag wieder weg.
+        await c.setDocMode("meldevordruck");
+        await c.setDocMode("table");
+        expect(verlauf.back).toHaveBeenCalledTimes(1);
     });
 
     it("toggleHide updates storage", async () => {
