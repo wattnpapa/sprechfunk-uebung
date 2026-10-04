@@ -356,9 +356,11 @@ code {
    Fläche. Nur LCARS macht daraus ein gestaltetes Panel. */
 /* Achtung: .app-view-shell sitzt auf denselben Elementen wie .container —
    hier darf kein padding gesetzt werden, sonst fällt der Satzspiegel weg. */
+/* Bewusst ohne isolation: isolate – ein eigener Stapelkontext sperrte die
+   Bootstrap-Dialoge der Ansichten (Vordruck-Fenster) unter die fixierte
+   Kopfzeile (THW-Review 2026-10-04, glove-touch P2-3). */
 .app-view-shell {
     position: relative;
-    isolation: isolate;
     background: none;
     border: 0;
     border-radius: var(--radius);
@@ -372,7 +374,11 @@ code {
 .app-header {
     position: sticky;
     top: 0;
-    z-index: 5000;
+    /* Unter Bootstraps Modal-Ebene (Hintergrund 1050, Dialog 1055): mit 5000
+       lag der Kopf über jedem Dialog, und auf dem Smartphone verdeckte er Titel
+       und Schließen-Knopf des Vordruck-Fensters (THW-Review 2026-10-04,
+       glove-touch P2-3, stress-test P1-3, night-visibility Befund 8). */
+    z-index: 1040;
     background: var(--kopf-fond);
     color: var(--kopf-auf);
     border-bottom: 4px solid var(--kopf-linie);
@@ -2478,6 +2484,7 @@ html:has(> body[data-theme="startrek"]) {
 /* --- Ansichtsrahmen und Karten: Säule + Kopfbalken ----------------------- */
 
 [data-theme="startrek"] .app-view-shell {
+    isolation: isolate;
     background: #000;
     border: 0;
     border-radius: 0;

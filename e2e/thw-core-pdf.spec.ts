@@ -69,6 +69,22 @@ test("@teilnehmer Vordruck-Vorschau zeichnet den Vordruck (B1)", async ({ page }
     expect(fehler.filter(f => f.includes("getOrInsertComputed"))).toEqual([]);
 });
 
+test.describe("@teilnehmer Vordruck-Fenster am Smartphone", () => {
+    test.use({ viewport: { width: 412, height: 915 }, isMobile: true, hasTouch: true });
+
+    test("liegt über der fixierten Kopfzeile, Schließen-Knopf ist voll erreichbar", async ({ page }) => {
+        await page.goto("/#/teilnehmer/u1/A1B2");
+        await expect(page.locator("#teilnehmerNachrichtenBody tr").first()).toBeVisible();
+        await page.locator("[data-doc-view='meldevordruck']").first().click();
+        await expect(page.locator("#teilnehmerDocModal.show")).toBeVisible();
+        const getroffen = await page.evaluate(() => {
+            const knopf = document.getElementById("btn-doc-close")!.getBoundingClientRect();
+            return document.elementFromPoint(knopf.left + knopf.width / 2, knopf.top + 2)?.id;
+        });
+        expect(getroffen).toBe("btn-doc-close");
+    });
+});
+
 test("@uebungsleitung Übungsleitung als PDF klappt als erste Aktion (B2)", async ({ page }) => {
     await page.goto("/#/uebungsleitung/u1");
     await expect(page.locator("#exportUebungsleitungPdf")).toBeVisible();
