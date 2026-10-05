@@ -67,7 +67,8 @@ function baueCtrl() {
         changePage: vi.fn(),
         copyJSONToClipboard: vi.fn(),
         druckeBlattBeuebteStelle: vi.fn(),
-        formularGeaendert: vi.fn()
+        formularGeaendert: vi.fn(),
+        profilView: { bind: vi.fn(), zeigeProfile: vi.fn(), setzeName: vi.fn() }
     };
     bindEvents(ctrl as unknown as GeneratorController);
     return { ctrl, handler: handler as Record<string, (...args: unknown[]) => unknown> };

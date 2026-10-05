@@ -5,6 +5,7 @@ import { uiFeedback } from "../core/UiFeedback";
 import { ladeDrehbuchDerUebung, stelleTeilnehmerWiederHer } from "./controllerFuehrungsstelle";
 import { updateSzenarioInfo } from "./controllerQuellen";
 import { pruefeZugangsCodes } from "./GeneratorValidierung";
+import { bindeProfile } from "./controllerProfile";
 
 /** Verdrahtet die Ereignisse der GeneratorView mit dem Controller. */
 
@@ -142,6 +143,7 @@ export function bindEvents(ctrl: GeneratorController): void {
     ctrl.view.bindSpielModusToggle();
     bindPrimaryActions(ctrl);
     bindQuickJoin(ctrl);
+    bindeProfile(ctrl);
     ctrl.hinweise.bindAktionen({
         onUeberschreiben: () => void ctrl.startUebung("ueberschreiben"),
         onBlattBeuebteStelle: () => void ctrl.druckeBlattBeuebteStelle()

@@ -4944,3 +4944,15 @@ a {
         transform: none;
     }
 }
+
+/* Profile im Generator: eingeklappt nur eine Zeile, die Knöpfe brechen auf schmalen Geräten um. */
+.generator-profil-card > summary {
+    cursor: pointer;
+    list-style-position: inside;
+}
+
+.generator-profil-knoepfe {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--r-2);
+}

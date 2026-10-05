@@ -191,9 +191,10 @@ export class GeneratorHinweise {
      * Hinweis auf einen wiederhergestellten Entwurf. Neben „Entwurf verwerfen“
      * steht ein harmloses „Hinweis ausblenden“, damit der einzige Knopf nicht
      * als Schließen missverstanden wird (THW-Review 2026-10-05,
-     * destructive-action P2-2).
+     * destructive-action P2-2). Mit `profilName` stammen die Eingaben aus
+     * einem Profil statt aus dem Entwurf.
      */
-    public zeigeEntwurfHinweis(gespeichertAm: Date | null, onVerwerfen?: () => void): void {
+    public zeigeEntwurfHinweis(gespeichertAm: Date | null, onVerwerfen?: () => void, profilName?: string): void {
         this.stoppeEntwurfTimer();
         const box = el("generatorEntwurfHinweis");
         if (!box) {
@@ -205,8 +206,10 @@ export class GeneratorHinweise {
             const zeit = gespeichertAm.toLocaleString("de-DE", {
                 day: "2-digit", month: "2-digit", hour: "2-digit", minute: "2-digit"
             });
-            text.textContent = `Deine Eingaben vom ${zeit} wurden wiederhergestellt. ` +
-                "Sie liegen nur in diesem Browser, noch ist keine Übung gespeichert.";
+            text.textContent = profilName
+                ? `Profil „${profilName}“ geladen. Prüfe Datum und Name, noch ist keine Übung gespeichert.`
+                : `Deine Eingaben vom ${zeit} wurden wiederhergestellt. ` +
+                  "Sie liegen nur in diesem Browser, noch ist keine Übung gespeichert.";
         }
         const knopf = el<HTMLButtonElement>("generatorEntwurfVerwerfen");
         if (knopf) {

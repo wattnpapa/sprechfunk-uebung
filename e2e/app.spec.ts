@@ -1,3 +1,4 @@
+import { readFile } from "node:fs/promises";
 import { expect, test, type Page } from "@playwright/test";
 
 const setParticipants = async (page: Page, names: string[]) => {
@@ -134,6 +135,55 @@ test("@generator generator source toggle switches between templates and upload",
 
     await vorlagenRadio.check();
     await expect(uploadContainer).toBeHidden();
+});
+
+test("@generator Profil speichern, als Datei sichern und in eine neue Übung laden", async ({ page }, testInfo) => {
+    page.on("dialog", dialog => void dialog.accept());
+    await page.goto("/#/generator");
+    await page.locator("#rufgruppe").fill("DMO OV A");
+    await fillPflichtfelder(page);
+    await page.locator("#spielModusXZeit").check();
+    await setParticipants(page, ["Heros Bad Belzig 22/51", "Heros Brandenburg 63/63"]);
+
+    const leiste = page.getByTestId("generator-profile");
+    await leiste.locator("summary").click();
+    await page.getByTestId("generator-profil-name").fill("OV Bad Belzig");
+    await page.getByTestId("generator-profil-speichern").click();
+    await expect(page.getByTestId("generator-profil-auswahl")).toHaveValue("OV Bad Belzig");
+
+    const [download] = await Promise.all([
+        page.waitForEvent("download"),
+        page.getByTestId("generator-profil-export").click()
+    ]);
+    expect(download.suggestedFilename()).toBe("sprechfunk-profil-ov-bad-belzig.json");
+    const datei = testInfo.outputPath(download.suggestedFilename());
+    await download.saveAs(datei);
+
+    // Aus einer gespeicherten Übung heraus: Laden öffnet eine neue Übung.
+    await page.goto("/#/generator/u1");
+    await expect(page.locator("#leitung")).toHaveValue("Heros Wind 10");
+    await leiste.locator("summary").click();
+    await page.getByTestId("generator-profil-laden").click();
+    await expect(page).toHaveURL(/#\/generator$/);
+    await expect(page.locator("#rufgruppe")).toHaveValue("DMO OV A");
+    await expect(page.locator("#leitung")).toHaveValue("Heros E2E 10");
+    await expect(page.locator("#spielModusXZeit")).toBeChecked();
+    await expect(page.locator("#teilnehmer-body .teilnehmer-input").nth(1)).toHaveValue("Heros Brandenburg 63/63");
+    await expect(page.locator("#generatorEntwurfText")).toContainText("Profil „OV Bad Belzig“ geladen");
+
+    // Gelöscht und aus der Datei zurückgeholt.
+    await leiste.locator("summary").click();
+    await page.getByTestId("generator-profil-loeschen").click();
+    await expect(page.getByTestId("generator-profil-laden")).toBeDisabled();
+    await page.getByTestId("generator-entwurf-verwerfen").click();
+    await expect(page.locator("#rufgruppe")).toHaveValue("");
+    await page.getByTestId("generator-profil-datei").setInputFiles({
+        name: download.suggestedFilename(),
+        mimeType: "application/json",
+        buffer: await readFile(datei)
+    });
+    await expect(page.locator("#rufgruppe")).toHaveValue("DMO OV A");
+    await expect(page.getByTestId("generator-profil-auswahl")).toHaveValue("OV Bad Belzig");
 });
 
 test("@generator quick join strip is always visible on generator route", async ({ page }) => {

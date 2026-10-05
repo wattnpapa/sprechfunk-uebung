@@ -8,6 +8,7 @@ import { GeneratorStateService, type LoesungswortOption } from "./GeneratorState
 import { GeneratorStatsService } from "./GeneratorStatsService";
 import { GeneratorPreviewService } from "./GeneratorPreviewService";
 import { GeneratorHinweise } from "./GeneratorHinweise";
+import { GeneratorProfilView } from "./GeneratorProfilView";
 import {
     entwurfHatInhalt,
     type GeneratorEntwurf,
@@ -87,6 +88,7 @@ export class GeneratorController {
     public previewService: GeneratorPreviewService;
     public view: GeneratorView;
     public hinweise = new GeneratorHinweise();
+    public profilView = new GeneratorProfilView();
     public buildInfo = "dev";
     public initialConfigFingerprint = "";
     public isFreshExercise = true;
@@ -96,6 +98,8 @@ export class GeneratorController {
     public wendeAn = false;
     public ergebnisVeraltet = false;
     public entwurfTimer: ReturnType<typeof setTimeout> | null = null;
+    /** Profil, das der nächste Aufruf von handleRoute in eine neue Übung schreibt. */
+    public profilZumLaden: { name: string; entwurf: GeneratorEntwurf } | null = null;
     /** Zuletzt gewählte Lösungswort-Option und je Option die eigenen Wörter. */
     public loesungswortOption: LoesungswortOption = "none";
     public loesungswortMerker: Partial<Record<LoesungswortOption, Record<string, string>>> = {};
@@ -158,11 +162,13 @@ export class GeneratorController {
             leereBeispielwerte(this.funkUebung);
         }
         this.initialConfigFingerprint = this.createConfigFingerprint(this.funkUebung);
-        const entwurf = this.isFreshExercise ? this.wendeGespeichertenEntwurfAn() : null;
+        const profil = this.isFreshExercise ? this.profilZumLaden : null;
+        this.profilZumLaden = null;
+        const entwurf = this.wendeAnfangsstandAn(profil?.entwurf ?? null);
         this.loesungswortOption = optionAusWoertern(this.funkUebung.loesungswoerter);
         this.updateUI();
         if (entwurf) {
-            zeigeWiederhergestelltenEntwurf(this, entwurf);
+            zeigeWiederhergestelltenEntwurf(this, entwurf, profil?.name);
         }
         if (ladeFehler) {
             this.hinweise.zeigeFehlerBox(ladeFehler);
@@ -198,6 +204,23 @@ export class GeneratorController {
         }
         wendeEntwurfAn(this.funkUebung, entwurf);
         return entwurf;
+    }
+
+    /**
+     * Startstand einer neuen Übung: ein gerade geladenes Profil, sonst der
+     * gespeicherte Entwurf. Das Profil wird zugleich der neue Entwurf und
+     * gilt auch dann, wenn der Browser-Speicher gesperrt ist.
+     */
+    private wendeAnfangsstandAn(profilEntwurf: GeneratorEntwurf | null): GeneratorEntwurf | null {
+        if (!this.isFreshExercise) {
+            return null;
+        }
+        if (!profilEntwurf) {
+            return this.wendeGespeichertenEntwurfAn();
+        }
+        wendeEntwurfAn(this.funkUebung, profilEntwurf);
+        speichereEntwurf(profilEntwurf);
+        return profilEntwurf;
     }
 
     /**

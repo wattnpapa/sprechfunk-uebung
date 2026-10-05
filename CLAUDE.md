@@ -56,6 +56,9 @@ A minimal observable store (`src/state/store.ts`) holds `AppState`: current mode
 ### Modules
 Each mode is a self-contained module with an `index.ts` entry:
 - `src/generator/` — exercise creation UI, distribution logic, link/stats rendering
+  - Profile (`GeneratorProfile.ts`, `controllerProfile.ts`): a profile is a named `GeneratorEntwurf`,
+    stored in localStorage (`generatorProfile:v1`) and exportable/importable as JSON file. New form
+    fields or Spielmodi belong in `GeneratorEntwurf` and are then part of profiles automatically.
 - `src/teilnehmer/` — participant view with message status, modal PDF preview
 - `src/uebungsleitung/` — trainer view split into `TeilnehmerView` and `NachrichtenView`
 - `src/admin/` — exercise list, statistics, deletion

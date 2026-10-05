@@ -384,7 +384,7 @@ describe("GeneratorController – THW-Review", () => {
         expect(controller.funkUebung.name).toBe("Entwurf");
         expect(controller.funkUebung.teilnehmerListe).toEqual(["Heros 21/11"]);
         expect(controller.view.selectLoesungswortOption).toHaveBeenCalledWith("central");
-        expect(controller.hinweise.zeigeEntwurfHinweis).toHaveBeenCalledWith(expect.any(Date), expect.any(Function));
+        expect(controller.hinweise.zeigeEntwurfHinweis).toHaveBeenCalledWith(expect.any(Date), expect.any(Function), undefined);
 
         // Verwerfen löscht den Entwurf und zeichnet das leere Formular neu.
         const verwerfen = controller.hinweise.zeigeEntwurfHinweis.mock.calls.at(-1)?.[1] as () => void;
