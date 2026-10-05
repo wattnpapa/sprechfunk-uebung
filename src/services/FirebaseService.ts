@@ -22,6 +22,17 @@ import { FunkUebung } from "../models/FunkUebung";
 import { mapUebungToDomain } from "./firestoreMapping";
 import { isMissingIndexError, sanitizeDataForSave } from "./firestoreSanitize";
 import {
+    KeineVerbindungFehler,
+    entferneOfflineKopie,
+    istOffline,
+    istVerbindungsfehler,
+    ladeOfflineKopie,
+    meldeOfflineStand,
+    mitVerbindungsZeitlimit,
+    speichereOfflineKopie,
+    type OfflineKopie
+} from "./uebungOfflineKopie";
+import {
     isLocalMockMode,
     mockAdminStats,
     mockUebungCode,
@@ -46,6 +57,9 @@ export class FirebaseService {
 
     /** Obergrenze für den Jahresfilter, damit ein Ausreißer-Datum die Abfragen nicht sprengt. */
     private static readonly MAX_STATISTIK_JAHRE = 15;
+
+    /** Mit Offline-Kopie: so lange auf den Server warten, dann die Kopie zeigen. */
+    private static readonly LADEN_ZEITLIMIT_MS = 6000;
 
     constructor(private db: Firestore) {}
 
@@ -133,13 +147,38 @@ export class FirebaseService {
             const data = store[id];
             return data ? this.mapToDomain(id, data) : null;
         }
-        const docRef = doc(this.db, "uebungen", id);
-        const docSnap = await getDoc(docRef);
-
-        if (docSnap.exists()) {
-            return this.mapToDomain(docSnap.id, docSnap.data());
+        const kopie = ladeOfflineKopie(id);
+        if (kopie && istOffline()) {
+            return this.ausOfflineKopie(id, kopie);
         }
-        return null;
+        try {
+            // Mit gespeicherter Kopie nicht ewig auf schwaches Netz warten.
+            const anfrage = getDoc(doc(this.db, "uebungen", id));
+            const docSnap = kopie ? await mitVerbindungsZeitlimit(anfrage, FirebaseService.LADEN_ZEITLIMIT_MS) : await anfrage;
+            if (!docSnap.exists()) {
+                entferneOfflineKopie(id);
+                return null;
+            }
+            const uebung = this.mapToDomain(docSnap.id, docSnap.data());
+            speichereOfflineKopie(id, uebung.toJson());
+            return uebung;
+        } catch (err) {
+            if (!istVerbindungsfehler(err)) {
+                throw err;
+            }
+            if (kopie) {
+                return this.ausOfflineKopie(id, kopie);
+            }
+            // „Keine Verbindung“ statt eines rohen Firestore-Fehlers: die
+            // Ansicht kann dann sagen, dass es am Netz liegt, nicht am Link.
+            throw new KeineVerbindungFehler("Die Übung konnte ohne Verbindung nicht geladen werden.");
+        }
+    }
+
+    /** Zuletzt auf diesem Gerät gespeicherter Stand, mit Hinweis an die Oberfläche (offline P1-2). */
+    private ausOfflineKopie(id: string, kopie: OfflineKopie): FunkUebung {
+        meldeOfflineStand(id, kopie.stand);
+        return this.mapToDomain(id, kopie.daten);
     }
 
     async resolveTeilnehmerJoinCodes(
@@ -164,12 +203,21 @@ export class FirebaseService {
             return null;
         }
 
+        return this.resolveJoinCodesRemote(uebungCode, teilnehmerCode);
+    }
+
+    private async resolveJoinCodesRemote(
+        uebungCode: string,
+        teilnehmerCode: string
+    ): Promise<{ uebungId: string; teilnehmerId: string; teilnehmerName: string } | null> {
         const q = query(
             collection(this.db, "uebungen"),
             where("uebungCode", "==", uebungCode),
             limit(FirebaseService.JOIN_CODE_KANDIDATEN)
         );
-        const snapshot = await getDocs(q);
+        const snapshot = await getDocs(q).catch((err: unknown) => {
+            throw istVerbindungsfehler(err) ? new KeineVerbindungFehler("Codes ohne Verbindung nicht prüfbar.") : err;
+        });
 
         for (const docSnap of snapshot.docs) {
             const treffer = this.matchTeilnehmerCode(docSnap.data()["teilnehmerIds"], teilnehmerCode);
@@ -178,6 +226,12 @@ export class FirebaseService {
             }
         }
 
+        // Ohne Netz liefert Firestore ein leeres Ergebnis aus dem Cache statt
+        // eines Fehlers. „Nicht gefunden“ wäre dann falsch: die Codes können
+        // stimmen (THW-Review 2026-10-05, offline P3-1).
+        if (snapshot.metadata?.fromCache || istOffline()) {
+            throw new KeineVerbindungFehler("Codes ohne Verbindung nicht prüfbar.");
+        }
         return null;
     }
 
