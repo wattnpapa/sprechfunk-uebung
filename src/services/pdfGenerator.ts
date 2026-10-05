@@ -1,10 +1,8 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { jsPDF } from "jspdf";
 import { applyPlugin } from "jspdf-autotable";
-import type { Nachricht } from "../types/Nachricht";
 import type { Uebung } from "../types/Uebung";
 
-import { DeckblattTeilnehmer } from "../pdf/DeckblattTeilnehmer.js";
 import { FunkUebung } from "../models/FunkUebung.js";
 import { Meldevordruck } from "../pdf/Meldevordruck.js";
 import { Nachrichtenvordruck } from "../pdf/Nachrichtenvordruck.js";
@@ -23,6 +21,13 @@ import {
     generateMeldevordruckA4PDFsBlob,
     generateNachrichtenvordruckA4PDFsBlob
 } from "./pdfA4Service";
+import {
+    sammelVordruckBlob,
+    teilnehmerVordruckPdf,
+    vordruckPdfsJeTeilnehmer,
+    vordruckSeiteBlob,
+    type VordruckSeitenOptionen
+} from "./pdfA5Vordrucke";
 // pdfZipService wird bewusst nur bei Bedarf geladen: JSZip samt pako sind rund
 // 200 kB, der ZIP-Export laeuft aber erst auf Klick. Rollup legt daraus einen
 // eigenen Chunk an, der beim Start nicht mitgeladen wird.
@@ -141,32 +146,7 @@ class PDFGenerator {
      * Erstellt die Nachrichtenvordruck PDFs.
      */
     async generateNachrichtenvordruckPDFsBlob(funkUebung: FunkUebung, hideBackground = false, hideFooter = false): Promise<Map<string, Blob>> {
-        const blobMap = new Map();
-        funkUebung.teilnehmerListe.forEach((teilnehmer: string) => {
-            const nachrichten = funkUebung.nachrichten[teilnehmer] || [];
-
-            const pdf = new jsPDF({ orientation: "p", unit: "mm", format: "a5", compress: true });
-            // Deckblatt als erste Seite
-            const deckblatt = new DeckblattTeilnehmer(teilnehmer, funkUebung, pdf);
-            deckblatt.draw();
-
-            // Seite erst vor jeder Nachricht: Stellen ohne Nachrichten (die
-            // beübte Stelle einer Führungsstellen-Übung) bekommen keine Leerseite.
-            nachrichten.forEach((nachricht: Nachricht) => {
-                pdf.addPage();
-                new Nachrichtenvordruck(teilnehmer, funkUebung, pdf, nachricht, hideBackground, hideFooter).draw();
-            });
-
-            const totalPages = (pdf as any).getNumberOfPages();
-            for (let j = 2; j <= totalPages; j++) {
-                pdf.setPage(j);
-            }
-
-            const blob = pdf.output("blob");
-            blobMap.set(teilnehmer, blob);
-        });
-
-        return blobMap;
+        return vordruckPdfsJeTeilnehmer(Nachrichtenvordruck, funkUebung, { hideBackground, hideFooter });
     }
 
     async generateNachrichtenvordruckPDFForTeilnehmer(
@@ -175,52 +155,11 @@ class PDFGenerator {
         hideBackground = false,
         hideFooter = false
     ): Promise<{ blob: Blob; totalPages: number }> {
-        const nachrichten = funkUebung.nachrichten[teilnehmer] || [];
-        const pdf = new jsPDF({ orientation: "p", unit: "mm", format: "a5", compress: true });
-        const deckblatt = new DeckblattTeilnehmer(teilnehmer, funkUebung, pdf);
-        deckblatt.draw();
-
-        nachrichten.forEach((nachricht: Nachricht) => {
-            pdf.addPage();
-            new Nachrichtenvordruck(teilnehmer, funkUebung, pdf, nachricht, hideBackground, hideFooter).draw();
-        });
-
-        const totalPages = (pdf as any).getNumberOfPages();
-        for (let j = 2; j <= totalPages; j++) {
-            pdf.setPage(j);
-        }
-
-        return { blob: pdf.output("blob"), totalPages };
+        return teilnehmerVordruckPdf(Nachrichtenvordruck, funkUebung, teilnehmer, { hideBackground, hideFooter });
     }
 
-    async generateNachrichtenvordruckPageBlob(options: {
-        funkUebung: FunkUebung;
-        teilnehmer: string;
-        page: number;
-        hideBackground?: boolean;
-        hideFooter?: boolean;
-    }): Promise<Blob> {
-        const {
-            funkUebung,
-            teilnehmer,
-            page,
-            hideBackground = false,
-            hideFooter = false
-        } = options;
-        const nachrichten = funkUebung.nachrichten[teilnehmer] || [];
-        const totalPages = nachrichten.length;
-        if (page < 1 || page > totalPages) {
-            throw new Error("Ungültige Seite");
-        }
-
-        const pdf = new jsPDF({ orientation: "p", unit: "mm", format: "a5", compress: true });
-        const msg = nachrichten[page - 1];
-        if (!msg) {
-            throw new Error("Nachricht nicht gefunden");
-        }
-        new Nachrichtenvordruck(teilnehmer, funkUebung, pdf, msg, hideBackground, hideFooter).draw();
-
-        return pdf.output("blob");
+    async generateNachrichtenvordruckPageBlob(options: VordruckSeitenOptionen): Promise<Blob> {
+        return vordruckSeiteBlob(Nachrichtenvordruck, options);
     }
 
     generateMeldevordruckPDFs(funkUebung: FunkUebung) {
@@ -238,30 +177,7 @@ class PDFGenerator {
      * Erstellt die Meldevordruck PDFs für alle Teilnehmer.
      */
     async generateMeldevordruckPDFsBlob(funkUebung: FunkUebung, hideBackground = false, hideFooter = false): Promise<Map<string, Blob>> {
-        const blobMap = new Map();
-        funkUebung.teilnehmerListe.forEach((teilnehmer: string) => {
-            const nachrichten = funkUebung.nachrichten[teilnehmer] || [];
-
-            const pdf = new jsPDF({ orientation: "p", unit: "mm", format: "a5", compress: true }); // A5 Hochformat
-            // Deckblatt als erste Seite
-            const deckblatt = new DeckblattTeilnehmer(teilnehmer, funkUebung, pdf);
-            deckblatt.draw();
-
-            nachrichten.forEach((nachricht: Nachricht) => {
-                pdf.addPage();
-                new Meldevordruck(teilnehmer, funkUebung, pdf, nachricht, hideBackground, hideFooter).draw();
-            });
-
-            const totalPages = (pdf as any).getNumberOfPages();
-            for (let j = 2; j <= totalPages; j++) {
-                pdf.setPage(j);
-            }
-
-            const blob = pdf.output("blob");
-            blobMap.set(teilnehmer, blob);
-        });
-
-        return blobMap;
+        return vordruckPdfsJeTeilnehmer(Meldevordruck, funkUebung, { hideBackground, hideFooter });
     }
 
     async generateMeldevordruckPDFForTeilnehmer(
@@ -270,52 +186,11 @@ class PDFGenerator {
         hideBackground = false,
         hideFooter = false
     ): Promise<{ blob: Blob; totalPages: number }> {
-        const nachrichten = funkUebung.nachrichten[teilnehmer] || [];
-        const pdf = new jsPDF({ orientation: "p", unit: "mm", format: "a5", compress: true });
-        const deckblatt = new DeckblattTeilnehmer(teilnehmer, funkUebung, pdf);
-        deckblatt.draw();
-
-        nachrichten.forEach((nachricht: Nachricht) => {
-            pdf.addPage();
-            new Meldevordruck(teilnehmer, funkUebung, pdf, nachricht, hideBackground, hideFooter).draw();
-        });
-
-        const totalPages = (pdf as any).getNumberOfPages();
-        for (let j = 2; j <= totalPages; j++) {
-            pdf.setPage(j);
-        }
-
-        return { blob: pdf.output("blob"), totalPages };
+        return teilnehmerVordruckPdf(Meldevordruck, funkUebung, teilnehmer, { hideBackground, hideFooter });
     }
 
-    async generateMeldevordruckPageBlob(options: {
-        funkUebung: FunkUebung;
-        teilnehmer: string;
-        page: number;
-        hideBackground?: boolean;
-        hideFooter?: boolean;
-    }): Promise<Blob> {
-        const {
-            funkUebung,
-            teilnehmer,
-            page,
-            hideBackground = false,
-            hideFooter = false
-        } = options;
-        const nachrichten = funkUebung.nachrichten[teilnehmer] || [];
-        const totalPages = nachrichten.length;
-        if (page < 1 || page > totalPages) {
-            throw new Error("Ungültige Seite");
-        }
-
-        const pdf = new jsPDF({ orientation: "p", unit: "mm", format: "a5", compress: true });
-        const msg = nachrichten[page - 1];
-        if (!msg) {
-            throw new Error("Nachricht nicht gefunden");
-        }
-        new Meldevordruck(teilnehmer, funkUebung, pdf, msg, hideBackground, hideFooter).draw();
-
-        return pdf.output("blob");
+    async generateMeldevordruckPageBlob(options: VordruckSeitenOptionen): Promise<Blob> {
+        return vordruckSeiteBlob(Meldevordruck, options);
     }
 
     generateInstructorPDF(funkUebung: FunkUebung) {
@@ -397,25 +272,7 @@ class PDFGenerator {
      * jeweils mit Deckblatt als Trennblatt.
      */
     async generatePlainNachrichtenvordruckPrintBlob(funkUebung: FunkUebung) {
-        const pdf = new jsPDF({ orientation: "p", unit: "mm", format: "a5", compress: true });
-        let seiteBelegt = false;
-        funkUebung.teilnehmerListe.forEach(teilnehmer => {
-            const msgs = funkUebung.nachrichten[teilnehmer] || [];
-            if (msgs.length === 0) {
-                return; // kein Trennblatt für Stellen ohne Nachrichten
-            }
-            if (seiteBelegt) {
-                pdf.addPage();
-            }
-            seiteBelegt = true;
-            // Deckblatt als Trennblatt
-            new DeckblattTeilnehmer(teilnehmer, funkUebung, pdf).draw();
-            msgs.forEach(nachricht => {
-                pdf.addPage();
-                new Nachrichtenvordruck(teilnehmer, funkUebung, pdf, nachricht, true, true).draw();
-            });
-        });
-        return pdf.output("blob");
+        return sammelVordruckBlob(Nachrichtenvordruck, funkUebung, { hideBackground: true, hideFooter: true });
     }
 
     /**
@@ -423,24 +280,7 @@ class PDFGenerator {
      * jeweils mit Deckblatt als Trennblatt.
      */
     async generatePlainMeldevordruckPrintBlob(funkUebung: FunkUebung) {
-        const pdf = new jsPDF({ orientation: "p", unit: "mm", format: "a5", compress: true });
-        let seiteBelegt = false;
-        funkUebung.teilnehmerListe.forEach((teilnehmer: string) => {
-            const msgs = funkUebung.nachrichten[teilnehmer] || [];
-            if (msgs.length === 0) {
-                return;
-            }
-            if (seiteBelegt) {
-                pdf.addPage();
-            }
-            seiteBelegt = true;
-            new DeckblattTeilnehmer(teilnehmer, funkUebung, pdf).draw();
-            msgs.forEach((nachricht: Nachricht) => {
-                pdf.addPage();
-                new Meldevordruck(teilnehmer, funkUebung, pdf, nachricht, true, true).draw();
-            });
-        });
-        return pdf.output("blob");
+        return sammelVordruckBlob(Meldevordruck, funkUebung, { hideBackground: true, hideFooter: true });
     }
 
 
@@ -507,49 +347,14 @@ class PDFGenerator {
      * Erstellt eine Druck-PDF mit allen Nachrichtenvordrucken inkl. Deckblatt pro Teilnehmer.
      */
     async generateAllNachrichtenvordruckPrintBlob(funkUebung: FunkUebung) {
-        const pdf = new jsPDF({ orientation: "p", unit: "mm", format: "a5", compress: true });
-        let seiteBelegt = false;
-        funkUebung.teilnehmerListe.forEach((teilnehmer: string) => {
-            const nachrichten = funkUebung.nachrichten[teilnehmer] || [];
-            if (nachrichten.length === 0) {
-                return;
-            }
-            if (seiteBelegt) {
-                pdf.addPage();
-            }
-            seiteBelegt = true;
-            // Deckblatt und dann Nachrichtenvordruck
-            new DeckblattTeilnehmer(teilnehmer, funkUebung, pdf).draw();
-            nachrichten.forEach((nachricht: Nachricht) => {
-                pdf.addPage();
-                new Nachrichtenvordruck(teilnehmer, funkUebung, pdf, nachricht).draw();
-            });
-        });
-        return pdf.output("blob");
+        return sammelVordruckBlob(Nachrichtenvordruck, funkUebung);
     }
 
     /**
      * Erstellt eine Druck-PDF mit allen Meldevordrucken inkl. Deckblatt pro Teilnehmer.
      */
     async generateAllMeldevordruckPrintBlob(funkUebung: FunkUebung) {
-        const pdf = new jsPDF({ orientation: "p", unit: "mm", format: "a5", compress: true });
-        let seiteBelegt = false;
-        funkUebung.teilnehmerListe.forEach((teilnehmer: string) => {
-            const nachrichten = funkUebung.nachrichten[teilnehmer] || [];
-            if (nachrichten.length === 0) {
-                return;
-            }
-            if (seiteBelegt) {
-                pdf.addPage();
-            }
-            seiteBelegt = true;
-            new DeckblattTeilnehmer(teilnehmer, funkUebung, pdf).draw();
-            nachrichten.forEach((nachricht: Nachricht) => {
-                pdf.addPage();
-                new Meldevordruck(teilnehmer, funkUebung, pdf, nachricht).draw();
-            });
-        });
-        return pdf.output("blob");
+        return sammelVordruckBlob(Meldevordruck, funkUebung);
     }
 
 }
