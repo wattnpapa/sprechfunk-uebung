@@ -50,12 +50,30 @@ function aktualisiereSeitenNavigation(page: number, totalPages: number): void {
     }
 }
 
-/** Maßstab, mit dem die Seite vollständig in den Container passt. */
+/**
+ * Unterhalb dieser Höhe passt der Vordruck nicht mehr lesbar in den
+ * Container; dann füllt er die Breite und wird im Container gescrollt.
+ */
+export const MIN_LESBARE_HOEHE = 360;
+
+/**
+ * Maßstab, mit dem die Seite in den Container passt. Im Querformat am
+ * Handy war die Höhe so klein, dass der Vordruck zur Briefmarke schrumpfte
+ * (glove-touch P2-2, 2026-10-05): dort zählt die Breite.
+ */
+export function massstabFuer(breite: number, hoehe: number, base: PdfViewport): number {
+    const nachBreite = breite / base.width;
+    if (hoehe < MIN_LESBARE_HOEHE) {
+        return nachBreite;
+    }
+    return Math.min(nachBreite, hoehe / base.height);
+}
+
 function passenderMassstab(container: HTMLElement, base: PdfViewport): number {
     const rect = container.getBoundingClientRect();
     const containerWidth = rect.width || container.clientWidth || base.width;
     const containerHeight = rect.height || container.clientHeight || base.height;
-    return Math.min(containerWidth / base.width, containerHeight / base.height);
+    return massstabFuer(containerWidth, containerHeight, base);
 }
 
 async function zeichneSeite(blob: Blob, canvas: HTMLCanvasElement, container: HTMLElement): Promise<void> {
@@ -186,11 +204,12 @@ function statusText(isTransmitted: boolean, vorhanden: boolean): string {
 }
 
 /**
- * Zustand des angezeigten Vordrucks: Statusanzeige und Touch-Knopf. Der
- * Knopf wechselt zwischen „Als abgesetzt markieren“ und „Zurücknehmen“;
- * ein Doppeltipp ist durch die Kontextsperre in bindEvents abgefangen.
+ * Zustand des angezeigten Vordrucks: Statusanzeige und Knopfleiste. Offen:
+ * großer Knopf „Als abgesetzt markieren“. Abgesetzt: an derselben Stelle ein
+ * Statusfeld ohne Funktion, „Zurücknehmen“ klein in der Statuszeile, und
+ * „Weiter“ wird zum Hauptknopf – der nächste Schritt ist das Weiterblättern.
  */
-export function setzeVordruckStatus(isTransmitted: boolean, vorhanden: boolean): void {
+export function setzeVordruckStatus(isTransmitted: boolean, vorhanden: boolean, uhrzeit = ""): void {
     const modal = document.getElementById("teilnehmerDocModal");
     modal?.classList.toggle("teilnehmer-doc-modal--done", isTransmitted);
 
@@ -202,8 +221,20 @@ export function setzeVordruckStatus(isTransmitted: boolean, vorhanden: boolean):
     const btn = document.getElementById("btn-doc-absetzen") as HTMLButtonElement | null;
     if (btn) {
         btn.disabled = !vorhanden;
-        btn.dataset["aktion"] = isTransmitted ? "zuruecknehmen" : "absetzen";
-        btn.className = `btn ${isTransmitted ? "btn-outline-secondary" : "btn-success"} teilnehmer-doc-absetzen`;
-        btn.textContent = isTransmitted ? "Zurücknehmen (wieder offen)" : "✓ Als abgesetzt markieren";
+        btn.hidden = isTransmitted;
+    }
+    const erledigt = document.getElementById("teilnehmerDocErledigt");
+    if (erledigt) {
+        erledigt.hidden = !isTransmitted;
+        erledigt.textContent = `✓ abgesetzt${uhrzeit ? ` ${uhrzeit}` : ""}`;
+    }
+    const zurueck = document.getElementById("btn-doc-zuruecknehmen") as HTMLButtonElement | null;
+    if (zurueck) {
+        zurueck.hidden = !isTransmitted;
+    }
+    const weiter = document.getElementById("btn-doc-next");
+    if (weiter) {
+        weiter.classList.toggle("btn-primary", isTransmitted);
+        weiter.classList.toggle("btn-outline-secondary", !isTransmitted);
     }
 }

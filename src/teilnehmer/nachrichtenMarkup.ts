@@ -1,7 +1,7 @@
 import { escapeHtml } from "../utils/html";
 import { Nachricht } from "../types/Nachricht";
 import { TeilnehmerStorage } from "../types/Storage";
-import type { LeitungBestaetigung } from "../types/LiveStatus";
+import type { LeitungBestaetigung, LiveSyncState } from "../types/LiveStatus";
 import { parseHHMMtoMs } from "../utils/xzeit";
 import { renderFuehrungsstellenHinweise } from "../utils/fuehrungsstelle";
 import { formatUhrzeit, nachrichtHtml, renderArtBadge } from "./teilnehmerFormat";
@@ -13,6 +13,14 @@ export interface ZeilenKontext {
     xZeitBasis: string | undefined;
     bestaetigungen: Record<string, LeitungBestaetigung>;
     zuletztAbgesetzt: number | undefined;
+    /** Abgesetzte, die bei „ausblenden“ noch kurz stehen bleiben. */
+    gehalten: ReadonlySet<number>;
+    /** Abgesetzte, deren Haltezeit vorbei ist: sie gehen jetzt ab. */
+    abgang: ReadonlySet<number>;
+    /** Sprüche, deren Änderung noch nicht beim Server angekommen ist. */
+    nurLokal: ReadonlySet<number>;
+    /** Zustand der Verbindung zur Übungsleitung („aus“ ohne Live-Sync). */
+    syncZustand: LiveSyncState;
     /** Erster offener Spruch der Liste (ohne X-Zeit der nächste). */
     naechsterId: number | undefined;
 }
@@ -87,34 +95,79 @@ export function renderBestaetigungCell(bestaetigung?: LeitungBestaetigung): stri
     return `<span class="badge bg-success" title="Von der Übungsleitung bestätigt">Leitung: bestätigt${uhrzeit ? ` ${uhrzeit}` : ""}</span>`;
 }
 
+/** Was die Statuszelle eines Spruchs zeigt. */
+export interface StatusZellenZustand {
+    isUebertragen: boolean;
+    uebertragenUm?: string | undefined;
+    istNaechster: boolean;
+    /** Änderung liegt erst auf diesem Gerät (noch nicht gesendet). */
+    nurLokal?: boolean;
+    /** Zustand der Verbindung zur Übungsleitung. */
+    syncZustand?: LiveSyncState;
+    bestaetigung?: LeitungBestaetigung | undefined;
+}
+
+/**
+ * Wo der abgesetzte Spruch gerade steht: nur hier, gesendet oder von der
+ * Leitung bestätigt (field-user P2 und P3, analog-first P3-4, 2026-10-05).
+ */
+export function zustellText(z: StatusZellenZustand): { text: string; lokal: boolean } {
+    if (z.bestaetigung?.abgesetztUm) {
+        const uhrzeit = formatUhrzeit(z.bestaetigung.abgesetztUm);
+        return { text: `Leitung hat bestätigt${uhrzeit ? ` ${uhrzeit}` : ""}`, lokal: false };
+    }
+    const zustand = z.syncZustand ?? "aus";
+    if (z.nurLokal && (zustand === "live" || zustand === "verbinde")) {
+        return { text: "Wird an die Übungsleitung gesendet …", lokal: false };
+    }
+    if (z.nurLokal) {
+        return { text: "Nur auf diesem Gerät – wird gesendet, sobald Netz da ist", lokal: true };
+    }
+    if (zustand !== "aus") {
+        return { text: "An die Übungsleitung gesendet", lokal: false };
+    }
+    return { text: "Auf diesem Gerät gespeichert", lokal: false };
+}
+
 /**
  * Status und Aktion je Spruch. Bewusst getrennt: der Zustand ist eine
- * Anzeige, die Aktion ein großer Knopf. Das Zurücknehmen ist ein eigener,
- * kleiner Knopf an anderer Stelle — ein zweiter Tipp auf „abgesetzt“
- * trifft also nie die Gegenaktion.
+ * Anzeige, die Aktion ein großer Knopf. Nach dem Absetzen steht an der
+ * Stelle des Knopfs ein Statusfeld ohne Funktion; „Zurücknehmen“ ist klein
+ * und liegt darunter. Ein zweiter, auch träger Tipp auf „abgesetzt“ trifft
+ * also nie die Gegenaktion (stress-test P2-1, 2026-10-05).
  */
-export function renderStatusZelle(id: number, isUebertragen: boolean, uebertragenUm: string | undefined, istNaechster: boolean): string {
-    if (!isUebertragen) {
+export function renderStatusZelle(id: number, z: StatusZellenZustand): string {
+    if (!z.isUebertragen) {
+        const lokal = z.nurLokal && z.syncZustand !== "live"
+            ? "<span class=\"teilnehmer-lokal-marke\">Rücknahme nur auf diesem Gerät</span>"
+            : "";
         return `
                 <div class="teilnehmer-status-zeile">
                     <span class="status-chip status-chip--pending">offen</span>
-                    ${istNaechster ? "<span class=\"teilnehmer-naechster-label\">als Nächstes</span>" : ""}
+                    ${z.istNaechster ? "<span class=\"teilnehmer-naechster-label\">als Nächstes</span>" : ""}
+                    ${lokal}
                 </div>
-                <button type="button" class="btn btn-success teilnehmer-absetzen" data-aktion="absetzen" data-id="${id}">
-                    ✓ Als abgesetzt markieren
+                <button type="button" class="btn btn-primary teilnehmer-absetzen" data-aktion="absetzen" data-id="${id}">
+                    Als abgesetzt markieren
                 </button>`;
     }
-    const uhrzeit = formatUhrzeit(uebertragenUm);
+    const uhrzeit = formatUhrzeit(z.uebertragenUm);
+    const zustellung = zustellText(z);
     return `
                 <div class="teilnehmer-status-zeile">
                     <span class="status-chip status-chip--ok">✓ abgesetzt${uhrzeit ? ` ${uhrzeit}` : ""}</span>
+                </div>
+                <div class="teilnehmer-abgesetzt-feld${zustellung.lokal ? " ist-lokal" : ""}" data-zustellung="${zustellung.lokal ? "lokal" : "gesendet"}">
+                    ${zustellung.lokal ? "<span aria-hidden=\"true\">⚠</span> " : ""}${zustellung.text}
+                </div>
+                <div class="teilnehmer-zuruecknehmen-zeile">
                     <button type="button" class="btn btn-outline-secondary btn-sm teilnehmer-zuruecknehmen" data-aktion="zuruecknehmen" data-id="${id}" aria-label="Spruch ${id} zurücknehmen (wieder offen)">
                         Zurücknehmen
                     </button>
                 </div>`;
 }
 
-/** Suchtext und „Abgesetzte ausblenden“; die eben abgesetzte bleibt kurz stehen. */
+/** Suchtext und „Abgesetzte ausblenden“; eben abgesetzte bleiben kurz stehen. */
 export function filtereNachrichten(nachrichten: Nachricht[], ctx: ZeilenKontext, suche: string): Nachricht[] {
     return nachrichten.filter(n => {
         if (suche) {
@@ -124,7 +177,10 @@ export function filtereNachrichten(nachrichten: Nachricht[], ctx: ZeilenKontext,
             }
         }
         if (ctx.storage.hideTransmitted) {
-            return !ctx.storage.nachrichten[n.id]?.uebertragen || n.id === ctx.zuletztAbgesetzt;
+            return !ctx.storage.nachrichten[n.id]?.uebertragen
+                || n.id === ctx.zuletztAbgesetzt
+                || ctx.gehalten.has(n.id)
+                || ctx.abgang.has(n.id);
         }
         return true;
     });
@@ -152,7 +208,7 @@ interface ZeilenZustand {
 function zeilenZustand(n: Nachricht, ctx: ZeilenKontext): ZeilenZustand {
     const isUebertragen = !!ctx.storage.nachrichten[n.id]?.uebertragen;
     const istAbgesetzt = isUebertragen && n.id === ctx.zuletztAbgesetzt;
-    const istAbgang = istAbgesetzt && ctx.storage.hideTransmitted;
+    const istAbgang = isUebertragen && ctx.storage.hideTransmitted && ctx.abgang.has(n.id);
     const istNaechster = !isUebertragen && n.id === ctx.naechsterId;
     const klassen = [
         isUebertragen ? "status-ok-row" : "status-pending-row",
@@ -175,7 +231,14 @@ export function nachrichtZeileHtml(n: Nachricht, ctx: ZeilenKontext): string {
                 <td class="teilnehmer-zelle-empfaenger"><span class="teilnehmer-an-label">an </span>${escapeHtml(n.empfaenger.join(", "))}</td>
                 <td class="teilnehmer-zelle-text">${renderArtBadge(n)}${hinweise.kopf}${nachrichtHtml(n.nachricht)}${hinweise.fuss}</td>
                 ${xZeitZelle(n, ctx, z.isUebertragen)}
-                <td class="teilnehmer-zelle-status">${renderStatusZelle(n.id, z.isUebertragen, uebertragenUm, z.istNaechster)}</td>
+                <td class="teilnehmer-zelle-status">${renderStatusZelle(n.id, {
+                    isUebertragen: z.isUebertragen,
+                    uebertragenUm,
+                    istNaechster: z.istNaechster,
+                    nurLokal: ctx.nurLokal.has(n.id),
+                    syncZustand: ctx.syncZustand,
+                    bestaetigung
+                })}</td>
                 <td class="teilnehmer-zelle-leitung${bestaetigung?.abgesetztUm ? "" : " ist-leer"}">${renderBestaetigungCell(bestaetigung)}</td>
             </tr>
         `;

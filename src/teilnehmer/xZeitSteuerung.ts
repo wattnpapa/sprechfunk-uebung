@@ -9,7 +9,8 @@ import { TeilnehmerVordruckSteuerung } from "./vordruckSteuerung";
 export function xZeitHerkunftText(storage: TeilnehmerStorage, leitungXZeitBasis: string | null): string {
     const basis = storage.xZeitBasis;
     if (!basis) {
-        return "Warte auf die X-Zeit der Übungsleitung – oder starte erst, wenn sie „X-Zeit jetzt“ funkt.";
+        // Ein Satz, kein Widerspruch zur Fokus-Karte (field-user P2, 2026-10-05).
+        return "Warte auf die X-Zeit der Übungsleitung – sie erscheint hier automatisch.";
     }
     if (storage.xZeitBasisQuelle === "leitung") {
         return `X-Zeit ${basis} – von der Übungsleitung gesetzt.`;
@@ -17,7 +18,10 @@ export function xZeitHerkunftText(storage: TeilnehmerStorage, leitungXZeitBasis:
     if (leitungXZeitBasis && basis !== leitungXZeitBasis) {
         return `Eigene Basis ${basis} – die Übungsleitung hat ${leitungXZeitBasis} festgelegt.`;
     }
-    return "";
+    if (leitungXZeitBasis) {
+        return `X-Zeit ${basis} – wie bei der Übungsleitung.`;
+    }
+    return `Eigene X-Zeit ${basis} – selbst gestartet.`;
 }
 
 /** Hinweis-Element unter dem X-Zeit-Feld; wird beim ersten Mal angelegt. */
@@ -54,7 +58,9 @@ export abstract class TeilnehmerXZeitSteuerung extends TeilnehmerVordruckSteueru
             (value) => this.setXZeitBasis(value),
             () => {
                 const value = jetztHHMM();
-                this.view.setXZeitBasisInputValue(value);
+                if (value === this.storage?.xZeitBasis) {
+                    return;
+                }
                 this.setXZeitBasis(value);
             }
         );
@@ -123,14 +129,28 @@ export abstract class TeilnehmerXZeitSteuerung extends TeilnehmerVordruckSteueru
         herkunftsHinweis(input).textContent = xZeitHerkunftText(this.storage, this.leitungXZeitBasis);
     }
 
-    /** Eine eigene Basis neben der verbindlichen der Leitung nur als bewusste Abweichung. */
+    /**
+     * Eine eigene Basis neben der verbindlichen der Leitung nur als bewusste
+     * Abweichung. Ohne Leitungs-Basis fragt das Überschreiben einer schon
+     * laufenden eigenen X-Zeit nach: ein zweiter Tipp auf „Jetzt starten“
+     * verschob sonst still alle Fälligkeiten (glove-touch P2-3, 2026-10-05).
+     */
     private bestaetigeAbweichung(value: string): boolean {
-        if (!this.leitungXZeitBasis || value === this.leitungXZeitBasis) {
+        if (this.leitungXZeitBasis) {
+            if (value === this.leitungXZeitBasis) {
+                return true;
+            }
+            return uiFeedback.confirm(
+                `Die Übungsleitung hat die X-Zeit ${this.leitungXZeitBasis} für alle festgelegt. Willst du wirklich mit einer eigenen Basis (${value || "keine"}) weiterarbeiten?`
+            );
+        }
+        const bisher = this.storage?.xZeitBasis;
+        if (!bisher || bisher === value) {
             return true;
         }
-        return uiFeedback.confirm(
-            `Die Übungsleitung hat die X-Zeit ${this.leitungXZeitBasis} für alle festgelegt. Willst du wirklich mit einer eigenen Basis (${value || "keine"}) weiterarbeiten?`
-        );
+        return uiFeedback.confirm(value
+            ? `Die X-Zeit läuft seit ${bisher}. Neu starten setzt sie auf ${value} – alle Fälligkeiten verschieben sich. Wirklich neu starten?`
+            : `Die X-Zeit ${bisher} löschen? Danach zeigt die Ansicht keine Fälligkeiten mehr.`);
     }
 
     protected setXZeitBasis(value: string): void {
@@ -141,6 +161,7 @@ export abstract class TeilnehmerXZeitSteuerung extends TeilnehmerVordruckSteueru
             this.view.setXZeitBasisInputValue(this.storage.xZeitBasis ?? "");
             return;
         }
+        this.view.setXZeitBasisInputValue(value);
         if (value) {
             this.storage.xZeitBasis = value;
         } else {

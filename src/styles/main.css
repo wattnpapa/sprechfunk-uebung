@@ -2176,7 +2176,154 @@ select option {
 
 .teilnehmer-zuruecknehmen {
     min-height: 44px;
-    margin-left: auto;
+}
+
+/* THW-Review 2026-10-05 (stress-test P2-1): nach dem Absetzen steht an der
+   Stelle des Knopfs ein Statusfeld ohne Funktion, gleich hoch wie der Knopf.
+   „Zurücknehmen“ liegt klein und mit Abstand darunter – ein träger zweiter
+   Tipp trifft das Feld, nicht die Gegenaktion. */
+.teilnehmer-abgesetzt-feld {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    min-height: 44px;
+    margin-top: 0.4rem;
+    padding: 0.35rem 0.75rem;
+    border: var(--strich) dashed var(--gut-linie);
+    color: var(--text-2);
+    font-size: var(--t-s);
+    cursor: default;
+}
+
+.teilnehmer-abgesetzt-feld.ist-lokal {
+    border-style: solid;
+    border-color: var(--warn-linie);
+    background: var(--warn-fond);
+    color: var(--warn-text);
+    font-weight: 600;
+}
+
+.teilnehmer-zuruecknehmen-zeile {
+    margin-top: 0.9rem;
+}
+
+.teilnehmer-lokal-marke {
+    font-size: var(--t-xs);
+    font-weight: 600;
+    color: var(--warn-text);
+}
+
+/* Liste nach dem Abgang einer ausgeblendeten Zeile kurz gesperrt: sichtbar. */
+#teilnehmerNachrichtenBody.ist-gesperrt [data-aktion],
+#teilnehmerFokusCard.ist-gesperrt [data-fokus-uebertragen] {
+    opacity: 0.5;
+    cursor: wait;
+}
+
+/* Rückstand in der Fokus-Karte: eigene Warnfarben statt Bootstraps
+   text-warning-emphasis, das im Dark Mode kaum lesbar war (night-visibility
+   Befund 1, 2026-10-05). Mit Symbol und Rahmen, nicht nur über die Farbe. */
+.teilnehmer-fokus-rueckstand {
+    padding: 0.4rem 0.6rem;
+    border: var(--strich) solid var(--warn-linie);
+    background: var(--warn-fond);
+    color: var(--warn-text);
+    font-weight: 600;
+}
+
+/* Hinweis, solange Markierungen nur auf diesem Gerät liegen. Läuft beim
+   Scrollen oben mit und lässt Tipps durch (reine Anzeige). */
+.teilnehmer-sync-leiste {
+    position: sticky;
+    top: 0;
+    z-index: 1041;
+    margin-bottom: 0.5rem;
+    padding: 0.45rem 0.75rem;
+    border: var(--strich) solid var(--warn-linie);
+    background: var(--warn-fond);
+    color: var(--warn-text);
+    font-size: var(--t-s);
+    font-weight: 600;
+    pointer-events: none;
+}
+
+.teilnehmer-sync-leiste[hidden] {
+    display: none;
+}
+
+.teilnehmer-suche {
+    min-height: 44px;
+}
+
+/* Die ganze Schalterzeile ist Tippfläche, nicht nur der kleine Schalter. */
+.teilnehmer-schalter .form-check-label {
+    display: flex;
+    align-items: center;
+    min-height: 44px;
+    padding-left: 0.25rem;
+    cursor: pointer;
+}
+
+#teilnehmerJoinForm .form-control {
+    min-height: 48px;
+}
+
+/* X-Zeit-Karte: vor dem Start nur ein Satz; das eigene Zeitfeld ist
+   eingeklappt. Alle Ziele mindestens 44 px (glove-touch P2-3). */
+.teilnehmer-xzeit .card-body {
+    padding: 0.5rem 0.9rem;
+}
+
+.teilnehmer-xzeit-zeile {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: 0.2rem 0.75rem;
+}
+
+.teilnehmer-xzeit-herkunft {
+    color: var(--text-2);
+}
+
+.teilnehmer-xzeit-countdown {
+    font-variant-numeric: tabular-nums;
+}
+
+.teilnehmer-xzeit-countdown.ist-rueckstand {
+    color: var(--warn-text);
+    font-weight: 700;
+}
+
+.teilnehmer-xzeit-optionen {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0 1.25rem;
+}
+
+.teilnehmer-xzeit-eigene > summary {
+    display: flex;
+    align-items: center;
+    min-height: 44px;
+    color: var(--text-2);
+    cursor: pointer;
+}
+
+.teilnehmer-xzeit-eingabe {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.5rem;
+    padding-bottom: 0.5rem;
+}
+
+.teilnehmer-xzeit-eingabe .form-control {
+    width: 9rem;
+    min-height: 44px;
+}
+
+.teilnehmer-xzeit-eingabe .btn {
+    min-height: 44px;
 }
 
 .teilnehmer-naechster-label {
@@ -2236,7 +2383,9 @@ select option {
     padding-bottom: 0.9rem;
 }
 
-/* Rückgängig-Hinweis: unten fest, über dem Inhalt, eigener Knopf. */
+/* Rückgängig-Hinweis: schwebt auf der Bildschirmhälfte, in der nicht
+   getippt wurde (data-position), damit er nie unter dem Finger auftaucht
+   (glove-touch P1-1, 2026-10-05). Oben darf er den App-Kopf überdecken. */
 .teilnehmer-rueckgaengig {
     position: fixed;
     left: 50%;
@@ -2257,6 +2406,11 @@ select option {
 [data-theme="dark"] .teilnehmer-rueckgaengig {
     background: var(--flaeche-2);
     color: var(--text);
+}
+
+.teilnehmer-rueckgaengig[data-position="oben"] {
+    top: max(0.5rem, env(safe-area-inset-top));
+    bottom: auto;
 }
 
 .teilnehmer-rueckgaengig[hidden] {
@@ -2397,7 +2551,8 @@ select option {
         line-height: 1.4;
     }
 
-    #teilnehmerTableView .teilnehmer-zelle-leitung.ist-leer {
+    /* Am Handy nennt das Statusfeld die Bestätigung schon. */
+    #teilnehmerTableView .teilnehmer-zelle-leitung {
         display: none;
     }
 
@@ -2515,6 +2670,61 @@ select option {
     min-height: 48px;
 }
 
+/* Zurück auf Seite 1 bleibt erkennbar (night-visibility Befund 7). */
+.teilnehmer-doc-nav:disabled {
+    --bs-btn-disabled-opacity: 1;
+    --bs-btn-disabled-color: var(--text-2);
+    --bs-btn-disabled-border-color: var(--linie);
+    border-style: dashed;
+}
+
+/* Abgesetzt: Statusfeld ohne Funktion an der Stelle des Hauptknopfs. */
+.teilnehmer-doc-erledigt {
+    grid-area: absetzen;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 48px;
+    padding: 0 0.75rem;
+    border: var(--strich) dashed var(--gut-linie);
+    color: var(--gut);
+    font-weight: 700;
+    cursor: default;
+}
+
+.teilnehmer-doc-erledigt[hidden],
+.teilnehmer-doc-absetzen[hidden],
+.teilnehmer-doc-zuruecknehmen[hidden] {
+    display: none;
+}
+
+.teilnehmer-doc-zuruecknehmen {
+    min-height: 44px;
+}
+
+/* Rückgängig im Vordruck: eigene Zeile über der Knopfleiste. */
+.teilnehmer-doc-rueckgaengig {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.4rem 0.75rem;
+    border-top: var(--strich) solid var(--linie);
+    background: var(--flaeche-2);
+}
+
+.teilnehmer-doc-rueckgaengig[hidden] {
+    display: none;
+}
+
+.teilnehmer-doc-rueckgaengig span {
+    flex: 1 1 auto;
+}
+
+.teilnehmer-doc-rueckgaengig .btn {
+    min-height: 44px;
+    font-weight: 700;
+}
+
 .teilnehmer-doc-page {
     font-size: var(--t-m);
     font-variant-numeric: tabular-nums;
@@ -2589,6 +2799,53 @@ select option {
         min-width: 0;
         padding-left: 0.6rem;
         padding-right: 0.6rem;
+    }
+}
+
+/* Handy quer: ebenfalls Vollbild, die Knopfleiste in einer Zeile, der
+   Vordruck füllt die Breite und scrollt im Fenster (glove-touch P2-2). */
+@media (max-height: 540px) and (orientation: landscape) {
+    .teilnehmer-doc-modal .modal-dialog {
+        width: 100vw;
+        max-width: none;
+        height: 100%;
+        min-height: 100%;
+        margin: 0;
+        padding: 0;
+    }
+
+    .teilnehmer-doc-modal .modal-content {
+        border: 0;
+        border-radius: 0;
+    }
+
+    .teilnehmer-doc-modal .modal-header,
+    .teilnehmer-doc-modal .modal-footer {
+        padding: 0.25rem 0.75rem;
+    }
+
+    .teilnehmer-doc-modal .modal-body {
+        padding: 0.25rem;
+        overflow-y: auto;
+    }
+
+    .teilnehmer-doc-center,
+    .teilnehmer-doc-layout {
+        height: auto;
+    }
+
+    .teilnehmer-doc-container {
+        height: auto;
+        max-width: none;
+    }
+
+    .teilnehmer-doc-canvas {
+        max-height: none;
+    }
+
+    .teilnehmer-doc-aktionen {
+        grid-template-columns: minmax(0, 1fr) auto minmax(0, 1.4fr) auto;
+        grid-template-areas: "status prev absetzen next";
     }
 }
 

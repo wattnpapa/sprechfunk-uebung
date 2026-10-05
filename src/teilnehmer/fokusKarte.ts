@@ -14,6 +14,8 @@ export interface FokusZustand {
     countdownMs: number;
     /** Zuletzt abgesetzte Meldung, damit sie sich zurücknehmen lässt. */
     zuletztAbgesetzt?: number;
+    /** Minuten seit Fälligkeit der ältesten offenen Meldung (nur „faellig“). */
+    rueckstandMin?: number;
 }
 
 /** Die zuletzt als abgesetzt markierte Nachricht (nach Zeitstempel). */
@@ -48,7 +50,9 @@ function buildFokusZustandOhneVerlauf(
 
     const basisMs = xZeitBasis ? parseHHMMtoMs(xZeitBasis) : null;
     if (basisMs === null) {
-        return { kind: "keineBasis", weitereFaellig: 0, offen: offen.length, countdownMs: 0 };
+        // Vorschau auf den ersten Spruch: Empfänger und Zeitpunkt, nicht der Text.
+        const erste = offen[0];
+        return { kind: "keineBasis", ...(erste ? { aktuelle: erste } : {}), weitereFaellig: 0, offen: offen.length, countdownMs: 0 };
     }
 
     const now = Date.now();
@@ -59,7 +63,8 @@ function buildFokusZustandOhneVerlauf(
             aktuelle: faellig[0],
             weitereFaellig: faellig.length - 1,
             offen: offen.length,
-            countdownMs: 0
+            countdownMs: 0,
+            rueckstandMin: Math.floor((now - (basisMs + faellig[0].xZeitSlot * 60000)) / 60000)
         };
     }
 
@@ -88,7 +93,14 @@ export function buildFokusZustand(
 
 /** Merkmal, an dem sich ein Zustandswechsel der Fokus-Karte erkennen lässt. */
 export function fokusSignatur(zustand: FokusZustand): string {
-    return [zustand.kind, zustand.aktuelle?.id ?? "", zustand.weitereFaellig, zustand.offen, zustand.zuletztAbgesetzt ?? ""].join("|");
+    return [
+        zustand.kind,
+        zustand.aktuelle?.id ?? "",
+        zustand.weitereFaellig,
+        zustand.offen,
+        zustand.zuletztAbgesetzt ?? "",
+        zustand.rueckstandMin ?? ""
+    ].join("|");
 }
 
 /** Zeile „Zuletzt abgesetzt: Meldung N – Zurücknehmen“ unter der Fokus-Karte. */
@@ -104,11 +116,20 @@ function renderFokusZuletzt(zustand: FokusZustand): string {
                         </div>`;
 }
 
-function keineBasisHtml(): string {
+/**
+ * Vor dem Start: ein einziger Satz statt widersprüchlicher Anweisungen, dazu
+ * an wen der erste Spruch geht – ohne Abhak-Knopf (field-user P2, 2026-10-05).
+ */
+function keineBasisHtml(zustand: FokusZustand): string {
+    const n = zustand.aktuelle;
+    const vorschau = n
+        ? `<div class="mt-2">Dein erster Spruch: <strong>Nr. ${n.id}</strong> an ${escapeHtml(n.empfaenger.join(", "))}, ${n.xZeitSlot} min nach der X-Zeit.</div>`
+        : "";
     return `
                 <div class="card mb-3">
-                    <div class="card-body text-center text-muted py-4">
-                        Starte oben die X-Zeit („Jetzt starten“), um den Fokus-Modus zu nutzen.
+                    <div class="card-body text-center py-3">
+                        <div class="text-muted">Noch keine X-Zeit – die Übungsleitung setzt sie, dann geht es hier los.</div>
+                        ${vorschau}
                     </div>
                 </div>`;
 }
@@ -129,17 +150,34 @@ function wartenHtml(zustand: FokusZustand, n: Nachricht & { xZeitSlot: number },
                     <div class="card-body text-center py-4">
                         <div class="text-muted">Nächste Meldung in</div>
                         <div class="display-5 font-monospace" id="fokusCountdown">${formatCountdown(zustand.countdownMs)}</div>
-                        <div class="text-muted small mt-1">X+${n.xZeitSlot} · noch ${zustand.offen} offen</div>
+                        <div class="text-muted small mt-1">Nr. ${n.id} bei X+${n.xZeitSlot} min · noch ${zustand.offen} offen</div>
                         ${zuletzt}
                     </div>
                 </div>`;
 }
 
+/**
+ * Rückstand in der Fokus-Karte: eigene Warnfarbe mit Symbol und Rahmen.
+ * `text-warning-emphasis` war im Dark Mode kaum lesbar (night-visibility
+ * Befund 1, 2026-10-05).
+ */
+function rueckstandHtml(zustand: FokusZustand): string {
+    const teile: string[] = [];
+    if (zustand.weitereFaellig > 0) {
+        teile.push(zustand.weitereFaellig === 1 ? "1 weitere Meldung fällig" : `${zustand.weitereFaellig} weitere Meldungen fällig`);
+    }
+    if ((zustand.rueckstandMin ?? 0) >= 1) {
+        teile.push(`diese seit ${zustand.rueckstandMin} min`);
+    }
+    if (teile.length === 0) {
+        return "";
+    }
+    return `<div class="teilnehmer-fokus-rueckstand mt-2"><span aria-hidden="true">⚠</span> ${teile.join(", ")}</div>`;
+}
+
 function faelligHtml(zustand: FokusZustand, n: Nachricht & { xZeitSlot: number }, zuletzt: string): string {
     const hinweise = renderFuehrungsstellenHinweise(n);
-    const weitere = zustand.weitereFaellig > 0
-        ? `<div class="text-warning-emphasis small mt-2">+${zustand.weitereFaellig} weitere Meldung(en) fällig</div>`
-        : "";
+    const weitere = rueckstandHtml(zustand);
     return `
                 <div class="card border-primary mb-3">
                     <div class="card-body">
@@ -149,8 +187,8 @@ function faelligHtml(zustand: FokusZustand, n: Nachricht & { xZeitSlot: number }
                         </div>
                         <div class="text-muted small mt-2">an: ${escapeHtml(n.empfaenger.join(", "))}</div>
                         <div class="fs-5 mt-1 mb-3">${renderArtBadge(n)}${hinweise.kopf}${nachrichtHtml(n.nachricht)}${hinweise.fuss}</div>
-                        <button class="btn btn-success btn-lg w-100 teilnehmer-fokus-absetzen" data-fokus-uebertragen="${n.id}">
-                            ✓ Als abgesetzt markieren
+                        <button class="btn btn-primary btn-lg w-100 teilnehmer-fokus-absetzen" data-fokus-uebertragen="${n.id}">
+                            Als abgesetzt markieren
                         </button>
                         ${weitere}
                         ${zuletzt}
@@ -161,7 +199,7 @@ function faelligHtml(zustand: FokusZustand, n: Nachricht & { xZeitSlot: number }
 export function renderFokusHtml(zustand: FokusZustand): string {
     const zuletzt = renderFokusZuletzt(zustand);
     if (zustand.kind === "keineBasis") {
-        return keineBasisHtml();
+        return keineBasisHtml(zustand);
     }
     if (zustand.kind === "fertig") {
         return fertigHtml(zuletzt);

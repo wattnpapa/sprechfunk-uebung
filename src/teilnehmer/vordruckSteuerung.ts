@@ -78,6 +78,7 @@ export abstract class TeilnehmerVordruckSteuerung extends TeilnehmerControllerBa
             ? { uebertragen: true, uebertragenUm: vorher.uebertragenUm ?? now, geaendertUm: now }
             : { uebertragen: false, geaendertUm: now };
         saveTeilnehmerStorage(this.storage);
+        this.zustellung?.merke(id);
         this.publishStatus();
         this.renderNachrichten();
         if (this.docMode !== "table") {
@@ -99,6 +100,7 @@ export abstract class TeilnehmerVordruckSteuerung extends TeilnehmerControllerBa
             return;
         }
         this.storage.hideTransmitted = checked;
+        this.vordruckGehalten.clear();
         saveTeilnehmerStorage(this.storage);
         this.renderNachrichten();
         this.invalidateDocCache();
@@ -146,12 +148,17 @@ export abstract class TeilnehmerVordruckSteuerung extends TeilnehmerControllerBa
             this.merkeVordruckImVerlauf(mode !== "table");
         }
         this.docPageByMode[this.docMode] = this.docPage;
+        const warTabelle = this.docMode === "table";
         this.docMode = mode;
         this.docPage = this.docPageByMode[mode] || 1;
         this.view.setDocMode(mode);
 
         if (mode === "table") {
+            this.vordruckGehalten.clear();
             return;
+        }
+        if (warTabelle) {
+            this.docPage = this.seiteDesNaechstenOffenen() ?? this.docPage;
         }
 
         this.begrenzeDocPage();
@@ -159,19 +166,32 @@ export abstract class TeilnehmerVordruckSteuerung extends TeilnehmerControllerBa
         this.preloadPages(mode);
     }
 
+    /**
+     * Das Vordruck-Fenster öffnet beim nächsten offenen Spruch, nicht bei
+     * Seite 1 (stress-test P2-2, workflow W5, 2026-10-05).
+     */
+    private seiteDesNaechstenOffenen(): number | null {
+        const index = this.getVisibleNachrichten().findIndex(n => !this.storage?.nachrichten[n.id]?.uebertragen);
+        return index >= 0 ? index + 1 : null;
+    }
+
     protected changeDocPage(step: number) {
         if (this.docMode === "table") {
             return;
         }
-        const total = this.getDocTotalPages();
-        if (!total) {
+        const vorher = this.getVisibleNachrichten();
+        const ziel = vorher[this.docPage - 1 + step];
+        if (!ziel) {
             return;
         }
-        const next = this.docPage + step;
-        if (next < 1 || next > total) {
-            return;
+        // Gehaltene (eben abgesetzte) Sprüche gehen beim Blättern; die
+        // Seitenzahl folgt dem Zielspruch, nicht dem alten Index.
+        if (this.vordruckGehalten.size > 0) {
+            this.vordruckGehalten.clear();
+            this.invalidateDocCache();
         }
-        this.docPage = next;
+        const index = this.getVisibleNachrichten().findIndex(n => n.id === ziel.id);
+        this.docPage = index >= 0 ? index + 1 : Math.min(this.docPage, this.getDocTotalPages());
         void this.renderDocPage();
     }
 
@@ -190,8 +210,8 @@ export abstract class TeilnehmerVordruckSteuerung extends TeilnehmerControllerBa
         }
 
         const currentMsg = this.getVisibleNachrichten()[this.docPage - 1];
-        const isTransmitted = !!currentMsg && !!this.storage?.nachrichten[currentMsg.id]?.uebertragen;
-        this.view.setDocTransmitted(isTransmitted, !!currentMsg);
+        const eintrag = currentMsg ? this.storage?.nachrichten[currentMsg.id] : undefined;
+        this.view.setDocTransmitted(!!eintrag?.uebertragen, !!currentMsg, eintrag?.uebertragenUm);
 
         const blob = await this.getDocBlob(previewUebung, this.docMode, this.docPage);
 
@@ -211,13 +231,19 @@ export abstract class TeilnehmerVordruckSteuerung extends TeilnehmerControllerBa
         }
         const vorher = this.storage.nachrichten[msg.id];
         const current = !!vorher?.uebertragen;
+        // Bei „ausblenden“ bleibt der eben abgesetzte Vordruck stehen, bis
+        // weitergeblättert wird: ein zweiter Tipp trifft dann sein Statusfeld
+        // und nicht den Knopf des nächsten Spruchs.
+        if (this.storage.hideTransmitted && !current) {
+            this.vordruckGehalten.add(msg.id);
+        } else {
+            this.vordruckGehalten.delete(msg.id);
+        }
         this.setUebertragen(msg.id, !current);
         this.bieteRueckgaengigAn(msg.id, !current, vorher);
         this.renderNachrichten();
         this.invalidateDocCache();
-        if (this.storage.hideTransmitted && !current) {
-            this.begrenzeDocPage();
-        }
+        this.begrenzeDocPage();
         void this.renderDocPage();
     }
 
@@ -251,7 +277,12 @@ export abstract class TeilnehmerVordruckSteuerung extends TeilnehmerControllerBa
             URL.revokeObjectURL(link.href);
             uiFeedback.success("ZIP wurde heruntergeladen.");
         } catch {
-            uiFeedback.error("ZIP konnte nicht erstellt werden.");
+            // Ohne Netz fehlt auf einem reinen Teilnehmer-Gerät oft der
+            // Druckteil. Grund und Ausweg nennen (analog-first P3-2, 2026-10-05).
+            const offline = typeof navigator !== "undefined" && navigator.onLine === false;
+            uiFeedback.error(offline
+                ? "Die ZIP-Datei lässt sich ohne Internetverbindung nicht erstellen. Die Vordruck-Ansicht oben funktioniert meist trotzdem; lade das ZIP, sobald wieder Netz da ist."
+                : "Die ZIP-Datei konnte nicht erstellt werden. Versuch es noch einmal oder lade die Seite neu.");
         }
     }
 

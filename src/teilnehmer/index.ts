@@ -2,14 +2,24 @@ import {loadTeilnehmerStorage, saveTeilnehmerStorage, clearTeilnehmerStorage} fr
 import {FirebaseService} from "../services/FirebaseService";
 import {store} from "../state/store";
 import {router} from "../core/router";
-import {TeilnehmerStorage} from "../types/Storage";
 import { uiFeedback } from "../core/UiFeedback";
 import { LiveStatusService } from "../services/LiveStatusService";
-import { mergeTeilnehmerLiveDoc, toTeilnehmerLiveDoc } from "../services/liveStatusMerge";
+import { mergeTeilnehmerLiveDoc } from "../services/liveStatusMerge";
 import type { TeilnehmerLiveDoc } from "../types/LiveStatus";
 import { TeilnehmerXZeitSteuerung } from "./xZeitSteuerung";
 import type { TeilnehmerEventHandler } from "./teilnehmerEvents";
 import { sanitizeCode } from "./teilnehmerFormat";
+import { ZustellVerfolgung, zustellSchluessel } from "./zustellung";
+import { resetErlaubt, resetRueckfrage, veroeffentlicheReset } from "./zuruecksetzen";
+
+export { resetRueckfrage } from "./zuruecksetzen";
+
+/** So oft gleicht die Ansicht ab, ob Markierungen beim Server angekommen sind. */
+const ZUSTELL_PRUEF_MS = 1000;
+
+function istOffline(): boolean {
+    return typeof navigator !== "undefined" && navigator.onLine === false;
+}
 
 
 /** Übungs- und Teilnehmercode aus `?uc=…&tc=…` hinter dem Hash. */
@@ -33,33 +43,25 @@ export function pruefeCodeFormat(uebungCode: string, teilnehmerCode: string): st
     return null;
 }
 
-/** Rückfrage vor dem Zurücksetzen, mit Anzahl und echter Reichweite. */
-export function resetRueckfrage(anzahl: number, live: boolean): string {
-    const kopf = `Wirklich alle ${anzahl} als abgesetzt markierten Funksprüche wieder auf „offen“ setzen?`;
-    return live
-        ? `${kopf}\n\nDas gilt auch für die Übungsleitung und deine anderen Geräte: Dort erscheinen die Sprüche danach ebenfalls als offen. Eine eigene X-Zeit wird gelöscht. Das lässt sich nicht rückgängig machen.\n\nEinen einzelnen falsch markierten Spruch korrigierst du besser mit „Zurücknehmen“ in seiner Zeile.`
-        : `${kopf}\n\nDas betrifft nur dieses Gerät. Eine eigene X-Zeit wird gelöscht. Das lässt sich nicht rückgängig machen.`;
-}
-
 /**
- * Zurückgesetzter Stand fürs Remote-Dokument: Zurücksetz-Marker mit
- * aktuellem Zeitstempel, denn ein bloß leeres Dokument würde vom
- * Last-Write-Wins-Merge nicht gewinnen.
+ * Meldung für „nicht gefunden“. Enthält die Eingabe O, 0, I oder 1, wird
+ * das Zeichen benannt: in neuen Codes kommt es nicht vor (field-user P3,
+ * 2026-10-05). Abgelehnt wird es nicht – ältere Codes dürfen es enthalten.
  */
-function zurueckgesetzterStand(storage: TeilnehmerStorage, now: string): TeilnehmerStorage {
-    const nachrichten = Object.keys(storage.nachrichten).reduce<TeilnehmerStorage["nachrichten"]>(
-        (acc, key) => {
-            acc[key] = { uebertragen: false, geaendertUm: now };
-            return acc;
-        },
-        {}
-    );
-    const cleared: TeilnehmerStorage = { ...storage, nachrichten, lastUpdated: now, xZeitBasisGeaendertUm: now };
-    delete cleared.xZeitBasis;
-    return cleared;
+export function nichtGefundenMeldung(uebungCode: string, teilnehmerCode: string): string {
+    const kopf = "Kombination aus Übungscode und Teilnehmercode wurde nicht gefunden.";
+    const fremd = Array.from(new Set(`${uebungCode}${teilnehmerCode}`.match(/[O0I1]/g) ?? []));
+    if (fremd.length === 0) {
+        return `${kopf} Prüfe beide Codes – schau bei Q, D, G, J und 6 genau hin.`;
+    }
+    const zeichen = fremd.map(z => `„${z}“`).join(", ");
+    return `${kopf} Deine Eingabe enthält ${zeichen}. Diese Zeichen kommen in Codes nicht vor – meist ist Q oder D (statt O/0) bzw. J oder L (statt I/1) gemeint.`;
 }
 
 export class TeilnehmerController extends TeilnehmerXZeitSteuerung {
+    private zustellTimer: ReturnType<typeof setInterval> | null = null;
+    private letzterSyncZustand: string | null = null;
+
     public async init() {
         const {params} = router.parseHash();
         this.uebungId = params[0] ?? null;
@@ -83,6 +85,12 @@ export class TeilnehmerController extends TeilnehmerXZeitSteuerung {
         const prefilledCodes = codesAusHash(window.location.hash || "");
         this.view.renderJoinForm(prefilledCodes.uebungCode, prefilledCodes.teilnehmerCode);
         this.bindJoinFormAfterError();
+        // Kommt ein unvollständiger Code an (Schnellzugang mit 5 Zeichen),
+        // gleich sagen, was fehlt (error-recovery P3-3, 2026-10-05).
+        const formatFehler = pruefeCodeFormat(prefilledCodes.uebungCode, prefilledCodes.teilnehmerCode);
+        if ((prefilledCodes.uebungCode || prefilledCodes.teilnehmerCode) && formatFehler) {
+            this.view.showJoinError(formatFehler);
+        }
         // Geteilter Link mit beiden Codes: direkt öffnen statt noch einmal
         // „Zugang öffnen“ tippen zu lassen. Ersetzt den Verlaufseintrag,
         // sonst führte „Zurück“ wieder auf den Link und gleich wieder vor.
@@ -100,15 +108,30 @@ export class TeilnehmerController extends TeilnehmerXZeitSteuerung {
         this.bindJoinFormAfterError();
     }
 
+    /**
+     * Ohne Verbindung liegt es nicht an den Codes: eigener Hinweis ohne
+     * Code-Formular, mit „Erneut versuchen“ (offline-resilience P1-2).
+     */
+    private zeigeVerbindungsFehler(): void {
+        this.view.renderVerbindungsFehler(() => {
+            void this.init();
+        });
+    }
+
     /** Lädt Übung und Funkrufname; bei Fehlern steht danach die Fehlerseite. */
     private async ladeUebungUndTeilnehmer(uebungId: string, teilnehmerId: string): Promise<boolean> {
         try {
             this.uebung = await this.firebaseService.getUebung(uebungId);
         } catch {
-            this.zeigeFehlerseite("Die Übung konnte nicht geladen werden. Prüfe die Internetverbindung und lade die Seite neu – oder gib die Codes erneut ein.");
+            this.zeigeVerbindungsFehler();
             return false;
         }
         if (!this.uebung) {
+            // Offline liefert Firestore aus dem leeren Cache „gibt es nicht“.
+            if (istOffline()) {
+                this.zeigeVerbindungsFehler();
+                return false;
+            }
             this.zeigeFehlerseite("Übung nicht gefunden. Vielleicht ist der Link unvollständig oder die Übung wurde gelöscht.");
             return false;
         }
@@ -148,6 +171,8 @@ export class TeilnehmerController extends TeilnehmerXZeitSteuerung {
             this.bindeXZeit();
         }
         this.view.bindEvents(this.eventHandler());
+        // Nach einer Unterbrechung steht der nächste offene Spruch im Bild.
+        this.view.scrolleZumNaechsten();
     }
 
     private eventHandler(): TeilnehmerEventHandler {
@@ -182,7 +207,11 @@ export class TeilnehmerController extends TeilnehmerXZeitSteuerung {
             return;
         }
 
-        live.onStateChange(state => this.view.updateLiveSyncState(state));
+        if (this.teilnehmerName) {
+            this.zustellung = new ZustellVerfolgung(zustellSchluessel(this.uebungId, this.teilnehmerName));
+        }
+        live.onStateChange(() => this.gleicheZustellungAb());
+        this.zustellTimer = setInterval(() => this.gleicheZustellungAb(), ZUSTELL_PRUEF_MS);
         live.subscribeEigenenStatus(this.teilnehmerId, remote => this.uebernehmeEigenenRemoteStand(remote));
         live.subscribeLeitungPublic(remote => {
             this.leitungBestaetigungen = remote?.nachrichten ?? {};
@@ -195,6 +224,27 @@ export class TeilnehmerController extends TeilnehmerXZeitSteuerung {
         const onHashChange = () => this.dispose();
         window.addEventListener("hashchange", onHashChange, { once: true });
         this.disposeListener = () => window.removeEventListener("hashchange", onHashChange);
+    }
+
+    /**
+     * Verbindungsanzeige mit Zahl offener Sprüche und Uhrzeit der letzten
+     * Bestätigung; kommt etwas an, verlieren die Karten ihr „nur auf diesem
+     * Gerät“. Ein Zustandswechsel ändert auch den Text der Karten.
+     */
+    private gleicheZustellungAb(): void {
+        const live = this.liveStatus;
+        if (!live?.enabled) {
+            return;
+        }
+        const state = live.getState();
+        const kartenGeaendert = this.zustellung?.pruefe(state, live.getOffeneAenderungen()) ?? false;
+        this.view.updateLiveSyncState(state, this.zustellung?.info() ?? { offen: 0, bestaetigtUm: "" });
+        const ersterAufruf = this.letzterSyncZustand === null;
+        const zustandNeu = state !== this.letzterSyncZustand;
+        this.letzterSyncZustand = state;
+        if (!ersterAufruf && (kartenGeaendert || zustandNeu)) {
+            this.renderNachrichten();
+        }
     }
 
     /** Stand anderer Geräte desselben Teilnehmers einmischen. */
@@ -217,6 +267,10 @@ export class TeilnehmerController extends TeilnehmerXZeitSteuerung {
 
     public dispose(): void {
         this.stopXZeitTicker();
+        if (this.zustellTimer !== null) {
+            clearInterval(this.zustellTimer);
+            this.zustellTimer = null;
+        }
         void this.liveStatus?.flush();
         this.liveStatus?.dispose();
         this.liveStatus = null;
@@ -241,15 +295,17 @@ export class TeilnehmerController extends TeilnehmerXZeitSteuerung {
             this.view.showJoinError(formatFehler);
             return;
         }
+        const keineVerbindung = "Die Codes konnten gerade nicht geprüft werden – es fehlt die Internetverbindung. Versuch es erneut, sobald wieder Netz da ist.";
         let result: Awaited<ReturnType<FirebaseService["resolveTeilnehmerJoinCodes"]>>;
         try {
             result = await this.firebaseService.resolveTeilnehmerJoinCodes(uebungCode, teilnehmerCode);
         } catch {
-            this.view.showJoinError("Die Codes konnten gerade nicht geprüft werden. Prüfe die Internetverbindung und versuch es erneut.");
+            this.view.showJoinError(keineVerbindung);
             return;
         }
         if (!result) {
-            this.view.showJoinError("Kombination aus Übungscode und Teilnehmercode wurde nicht gefunden. Prüfe beide Codes (0 und O, 1 und I werden leicht verwechselt).");
+            // Offline kommt aus dem leeren Cache „nichts gefunden“ (offline P3-1).
+            this.view.showJoinError(istOffline() ? keineVerbindung : nichtGefundenMeldung(uebungCode, teilnehmerCode));
             return;
         }
         const ziel = `#/teilnehmer/${result.uebungId}/${result.teilnehmerId}`;
@@ -274,6 +330,9 @@ export class TeilnehmerController extends TeilnehmerXZeitSteuerung {
         if (!this.uebungId || !this.teilnehmerName) {
             return;
         }
+        if (!resetErlaubt(this.liveStatus)) {
+            return;
+        }
         const anzahl = Object.values(this.storage?.nachrichten ?? {}).filter(e => e?.uebertragen).length;
         if (!uiFeedback.confirm(resetRueckfrage(anzahl, !!this.liveStatus?.enabled))) {
             return;
@@ -282,20 +341,18 @@ export class TeilnehmerController extends TeilnehmerXZeitSteuerung {
     }
 
     /**
-     * Setzt lokal und – falls aktiv – auch remote zurück. Remote werden dazu
-     * Zurücksetz-Marker mit aktuellem Zeitstempel geschrieben; ein bloß leeres
-     * Dokument würde vom Last-Write-Wins-Merge nicht gewinnen.
+     * Setzt lokal und – falls aktiv – auch remote zurück. Ohne Bestätigung
+     * des Servers wird lokal nichts gelöscht und nicht neu geladen.
      */
     private async performReset(): Promise<void> {
         if (!this.uebungId || !this.teilnehmerName) {
             return;
         }
-        if (this.liveStatus?.enabled && this.storage && this.teilnehmerId) {
-            const cleared = zurueckgesetzterStand(this.storage, new Date().toISOString());
-            this.liveStatus.publishTeilnehmerStatus(toTeilnehmerLiveDoc(cleared, this.teilnehmerId));
-            await this.liveStatus.flush();
+        if (!(await veroeffentlicheReset(this.liveStatus, this.storage, this.teilnehmerId))) {
+            return;
         }
         clearTeilnehmerStorage(this.uebungId, this.teilnehmerName);
+        this.zustellung?.leeren();
         this.revokeDocUrl();
         window.location.reload();
     }
