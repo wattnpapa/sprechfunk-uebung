@@ -29,6 +29,10 @@ const mocks = vi.hoisted(() => ({
     renderZugangsFehler: vi.fn(),
     setResetUmfang: vi.fn(),
     zeigeRueckgaengig: vi.fn(),
+    renderVerbindungsFehler: vi.fn(),
+    scrolleZumNaechsten: vi.fn(),
+    liveState: vi.fn(() => "live"),
+    liveOffen: vi.fn(() => 0),
     publishTeilnehmerStatus: vi.fn(),
     subscribeEigenenStatus: vi.fn(),
     subscribeLeitungPublic: vi.fn(),
@@ -42,6 +46,8 @@ vi.mock("../../src/services/LiveStatusService", () => ({
         // eslint-disable-next-line @typescript-eslint/no-unused-vars
         constructor(_db: unknown, _uebungId: string) {}
         onStateChange = (cb: (state: string) => void) => cb("live");
+        getState = mocks.liveState;
+        getOffeneAenderungen = mocks.liveOffen;
         publishTeilnehmerStatus = mocks.publishTeilnehmerStatus;
         subscribeEigenenStatus = mocks.subscribeEigenenStatus;
         subscribeLeitungPublic = mocks.subscribeLeitungPublic;
@@ -68,6 +74,8 @@ vi.mock("../../src/teilnehmer/TeilnehmerView", () => ({
         renderZugangsFehler = mocks.renderZugangsFehler;
         setResetUmfang = mocks.setResetUmfang;
         zeigeRueckgaengig = mocks.zeigeRueckgaengig;
+        renderVerbindungsFehler = mocks.renderVerbindungsFehler;
+        scrolleZumNaechsten = mocks.scrolleZumNaechsten;
     }
 }));
 
@@ -237,12 +245,30 @@ describe("TeilnehmerController", () => {
         );
         expect(mocks.bindJoinForm).toHaveBeenCalledTimes(3);
 
-        // Ladefehler (z. B. ohne Netz) führt ebenfalls zum Formular mit Hinweis.
+        // Ladefehler (z. B. ohne Netz): eigener Hinweis ohne Code-Formular,
+        // denn an den Codes liegt es nicht (offline-resilience P1-2, 2026-10-05).
         mocks.parseHash.mockReturnValueOnce({ params: ["u1", "t1"] });
         mocks.getUebung.mockRejectedValueOnce(new Error("client is offline"));
         const controller4 = new TeilnehmerController({} as never);
+        const zugangsFehlerVorher = mocks.renderZugangsFehler.mock.calls.length;
         await controller4.init();
-        expect(mocks.renderZugangsFehler).toHaveBeenLastCalledWith(expect.stringContaining("nicht geladen"));
+        expect(mocks.renderVerbindungsFehler).toHaveBeenCalledTimes(1);
+        expect(mocks.renderZugangsFehler.mock.calls.length).toBe(zugangsFehlerVorher);
+
+        // „Erneut versuchen“ lädt neu.
+        mocks.parseHash.mockReturnValueOnce({ params: ["u1", "t1"] });
+        mocks.getUebung.mockResolvedValueOnce(null);
+        const erneut = mocks.renderVerbindungsFehler.mock.calls[0]?.[0] as () => void;
+        erneut();
+        await vi.waitFor(() => expect(mocks.renderZugangsFehler).toHaveBeenLastCalledWith(expect.stringContaining("Übung nicht gefunden")));
+
+        // Offline liefert Firestore aus dem leeren Cache „gibt es nicht“: auch dann Verbindungshinweis.
+        vi.stubGlobal("navigator", { onLine: false });
+        mocks.parseHash.mockReturnValueOnce({ params: ["u1", "t1"] });
+        mocks.getUebung.mockResolvedValueOnce(null);
+        await new TeilnehmerController({} as never).init();
+        expect(mocks.renderVerbindungsFehler).toHaveBeenCalledTimes(2);
+        vi.unstubAllGlobals();
     });
 
     it("öffnet einen geteilten Link mit beiden Codes direkt und ersetzt den Verlaufseintrag", async () => {
@@ -477,7 +503,7 @@ describe("TeilnehmerController", () => {
         c.uebungId = "u1";
         c.storage.nachrichten = { 1: { uebertragen: true }, 2: { uebertragen: true }, 3: { uebertragen: false } };
         mocks.uiConfirm.mockReturnValueOnce(false);
-        c.liveStatus = { enabled: true };
+        c.liveStatus = { enabled: true, getState: () => "live" };
         c.resetData();
         const text = mocks.uiConfirm.mock.calls.at(-1)?.[0] as string;
         expect(text).toContain("alle 2 als abgesetzt markierten");
@@ -609,7 +635,7 @@ describe("TeilnehmerController – Vordruck und Bedienung", () => {
         expect((controller as any).storage.nachrichten[2].uebertragen).toBe(false);
     });
 
-    it("toggleCurrentDocMessage adjusts page when hideTransmitted is active", async () => {
+    it("hält bei „ausblenden“ den eben abgesetzten Vordruck, bis weitergeblättert wird", async () => {
         const controller = await makeController();
         const renderDocSpy = vi.spyOn(controller as never, "renderDocPage" as never).mockResolvedValue(undefined);
         vi.spyOn(controller as never, "invalidateDocCache" as never).mockImplementation(() => {});
@@ -626,12 +652,63 @@ describe("TeilnehmerController – Vordruck und Bedienung", () => {
             { id: 2, empfaenger: ["B"], nachricht: "zwei" }
         ];
 
-        // Mark current page message as transmitted => filtered list shrinks to 1 page
+        // Der abgesetzte Spruch bleibt auf seiner Seite stehen: ein zweiter
+        // Tipp trifft sein Statusfeld, nicht den nächsten Spruch (stress-test P1-1).
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        (controller as any).toggleCurrentDocMessage();
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        expect((controller as any).docPage).toBe(1);
+        const c = controller as any;
+        c.toggleCurrentDocMessage();
+        expect(c.docPage).toBe(2);
+        expect(c.getVisibleNachrichten().map((n: { id: number }) => n.id)).toEqual([1, 2]);
         expect(renderDocSpy).toHaveBeenCalled();
+
+        // Zurückblättern lässt ihn gehen; die Seite folgt dem Zielspruch.
+        c.changeDocPage(-1);
+        expect(c.getVisibleNachrichten().map((n: { id: number }) => n.id)).toEqual([1]);
+        expect(c.docPage).toBe(1);
+    });
+
+    it("blättert bei gehaltenem Spruch vorwärts auf den nächsten offenen", async () => {
+        const controller = await makeController();
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const c = controller as any;
+        vi.spyOn(c, "renderDocPage").mockResolvedValue(undefined);
+        vi.spyOn(c, "invalidateDocCache").mockImplementation(() => {});
+        c.docMode = "meldevordruck";
+        c.docPage = 1;
+        c.storage.hideTransmitted = true;
+        c.uebung.nachrichten.Alpha = [
+            { id: 1, empfaenger: ["B"], nachricht: "eins" },
+            { id: 2, empfaenger: ["B"], nachricht: "zwei" },
+            { id: 3, empfaenger: ["B"], nachricht: "drei" }
+        ];
+        c.toggleCurrentDocMessage();
+        expect(c.docPage).toBe(1);
+        c.changeDocPage(1);
+        // Spruch 1 ist jetzt ausgeblendet; Spruch 2 steht auf Seite 1.
+        expect(c.getVisibleNachrichten()[c.docPage - 1].id).toBe(2);
+        expect(c.docPage).toBe(1);
+    });
+
+    it("öffnet den Vordruck beim nächsten offenen Spruch", async () => {
+        const controller = await makeController();
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const c = controller as any;
+        vi.spyOn(c, "renderDocPage").mockResolvedValue(undefined);
+        vi.spyOn(c, "preloadPages").mockImplementation(() => {});
+        c.uebung.nachrichten.Alpha = [
+            { id: 1, empfaenger: ["B"], nachricht: "eins" },
+            { id: 2, empfaenger: ["B"], nachricht: "zwei" },
+            { id: 3, empfaenger: ["B"], nachricht: "drei" }
+        ];
+        c.storage.nachrichten = { 1: { uebertragen: true }, 2: { uebertragen: true } };
+        await c.setDocMode("meldevordruck");
+        expect(c.docPage).toBe(3);
+
+        // Alles abgesetzt: die zuletzt gezeigte Seite bleibt.
+        await c.setDocMode("table");
+        c.storage.nachrichten[3] = { uebertragen: true };
+        await c.setDocMode("nachrichtenvordruck");
+        expect(c.docPage).toBe(1);
     });
 
     it("setDocMode table skips rendering docs", async () => {
@@ -648,7 +725,10 @@ describe("TeilnehmerController – Vordruck und Bedienung", () => {
         const controller = await makeController();
         const renderDocSpy = vi.spyOn(controller as never, "renderDocPage" as never).mockResolvedValue(undefined);
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        vi.spyOn(controller as any, "getDocTotalPages").mockReturnValue(2);
+        (controller as any).uebung.nachrichten.Alpha = [
+            { id: 1, empfaenger: ["B"], nachricht: "eins" },
+            { id: 2, empfaenger: ["B"], nachricht: "zwei" }
+        ];
 
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         (controller as any).docMode = "table";
@@ -744,7 +824,7 @@ describe("TeilnehmerController – Vordruck und Bedienung", () => {
         (controller as any).currentDocUrl = "blob:x";
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         (controller as any).resetData();
-        expect(mocks.clearTeilnehmerStorage).toHaveBeenCalled();
+        await vi.waitFor(() => expect(mocks.clearTeilnehmerStorage).toHaveBeenCalled());
 
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         (controller as any).docMode = "meldevordruck";
@@ -888,6 +968,10 @@ describe("TeilnehmerController – Vordruck und Bedienung", () => {
             await h.onDownloadZip();
             h.onSearch();
         }
+        // Der Zustell-Abgleich läuft im Sekundentakt; ohne dispose liefe
+        // runAllTimers endlos.
+        (c as unknown as { disposeListener: null }).disposeListener = null;
+        c.dispose();
         await vi.runAllTimersAsync();
         expect(mocks.saveTeilnehmerStorage).toHaveBeenCalled();
         vi.useRealTimers();
@@ -907,7 +991,7 @@ describe("TeilnehmerController – gemeinsame X-Zeit", () => {
         intern.teilnehmerName = "A";
         intern.teilnehmerId = "T1";
         intern.storage = storage;
-        intern.liveStatus = { enabled: true, publishTeilnehmerStatus: mocks.publishTeilnehmerStatus };
+        intern.liveStatus = { enabled: true, getState: () => "live", publishTeilnehmerStatus: mocks.publishTeilnehmerStatus };
         return intern;
     }
 
@@ -972,5 +1056,176 @@ describe("TeilnehmerController – gemeinsame X-Zeit", () => {
         c.uebung.spielModus = "klassisch";
         c.uebernehmeXZeitDerLeitung({ version: 1, lastUpdated: SPAET, nachrichten: {}, xZeitBasis: "19:30", xZeitBasisGeaendertUm: SPAET });
         expect(c.storage.xZeitBasis).toBeUndefined();
+    });
+});
+
+describe("TeilnehmerController – THW-Review 2026-10-05", () => {
+    beforeEach(setupGlobals);
+
+    it("zeigt Zahl offener Sprüche und markiert Karten, bis der Server bestätigt", async () => {
+        const daten = new Map<string, string>();
+        vi.stubGlobal("localStorage", {
+            getItem: (k: string) => daten.get(k) ?? null,
+            setItem: (k: string, v: string) => { daten.set(k, v); },
+            removeItem: (k: string) => { daten.delete(k); }
+        });
+        const { TeilnehmerController } = await import("../../src/teilnehmer");
+        vi.stubGlobal("document", {
+            getElementById: (id: string) => (id === "teilnehmerContent" ? { innerHTML: "" } : null),
+            createElement: () => ({}),
+            body: { appendChild: vi.fn(), removeChild: vi.fn() }
+        });
+        mocks.parseHash.mockReturnValueOnce({ params: ["u1", "tid1"] });
+        mocks.getUebung.mockResolvedValueOnce({
+            id: "u1", name: "Ü", teilnehmerIds: { tid1: "Alpha" },
+            nachrichten: { Alpha: [{ id: 1, empfaenger: ["B"], nachricht: "x" }] }
+        });
+        mocks.liveState.mockReturnValue("offline");
+        mocks.liveOffen.mockReturnValue(1);
+        const c = new TeilnehmerController({} as never);
+        await c.init();
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const intern = c as any;
+
+        intern.toggleUebertragen(1, true);
+        const optionen = mocks.renderNachrichten.mock.calls.at(-1)?.[2];
+        expect(Array.from(optionen.nurLokal)).toEqual([1]);
+        expect(optionen.syncZustand).toBe("offline");
+        intern.gleicheZustellungAb();
+        expect(mocks.updateLiveSyncState).toHaveBeenLastCalledWith("offline", { offen: 1, bestaetigtUm: "" });
+
+        // Netz zurück, alles bestätigt: Karten verlieren den Hinweis.
+        mocks.liveState.mockReturnValue("live");
+        mocks.liveOffen.mockReturnValue(0);
+        const vorher = mocks.renderNachrichten.mock.calls.length;
+        intern.gleicheZustellungAb();
+        expect(mocks.renderNachrichten.mock.calls.length).toBe(vorher + 1);
+        expect(Array.from(mocks.renderNachrichten.mock.calls.at(-1)?.[2].nurLokal)).toEqual([]);
+        expect(mocks.updateLiveSyncState.mock.calls.at(-1)?.[1].offen).toBe(0);
+        expect(mocks.updateLiveSyncState.mock.calls.at(-1)?.[1].bestaetigtUm).toMatch(/^\d\d:\d\d$/);
+        // Nach dem Laden springt die Ansicht zum nächsten offenen Spruch.
+        expect(mocks.scrolleZumNaechsten).toHaveBeenCalled();
+        intern.disposeListener = null;
+        c.dispose();
+        mocks.liveState.mockReturnValue("live");
+        mocks.liveOffen.mockReturnValue(0);
+    });
+
+    it("lehnt das Zurücksetzen für alle ohne Verbindung ab", async () => {
+        const controller = await makeController();
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const c = controller as any;
+        c.uebungId = "u1";
+        c.liveStatus = { enabled: true, getState: () => "offline" };
+        c.resetData();
+        expect(mocks.uiConfirm).not.toHaveBeenCalled();
+        expect(mocks.uiError).toHaveBeenCalledWith(expect.stringContaining("braucht eine Verbindung"));
+        expect(mocks.clearTeilnehmerStorage).not.toHaveBeenCalled();
+    });
+
+    it("löscht nichts, wenn der Server das Zurücksetzen nicht bestätigt", async () => {
+        const controller = await makeController();
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const c = controller as any;
+        c.uebungId = "u1";
+        c.teilnehmerId = "T1";
+        const flush = vi.fn().mockResolvedValue(false);
+        c.liveStatus = { enabled: true, getState: () => "live", publishTeilnehmerStatus: vi.fn(), flush };
+        await c.performReset();
+        expect(flush).toHaveBeenCalledWith(10000);
+        expect(mocks.clearTeilnehmerStorage).not.toHaveBeenCalled();
+        expect(mocks.uiError).toHaveBeenCalledWith(expect.stringContaining("nicht bestätigt"));
+    });
+
+    it("nennt beim unbekannten Code unzulässige Zeichen und offline die Verbindung", async () => {
+        const { nichtGefundenMeldung } = await import("../../src/teilnehmer");
+        expect(nichtGefundenMeldung("T2VAFO", "ABCD")).toContain("„O“");
+        expect(nichtGefundenMeldung("T2VAF0", "AB1I")).toMatch(/„0“, „1“, „I“/);
+        expect(nichtGefundenMeldung("T2VAFQ", "ABCD")).not.toMatch(/enthält/);
+
+        const controller = await makeController();
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        (controller as any).firebaseService = { resolveTeilnehmerJoinCodes: vi.fn().mockResolvedValue(null) };
+        vi.stubGlobal("navigator", { onLine: false });
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        await (controller as any).resolveJoinAndNavigate("ABC234", "ABCD");
+        expect(mocks.showJoinError).toHaveBeenLastCalledWith(expect.stringContaining("Internetverbindung"));
+        vi.stubGlobal("navigator", { onLine: true });
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        await (controller as any).resolveJoinAndNavigate("ABCO34", "ABCD");
+        expect(mocks.showJoinError).toHaveBeenLastCalledWith(expect.stringContaining("„O“"));
+    });
+
+    it("meldet einen unvollständigen Code aus dem Link sofort", async () => {
+        const { TeilnehmerController } = await import("../../src/teilnehmer");
+        vi.stubGlobal("document", {
+            getElementById: (id: string) => (id === "teilnehmerContent" ? { innerHTML: "" } : null),
+            createElement: () => ({}),
+            body: { appendChild: vi.fn(), removeChild: vi.fn() }
+        });
+        vi.stubGlobal("window", {
+            addEventListener: vi.fn(),
+            location: { hash: "#/teilnehmer?uc=nrkh2&tc=9lk", replace: vi.fn() }
+        });
+        mocks.parseHash.mockReturnValueOnce({ params: [] });
+        await new TeilnehmerController({} as never).init();
+        expect(mocks.showJoinError).toHaveBeenCalledWith(expect.stringContaining("6 Zeichen"));
+
+        // Ohne Codes im Link keine Fehlermeldung.
+        mocks.showJoinError.mockClear();
+        vi.stubGlobal("window", { addEventListener: vi.fn(), location: { hash: "#/teilnehmer" } });
+        mocks.parseHash.mockReturnValueOnce({ params: [] });
+        await new TeilnehmerController({} as never).init();
+        expect(mocks.showJoinError).not.toHaveBeenCalled();
+    });
+
+    it("fragt nach, bevor eine laufende eigene X-Zeit neu gestartet wird", async () => {
+        const controller = await makeController();
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const c = controller as any;
+        c.uebung.spielModus = "xZeit";
+        c.storage.xZeitBasis = "19:00";
+        c.storage.xZeitBasisQuelle = "eigen";
+
+        mocks.uiConfirm.mockReturnValueOnce(false);
+        c.setXZeitBasis("19:05");
+        expect(mocks.uiConfirm).toHaveBeenLastCalledWith(expect.stringContaining("läuft seit 19:00"));
+        expect(c.storage.xZeitBasis).toBe("19:00");
+
+        mocks.uiConfirm.mockReturnValueOnce(true);
+        c.setXZeitBasis("19:05");
+        expect(c.storage.xZeitBasis).toBe("19:05");
+
+        // Gleiche Zeit: keine Rückfrage.
+        mocks.uiConfirm.mockClear();
+        c.setXZeitBasis("19:05");
+        expect(mocks.uiConfirm).not.toHaveBeenCalled();
+
+        // Löschen fragt ebenfalls.
+        mocks.uiConfirm.mockReturnValueOnce(false);
+        c.setXZeitBasis("");
+        expect(mocks.uiConfirm).toHaveBeenLastCalledWith(expect.stringContaining("löschen"));
+        expect(c.storage.xZeitBasis).toBe("19:05");
+        c.stopXZeitTicker();
+
+        // „Jetzt starten“ zur selben Minute ändert nichts und fragt nicht.
+        c.bindeXZeit();
+        const jetzt = mocks.bindXZeitEvents.mock.calls.at(-1)?.[1] as () => void;
+        const d = new Date();
+        c.storage.xZeitBasis = `${String(d.getHours()).padStart(2, "0")}:${String(d.getMinutes()).padStart(2, "0")}`;
+        mocks.uiConfirm.mockClear();
+        jetzt();
+        expect(mocks.uiConfirm).not.toHaveBeenCalled();
+        c.stopXZeitTicker();
+    });
+
+    it("erklärt ein gescheitertes ZIP ohne Netz mit Grund und Ausweg", async () => {
+        const controller = await makeController();
+        mocks.generateTeilnehmerPDFsAsZip.mockRejectedValueOnce(new Error("fail"));
+        vi.stubGlobal("navigator", { onLine: false });
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        await (controller as any).downloadTeilnehmerZip();
+        expect(mocks.uiError).toHaveBeenLastCalledWith(expect.stringContaining("ohne Internetverbindung"));
+        vi.unstubAllGlobals();
     });
 });

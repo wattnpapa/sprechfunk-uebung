@@ -33,11 +33,14 @@ describe("Teilnehmer – Hilfsfunktionen", () => {
     });
 
     it("beschreibt die Herkunft der X-Zeit-Basis", () => {
+        // Vor dem Start nur ein Satz, ohne Aufforderung zum Selbststarten.
         expect(xZeitHerkunftText(storage(), null)).toContain("Warte auf die X-Zeit");
+        expect(xZeitHerkunftText(storage(), null)).toContain("automatisch");
+        expect(xZeitHerkunftText(storage(), null)).not.toContain("starte");
         expect(xZeitHerkunftText(storage({ xZeitBasis: "10:00", xZeitBasisQuelle: "leitung" }), "10:00")).toContain("von der Übungsleitung gesetzt");
         expect(xZeitHerkunftText(storage({ xZeitBasis: "10:05", xZeitBasisQuelle: "eigen" }), "10:00")).toContain("Eigene Basis 10:05");
-        expect(xZeitHerkunftText(storage({ xZeitBasis: "10:00", xZeitBasisQuelle: "eigen" }), "10:00")).toBe("");
-        expect(xZeitHerkunftText(storage({ xZeitBasis: "10:00" }), null)).toBe("");
+        expect(xZeitHerkunftText(storage({ xZeitBasis: "10:00", xZeitBasisQuelle: "eigen" }), "10:00")).toContain("wie bei der Übungsleitung");
+        expect(xZeitHerkunftText(storage({ xZeitBasis: "10:00" }), null)).toBe("Eigene X-Zeit 10:00 – selbst gestartet.");
     });
 
     it("lädt zuerst die aktuelle Seite und ihre Nachbarn vor", () => {

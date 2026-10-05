@@ -872,18 +872,50 @@ test("@teilnehmer on a phone the action is reachable without sideways swiping an
     await expect(page.locator("#teilnehmerNachrichtenBody tr").first()).toHaveClass(/status-ok-row/);
     expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(375);
 
-    // Vordruck: Abhaken per Touch-Knopf, Schließen frei erreichbar, Gerätezurück schließt nur das Fenster.
+    // Vordruck: öffnet beim nächsten offenen Spruch, Abhaken per Touch-Knopf,
+    // danach steht in der Mitte nur ein Statusfeld (THW-Review 2026-10-05).
     await page.locator("[data-doc-view='meldevordruck']").click();
     await expect(page.locator("#teilnehmerDocModal")).toHaveClass(/show/);
-    await page.locator("#btn-doc-next").click();
+    await expect(page.locator("#teilnehmerDocPage")).toContainText("Seite 2 / 2");
     await page.locator("#btn-doc-absetzen").click();
     await expect(page.locator("#teilnehmerDocStatus")).toContainText("abgesetzt");
+    await expect(page.locator("#btn-doc-absetzen")).toBeHidden();
+    await expect(page.locator("#teilnehmerDocErledigt")).toBeVisible();
+    // Die Rückgängig-Zeile liegt nicht über der Knopfleiste: „Zurück“ bleibt „Zurück“.
+    await expect(page.locator("#teilnehmerDocRueckgaengig")).toBeVisible();
+    const zurueckKnopf = await page.locator("#btn-doc-prev").boundingBox();
+    if (zurueckKnopf) {
+        const getroffen = await page.evaluate(([x, y]) => document.elementFromPoint(x, y)?.closest("button")?.id ?? "",
+            [zurueckKnopf.x + zurueckKnopf.width / 2, zurueckKnopf.y + zurueckKnopf.height / 2]);
+        expect(getroffen).toBe("btn-doc-prev");
+    }
     const schliessen = await page.locator("#btn-doc-close").boundingBox();
     expect(schliessen && schliessen.height).toBeGreaterThanOrEqual(44);
     await page.goBack();
     await expect(page.locator("#teilnehmerDocModal")).not.toHaveClass(/show/);
     await expect(page).toHaveURL(/#\/teilnehmer\/u1\/A1B2$/);
 });
+});
+
+test("@teilnehmer with hiding on, a slow second tap does not mark the next message", async ({ page }) => {
+    await page.goto("/#/teilnehmer/u1/A1B2");
+    await page.locator("#toggle-hide-transmitted").check();
+
+    const knopf = page.locator("#teilnehmerNachrichtenBody tr").first().locator("[data-aktion='absetzen']");
+    const box = await knopf.boundingBox();
+    expect(box).not.toBeNull();
+    if (box) {
+        await page.mouse.click(box.x + box.width / 2, box.y + box.height / 2);
+        // Träger zweiter Tipp an derselben Stelle (stress-test P1-1, 2026-10-05).
+        await page.waitForTimeout(1200);
+        await page.mouse.click(box.x + box.width / 2, box.y + box.height / 2);
+    }
+    // Der abgesetzte Spruch steht noch, der zweite ist offen geblieben.
+    await expect(page.locator("#teilnehmerNachrichtenBody tr.status-ok-row")).toHaveCount(1);
+    await expect(page.locator("#teilnehmerNachrichtenBody [data-aktion='absetzen']")).toHaveCount(1);
+    // Nach der Haltezeit ist er ausgeblendet.
+    await expect(page.locator("#teilnehmerNachrichtenBody tr.status-ok-row")).toHaveCount(0, { timeout: 6000 });
+    await expect(page.locator("#teilnehmerAusgeblendet")).toHaveText("(1 ausgeblendet)");
 });
 
 test("@teilnehmer @uebungsleitung teilnehmer status reaches the uebungsleitung live", async ({ context }) => {

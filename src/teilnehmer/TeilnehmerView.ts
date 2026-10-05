@@ -3,40 +3,54 @@ import { TeilnehmerStorage } from "../types/Storage";
 import { Nachricht } from "../types/Nachricht";
 import type { LiveSyncState } from "../types/LiveStatus";
 import { formatCountdown } from "../utils/xzeit";
-import { joinFormHtml, kopfHtml } from "./kopfMarkup";
-import {
-    filtereNachrichten,
-    naechsteFaelligkeitMs,
-    nachrichtZeileHtml,
-    xZeitBadgeClass,
-    xZeitBadgeLabel
-} from "./nachrichtenMarkup";
+import { CODE_ZEICHEN_HINWEIS, joinFormHtml, kopfHtml } from "./kopfMarkup";
+import { xZeitBadgeClass, xZeitBadgeLabel } from "./nachrichtenMarkup";
 import { buildFokusZustand, fokusSignatur, renderFokusHtml } from "./fokusKarte";
 import { setzeVordruckStatus, togglePdfModal, VordruckVorschau } from "./vordruckVorschau";
-import { bindTeilnehmerEvents, type DocMode, type TeilnehmerEventHandler } from "./teilnehmerEvents";
+import { bindTeilnehmerEvents, type DocMode, type StatusAktion, type TeilnehmerEventHandler } from "./teilnehmerEvents";
 import {
-    ABGANG_MS,
-    LIVE_SYNC_LABELS,
+    GEGENAKTION_SPERRE_MS,
+    KONTEXT_SPERRE_MS,
     RESET_TEXTE,
     STATUS_SPERRE_MS,
     setzeChecked,
     setzeSichtbar,
-    suchtext,
-    zeilenKontext,
-    type NachrichtenOptionen
+    syncAnzeige,
+    type NachrichtenOptionen,
+    type ZustellInfo
 } from "./ansichtHelfer";
-import { sanitizeCode } from "./teilnehmerFormat";
+import { formatUhrzeit, sanitizeCode } from "./teilnehmerFormat";
 import { RueckgaengigHinweis } from "./rueckgaengigHinweis";
+import { TeilnehmerListe } from "./listenAnsicht";
+import { bindeCodeSprung, rueckstandText, syncLeistenText } from "./ansichtTexte";
 
 export { teilnehmerTitel } from "./teilnehmerFormat";
 export { RUECKGAENGIG_MS, STATUS_SPERRE_MS, type NachrichtenOptionen } from "./ansichtHelfer";
 export type { DocMode, TeilnehmerEventHandler } from "./teilnehmerEvents";
+
+/**
+ * Ziel fürs Scrollen nach dem Laden: die Fokus-Karte, sonst der nächste
+ * offene Spruch – außer er ist ohnehin der erste der Liste.
+ */
+function scrollZiel(): HTMLElement | null {
+    const fokus = document.getElementById("teilnehmerFokusCard");
+    if (fokus && !fokus.classList.contains("d-none")) {
+        return fokus.querySelector("[data-fokus-uebertragen]") ? fokus : null;
+    }
+    const zeile = document.querySelector<HTMLElement>("#teilnehmerNachrichtenBody tr.ist-naechster");
+    if (!zeile || zeile === zeile.parentElement?.firstElementChild) {
+        return null;
+    }
+    return zeile;
+}
 
 export class TeilnehmerView {
     /** Merker, um die Fokus-Karte nur bei Zustandswechseln neu zu rendern. */
     private lastFokusSignature = "";
     /** Zeitpunkt des letzten Statuswechsels je Nachricht (Tippsperre). */
     private letzteAenderung = new Map<number, number>();
+    private readonly liste = new TeilnehmerListe();
+    private fokusSperrTimer: ReturnType<typeof setTimeout> | null = null;
     /**
      * Zeitpunkt des letzten Statuswechsels überhaupt. Fokus-Karte und
      * Vordruck wechseln danach auf den nächsten Spruch — ein zweiter Tipp
@@ -46,15 +60,25 @@ export class TeilnehmerView {
     private readonly rueckgaengig = new RueckgaengigHinweis();
     private readonly vorschau = new VordruckVorschau();
 
-    /** true, wenn für diese Nachricht gerade die Tippsperre läuft. */
-    public istGesperrt(id: number, jetzt = Date.now()): boolean {
+    /**
+     * true, wenn für diese Nachricht gerade die Tippsperre läuft. Die
+     * Gegenaktion „Zurücknehmen“ ist länger gesperrt als ein erneutes
+     * Absetzen: ein träger zweiter Tipp soll nie zurücknehmen.
+     */
+    public istGesperrt(id: number, jetzt = Date.now(), aktion: StatusAktion = "absetzen"): boolean {
         const zuletzt = this.letzteAenderung.get(id);
-        return zuletzt !== undefined && jetzt - zuletzt < STATUS_SPERRE_MS;
+        const dauer = aktion === "zuruecknehmen" ? GEGENAKTION_SPERRE_MS : STATUS_SPERRE_MS;
+        return zuletzt !== undefined && jetzt - zuletzt < dauer;
     }
 
     /** true, solange nach irgendeinem Statuswechsel die Kontextsperre läuft. */
     public istKontextGesperrt(jetzt = Date.now()): boolean {
-        return jetzt - this.letzteKontextAenderung < STATUS_SPERRE_MS;
+        return jetzt - this.letzteKontextAenderung < KONTEXT_SPERRE_MS;
+    }
+
+    /** true, solange die Liste nach dem Abgang einer Zeile gesperrt ist. */
+    public istListeGesperrt(jetzt = Date.now()): boolean {
+        return this.liste.istGesperrt(jetzt);
     }
 
     /**
@@ -89,8 +113,31 @@ export class TeilnehmerView {
      */
     public renderZugangsFehler(meldung: string, uebungCode = "", teilnehmerCode = ""): void {
         this.renderJoinForm(uebungCode, teilnehmerCode,
-            "Prüfe die Codes und öffne den Zugang neu. Die Ziffer 0 und der Buchstabe O sowie 1 und I werden leicht verwechselt. Klappt es nicht, frag die Übungsleitung nach deinen Codes.");
+            `Prüfe die Codes und öffne den Zugang neu. ${CODE_ZEICHEN_HINWEIS} Klappt es nicht, frag die Übungsleitung nach deinen Codes.`);
         this.showJoinError(meldung);
+    }
+
+    /**
+     * Die Übung ließ sich nicht laden, weil die Verbindung fehlt. Dann liegt
+     * es nicht an den Codes – kein Code-Formular, sondern ein Hinweis auf die
+     * gespeicherten Markierungen und die Papierunterlagen (offline P1-2,
+     * 2026-10-05). Die Codes lassen sich trotzdem neu eingeben.
+     */
+    public renderVerbindungsFehler(onErneut: () => void): void {
+        const container = document.getElementById("teilnehmerContent");
+        if (!container) {
+            return;
+        }
+        container.innerHTML = `
+            <div class="card mb-4 teilnehmer-verbindungsfehler" data-testid="teilnehmer-verbindungsfehler">
+                <div class="card-body">
+                    <h3 class="h5">Keine Verbindung – die Übung kann gerade nicht geladen werden</h3>
+                    <p>Deine Codes sind in Ordnung. Es fehlt die Internetverbindung.</p>
+                    <p>Deine Markierungen sind auf diesem Gerät gespeichert. Arbeite mit den ausgedruckten Vordrucken weiter, bis wieder Netz da ist.</p>
+                    <button type="button" class="btn btn-primary btn-lg teilnehmer-zugang-knopf" id="btn-teilnehmer-erneut">Erneut versuchen</button>
+                </div>
+            </div>`;
+        document.getElementById("btn-teilnehmer-erneut")?.addEventListener("click", onErneut);
     }
 
     public bindJoinForm(onSubmit: (uebungCode: string, teilnehmerCode: string) => void): void {
@@ -106,6 +153,7 @@ export class TeilnehmerView {
                 input.value = sanitizeCode(input.value);
             });
         }
+        bindeCodeSprung(uebungInput, teilnehmerInput);
 
         form.addEventListener("submit", event => {
             event.preventDefault();
@@ -141,15 +189,20 @@ export class TeilnehmerView {
      * Aktualisiert die Sync-Anzeige im Kopfbereich.
      * Zeigt an, ob der Status gerade wirklich bei der Übungsleitung ankommt.
      */
-    public updateLiveSyncState(state: LiveSyncState): void {
+    public updateLiveSyncState(state: LiveSyncState, info: ZustellInfo = { offen: 0, bestaetigtUm: "" }): void {
         const badge = document.getElementById("teilnehmerLiveSyncBadge");
-        if (!badge) {
-            return;
+        if (badge) {
+            const label = syncAnzeige(state, info);
+            badge.className = `badge ${label.css}`;
+            badge.textContent = label.text;
+            badge.setAttribute("title", label.title);
         }
-        const label = LIVE_SYNC_LABELS[state];
-        badge.className = `badge ${label.css}`;
-        badge.textContent = label.text;
-        badge.setAttribute("title", label.title);
+        const leiste = document.getElementById("teilnehmerSyncLeiste");
+        if (leiste) {
+            const text = syncLeistenText(state, info);
+            leiste.hidden = !text;
+            leiste.textContent = text;
+        }
     }
 
     /**
@@ -183,59 +236,32 @@ export class TeilnehmerView {
     }
 
     public renderNachrichten(nachrichten: Nachricht[], storage: TeilnehmerStorage, optionen: NachrichtenOptionen = {}) {
-        const tbody = document.getElementById("teilnehmerNachrichtenBody");
-        if (!tbody) {
+        if (!document.getElementById("teilnehmerNachrichtenBody")) {
             return;
         }
-        this.syncAusblendSchalter(nachrichten, storage);
-
-        const ctx = zeilenKontext(nachrichten, storage, optionen);
-        const showXZeit = ctx.showXZeit;
-        const rows = filtereNachrichten(nachrichten, ctx, suchtext()).map(n => nachrichtZeileHtml(n, ctx)).join("");
-
-        const colspan = showXZeit ? "6" : "5";
-        const leerZeile = `<tr><td colspan="${colspan}" class="text-center text-muted">Keine Nachrichten vorhanden.</td></tr>`;
-        tbody.innerHTML = rows || leerZeile;
-
-        this.raeumeAbgangsZeile(tbody, leerZeile);
-        this.renderFokusBereich(nachrichten, storage, showXZeit, optionen.xZeitBasis);
+        this.liste.render(nachrichten, storage, optionen);
+        this.renderFokusBereich(nachrichten, storage, optionen.showXZeit ?? false, optionen.xZeitBasis);
     }
 
-    /** Hält beide „Abgesetzte ausblenden“-Schalter und den Zähler synchron zum Speicher. */
-    private syncAusblendSchalter(nachrichten: Nachricht[], storage: TeilnehmerStorage): void {
-        setzeChecked("toggle-hide-transmitted", storage.hideTransmitted);
-        setzeChecked("toggle-hide-transmitted-modal", storage.hideTransmitted);
-
-        const ausgeblendetHinweis = document.getElementById("teilnehmerAusgeblendet");
-        if (ausgeblendetHinweis) {
-            const anzahl = storage.hideTransmitted
-                ? nachrichten.filter(n => storage.nachrichten[n.id]?.uebertragen).length
-                : 0;
-            ausgeblendetHinweis.textContent = anzahl > 0 ? `(${anzahl} ausgeblendet)` : "";
-        }
+    /** Abgesetzte, die trotz „ausblenden“ gerade noch stehen. */
+    public gehalteneIds(): number[] {
+        return this.liste.gehalteneIds();
     }
 
     /**
-     * Entfernt die abgehende Zeile, nachdem der Absetzstrich durch war. Der
-     * Timer ist die Quelle der Wahrheit, nicht das animationend-Ereignis: bei
-     * prefers-reduced-motion läuft keine Animation, die Zeile muss trotzdem
-     * verschwinden.
+     * Nach dem Laden zum nächsten offenen Spruch scrollen, wenn er unter der
+     * Falz liegt (field-user P2, 2026-10-05). Der erste Spruch braucht das nicht.
      */
-    private raeumeAbgangsZeile(tbody: HTMLElement, leerZeile: string): void {
-        const zeile = tbody.querySelector<HTMLElement>("tr[data-abgang]");
-        if (!zeile) {
+    public scrolleZumNaechsten(): void {
+        const ziel = scrollZiel();
+        if (!ziel || typeof ziel.scrollIntoView !== "function") {
             return;
         }
-        globalThis.setTimeout(() => {
-            if (!zeile.isConnected) {
-                return;
-            }
-            const eigenesTbody = zeile.parentElement;
-            zeile.remove();
-            if (eigenesTbody && eigenesTbody.children.length === 0) {
-                eigenesTbody.innerHTML = leerZeile;
-            }
-        }, ABGANG_MS);
+        const hoehe = window.innerHeight || 0;
+        if (hoehe > 0 && ziel.getBoundingClientRect().bottom <= hoehe) {
+            return;
+        }
+        ziel.scrollIntoView({ block: "center" });
     }
 
     /**
@@ -282,11 +308,27 @@ export class TeilnehmerView {
             card.innerHTML = renderFokusHtml(zustand);
             this.lastFokusSignature = signature;
         }
+        this.zeigeFokusSperre(card);
         if (zustand.kind === "warten") {
             const countdown = document.getElementById("fokusCountdown");
             if (countdown) {
                 countdown.textContent = formatCountdown(zustand.countdownMs);
             }
+        }
+    }
+
+    /**
+     * Während der Kontextsperre ist der Knopf der Fokus-Karte sichtbar
+     * gesperrt: ein Tipp darauf bewirkt nichts, und das soll man sehen.
+     */
+    private zeigeFokusSperre(card: HTMLElement): void {
+        const rest = KONTEXT_SPERRE_MS - (Date.now() - this.letzteKontextAenderung);
+        card.classList.toggle("ist-gesperrt", rest > 0);
+        if (rest > 0 && this.fokusSperrTimer === null) {
+            this.fokusSperrTimer = globalThis.setTimeout(() => {
+                this.fokusSperrTimer = null;
+                card.classList.remove("ist-gesperrt");
+            }, rest);
         }
     }
 
@@ -315,6 +357,7 @@ export class TeilnehmerView {
                 return;
             }
             this.merkeAenderung(id);
+            this.zeigeFokusSperre(e.currentTarget as HTMLElement);
             if (btn) {
                 onUebertragen(id);
             } else {
@@ -328,7 +371,8 @@ export class TeilnehmerView {
             return;
         }
         bindTeilnehmerEvents(handler, {
-            istGesperrt: id => this.istGesperrt(id),
+            istGesperrt: (id, aktion) => this.istGesperrt(id, Date.now(), aktion),
+            istListeGesperrt: () => this.istListeGesperrt(),
             istKontextGesperrt: () => this.istKontextGesperrt(),
             merkeAenderung: (id, kontext) => this.merkeAenderung(id, kontext),
             merkeKontextAenderung: () => this.merkeKontextAenderung()
@@ -355,14 +399,19 @@ export class TeilnehmerView {
      * Knopf wechselt zwischen „Als abgesetzt markieren“ und „Zurücknehmen“;
      * ein Doppeltipp ist durch die Kontextsperre in bindEvents abgefangen.
      */
-    public setDocTransmitted(isTransmitted: boolean, vorhanden = true) {
-        setzeVordruckStatus(isTransmitted, vorhanden);
+    public setDocTransmitted(isTransmitted: boolean, vorhanden = true, uebertragenUm?: string) {
+        setzeVordruckStatus(isTransmitted, vorhanden, formatUhrzeit(uebertragenUm));
     }
 
     public setXZeitBasisInputValue(value: string): void {
         const input = document.getElementById("xZeitBasisInput") as HTMLInputElement | null;
         if (input) {
             input.value = value;
+        }
+        // Läuft die X-Zeit schon, ist „Jetzt starten“ ein Neustart.
+        const jetzt = document.getElementById("btn-xzeit-jetzt");
+        if (jetzt) {
+            jetzt.textContent = value ? "Neu starten" : "Jetzt starten";
         }
     }
 
@@ -379,10 +428,9 @@ export class TeilnehmerView {
     public updateXZeitCountdown(nachrichten: Nachricht[], storage: TeilnehmerStorage, xZeitBasis: string): void {
         const countdown = document.getElementById("xZeitCountdown");
         if (countdown) {
-            const next = naechsteFaelligkeitMs(nachrichten, storage, xZeitBasis);
-            countdown.textContent = next !== null
-                ? `Nächste in ${formatCountdown(next)}`
-                : "Keine ausstehenden Nachrichten";
+            const text = rueckstandText(nachrichten, storage, xZeitBasis);
+            countdown.textContent = text.text;
+            countdown.classList.toggle("ist-rueckstand", text.rueckstand);
         }
 
         this.updateFokusCard(nachrichten, storage, xZeitBasis);

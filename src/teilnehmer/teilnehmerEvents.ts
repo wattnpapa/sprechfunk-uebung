@@ -14,16 +14,18 @@ export interface TeilnehmerEventHandler {
     onSearch: () => void;
 }
 
+/** Aktion, die eine Statusschaltfläche auslöst. */
+export type StatusAktion = "absetzen" | "zuruecknehmen";
+
 /** Tippsperre der Ansicht gegen Doppeltipps (siehe TeilnehmerView). */
 export interface Tippsperre {
-    istGesperrt: (id: number) => boolean;
+    istGesperrt: (id: number, aktion: StatusAktion) => boolean;
+    /** Liste kurz nach dem Abgang einer ausgeblendeten Zeile. */
+    istListeGesperrt: () => boolean;
     istKontextGesperrt: () => boolean;
     merkeAenderung: (id: number, kontext: boolean) => void;
     merkeKontextAenderung: () => void;
 }
-
-/** Aktion, die eine Statusschaltfläche auslöst. */
-type StatusAktion = "absetzen" | "zuruecknehmen";
 
 // Eingabetypen, bei denen Tastendrücke keine Texteingabe sind (Space toggelt dort z. B. nur).
 const NON_TEXT_INPUT_TYPES = new Set([
@@ -112,7 +114,10 @@ function bindTastenkuerzel(handler: TeilnehmerEventHandler, sperre: Tippsperre):
 /**
  * Delegation für die Zeilen: „absetzen“ und „zurücknehmen“ sind zwei
  * getrennte Knöpfe. Nach einem Wechsel ist die Nachricht kurz gesperrt,
- * damit ein Doppeltipp den Wechsel nicht still wieder aufhebt.
+ * damit ein Doppeltipp den Wechsel nicht still wieder aufhebt; das
+ * Zurücknehmen länger als das Absetzen. Geht bei „ausblenden“ eine Zeile
+ * ab, ist die ganze Liste kurz gesperrt, denn der nächste Spruch rückt an
+ * ihre Stelle.
  */
 function bindZeilenAktionen(handler: TeilnehmerEventHandler, sperre: Tippsperre): void {
     const tbody = document.getElementById("teilnehmerNachrichtenBody");
@@ -126,7 +131,7 @@ function bindZeilenAktionen(handler: TeilnehmerEventHandler, sperre: Tippsperre)
         if (!Number.isFinite(id) || (aktion !== "absetzen" && aktion !== "zuruecknehmen")) {
             return;
         }
-        if (sperre.istGesperrt(id)) {
+        if (sperre.istListeGesperrt() || sperre.istGesperrt(id, aktion)) {
             return;
         }
         sperre.merkeAenderung(id, false);
@@ -165,6 +170,11 @@ function bindVordruckFenster(handler: TeilnehmerEventHandler, sperre: Tippsperre
     // Wechsel kann der Vordruck auf den nächsten Spruch springen (bei
     // „Abgesetzte ausblenden“) — daher die Kontextsperre.
     document.getElementById("btn-doc-absetzen")?.addEventListener("click", () => {
+        toggleAktuellenVordruck(handler, sperre);
+    });
+    // Klein und in der Statuszeile: nimmt den angezeigten, schon
+    // abgesetzten Spruch zurück.
+    document.getElementById("btn-doc-zuruecknehmen")?.addEventListener("click", () => {
         toggleAktuellenVordruck(handler, sperre);
     });
 }

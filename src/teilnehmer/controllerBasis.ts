@@ -12,6 +12,7 @@ import { LiveStatusService } from "../services/LiveStatusService";
 import { toTeilnehmerLiveDoc } from "../services/liveStatusMerge";
 import type { LeitungBestaetigung } from "../types/LiveStatus";
 import type { DocMode } from "./teilnehmerEvents";
+import type { ZustellVerfolgung } from "./zustellung";
 
 /**
  * Zustand und gemeinsame Helfer des Teilnehmer-Controllers. Die Steuerung
@@ -53,6 +54,14 @@ export abstract class TeilnehmerControllerBasis {
     /** Verbindliche X-Zeit-Basis der Übungsleitung, sobald sie eine gesetzt hat. */
     protected leitungXZeitBasis: string | null = null;
     protected disposeListener: (() => void) | null = null;
+    /** Welche Sprüche nur auf diesem Gerät geändert sind (nur mit Live-Sync). */
+    protected zustellung: ZustellVerfolgung | null = null;
+    /**
+     * Im Vordruck bei „ausblenden“: eben abgesetzte Sprüche bleiben sichtbar,
+     * bis weitergeblättert wird. Sonst rückte der nächste Spruch mit seinem
+     * Abhak-Knopf an dieselbe Stelle.
+     */
+    protected vordruckGehalten = new Set<number>();
 
     constructor(db: Firestore) {
         this.view = new TeilnehmerView();
@@ -81,7 +90,9 @@ export abstract class TeilnehmerControllerBasis {
             showXZeit: this.uebung.spielModus === "xZeit",
             ...(this.storage.xZeitBasis ? { xZeitBasis: this.storage.xZeitBasis } : {}),
             bestaetigungen: this.getEigeneBestaetigungen(),
-            ...(zuletztAbgesetzt !== null ? { zuletztAbgesetzt } : {})
+            ...(zuletztAbgesetzt !== null ? { zuletztAbgesetzt } : {}),
+            ...(this.zustellung ? { nurLokal: this.zustellung.nurLokal } : {}),
+            syncZustand: this.liveStatus?.enabled ? this.liveStatus.getState() : "aus"
         });
     }
 
@@ -137,6 +148,7 @@ export abstract class TeilnehmerControllerBasis {
             ? { uebertragen: true, uebertragenUm: now, geaendertUm: now }
             : { uebertragen: false, geaendertUm: now };
         saveTeilnehmerStorage(this.storage);
+        this.zustellung?.merke(id);
         this.publishStatus();
     }
 
@@ -148,7 +160,7 @@ export abstract class TeilnehmerControllerBasis {
         if (!this.storage.hideTransmitted) {
             return all;
         }
-        return all.filter(n => !this.storage?.nachrichten[n.id]?.uebertragen);
+        return all.filter(n => !this.storage?.nachrichten[n.id]?.uebertragen || this.vordruckGehalten.has(n.id));
     }
 
     protected getDocTotalPages(): number {

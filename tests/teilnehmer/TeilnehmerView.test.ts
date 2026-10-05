@@ -1,6 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { JSDOM } from "jsdom";
 import { TeilnehmerView, type TeilnehmerEventHandler } from "../../src/teilnehmer/TeilnehmerView";
+import { HALTEN_MS } from "../../src/teilnehmer/ansichtHelfer";
 
 /** Alle Rückrufe als vi.fn(), einzelne überschreibbar. */
 const handler = (eigene: Partial<TeilnehmerEventHandler> = {}): TeilnehmerEventHandler => ({
@@ -343,16 +344,16 @@ describe("TeilnehmerView", () => {
         expect(badge?.className).toContain("bg-success");
 
         view.updateLiveSyncState("offline");
-        expect(badge?.textContent).toContain("offline – wird nachgereicht");
+        expect(badge?.textContent).toContain("Keine Verbindung – wird nachgereicht");
 
         view.updateLiveSyncState("fehler");
         expect(badge?.textContent).toContain("wird nicht gesendet");
 
         view.updateLiveSyncState("verbinde");
-        expect(badge?.textContent).toContain("verbinde");
+        expect(badge?.textContent).toContain("Verbinde");
 
         view.updateLiveSyncState("aus");
-        expect(badge?.textContent).toContain("aus");
+        expect(badge?.textContent).toContain("Nur auf diesem Gerät");
 
         badge?.remove();
         expect(() => view.updateLiveSyncState("live")).not.toThrow();
@@ -398,26 +399,62 @@ describe("TeilnehmerView", () => {
             expect(document.getElementById("teilnehmerNachrichtenBody")?.innerHTML).not.toContain("ist-abgesetzt");
         });
 
-        it("keeps the transmitted row visible while hiding is active, then removes it", () => {
+        it("keeps the transmitted row for the hold time while hiding is active, then removes it", () => {
             vi.useFakeTimers();
             try {
                 const view = renderBase();
-                view.renderNachrichten(
-                    [
-                        { id: 1, empfaenger: ["B"], nachricht: "eins" },
-                        { id: 2, empfaenger: ["C"], nachricht: "zwei" }
-                    ],
-                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                    { hideTransmitted: true, nachrichten: { 2: { uebertragen: true } } } as any,
-                    { zuletztAbgesetzt: 2 }
-                );
+                const liste = [
+                    { id: 1, empfaenger: ["B"], nachricht: "eins" },
+                    { id: 2, empfaenger: ["C"], nachricht: "zwei" }
+                ];
+                const storage = { hideTransmitted: true, nachrichten: { 2: { uebertragen: true } } };
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                view.renderNachrichten(liste, storage as any, { zuletztAbgesetzt: 2 });
                 const tbody = document.getElementById("teilnehmerNachrichtenBody") as HTMLElement;
                 expect(tbody.querySelectorAll("tr")).toHaveLength(2);
-                expect(tbody.querySelector("tr[data-abgang]")?.className).toContain("ist-abgang");
+                expect(tbody.querySelector("tr[data-abgang]")).toBeNull();
 
+                // Der Live-Sync zeichnet zwischendurch neu – die Karte bleibt.
                 vi.advanceTimersByTime(1000);
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                view.renderNachrichten(liste, storage as any);
+                expect(tbody.querySelectorAll("tr")).toHaveLength(2);
+                expect(view.gehalteneIds()).toEqual([2]);
+
+                // Nach der Haltezeit geht sie ab, die Liste ist kurz gesperrt.
+                vi.advanceTimersByTime(HALTEN_MS - 1000);
+                expect(tbody.querySelector("tr[data-abgang]")?.className).toContain("ist-abgang");
+                expect(view.istListeGesperrt()).toBe(true);
+                expect(tbody.classList.contains("ist-gesperrt")).toBe(true);
+
+                vi.advanceTimersByTime(700);
                 expect(tbody.querySelectorAll("tr")).toHaveLength(1);
                 expect(tbody.textContent).toContain("eins");
+
+                vi.advanceTimersByTime(2000);
+                expect(view.istListeGesperrt()).toBe(false);
+                expect(tbody.classList.contains("ist-gesperrt")).toBe(false);
+            } finally {
+                vi.useRealTimers();
+            }
+        });
+
+        it("holds nothing when the transmission is taken back or hiding is off", () => {
+            vi.useFakeTimers();
+            try {
+                const view = renderBase();
+                const liste = [{ id: 1, empfaenger: ["B"], nachricht: "eins" }];
+                const storage = { hideTransmitted: true, nachrichten: { 1: { uebertragen: true } } as Record<string, { uebertragen: boolean }> };
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                view.renderNachrichten(liste, storage as any, { zuletztAbgesetzt: 1 });
+                storage.nachrichten["1"] = { uebertragen: false };
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                view.renderNachrichten(liste, storage as any);
+                expect(view.gehalteneIds()).toEqual([]);
+
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                view.renderNachrichten(liste, { hideTransmitted: false, nachrichten: { 1: { uebertragen: true } } } as any, { zuletztAbgesetzt: 1 });
+                expect(view.gehalteneIds()).toEqual([]);
             } finally {
                 vi.useRealTimers();
             }
@@ -436,7 +473,7 @@ describe("TeilnehmerView", () => {
                 const tbody = document.getElementById("teilnehmerNachrichtenBody") as HTMLElement;
                 expect(tbody.querySelectorAll("tr")).toHaveLength(1);
 
-                vi.advanceTimersByTime(1000);
+                vi.advanceTimersByTime(HALTEN_MS + 700);
                 expect(tbody.textContent).toContain("Keine Nachrichten vorhanden");
             } finally {
                 vi.useRealTimers();
@@ -524,11 +561,41 @@ describe("TeilnehmerView – Fokus-Modus", () => {
         expect(document.getElementById("teilnehmerFokusCard")?.textContent).toContain("Alle Meldungen abgesetzt");
     });
 
-    it("bittet ohne Basis um den X-Zeit-Start", () => {
+    it("wartet ohne Basis auf die Übungsleitung und nennt den ersten Spruch ohne Text", () => {
         const view = renderXZeit();
         renderMitStorage(view, {});
 
-        expect(document.getElementById("teilnehmerFokusCard")?.textContent).toContain("Starte oben die X-Zeit");
+        const card = document.getElementById("teilnehmerFokusCard");
+        expect(card?.textContent).toContain("die Übungsleitung setzt sie");
+        expect(card?.textContent).not.toContain("Jetzt starten");
+        expect(card?.textContent).toContain("Dein erster Spruch: Nr. 1 an Bravo");
+        expect(card?.textContent).not.toContain("Erste");
+        expect(card?.querySelector("[data-fokus-uebertragen]")).toBeNull();
+    });
+
+    it("zeigt den Rückstand in eigener Warnfarbe statt text-warning-emphasis", () => {
+        const view = renderXZeit();
+        // Basis 11:00, jetzt 12:00: Meldung 1 (X+0) seit 60 min, Meldung 2 (X+30) seit 30 min fällig.
+        renderMitStorage(view, {}, "11:00");
+        const card = document.getElementById("teilnehmerFokusCard") as HTMLElement;
+        const rueckstand = card.querySelector(".teilnehmer-fokus-rueckstand");
+        expect(rueckstand?.textContent).toContain("1 weitere Meldung fällig");
+        expect(rueckstand?.textContent).toContain("seit 60 min");
+        expect(card.innerHTML).not.toContain("text-warning-emphasis");
+        // Der Aktionsknopf ist neutral: kein Haken, kein Grün (night-visibility Befund 4).
+        const knopf = card.querySelector("[data-fokus-uebertragen]") as HTMLElement;
+        expect(knopf.textContent).not.toContain("✓");
+        expect(knopf.className).not.toContain("btn-success");
+    });
+
+    it("stellt in der X-Zeit-Zeile den Rückstand vor den Countdown", () => {
+        const view = renderXZeit();
+        renderMitStorage(view, {}, "11:00");
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        view.updateXZeitCountdown(nachrichten, { hideTransmitted: false, nachrichten: {} } as any, "11:50");
+        const countdown = document.getElementById("xZeitCountdown") as HTMLElement;
+        expect(countdown.textContent).toBe("1 fällig, älteste seit 10 min · Nächste in 20:00");
+        expect(countdown.classList.contains("ist-rueckstand")).toBe(true);
     });
 
     it("lässt die Tabelle sichtbar, wenn der Fokus-Modus aus ist", () => {
@@ -591,10 +658,14 @@ describe("TeilnehmerView – Fokus-Modus", () => {
 
         // Doppeltipp: der zweite Tipp landet auf der nachrückenden Meldung und wird ignoriert.
         (card.querySelector("[data-fokus-uebertragen='3']") as HTMLButtonElement).click();
+        expect(card.classList.contains("ist-gesperrt")).toBe(true);
+        // Auch ein träger zweiter Tipp nach 1,3 s (stress-test 2026-10-05).
+        vi.advanceTimersByTime(1300);
         (card.querySelector("[data-fokus-uebertragen='3']") as HTMLButtonElement).click();
         expect(onUebertragen).toHaveBeenCalledTimes(1);
 
-        vi.advanceTimersByTime(1100);
+        vi.advanceTimersByTime(300);
+        expect(card.classList.contains("ist-gesperrt")).toBe(false);
         (card.querySelector("[data-fokus-zuruecknehmen='1']") as HTMLButtonElement).click();
         expect(onZurueck).toHaveBeenCalledWith(1);
     });
@@ -652,6 +723,48 @@ describe("TeilnehmerView – Bedienung am Handy (THW-Review 2026-10-04)", () => 
         expect(zeile.querySelector("[data-aktion='absetzen']")).toBeNull();
         expect(zeile.querySelector("[data-aktion='zuruecknehmen']")).not.toBeNull();
         expect(zeile.textContent).not.toMatch(/übertragen/i);
+        // An der Stelle des Knopfs: ein Statusfeld ohne Funktion, Zurücknehmen darunter.
+        const zelle = zeile.querySelector(".teilnehmer-zelle-status") as HTMLElement;
+        const kinder = Array.from(zelle.children).map(k => k.className);
+        expect(kinder[1]).toContain("teilnehmer-abgesetzt-feld");
+        expect(kinder[2]).toContain("teilnehmer-zuruecknehmen-zeile");
+        expect(zelle.querySelector(".teilnehmer-abgesetzt-feld")?.hasAttribute("data-aktion")).toBe(false);
+    });
+
+    it("zeigt an jeder Karte, ob die Markierung nur auf diesem Gerät liegt", () => {
+        const view = new TeilnehmerView();
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        view.renderHeader({ name: "Ü", datum: new Date(), rufgruppe: "RG", leitung: "L" } as any, "Alpha");
+        const liste = [
+            { id: 1, empfaenger: ["B"], nachricht: "eins" },
+            { id: 2, empfaenger: ["C"], nachricht: "zwei" },
+            { id: 3, empfaenger: ["D"], nachricht: "drei" }
+        ];
+        const storage = { hideTransmitted: false, nachrichten: { 1: { uebertragen: true }, 2: { uebertragen: true }, 3: { uebertragen: false } } };
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        view.renderNachrichten(liste, storage as any, {
+            nurLokal: new Set([2, 3]),
+            syncZustand: "offline",
+            bestaetigungen: { 1: { abgesetztUm: new Date(2026, 9, 4, 18, 50).toISOString() } }
+        });
+        const felder = document.querySelectorAll(".teilnehmer-abgesetzt-feld");
+        expect(felder[0]?.textContent).toContain("Leitung hat bestätigt 18:50");
+        expect(felder[1]?.textContent).toContain("Nur auf diesem Gerät");
+        expect(felder[1]?.className).toContain("ist-lokal");
+        expect(document.querySelectorAll("#teilnehmerNachrichtenBody tr")[2]?.textContent).toContain("Rücknahme nur auf diesem Gerät");
+
+        // Mit Verbindung: unterwegs bzw. angekommen, keine Warnung.
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        view.renderNachrichten(liste, storage as any, { nurLokal: new Set([2]), syncZustand: "live" });
+        const live = document.querySelectorAll(".teilnehmer-abgesetzt-feld");
+        expect(live[0]?.textContent).toContain("An die Übungsleitung gesendet");
+        expect(live[1]?.textContent).toContain("Wird an die Übungsleitung gesendet");
+        expect(live[1]?.className).not.toContain("ist-lokal");
+
+        // Ohne Live-Sync bleibt alles auf dem Gerät – ohne Warnfarbe.
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        view.renderNachrichten(liste, storage as any);
+        expect(document.querySelector(".teilnehmer-abgesetzt-feld")?.textContent).toContain("Auf diesem Gerät gespeichert");
     });
 
     it("ein Doppeltipp nimmt eine Markierung nicht still zurück", () => {
@@ -669,8 +782,13 @@ describe("TeilnehmerView – Bedienung am Handy (THW-Review 2026-10-04)", () => 
         (document.querySelector("[data-aktion='zuruecknehmen'][data-id='2']") as HTMLButtonElement).click();
         expect(cb.onToggle).toHaveBeenCalledTimes(1);
 
+        // Auch ein träger zweiter Tipp nach 1,3 s nimmt nicht zurück (stress-test P2-1).
+        vi.advanceTimersByTime(1100);
+        (document.querySelector("[data-aktion='zuruecknehmen'][data-id='2']") as HTMLButtonElement).click();
+        expect(cb.onToggle).toHaveBeenCalledTimes(1);
+
         // Eine bewusste Korrektur nach der Sperre geht.
-        vi.advanceTimersByTime(1000);
+        vi.advanceTimersByTime(1300);
         (document.querySelector("[data-aktion='zuruecknehmen'][data-id='2']") as HTMLButtonElement).click();
         expect(cb.onToggle).toHaveBeenLastCalledWith(2, false);
     });
@@ -719,7 +837,7 @@ describe("TeilnehmerView – Bedienung am Handy (THW-Review 2026-10-04)", () => 
         expect(document.getElementById("teilnehmerResetLabel")?.textContent).not.toContain("Lokale");
     });
 
-    it("Rückgängig-Hinweis: Doppeltipp-sicher, nach Ablauf verschwunden", () => {
+    it("Rückgängig-Hinweis: wirkt sofort, nach Ablauf verschwunden", () => {
         const { view } = renderMit({});
         const undo = vi.fn();
         view.zeigeRueckgaengig("Spruch 2 als abgesetzt markiert.", undo);
@@ -728,10 +846,9 @@ describe("TeilnehmerView – Bedienung am Handy (THW-Review 2026-10-04)", () => 
         expect(box.hidden).toBe(false);
         expect(box.textContent).toContain("Spruch 2");
 
-        knopf.click();
-        expect(undo).not.toHaveBeenCalled();
-
-        vi.advanceTimersByTime(1200);
+        // Kein Sperrfenster mehr: die Leiste taucht nie unter dem Finger auf
+        // (error-recovery P3-1, 2026-10-05).
+        vi.advanceTimersByTime(300);
         knopf.click();
         expect(undo).toHaveBeenCalledTimes(1);
         expect(box.hidden).toBe(true);
@@ -744,27 +861,85 @@ describe("TeilnehmerView – Bedienung am Handy (THW-Review 2026-10-04)", () => 
     it("Vordruck: Touch-Knopf zum Abhaken mit Zustand und Sperre gegen Doppeltipp", () => {
         const { view, cb } = renderMit({});
         const knopf = document.getElementById("btn-doc-absetzen") as HTMLButtonElement;
+        const erledigt = document.getElementById("teilnehmerDocErledigt") as HTMLElement;
+        const zurueck = document.getElementById("btn-doc-zuruecknehmen") as HTMLButtonElement;
         view.setDocTransmitted(false);
         expect(knopf.textContent).toContain("Als abgesetzt markieren");
+        expect(knopf.textContent).not.toContain("✓");
         expect(document.getElementById("teilnehmerDocStatus")?.textContent).toBe("offen");
+        expect(erledigt.hidden).toBe(true);
+        expect(zurueck.hidden).toBe(true);
 
         knopf.click();
         knopf.click();
         expect(cb.onDocToggle).toHaveBeenCalledTimes(1);
 
-        view.setDocTransmitted(true);
-        expect(knopf.textContent).toContain("Zurücknehmen");
+        // Abgesetzt: in der Mitte ein Statusfeld ohne Funktion, Zurücknehmen klein
+        // in der Statuszeile, „Weiter“ wird Hauptknopf (glove-touch P2-1).
+        view.setDocTransmitted(true, true, new Date(2026, 9, 4, 18, 55).toISOString());
+        expect(knopf.hidden).toBe(true);
+        expect(erledigt.hidden).toBe(false);
+        expect(erledigt.textContent).toBe("✓ abgesetzt 18:55");
+        expect(zurueck.hidden).toBe(false);
+        expect(document.getElementById("btn-doc-next")?.className).toContain("btn-primary");
         expect(document.getElementById("teilnehmerDocStatus")?.textContent).toContain("abgesetzt");
+
+        // Auch Zurücknehmen unterliegt der Sperre, danach wirkt es.
+        zurueck.click();
+        expect(cb.onDocToggle).toHaveBeenCalledTimes(1);
+        vi.advanceTimersByTime(1600);
+        zurueck.click();
+        expect(cb.onDocToggle).toHaveBeenCalledTimes(2);
 
         view.setDocTransmitted(false, false);
         expect(knopf.disabled).toBe(true);
+        expect(knopf.hidden).toBe(false);
 
         // Leertaste unterliegt derselben Sperre.
         (document.getElementById("teilnehmerDocModal") as HTMLElement).classList.add("show");
-        vi.advanceTimersByTime(1100);
+        vi.advanceTimersByTime(1600);
         document.dispatchEvent(new window.KeyboardEvent("keydown", { code: "Space" }));
         document.dispatchEvent(new window.KeyboardEvent("keydown", { code: "Space" }));
-        expect(cb.onDocToggle).toHaveBeenCalledTimes(2);
+        expect(cb.onDocToggle).toHaveBeenCalledTimes(3);
+    });
+
+    it("Rückgängig im Vordruck steht als eigene Zeile über der Knopfleiste", () => {
+        const { view } = renderMit({});
+        (document.getElementById("teilnehmerDocModal") as HTMLElement).classList.add("show");
+        const undo = vi.fn();
+        view.zeigeRueckgaengig("Spruch 1 als abgesetzt markiert.", undo);
+        const leiste = document.getElementById("teilnehmerDocRueckgaengig") as HTMLElement;
+        expect(leiste.hidden).toBe(false);
+        expect((document.getElementById("teilnehmerRueckgaengig") as HTMLElement).hidden).toBe(true);
+        // Sie liegt im Fenster vor der Knopfleiste, nicht darüber.
+        expect(leiste.nextElementSibling?.className).toContain("teilnehmer-doc-aktionen");
+        (document.getElementById("btn-doc-rueckgaengig") as HTMLButtonElement).click();
+        expect(undo).toHaveBeenCalledTimes(1);
+        expect(leiste.hidden).toBe(true);
+    });
+
+    it("sperrt nach dem Abgang einer ausgeblendeten Zeile die ganze Liste kurz", () => {
+        const { view, cb } = renderMit({ 1: { uebertragen: true } }, true);
+        view.renderNachrichten(
+            [
+                { id: 1, empfaenger: ["B"], nachricht: "eins" },
+                { id: 2, empfaenger: ["C"], nachricht: "zwei" }
+            ],
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            { hideTransmitted: true, nachrichten: { 1: { uebertragen: true } } } as any,
+            { zuletztAbgesetzt: 1 }
+        );
+        // Zweiter Tipp nach 1,2 s an derselben Stelle: Spruch 1 steht noch, sein Feld ist inert.
+        vi.advanceTimersByTime(1200);
+        expect(document.querySelector("[data-aktion='absetzen'][data-id='1']")).toBeNull();
+
+        // Nach der Haltezeit rückt Spruch 2 nach – ein Tipp darauf wird kurz ignoriert.
+        vi.advanceTimersByTime(HALTEN_MS);
+        (document.querySelector("[data-aktion='absetzen'][data-id='2']") as HTMLButtonElement).click();
+        expect(cb.onToggle).not.toHaveBeenCalled();
+        vi.advanceTimersByTime(2500);
+        (document.querySelector("[data-aktion='absetzen'][data-id='2']") as HTMLButtonElement).click();
+        expect(cb.onToggle).toHaveBeenCalledWith(2, true);
     });
 
     it("Vordruck: Schließen ist ein beschrifteter Knopf, die Legende nennt keine „Übertragen“-Taste", () => {
