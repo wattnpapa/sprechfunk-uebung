@@ -239,35 +239,24 @@ describe("UebungsleitungController", () => {
     });
 
     it("calculates tempo/load/heatmap/timeline labels", async () => {
-        const { UebungsleitungController } = await import("../../src/uebungsleitung");
-        const c = new UebungsleitungController({} as never);
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        (c as any).uebung = { teilnehmerListe: ["A", "B", "C"] };
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        (c as any).storage = {
-            nachrichten: {
-                "A__1": { abgesetztUm: "2026-01-01T10:00:00.000Z" },
-                "B__2": { abgesetztUm: "2026-01-01T10:01:00.000Z" },
-                "A__3": { abgesetztUm: "2026-01-01T10:02:00.000Z" }
-            }
+        const a = await import("../../src/uebungsleitung/auswertung");
+        const teilnehmer = ["A", "B", "C"];
+        const effektiv = {
+            "A__1": { abgesetztUm: "2026-01-01T10:00:00.000Z", erledigtUm: "2026-01-01T10:00:00.000Z" },
+            "B__2": { abgesetztUm: "2026-01-01T10:01:00.000Z", erledigtUm: "2026-01-01T10:01:00.000Z" },
+            "A__3": { abgesetztUm: "2026-01-01T10:02:00.000Z", erledigtUm: "2026-01-01T10:02:00.000Z" }
         };
         const flat = [
             { sender: "A", nr: 1, empfaenger: ["B"], text: "x" },
             { sender: "B", nr: 2, empfaenger: ["Alle"], text: "y" },
             { sender: "A", nr: 3, empfaenger: ["C"], text: "z" }
         ];
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const sent = (c as any).collectSentNachrichten(flat);
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        expect((c as any).calculateTempoLabel(sent)).toContain("Tempo:");
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        expect((c as any).calculateLoadLabel(sent)).toContain("Funklast:");
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const bins = (c as any).buildHeatmapBins(sent);
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        expect((c as any).calculateHeatmapLabel(bins)).toContain("Heatmap 5m:");
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const timeline = (c as any).buildTeilnehmerTimeline(flat);
+        const sent = a.collectSentNachrichten(flat, effektiv);
+        expect(a.calculateTempoLabel(sent)).toContain("Tempo:");
+        expect(a.calculateLoadLabel(sent, teilnehmer)).toContain("Funklast:");
+        const bins = a.buildHeatmapBins(sent);
+        expect(a.calculateHeatmapLabel(bins)).toContain("Heatmap 5m:");
+        const timeline = a.buildTeilnehmerTimeline(flat, effektiv, teilnehmer);
         expect(timeline.length).toBeGreaterThan(0);
     });
 
@@ -282,21 +271,21 @@ describe("UebungsleitungController", () => {
         vi.spyOn(c as any, "renderNachrichten").mockImplementation(() => {});
 
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        (c as any).markAngemeldet("A");
+        (c as any).aktionen.markAngemeldet("A");
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        (c as any).updateLoesungswort("A", "WORT");
+        (c as any).aktionen.updateLoesungswort("A", "WORT");
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        (c as any).updateStaerke("A", 0, "1/2");
+        (c as any).aktionen.updateStaerke("A", 0, "1/2");
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        (c as any).updateNotiz("A", "Notiz");
+        (c as any).aktionen.updateNotiz("A", "Notiz");
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         (c as any).toggleStaerkeDetails();
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        (c as any).markNachrichtAbgesetzt("A", 1);
+        (c as any).aktionen.markNachrichtAbgesetzt("A", 1);
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        (c as any).resetNachricht("A", 1);
+        (c as any).aktionen.resetNachricht("A", 1);
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        (c as any).persistNachrichtNotiz("A", 1, "x");
+        (c as any).aktionen.persistNachrichtNotiz("A", 1, "x");
 
         expect(mocks.saveStorage).toHaveBeenCalled();
     });
@@ -351,23 +340,13 @@ describe("UebungsleitungController", () => {
     });
 
     it("covers metric helper edge branches", async () => {
-        const { UebungsleitungController } = await import("../../src/uebungsleitung");
-        const c = new UebungsleitungController({} as never);
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        expect((c as any).calculateTempoLabel([])).toBe("Tempo: –");
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        expect((c as any).calculateLoadLabel([])).toBe("Funklast: –");
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        expect((c as any).calculateHeatmapLabel([])).toBe("Heatmap 5m: –");
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        expect((c as any).buildHeatmapBins([])).toEqual([]);
+        const a = await import("../../src/uebungsleitung/auswertung");
+        expect(a.calculateTempoLabel([])).toBe("Tempo: –");
+        expect(a.calculateLoadLabel([], [])).toBe("Funklast: –");
+        expect(a.calculateHeatmapLabel([])).toBe("Heatmap 5m: –");
+        expect(a.buildHeatmapBins([])).toEqual([]);
 
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        (c as any).uebung = { teilnehmerListe: ["A"] };
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        (c as any).storage = { nachrichten: {} };
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const sent = (c as any).collectSentNachrichten([{ sender: "A", nr: 1, empfaenger: ["A"], text: "x" }]);
+        const sent = a.collectSentNachrichten([{ sender: "A", nr: 1, empfaenger: ["A"], text: "x" }], {});
         expect(sent).toEqual([]);
     });
 
@@ -395,44 +374,44 @@ describe("UebungsleitungController", () => {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         expect((c as any).calculateEtaLabel(flat)).toContain("Rest: 0");
 
-        // tempo avg<=0 branch
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        expect((c as any).calculateTempoLabel([{ sender: "A", empfaenger: ["B"], ts: 1 }, { sender: "A", empfaenger: ["B"], ts: 1 }])).toBe("Tempo: –");
-
-        // load top entry tie-break and map empty top
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        (c as any).uebung = { teilnehmerListe: ["A", "B", "C"] };
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const load = (c as any).calculateLoadLabel([
-            { sender: "B", empfaenger: ["A"], ts: 1 },
-            { sender: "A", empfaenger: ["B"], ts: 2 }
-        ]);
-        expect(load).toContain("Funklast:");
-
-        // timeline when storage/uebung missing
+        // ohne Speicher keine Hochrechnung
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         (c as any).storage = null;
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        expect((c as any).buildTeilnehmerTimeline(flat)).toEqual([]);
+        expect((c as any).calculateEtaLabel(flat)).toBe("ETA: –");
+
+        const a = await import("../../src/uebungsleitung/auswertung");
+        // tempo avg<=0 branch
+        expect(a.calculateTempoLabel([{ sender: "A", empfaenger: ["B"], ts: 1 }, { sender: "A", empfaenger: ["B"], ts: 1 }])).toBe("Tempo: –");
+
+        // load top entry tie-break and map empty top
+        const load = a.calculateLoadLabel([
+            { sender: "B", empfaenger: ["A"], ts: 1 },
+            { sender: "A", empfaenger: ["B"], ts: 2 }
+        ], ["A", "B", "C"]);
+        expect(load).toBe("Funklast: S A (1) | E A (1)");
+
+        // timeline without participants and without erledigte Nachrichten
+        expect(a.buildTeilnehmerTimeline(flat, {}, [])).toEqual([]);
     });
 
     it("covers guard branches for action methods with missing state", async () => {
         const { UebungsleitungController } = await import("../../src/uebungsleitung");
         const c = new UebungsleitungController({} as never);
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        (c as any).markAngemeldet("A");
+        (c as any).aktionen.markAngemeldet("A");
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        (c as any).updateLoesungswort("A", "X");
+        (c as any).aktionen.updateLoesungswort("A", "X");
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        (c as any).updateStaerke("A", 0, "1");
+        (c as any).aktionen.updateStaerke("A", 0, "1");
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        (c as any).updateNotiz("A", "n");
+        (c as any).aktionen.updateNotiz("A", "n");
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        (c as any).markNachrichtAbgesetzt("A", 1);
+        (c as any).aktionen.markNachrichtAbgesetzt("A", 1);
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        (c as any).resetNachricht("A", 1);
+        (c as any).aktionen.resetNachricht("A", 1);
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        (c as any).persistNachrichtNotiz("A", 1, "n");
+        (c as any).aktionen.persistNachrichtNotiz("A", 1, "n");
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         await (c as any).downloadTeilnehmerDebrief("A");
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -590,21 +569,21 @@ describe("UebungsleitungController – THW-Review", () => {
     it("koppelt „Anmeldung erhalten“ und Anmelde-Funkspruch in beide Richtungen", async () => {
         const c = await controllerMit(anmeldeUebung);
 
-        c.markAngemeldet("A");
+        c.aktionen.markAngemeldet("A");
         expect(c.storage.teilnehmer.A.angemeldetUm).toBeTruthy();
         expect(c.storage.nachrichten["A__1"].abgesetztUm).toBe(c.storage.teilnehmer.A.angemeldetUm);
 
-        c.markNachrichtAbgesetzt("B", 1);
+        c.aktionen.markNachrichtAbgesetzt("B", 1);
         expect(c.storage.teilnehmer.B.angemeldetUm).toBe(c.storage.nachrichten["B__1"].abgesetztUm);
         expect(mocks.saveStorage).toHaveBeenCalled();
     });
 
     it("nimmt eine Anmeldung einzeln zurück und bietet Rückgängig an", async () => {
         const c = await controllerMit(anmeldeUebung);
-        c.markAngemeldet("A");
+        c.aktionen.markAngemeldet("A");
         const vorher = c.storage.teilnehmer.A.angemeldetUm;
 
-        c.anmeldungZuruecknehmen("A");
+        c.aktionen.anmeldungZuruecknehmen("A");
         expect(c.storage.teilnehmer.A.angemeldetUm).toBeUndefined();
         expect(c.storage.nachrichten["A__1"].abgesetztUm).toBeUndefined();
         expect(c.storage.teilnehmer.B).toBeUndefined();
@@ -622,21 +601,21 @@ describe("UebungsleitungController – THW-Review", () => {
         const { RUECKNAHME_SPERRE_MS } = await import("../../src/uebungsleitung");
         const c = await controllerMit({ ...anmeldeUebung, anmeldungAktiv: false });
 
-        c.markNachrichtAbgesetzt("A", 2);
+        c.aktionen.markNachrichtAbgesetzt("A", 2);
         const zeit = c.storage.nachrichten["A__2"].abgesetztUm;
         vi.advanceTimersByTime(100);
         // Zweiter Tipp auf dieselbe Aktion: nichts ändert sich.
-        c.markNachrichtAbgesetzt("A", 2);
+        c.aktionen.markNachrichtAbgesetzt("A", 2);
         expect(c.storage.nachrichten["A__2"].abgesetztUm).toBe(zeit);
         // Tipp auf „zurücknehmen“ innerhalb der Sperre: ebenfalls nichts.
-        c.resetNachricht("A", 2);
+        c.aktionen.resetNachricht("A", 2);
         expect(c.storage.nachrichten["A__2"].abgesetztUm).toBe(zeit);
         expect(mocks.zeigeRueckgaengig).not.toHaveBeenCalled();
         const letzterPlan = mocks.renderNachrichtenListe.mock.calls.at(-1)?.[0] as { ruecknahmeGesperrt: Set<string> };
         expect(letzterPlan.ruecknahmeGesperrt.has("A__2")).toBe(true);
 
         vi.advanceTimersByTime(RUECKNAHME_SPERRE_MS + 100);
-        c.resetNachricht("A", 2);
+        c.aktionen.resetNachricht("A", 2);
         expect(c.storage.nachrichten["A__2"].abgesetztUm).toBeUndefined();
 
         // Rückgängig stellt den ursprünglichen Zeitpunkt wieder her.
@@ -649,9 +628,9 @@ describe("UebungsleitungController – THW-Review", () => {
     it("nimmt mit dem Anmelde-Funkspruch auch die Anmeldung zurück", async () => {
         vi.useFakeTimers();
         const c = await controllerMit(anmeldeUebung);
-        c.markNachrichtAbgesetzt("A", 1);
+        c.aktionen.markNachrichtAbgesetzt("A", 1);
         vi.advanceTimersByTime(5000);
-        c.resetNachricht("A", 1);
+        c.aktionen.resetNachricht("A", 1);
         expect(c.storage.teilnehmer.A.angemeldetUm).toBeUndefined();
         (mocks.zeigeRueckgaengig.mock.calls.at(-1)?.[1] as () => void)();
         expect(c.storage.teilnehmer.A.angemeldetUm).toBeTruthy();
@@ -661,16 +640,16 @@ describe("UebungsleitungController – THW-Review", () => {
     it("trägt Papierzeiten nach und kennzeichnet sie", async () => {
         const c = await controllerMit(anmeldeUebung);
 
-        c.zeitNachtragen("A", 2, "00:05");
+        c.aktionen.zeitNachtragen("A", 2, "00:05");
         const eintrag = c.storage.nachrichten["A__2"];
         expect(eintrag.nachgetragen).toBe(true);
         expect(new Date(eintrag.abgesetztUm).getMinutes()).toBe(5);
 
-        c.zeitNachtragen("A", 2, "kaputt");
+        c.aktionen.zeitNachtragen("A", 2, "kaputt");
         expect(mocks.uiError).toHaveBeenCalled();
 
         // Nachtrag des Anmelde-Funkspruchs meldet mit derselben Zeit an.
-        c.zeitNachtragen("B", 1, "00:01");
+        c.aktionen.zeitNachtragen("B", 1, "00:01");
         expect(c.storage.teilnehmer.B.angemeldetUm).toBe(c.storage.nachrichten["B__1"].abgesetztUm);
     });
 
@@ -681,12 +660,12 @@ describe("UebungsleitungController – THW-Review", () => {
             nachrichten: { "2": { uebertragen: true, uebertragenUm: "2026-10-04T18:10:00.000Z" } }
         }];
 
-        c.gemeldeteBestaetigen();
+        c.aktionen.gemeldeteBestaetigen();
         expect(c.storage.nachrichten["A__2"].abgesetztUm).toBe("2026-10-04T18:10:00.000Z");
         expect(mocks.uiSuccess).toHaveBeenCalledWith("1 gemeldete Nachricht bestätigt.");
 
         mocks.uiSuccess.mockClear();
-        c.gemeldeteBestaetigen();
+        c.aktionen.gemeldeteBestaetigen();
         expect(mocks.uiSuccess).not.toHaveBeenCalled();
     });
 
