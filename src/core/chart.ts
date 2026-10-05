@@ -75,6 +75,23 @@ export function themeFarben(): ThemeFarben {
     };
 }
 
+/** Höchste Deckkraft eines Heatmap-Balkens; volle Fläche bliebe im Dark Mode die hellste der Seite. */
+export const HEATMAP_MAX_DECKKRAFT = 0.85;
+
+/**
+ * Balken der Übungsleitungs-Heatmap (HTML, kein Canvas). Die Farbe kommt
+ * über die CSS-Klasse `heatmap-balken` aus dem Theme-Token `--akzent` –
+ * im Dark Mode gedämpft wie der Primärknopf, statt eines festen Hellblaus,
+ * das im dunklen Raum aufleuchtete (THW-Review 2026-10-05, Night Befund 3).
+ * Leere Fenster bleiben als blasse Lücke sichtbar.
+ */
+export function heatmapBalken(anzahl: number, maximum: number): { hoehePx: number; deckkraft: number } {
+    const max = Math.max(maximum, 1);
+    const hoehePx = Math.max(8, Math.round((anzahl / max) * 86));
+    const deckkraft = anzahl === 0 ? 0.16 : Math.min(0.3 + (anzahl / max) * 0.55, HEATMAP_MAX_DECKKRAFT);
+    return { hoehePx, deckkraft: Math.round(deckkraft * 100) / 100 };
+}
+
 let themeBeobachter: MutationObserver | null = null;
 let aktuelleFarben: ThemeFarben = { ...FALLBACK };
 

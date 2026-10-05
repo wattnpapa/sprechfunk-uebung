@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from "vitest";
-import { Teilnehmer } from "../../src/pdf/Teilnehmer";
+import { Teilnehmer, UEBERSICHT_ZEITEN_HINWEIS } from "../../src/pdf/Teilnehmer";
 import { FunkUebung } from "../../src/models/FunkUebung";
 
 describe("pdf/Teilnehmer", () => {
@@ -39,6 +39,11 @@ describe("pdf/Teilnehmer", () => {
         t.draw();
         expect(pdf.autoTable).toHaveBeenCalled();
         expect(pdf.text).toHaveBeenCalled();
+        // THW-Review 2026-10-05, analog-first P3-1: Die Fußzeile sagt, wohin
+        // die auf Papier notierten Zeiten gehen.
+        const fusszeilen = pdf.text.mock.calls.map((c: unknown[]) => c[0]).filter(Array.isArray) as string[][];
+        expect(fusszeilen.some(z => z.includes(UEBERSICHT_ZEITEN_HINWEIS))).toBe(true);
+        expect(UEBERSICHT_ZEITEN_HINWEIS).toMatch(/Übungsleitung/);
     });
 
     it("handles page 1 only and participant table gaps", () => {

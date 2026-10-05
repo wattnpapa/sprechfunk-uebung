@@ -91,6 +91,11 @@ describe("services/pdfZipService Führungsstellen-Übung", () => {
         // Eigenes Blatt für die beübte Stelle (workflow F8).
         expect(deps.generateAusgangslagePDFBlob).toHaveBeenCalledWith(uebung);
         expect(zipFiles).toContain("Ausgangslage_beuebte_Stelle.pdf");
+        // THW-Review 2026-10-05, workflow W8: kein Teilnehmerordner mit
+        // leeren Unterlagen für die beübte Stelle, wohl aber für Rollenspieler.
+        expect(zipFiles.filter(f => f.startsWith("Teilnehmer/EL 10/"))).toEqual([]);
+        expect(zipFiles.filter(f => f.startsWith("Teilnehmer/EA 11/")).length).toBeGreaterThanOrEqual(7);
+        expect(liesmichAlle(uebung)).toContain("die beübte Stelle hat keinen Ordner");
     });
 
     it("fragt für Übungen ohne Rollenbesetzung kein Drehbuch an", async () => {

@@ -4,7 +4,7 @@ import path from "node:path";
 import vm from "node:vm";
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-ignore -- reines JS-Hilfsmodul ohne Typdeklarationen, absichtlich .mjs
-import { APP_HUELLE, CACHE_PREFIX, baueServiceWorker, buildVersion } from "../../scripts/lib/service-worker.mjs";
+import { APP_HUELLE, CACHE_PREFIX, NETZ_ZEITLIMIT_MS, baueServiceWorker, buildVersion } from "../../scripts/lib/service-worker.mjs";
 import { registriereServiceWorker } from "../../src/core/serviceWorker";
 
 // Offline (THW-Review 2026-10-04): Ein Neuladen ohne Netz endete auf der
@@ -61,7 +61,12 @@ const umgebung = (netz: (url: string) => Promise<{ ok: boolean; type: string; bo
         const antwort = await netz(request.url);
         return { ...antwort, clone: () => ({ ...antwort }) };
     });
-    vm.runInNewContext(baueServiceWorker({ version: "abc123" }), { self, caches: cachesApi, fetch, URL, Promise });
+    vm.runInNewContext(baueServiceWorker({ version: "abc123" }), {
+        self, caches: cachesApi, fetch, URL, Promise,
+        // Durchreichen statt fest binden, damit vi.useFakeTimers() greift.
+        setTimeout: (cb: () => void, ms: number) => setTimeout(cb, ms),
+        clearTimeout: (t: ReturnType<typeof setTimeout>) => clearTimeout(t)
+    });
 
     const request = (pfad: string, extra: Partial<FakeRequest> = {}): FakeRequest => ({
         url: new URL(pfad, SCOPE).href,
@@ -70,9 +75,10 @@ const umgebung = (netz: (url: string) => Promise<{ ok: boolean; type: string; bo
         headers: { has: () => false },
         ...extra
     });
+    const hintergrund: Promise<unknown>[] = [];
     const abrufen = async (req: FakeRequest) => {
         let antwort: Promise<unknown> | null = null;
-        handler["fetch"]!({ request: req, respondWith: p => { antwort = p; } });
+        handler["fetch"]!({ request: req, respondWith: p => { antwort = p; }, waitUntil: p => { hintergrund.push(p); } });
         return antwort;
     };
     const warte = async (typ: string) => {
@@ -80,7 +86,7 @@ const umgebung = (netz: (url: string) => Promise<{ ok: boolean; type: string; bo
         handler[typ]!({ waitUntil: x => { p = x; } });
         await p;
     };
-    return { caches, fetch, self, request, abrufen, warte };
+    return { caches, fetch, self, request, abrufen, warte, hintergrund };
 };
 
 const online = async (url: string) => ({ ok: true, type: "basic", body: `netz:${url}` });
@@ -128,6 +134,52 @@ describe("Service Worker", () => {
         expect(chunk.body).toContain("pdfGenerator-abc.js");
         const huelle = await sw.abrufen(sw.request("/?utm_source=x", { mode: "navigate" })) as { body: string };
         expect(huelle.body).toBe("precache:./");
+    });
+
+    // Offline P1-3 (THW-Review 2026-10-05): Bei Netz, das verbunden ist, aber
+    // nichts durchlässt, blieb die Seite weiß, bis der Abruf aufgab.
+    describe("schwaches Netz (Zeitlimit)", () => {
+        afterEach(() => vi.useRealTimers());
+
+        it("liefert nach dem Zeitlimit die Kopie aus dem Cache und aktualisiert im Hintergrund", async () => {
+            let netz: (url: string) => Promise<{ ok: boolean; type: string; body: string }> = online;
+            const sw = umgebung(url => netz(url));
+            await sw.warte("install");
+            vi.useFakeTimers();
+            let freigeben: (() => void) | undefined;
+            netz = url => new Promise(resolve => {
+                freigeben = () => resolve({ ok: true, type: "basic", body: `neu:${url}` });
+            });
+
+            const antwort = sw.abrufen(sw.request("bundle.js"));
+            let ergebnis: { body: string } | undefined;
+            void (antwort as Promise<{ body: string }>).then(a => { ergebnis = a; });
+            await vi.advanceTimersByTimeAsync(NETZ_ZEITLIMIT_MS - 100);
+            expect(ergebnis).toBeUndefined();
+            await vi.advanceTimersByTimeAsync(200);
+            expect(ergebnis?.body).toBe("precache:bundle.js");
+
+            freigeben!();
+            await Promise.all(sw.hintergrund);
+            expect(sw.caches.get(`${CACHE_PREFIX}abc123`)!.eintraege.get("https://sprechfunk-uebung.de/bundle.js"))
+                .toBe("neu:https://sprechfunk-uebung.de/bundle.js");
+        });
+
+        it("wartet ohne Kopie im Cache weiter auf das Netz", async () => {
+            vi.useFakeTimers();
+            let freigeben: (() => void) | undefined;
+            const sw = umgebung(url => new Promise(resolve => {
+                freigeben = () => resolve({ ok: true, type: "basic", body: `spaet:${url}` });
+            }));
+            const antwort = sw.abrufen(sw.request("faq/", { mode: "navigate" })) as Promise<{ body: string }>;
+            await vi.advanceTimersByTimeAsync(NETZ_ZEITLIMIT_MS * 3);
+            freigeben!();
+            expect((await antwort).body).toBe("spaet:https://sprechfunk-uebung.de/faq/");
+        });
+
+        it("lehnt ein ungültiges Zeitlimit ab", () => {
+            expect(() => baueServiceWorker({ version: "abc", zeitlimitMs: 0 })).toThrow();
+        });
     });
 
     it("meldet ohne Netz und ohne Cache den Fehler weiter", async () => {

@@ -8,6 +8,10 @@ import { appBasisUrl, teilnehmerCodeVon, teilnehmerZugangsUrl, uebungCodeVon, ze
 
 /** Kantenlänge des Zugangs-QR-Codes oben rechts (mm). */
 const QR_KANTE = 24;
+/** Fußzeile der Übersicht: was mit den auf Papier notierten Zeiten geschieht. */
+export const UEBERSICHT_ZEITEN_HINWEIS =
+    "Notierte Uhrzeiten gibst du nach der Übung der Übungsleitung; sie trägt sie in der App nach.";
+
 /** Breite der leeren Spalte zum Abhaken mit Uhrzeit (mm). */
 const ABHAK_BREITE = 24;
 
@@ -288,11 +292,16 @@ export class Teilnehmer extends BasePDFTeilnehmer {
 
             this.pdf.setFont("helvetica", "normal");
             this.pdf.setFontSize(8);
+            // Wohin die notierten Zeiten gehen, steht dabei: sonst notiert man
+            // sie umsonst (THW-Review 2026-10-05, analog-first P3-1).
             this.pdf.text(
-                "Wörter in GROSSBUCHSTABEN müssen buchstabiert werden. "
-                + "Abgesetzte Sprüche abhaken und Uhrzeit notieren – so geht auch ohne Netz nichts verloren.",
+                [
+                    "Wörter in GROSSBUCHSTABEN müssen buchstabiert werden. "
+                    + "Abgesetzte Sprüche abhaken und Uhrzeit notieren – so geht auch ohne Netz nichts verloren.",
+                    UEBERSICHT_ZEITEN_HINWEIS
+                ],
                 this.pageMarginLeft,
-                this.pdfHeight - 20
+                this.pdfHeight - 23
             );
             this.pdf.setDrawColor(0);
             this.pdf.line(this.pageMarginLeft, this.pdfHeight - 15, this.pdfWidth - this.pageMarginRight, this.pdfHeight - 15);

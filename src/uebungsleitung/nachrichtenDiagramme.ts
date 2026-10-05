@@ -1,4 +1,4 @@
-import { Chart, themeFarben } from "../core/chart";
+import { Chart, heatmapBalken, themeFarben } from "../core/chart";
 import { formatHHMM } from "./markup";
 import type { HeatmapBin, TeilnehmerTimeline } from "./nachrichtenTypen";
 
@@ -20,12 +20,11 @@ export function renderHeatmap(chart: HTMLElement, bins: HeatmapBin[]): void {
     const max = Math.max(...bins.map(b => b.count), 1);
     chart.innerHTML = bins.map((bin, idx) => {
         const label = formatHHMM(bin.bucket);
-        const height = Math.max(8, Math.round((bin.count / max) * 86));
+        const { hoehePx, deckkraft } = heatmapBalken(bin.count, max);
         const showTick = idx % 3 === 0 || idx === bins.length - 1;
-        const alpha = bin.count === 0 ? 0.16 : Math.min(0.28 + (bin.count / max) * 0.64, 0.92);
         return `
                   <div class="d-flex flex-column align-items-center flex-fill" title="${label}: ${bin.count}">
-                    <div style="width:100%;height:${height}px;background:rgba(54,162,235,${alpha});border-radius:4px 4px 0 0;"></div>
+                    <div class="heatmap-balken" style="height:${hoehePx}px;opacity:${deckkraft};"></div>
                     <small class="text-body-secondary mt-1" style="font-size:.65rem;line-height:1;">${showTick ? label : "&nbsp;"}</small>
                   </div>
                 `;
