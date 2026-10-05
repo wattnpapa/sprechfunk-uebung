@@ -1,6 +1,7 @@
 import JSZip from "jszip";
 import { FunkUebung } from "../models/FunkUebung";
 import { formatNatoDate } from "../utils/date";
+import { hatEigeneUnterlagen } from "../pdf/druckTeilnehmer";
 
 type PdfZipDeps = {
     sanitizeFileName: (name: string) => string;
@@ -58,7 +59,9 @@ export function liesmichAlle(funkUebung: FunkUebung): string {
         "  Teilnehmer mit Deckblatt je Teilnehmer, A5 einzeln oder zwei je A4-Seite.",
         "- Gesamt/Nadeldrucker_*: nur die Einträge ohne Formular, zum Bedrucken vorhandener",
         "  Vordruck-Blöcke. Diese Dateien sind deutlich kleiner.",
-        "- Teilnehmer/<Funkrufname>/: dieselben Unterlagen einzeln je Teilnehmer, zum Weitergeben.",
+        funkUebung.fuehrungsstelle
+            ? "- Teilnehmer/<Funkrufname>/: dieselben Unterlagen einzeln je Rollenspieler; die beübte Stelle hat keinen Ordner."
+            : "- Teilnehmer/<Funkrufname>/: dieselben Unterlagen einzeln je Teilnehmer, zum Weitergeben.",
         "",
         "Erzeugt mit dem Sprechfunk Übungsgenerator: https://sprechfunk-uebung.de/",
         ""
@@ -71,12 +74,18 @@ export async function generateAllPDFsAsZipBlob(
     deps: PdfZipDeps
 ): Promise<Blob> {
     const zip = new JSZip();
+    // Teilnehmerordner nur für Stellen mit eigenen Unterlagen (workflow W8).
+    const teilnehmerDatei = (teilnehmer: string, datei: string, blob: Blob) => {
+        if (hatEigeneUnterlagen(funkUebung, teilnehmer)) {
+            zip.file(`Teilnehmer/${deps.sanitizeFileName(teilnehmer)}/${datei}`, blob);
+        }
+    };
     // Steht im Wurzelverzeichnis ganz oben: das Erste, was man nach dem Entpacken sieht.
     zip.file("LIESMICH.txt", liesmichAlle(funkUebung));
 
     const teilnehmerBlobs = await deps.generateTeilnehmerPDFsBlob(funkUebung);
     teilnehmerBlobs.forEach((blob, teilnehmer) => {
-        zip.file(`Teilnehmer/${deps.sanitizeFileName(teilnehmer)}/Übersicht_${deps.sanitizeFileName(teilnehmer)}.pdf`, blob);
+        teilnehmerDatei(teilnehmer, `Übersicht_${deps.sanitizeFileName(teilnehmer)}.pdf`, blob);
     });
 
     zip.file("Gesamt/Übersicht_Alle_Teilnehmer.pdf", await deps.generateAllTeilnehmerUebersichtPrintBlob(funkUebung));
@@ -97,32 +106,32 @@ export async function generateAllPDFsAsZipBlob(
 
     const nachrichtenvordruckBlobs = await deps.generateNachrichtenvordruckPDFsBlob(funkUebung);
     nachrichtenvordruckBlobs.forEach((blob, teilnehmer) => {
-        zip.file(`Teilnehmer/${deps.sanitizeFileName(teilnehmer)}/Nachrichtenvordruck_${deps.sanitizeFileName(teilnehmer)}_A5.pdf`, blob);
+        teilnehmerDatei(teilnehmer, `Nachrichtenvordruck_${deps.sanitizeFileName(teilnehmer)}_A5.pdf`, blob);
     });
 
     const nachrichtenvordruckBlobsNadel = await deps.generateNachrichtenvordruckPDFsBlob(funkUebung, true, true);
     nachrichtenvordruckBlobsNadel.forEach((blob, teilnehmer) => {
-        zip.file(`Teilnehmer/${deps.sanitizeFileName(teilnehmer)}/Nachrichtenvordruck_${deps.sanitizeFileName(teilnehmer)}_Nadeldrucker_A5.pdf`, blob);
+        teilnehmerDatei(teilnehmer, `Nachrichtenvordruck_${deps.sanitizeFileName(teilnehmer)}_Nadeldrucker_A5.pdf`, blob);
     });
 
     const nachrichtenvordruckA4Blobs = await deps.generateNachrichtenvordruckA4PDFsBlob(funkUebung);
     nachrichtenvordruckA4Blobs.forEach((blob, teilnehmer) => {
-        zip.file(`Teilnehmer/${deps.sanitizeFileName(teilnehmer)}/Nachrichtenvordruck_${deps.sanitizeFileName(teilnehmer)}_A4.pdf`, blob);
+        teilnehmerDatei(teilnehmer, `Nachrichtenvordruck_${deps.sanitizeFileName(teilnehmer)}_A4.pdf`, blob);
     });
 
     const meldevordruckBlobs = await deps.generateMeldevordruckPDFsBlob(funkUebung);
     meldevordruckBlobs.forEach((blob, teilnehmer) => {
-        zip.file(`Teilnehmer/${deps.sanitizeFileName(teilnehmer)}/Meldevordruck_${deps.sanitizeFileName(teilnehmer)}_A5.pdf`, blob);
+        teilnehmerDatei(teilnehmer, `Meldevordruck_${deps.sanitizeFileName(teilnehmer)}_A5.pdf`, blob);
     });
 
     const meldevordruckBlobsNadel = await deps.generateMeldevordruckPDFsBlob(funkUebung, true, true);
     meldevordruckBlobsNadel.forEach((blob, teilnehmer) => {
-        zip.file(`Teilnehmer/${deps.sanitizeFileName(teilnehmer)}/Meldevordruck_${deps.sanitizeFileName(teilnehmer)}_Nadeldrucker_A5.pdf`, blob);
+        teilnehmerDatei(teilnehmer, `Meldevordruck_${deps.sanitizeFileName(teilnehmer)}_Nadeldrucker_A5.pdf`, blob);
     });
 
     const meldevordruckA4Blobs = await deps.generateMeldevordruckA4PDFsBlob(funkUebung);
     meldevordruckA4Blobs.forEach((blob, teilnehmer) => {
-        zip.file(`Teilnehmer/${deps.sanitizeFileName(teilnehmer)}/Meldevordruck_${deps.sanitizeFileName(teilnehmer)}_A4.pdf`, blob);
+        teilnehmerDatei(teilnehmer, `Meldevordruck_${deps.sanitizeFileName(teilnehmer)}_A4.pdf`, blob);
     });
 
     zip.file("Gesamt/Druck_Nachrichtenvordruck_A5.pdf", await deps.generateAllNachrichtenvordruckPrintBlob(funkUebung));

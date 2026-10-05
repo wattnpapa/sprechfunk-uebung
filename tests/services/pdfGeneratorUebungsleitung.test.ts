@@ -68,5 +68,27 @@ describe("pdfGenerator – Übungsleitungs-PDF", () => {
             vi.advanceTimersByTime(30_000);
             expect(revoke).toHaveBeenCalledWith("blob:x");
         });
+
+        // THW-Review 2026-10-05 (workflow): Mit Umlaut kam die Datei als
+        // „download“ ohne Endung an.
+        it("Dateinamen bestehen nur aus ASCII, Umlaute werden umschrieben", () => {
+            const link = { href: "", download: "", click: vi.fn() };
+            vi.stubGlobal("document", {
+                createElement: () => link,
+                body: { appendChild: vi.fn(), removeChild: vi.fn() }
+            });
+            vi.spyOn(URL, "createObjectURL").mockReturnValue("blob:x");
+            vi.spyOn(URL, "revokeObjectURL").mockImplementation(() => undefined);
+
+            const u = uebung();
+            u.name = "Sprechfunkübung Größe/Süd";
+            pdfGenerator.downloadUebungsleitungPDF(u, null);
+            expect(link.download).toBe("Uebungsleitung_Sprechfunkuebung_Groesse-Sued_11111111-2222-3333-4444-555555555555.pdf");
+
+            pdfGenerator.herunterladen(new Blob(["x"]), "Übersicht_Alle_Teilnehmer.pdf");
+            expect(link.download).toBe("Uebersicht_Alle_Teilnehmer.pdf");
+            expect(pdfGenerator.sanitizeFileName("Heros Ölper 21/11 – Café")).toBe("Heros Oelper 21-11 - Cafe");
+            expect(pdfGenerator.sanitizeFileName("€€€")).toBe("Datei");
+        });
     });
 });

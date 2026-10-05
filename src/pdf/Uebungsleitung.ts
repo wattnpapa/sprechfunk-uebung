@@ -5,6 +5,14 @@ import { jsPDF } from "jspdf";
 import { formatNatoDate } from "../utils/date";
 import { BasePDF } from "./BasePDF";
 import { appBasisUrl, teilnehmerCodeVon, uebungCodeVon, uebungsleitungUrl, zeichneQrCode } from "./zugang";
+import {
+    FS_PLAN_KOPF,
+    FS_TEILNEHMER_KOPF,
+    fuehrungsstellenPlanZeilen,
+    fuehrungsstellenRolle,
+    klassischePlanZeilen,
+    loesungswortSpaltenBreite
+} from "./uebungsleitungPlan";
 
 /** Kantenlänge des QR-Codes auf den Leitungs-Link (mm). */
 const QR_KANTE = 24;
@@ -76,18 +84,35 @@ export class Uebungsleitung extends BasePDF {
         }
         y += 5;
         this.pdf.text(
-            "Ohne Netz läuft die Übung auf Papier weiter: Anmeldung, Lösungswort und Stärke unter „Ist“, "
-            + "abgesetzte Sprüche mit Uhrzeit eintragen und später in der App nachtragen.",
+            this.istFuehrungsstelle
+                ? "Ohne Netz läuft die Übung auf Papier weiter: Einspielzeit und Reaktion der beübten Stelle "
+                    + "eintragen und später in der App nachtragen."
+                : "Ohne Netz läuft die Übung auf Papier weiter: Anmeldung, Lösungswort und Stärke unter „Ist“, "
+                    + "abgesetzte Sprüche mit Uhrzeit eintragen und später in der App nachtragen.",
             this.pdfWidth / 2, y, { align: "center" }
         );
         return y;
     }
 
+    private get istFuehrungsstelle(): boolean {
+        return Boolean(this.funkUebung.fuehrungsstelle);
+    }
+
     private drawTeilnehmerTable(startY: number): void {
+        if (this.istFuehrungsstelle) {
+            this.drawFuehrungsstellenTeilnehmer(startY);
+            return;
+        }
         const wTeilnehmer = this.contentWidth * 0.19;
         const wAnmeldung = this.contentWidth * 0.10;
-        const wLoesungswort = this.contentWidth * 0.13;
         const wStaerke = this.contentWidth * 0.12;
+        this.pdf.setFontSize(this.tableFontSize);
+        const wLoesungswort = loesungswortSpaltenBreite(
+            Object.values(this.funkUebung.loesungswoerter ?? {}),
+            text => this.pdf.getTextWidth(text),
+            this.contentWidth * 0.13,
+            this.contentWidth * 0.2
+        );
         const wBemerkungen = this.contentWidth - wTeilnehmer - wAnmeldung - 2 * wLoesungswort - 2 * wStaerke;
 
         // „Soll“ steht vorgedruckt, „Ist“ ist das Feld für das, was über Funk
@@ -170,25 +195,53 @@ export class Uebungsleitung extends BasePDF {
         return localTeilnehmer[teilnehmer] ?? null;
     }
 
-    private drawNachrichtenTable(): void {
-        const tableData = this.collectNachrichtenRows();
-        const empfaengerWidth = this.contentWidth * 0.20;
-        const lfdnrWidth = 12;
-        const zeitWidth = 24;
-        const senderWidth = empfaengerWidth;
-        const nachrichtenWidth = this.contentWidth - lfdnrWidth - (empfaengerWidth * 2) - zeitWidth;
+    /** Führungsstellen-Übung: Stellen mit Rolle, ohne Lösungswort- und Stärkespalten (workflow W4). */
+    private drawFuehrungsstellenTeilnehmer(startY: number): void {
+        (this.pdf as any).autoTable({
+            head: [FS_TEILNEHMER_KOPF],
+            body: this.funkUebung.teilnehmerListe.map(teilnehmer => {
+                const stand = this.getTeilnehmerLocalData(teilnehmer) ?? {};
+                return [
+                    this.getTeilnehmerAnzeige(teilnehmer),
+                    fuehrungsstellenRolle(this.funkUebung, teilnehmer),
+                    stand.angemeldetUm ? formatNatoDate(stand.angemeldetUm) : "",
+                    stand.notizen ?? ""
+                ];
+            }),
+            startY,
+            theme: "grid",
+            margin: { left: this.pageMarginLeft, top: this.pageMarginTop + 5, bottom: this.pageMarginBottom },
+            tableWidth: this.contentWidth,
+            columnStyles: {
+                0: { cellWidth: this.contentWidth * 0.3 },
+                1: { cellWidth: this.contentWidth * 0.2 },
+                2: { cellWidth: this.contentWidth * 0.12 }
+            },
+            styles: { fontSize: this.tableFontSize, cellPadding: 2, lineWidth: 0.1, lineColor: [0, 0, 0], overflow: "linebreak" },
+            headStyles: { fillColor: [200, 200, 200] }
+        });
+    }
 
+    private drawNachrichtenTable(): void {
         this.pdf.addPage();
-        let lastNrValue: number | null = null;
+        if (this.istFuehrungsstelle) {
+            this.drawFuehrungsstellenPlan();
+            return;
+        }
+        const { zeilen, absNr } = klassischePlanZeilen(this.funkUebung, this.localData);
+        const empfaengerWidth = this.contentWidth * 0.20;
+        const lfdnrWidth = 17;
+        const zeitWidth = 24;
+        const nachrichtenWidth = this.contentWidth - lfdnrWidth - (empfaengerWidth * 2) - zeitWidth;
+        let letzteAbsNr: number | null = null;
         // Die dicke Trennlinie markiert Rundengrenzen (alle Nr. 1, dann Nr. 2, …).
-        // In Szenario- und Führungsstellen-Übungen ist die Tabelle nach
-        // Erzählreihenfolge sortiert, die Nr wechselt dann fast jede Zeile —
-        // die Linie entfällt dort.
-        const istSzenario = !!this.funkUebung.szenarioSlug || !!this.funkUebung.fuehrungsstelle;
+        // In Szenario-Übungen ist die Tabelle nach Erzählreihenfolge sortiert,
+        // die Nr wechselt dann fast jede Zeile – die Linie entfällt dort.
+        const istSzenario = !!this.funkUebung.szenarioSlug;
 
         (this.pdf as any).autoTable({
             head: [["Nr", "Empfänger", "Sender", "Nachricht", "Abgesetzt (Uhrzeit)"]],
-            body: tableData,
+            body: zeilen,
             startY: this.pageMarginTop + 5,
             theme: "grid",
             margin: { left: this.pageMarginLeft, top: this.pageMarginTop + 5, bottom: 25 },
@@ -196,78 +249,51 @@ export class Uebungsleitung extends BasePDF {
             columnStyles: {
                 0: { cellWidth: lfdnrWidth },
                 1: { cellWidth: empfaengerWidth },
-                2: { cellWidth: senderWidth },
+                2: { cellWidth: empfaengerWidth },
                 3: { cellWidth: nachrichtenWidth },
                 4: { cellWidth: zeitWidth }
             },
-            styles: {
-                fontSize: this.tableFontSize,
-                cellPadding: 1.5,
-                lineWidth: 0.1,
-                lineColor: [0, 0, 0],
-                overflow: "linebreak"
-            },
+            styles: { fontSize: this.tableFontSize, cellPadding: 1.5, lineWidth: 0.1, lineColor: [0, 0, 0], overflow: "linebreak" },
             headStyles: { fillColor: [200, 200, 200] },
             didDrawCell: (data: any) => {
                 if (istSzenario || data.section !== "body" || data.column.index !== 0) {
                     return;
                 }
-                const currentNr = data.cell.raw as number;
-                if (currentNr === lastNrValue) {
+                const aktuell = absNr[data.row?.index ?? -1];
+                if (aktuell === undefined || aktuell === letzteAbsNr) {
                     return;
                 }
-                lastNrValue = currentNr;
+                letzteAbsNr = aktuell;
                 this.drawHorizontalMessageDivider(data);
             }
         });
     }
 
-    private collectNachrichtenRows(): Array<[number, string, string, string, string]> {
-        const allMessages: {
-            nr: number; empfaenger: string; sender: string; nachricht: string; zeit: string; szenarioNr?: number
-        }[] = [];
-
-        this.funkUebung.teilnehmerListe.forEach(sender => {
-            const nachrichten = this.funkUebung.nachrichten[sender];
-            if (!Array.isArray(nachrichten)) {
-                return;
-            }
-            nachrichten.forEach((nachricht, index) => {
-                allMessages.push(this.buildNachrichtRow(sender, index, nachricht));
-            });
+    /** Plan der Führungsstellen-Übung nach X-Zeit, mit Erwartung und Ist-Spalte (workflow W4). */
+    private drawFuehrungsstellenPlan(): void {
+        const w = this.contentWidth;
+        const fest = { nr: 10, zeit: 24, von: 0.14 * w, weg: 24, eingespielt: 22 };
+        const rest = w - fest.nr - fest.zeit - fest.von - fest.weg - fest.eingespielt;
+        (this.pdf as any).autoTable({
+            head: [FS_PLAN_KOPF],
+            body: fuehrungsstellenPlanZeilen(this.funkUebung, this.localData),
+            startY: this.pageMarginTop + 5,
+            theme: "grid",
+            margin: { left: this.pageMarginLeft, top: this.pageMarginTop + 5, bottom: 25 },
+            tableWidth: w,
+            columnStyles: {
+                0: { cellWidth: fest.nr },
+                1: { cellWidth: fest.zeit },
+                2: { cellWidth: fest.von },
+                3: { cellWidth: fest.weg },
+                4: { cellWidth: rest * 0.42 },
+                5: { cellWidth: rest * 0.33 },
+                6: { cellWidth: fest.eingespielt },
+                7: { cellWidth: rest * 0.25 }
+            },
+            styles: { fontSize: this.tableFontSize, cellPadding: 1.5, lineWidth: 0.1, lineColor: [0, 0, 0], overflow: "linebreak", valign: "top" },
+            headStyles: { fillColor: [200, 200, 200] }
         });
-
-        // Szenario-Übungen sortieren nach der globalen Erzählreihenfolge,
-        // klassische wie bisher rundenweise nach Nachrichtennummer.
-        allMessages.sort((a, b) =>
-            (a.szenarioNr ?? a.nr) - (b.szenarioNr ?? b.nr) || a.sender.localeCompare(b.sender)
-        );
-        return allMessages.map(n => [n.nr, n.empfaenger, n.sender, n.nachricht, n.zeit]);
-    }
-
-    private buildNachrichtRow(sender: string, index: number, nachricht: any): {
-        nr: number;
-        empfaenger: string;
-        sender: string;
-        nachricht: string;
-        zeit: string;
-        szenarioNr?: number;
-    } {
-        // Statuskeys und Nummern hängen an der Nachrichten-id; der Index dient
-        // nur als Fallback für Altbestände ohne id (dort gilt id == index + 1).
-        const nr = typeof nachricht.id === "number" ? nachricht.id : index + 1;
-        const status = this.localData?.nachrichten?.[`${sender}__${nr}`];
-        const zeit = status?.abgesetztUm ? formatNatoDate(status.abgesetztUm) : "";
-        const notiz = status?.notiz ? `\n\nAnmerkung:\n${status.notiz}` : "";
-
-        return {
-            nr,
-            empfaenger: nachricht.empfaenger.join("\n"),
-            sender,
-            nachricht: nachricht.nachricht + notiz,
-            zeit,
-            ...(typeof nachricht.szenarioNr === "number" ? { szenarioNr: nachricht.szenarioNr } : {})
-        };
     }
 
     private drawHorizontalMessageDivider(data: any): void {

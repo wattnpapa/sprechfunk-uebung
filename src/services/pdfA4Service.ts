@@ -5,6 +5,7 @@ import { DeckblattTeilnehmer } from "../pdf/DeckblattTeilnehmer.js";
 import { FunkUebung } from "../models/FunkUebung.js";
 import { Meldevordruck } from "../pdf/Meldevordruck.js";
 import { Nachrichtenvordruck } from "../pdf/Nachrichtenvordruck.js";
+import { teilnehmerMitUnterlagen } from "../pdf/druckTeilnehmer";
 
 type DrawMessageFn = (teilnehmer: string, pdf: jsPDF, msg: Nachricht, offsetX: number) => void;
 
@@ -67,7 +68,8 @@ function generateAllA4PairPrintBlob(
     drawMessage: DrawMessageFn
 ): Blob {
     const pdf = new jsPDF({ orientation: "l", unit: "mm", format: "a4", compress: true });
-    const parts = funkUebung.teilnehmerListe;
+    // Ohne beübte Stelle: sie hätte nur ein leeres Deckblatt (workflow W8).
+    const parts = teilnehmerMitUnterlagen(funkUebung);
     for (let i = 0; i < parts.length; i += 2) {
         const left = parts[i];
         const right = parts[i + 1];

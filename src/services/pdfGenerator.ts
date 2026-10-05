@@ -13,6 +13,8 @@ import { Ausgangslage } from "../pdf/Ausgangslage.js";
 import { ladeFuehrungsstellenUebung } from "./FuehrungsstellenUebungService";
 import type { FuehrungsstellenUebung } from "../types/FuehrungsstellenUebung";
 import { uiFeedback } from "../core/UiFeedback";
+import { asciiDateiname } from "../utils/dateiname";
+import { teilnehmerMitUnterlagen } from "../pdf/druckTeilnehmer";
 import { UebungsleitungStorage } from "../types/Storage";
 import { generateTeilnehmerDebriefPdfBlob } from "./pdfDebriefService";
 import {
@@ -42,7 +44,8 @@ function herunterladen(blob: Blob, dateiname: string): void {
     const link = document.createElement("a");
     const url = URL.createObjectURL(blob);
     link.href = url;
-    link.download = dateiname;
+    // Nur ASCII: mit Umlaut kam die Datei in Chromium als „download“ an.
+    link.download = asciiDateiname(dateiname);
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
@@ -93,7 +96,8 @@ class PDFGenerator {
     async generateAllTeilnehmerUebersichtPrintBlob(funkUebung: FunkUebung): Promise<Blob> {
         const pdf = new jsPDF({ orientation: "landscape", unit: "mm", format: "a4", compress: true });
 
-        funkUebung.teilnehmerListe.forEach((teilnehmer: string, index: number) => {
+        // Die beübte Stelle einer Führungsstellen-Übung hat keine Übersicht (workflow W8).
+        teilnehmerMitUnterlagen(funkUebung).forEach((teilnehmer: string, index: number) => {
             if (index > 0) {
                 pdf.addPage();
             }
@@ -219,11 +223,21 @@ class PDFGenerator {
     /** Lädt das Übungsleitungs-PDF mit aktuellem Stand herunter. */
     downloadUebungsleitungPDF(uebung: Uebung, stand: UebungsleitungStorage | null): void {
         const blob = this.generateInstructorPDFBlob(uebung, stand);
-        herunterladen(blob, `Uebungsleitung_${uebung.name}_${uebung.id}.pdf`.replace(/\s+/g, "_"));
+        herunterladen(blob, `Uebungsleitung_${this.sanitizeFileName(uebung.name)}_${uebung.id}.pdf`.replace(/\s+/g, "_"));
     }
 
+    /** Teil eines Dateinamens: nur ASCII, Umlaute umschrieben (siehe asciiDateiname). */
     sanitizeFileName(name: string) {
-        return name.replace(/[/\\:*?"<>|]/g, "-");
+        return asciiDateiname(name);
+    }
+
+    /**
+     * Download mit ASCII-Dateinamen und verzögert freigegebener Objekt-URL –
+     * für Aufrufer außerhalb dieses Dienstes, die bisher selbst einen Link
+     * bauten und die URL sofort widerriefen.
+     */
+    herunterladen(blob: Blob, dateiname: string): void {
+        herunterladen(blob, dateiname);
     }
 
     /**
