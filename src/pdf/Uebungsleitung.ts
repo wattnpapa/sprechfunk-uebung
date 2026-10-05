@@ -256,13 +256,9 @@ export class Uebungsleitung extends BasePDF {
         // Statuskeys und Nummern hängen an der Nachrichten-id; der Index dient
         // nur als Fallback für Altbestände ohne id (dort gilt id == index + 1).
         const nr = typeof nachricht.id === "number" ? nachricht.id : index + 1;
-        const key = `${sender}__${nr}`;
-        const zeit = this.localData?.nachrichten?.[key]?.abgesetztUm
-            ? formatNatoDate(this.localData.nachrichten[key].abgesetztUm)
-            : "";
-        const notiz = this.localData?.nachrichten?.[key]?.notiz
-            ? `\n\nAnmerkung:\n${this.localData.nachrichten[key].notiz}`
-            : "";
+        const status = this.localData?.nachrichten?.[`${sender}__${nr}`];
+        const zeit = status?.abgesetztUm ? formatNatoDate(status.abgesetztUm) : "";
+        const notiz = status?.notiz ? `\n\nAnmerkung:\n${status.notiz}` : "";
 
         return {
             nr,
