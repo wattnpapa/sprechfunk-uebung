@@ -38,6 +38,7 @@ describe("AdminView", () => {
           <canvas id="chartUebungenProTag"></canvas>
           <select id="adminStatistikJahr"></select>
           <div id="adminStatistikHinweis" class="d-none"></div>
+          <div id="adminLoeschHinweis" hidden><span id="adminLoeschText"></span><button id="adminLoeschRueckgaengig"></button></div>
         `);
         vi.stubGlobal("window", dom.window);
         vi.stubGlobal("document", dom.window.document);
@@ -285,5 +286,34 @@ describe("AdminView", () => {
         onlyTest.checked = true;
         onlyTest.dispatchEvent(new window.Event("change"));
         expect(onOnlyTestChange).toHaveBeenCalledWith(true);
+    });
+
+    it("zeigt den Übungscode je Zeile und Spaltennamen für die Kartenansicht", () => {
+        const view = new AdminView();
+        view.renderUebungsListe([
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            { id: "u1", name: "Gleich", uebungCode: "K7M4Q2", teilnehmerListe: [] } as any,
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            { id: "u2", name: "Gleich", uebungCode: "<b>X</b>", teilnehmerListe: [] } as any
+        ]);
+        const codes = Array.from(document.querySelectorAll("td.admin-uebungscode")).map(td => td.textContent);
+        // Zwei gleichnamige Übungen unterscheiden sich am Code (THW-Review 2026-10-05, error-recovery P2-2).
+        expect(codes).toEqual(["K7M4Q2", "<b>X</b>"]);
+        expect(document.querySelector("td.admin-uebungscode b")).toBeNull();
+        expect(document.querySelector("td[data-label='Übungscode']")).not.toBeNull();
+        expect(document.querySelector("td[data-label='Funksprüche']")).not.toBeNull();
+    });
+
+    it("zeigt und versteckt die Rückgängig-Leiste nach dem Löschen", () => {
+        const view = new AdminView();
+        const rueckgaengig = vi.fn();
+        view.zeigeLoeschHinweis("Übung „A“ wird in 8 Sekunden gelöscht.", rueckgaengig);
+        const box = document.getElementById("adminLoeschHinweis") as HTMLElement;
+        expect(box.hidden).toBe(false);
+        expect(document.getElementById("adminLoeschText")?.textContent).toContain("8 Sekunden");
+        (document.getElementById("adminLoeschRueckgaengig") as HTMLButtonElement).click();
+        expect(rueckgaengig).toHaveBeenCalledTimes(1);
+        view.versteckeLoeschHinweis();
+        expect(box.hidden).toBe(true);
     });
 });

@@ -263,12 +263,17 @@
                     <input class="form-check-input" type="checkbox" id="adminOnlyTestFilter">
                     <label class="form-check-label" for="adminOnlyTestFilter">Nur Testübungen anzeigen</label>
                 </div>
+                <div id="adminLoeschHinweis" class="alert alert-warning admin-loesch-hinweis py-2 mb-2" role="status" hidden>
+                    <span id="adminLoeschText"></span>
+                    <button type="button" id="adminLoeschRueckgaengig" class="btn btn-sm btn-primary" data-testid="admin-loeschen-rueckgaengig">Rückgängig</button>
+                </div>
                 <div class="table-responsive">
-                    <table class="table table-striped mt-3">
+                    <table class="table table-striped mt-3 admin-uebungstabelle">
                         <thead>
                         <tr>
                             <th>Erstellt</th>
                             <th>Name der Übung</th>
+                            <th>Übungscode</th>
                             <th>Übungsdatum</th>
                             <th>Rufgruppe</th>
                             <th>Leitung</th>
@@ -332,7 +337,7 @@
                     <li class="list-group-item"><strong>📡 Ø Funksprüche pro Teilnehmer:</strong> <span id="infoSpruecheProTeilnehmer" class="float-end">–</span></li>
                     <li class="list-group-item"><strong>📦 Gesamtdatenmenge:</strong> <span id="infoGroesse" class="float-end">–</span></li>
                     <li class="list-group-item"><strong>👥 Ø Teilnehmerzahl:</strong> <span id="infoTeilnehmer" class="float-end">–</span></li>
-                    <li class="list-group-item"><strong>⏱️ Ø Übungsdauer (geschätzt):</strong> <span id="infoDauer" class="float-end">–</span></li>
+                    <li class="list-group-item"><strong>⏱️ Ø reine Sprechzeit je Übung (grob, 15 s je Spruch):</strong> <span id="infoDauer" class="float-end">–</span></li>
                     <li class="list-group-item"><strong>🔤 Anteil mit Lösungswörtern:</strong> <span id="infoLoesungswort" class="float-end">–%</span></li>
                     <li class="list-group-item"><strong>💪 Anteil mit Stärkemeldungen:</strong> <span id="infoStaerke" class="float-end">–%</span></li>
                     <li class="list-group-item"><strong>🧩 Anteil mit Buchstabieraufgaben:</strong> <span id="infoBuchstabieren" class="float-end">–%</span></li>

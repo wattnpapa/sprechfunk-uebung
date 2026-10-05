@@ -75,15 +75,19 @@ export class AdminView {
         const name = AdminView.text(uebung.name);
         const nameAttr = AdminView.escapeAttribute(String(uebung.name ?? "ohne Namen"));
         const teilnehmer = uebung.teilnehmerListe || [];
+        // data-label trägt die Spaltenüberschrift für die Kartenansicht am Handy.
+        // Der Übungscode unterscheidet gleichnamige Übungen und lässt sich gegen
+        // die Lösch-Rückfrage prüfen (THW-Review 2026-10-05, error-recovery P2-2).
         return `
-                <td>${AdminView.datumText(uebung.createDate, true)}</td>
-                <td><a href="#/generator/${id}" target="_blank">${name}</a></td>
-                <td>${AdminView.datumText(uebung.datum, false)}</td>
-                <td>${AdminView.text(uebung.rufgruppe)}</td>
-                <td>${AdminView.text(uebung.leitung)}</td>
-                <td title="${AdminView.escapeAttribute(teilnehmer.join("\n"))}">${uebung.teilnehmerListe?.length ?? 0}</td>
-                ${AdminView.merkmalZelle(spielModusMerkmal(uebung))}
-                ${AdminView.merkmalZelle(funkspruchQuelleMerkmal(uebung))}
+                <td data-label="Erstellt">${AdminView.datumText(uebung.createDate, true)}</td>
+                <td data-label="Name"><a href="#/generator/${id}" target="_blank">${name}</a></td>
+                <td data-label="Übungscode" class="admin-uebungscode">${AdminView.text(uebung.uebungCode || "–")}</td>
+                <td data-label="Übungsdatum">${AdminView.datumText(uebung.datum, false)}</td>
+                <td data-label="Rufgruppe">${AdminView.text(uebung.rufgruppe)}</td>
+                <td data-label="Leitung">${AdminView.text(uebung.leitung)}</td>
+                <td data-label="Teilnehmer" title="${AdminView.escapeAttribute(teilnehmer.join("\n"))}">${uebung.teilnehmerListe?.length ?? 0}</td>
+                ${AdminView.merkmalZelle(spielModusMerkmal(uebung), "Spielmodus")}
+                ${AdminView.merkmalZelle(funkspruchQuelleMerkmal(uebung), "Funksprüche")}
                 <td class="text-end text-nowrap admin-aktionen">
                     <button class="btn btn-sm btn-outline-secondary" data-action="view" title="Übung öffnen" aria-label="Übung „${nameAttr}“ öffnen" data-id="${id}">
                         <i class="fa-solid fa-magnifying-glass" aria-hidden="true"></i> Öffnen
@@ -99,9 +103,33 @@ export class AdminView {
     }
 
     /** Zelle mit Kurzform; die Details (Vorlagennamen, Szenariotitel) erscheinen als Tooltip. */
-    private static merkmalZelle(merkmal: UebungsMerkmal): string {
+    private static merkmalZelle(merkmal: UebungsMerkmal, spalte: string): string {
         const title = merkmal.detail ? ` title="${AdminView.escapeAttribute(merkmal.detail)}"` : "";
-        return `<td${title}>${AdminView.escapeHtml(merkmal.label)}</td>`;
+        return `<td data-label="${spalte}"${title}>${AdminView.escapeHtml(merkmal.label)}</td>`;
+    }
+
+    /** Leiste über der Tabelle, solange eine Löschung noch zurückgenommen werden kann. */
+    public zeigeLoeschHinweis(text: string, onRueckgaengig: () => void): void {
+        const box = document.getElementById("adminLoeschHinweis");
+        const textEl = document.getElementById("adminLoeschText");
+        const knopf = document.getElementById("adminLoeschRueckgaengig") as HTMLButtonElement | null;
+        if (!box) {
+            return;
+        }
+        if (textEl) {
+            textEl.textContent = text;
+        }
+        if (knopf) {
+            knopf.onclick = () => onRueckgaengig();
+        }
+        box.hidden = false;
+    }
+
+    public versteckeLoeschHinweis(): void {
+        const box = document.getElementById("adminLoeschHinweis");
+        if (box) {
+            box.hidden = true;
+        }
     }
 
     private static escapeHtml(text: string): string {

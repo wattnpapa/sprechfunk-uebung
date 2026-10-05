@@ -18,6 +18,8 @@ const mocks = vi.hoisted(() => ({
     setPaginationButtons: vi.fn(),
     renderChart: vi.fn(),
     bindListEvents: vi.fn(),
+    zeigeLoeschHinweis: vi.fn(),
+    versteckeLoeschHinweis: vi.fn(),
     uiError: vi.fn(),
     uiSuccess: vi.fn(),
     uiConfirm: vi.fn(() => true)
@@ -47,6 +49,8 @@ vi.mock("../../src/admin/AdminView", () => ({
         setPaginationButtons = mocks.setPaginationButtons;
         renderChart = mocks.renderChart;
         bindListEvents = mocks.bindListEvents;
+        zeigeLoeschHinweis = mocks.zeigeLoeschHinweis;
+        versteckeLoeschHinweis = mocks.versteckeLoeschHinweis;
     }
 }));
 vi.mock("../../src/core/UiFeedback", () => ({
@@ -101,8 +105,62 @@ describe("AdminController", () => {
         c.setDb({ db: true } as never);
         const reload = vi.spyOn(c, "ladeAlleUebungen").mockResolvedValue();
         await c.loescheUebung("u1");
+        // Erst vorgemerkt: gelöscht wird nach der Frist (THW-Review 2026-10-05, error-recovery P2-2).
+        expect(mocks.deleteUebung).not.toHaveBeenCalled();
+        expect(mocks.zeigeLoeschHinweis).toHaveBeenCalledWith(expect.stringContaining("wird in 8 Sekunden gelöscht"), expect.any(Function));
+        await c.loeschenAbschliessen();
         expect(mocks.deleteUebung).toHaveBeenCalledWith("u1");
         expect(reload).toHaveBeenCalledWith("refresh");
+        expect(mocks.versteckeLoeschHinweis).toHaveBeenCalled();
+    });
+
+    it("blendet die Zeile sofort aus, löscht erst nach der Frist und nimmt Rückgängig an", async () => {
+        vi.useFakeTimers();
+        try {
+            const { AdminController } = await import("../../src/admin/index");
+            const c = new AdminController();
+            c.setDb({ db: true } as never);
+            mocks.getUebungenPaged.mockResolvedValueOnce({
+                uebungen: [{ id: "u1", name: "Erste" }, { id: "u2", name: "Zweite" }],
+                lastVisible: null
+            });
+            mocks.getUebungenCount.mockResolvedValue(2);
+            await c.ladeAlleUebungen("initial");
+            vi.spyOn(c, "ladeAlleUebungen").mockResolvedValue();
+
+            await c.loescheUebung("u1");
+            expect(mocks.renderUebungsListe).toHaveBeenLastCalledWith([{ id: "u2", name: "Zweite" }]);
+
+            // Rückgängig vor Ablauf: nichts gelöscht, Zeile wieder da.
+            c.loeschenRueckgaengig();
+            expect(mocks.renderUebungsListe).toHaveBeenLastCalledWith([{ id: "u1", name: "Erste" }, { id: "u2", name: "Zweite" }]);
+            await vi.advanceTimersByTimeAsync(10000);
+            expect(mocks.deleteUebung).not.toHaveBeenCalled();
+            expect(mocks.uiSuccess).toHaveBeenCalledWith("Übung „Erste“ bleibt erhalten.");
+
+            // Ohne Rückgängig löscht der Ablauf der Frist.
+            await c.loescheUebung("u2");
+            await vi.advanceTimersByTimeAsync(7999);
+            expect(mocks.deleteUebung).not.toHaveBeenCalled();
+            await vi.advanceTimersByTimeAsync(1);
+            expect(mocks.deleteUebung).toHaveBeenCalledWith("u2");
+            expect(mocks.uiSuccess).toHaveBeenCalledWith("Übung „Zweite“ gelöscht.");
+        } finally {
+            vi.useRealTimers();
+        }
+    });
+
+    it("führt eine offene Löschung aus, bevor die nächste vorgemerkt wird", async () => {
+        const { AdminController } = await import("../../src/admin/index");
+        const c = new AdminController();
+        c.setDb({ db: true } as never);
+        vi.spyOn(c, "ladeAlleUebungen").mockResolvedValue();
+        await c.loescheUebung("u1");
+        await c.loescheUebung("u2");
+        expect(mocks.deleteUebung).toHaveBeenCalledTimes(1);
+        expect(mocks.deleteUebung).toHaveBeenCalledWith("u1");
+        await c.loeschenAbschliessen();
+        expect(mocks.deleteUebung).toHaveBeenLastCalledWith("u2");
     });
 
     it("nennt in der Lösch-Rückfrage die Übung und meldet das Löschen", async () => {
@@ -118,6 +176,7 @@ describe("AdminController", () => {
         vi.spyOn(c, "ladeAlleUebungen").mockResolvedValue();
 
         await c.loescheUebung("u1");
+        await c.loeschenAbschliessen();
 
         const frage = mocks.uiConfirm.mock.calls.at(-1)?.[0] as string;
         expect(frage).toContain("„Dienstabend A“");
@@ -125,7 +184,7 @@ describe("AdminController", () => {
         expect(frage).toContain("RG 1");
         expect(frage).toContain("2 Teilnehmer");
         expect(frage).toContain("K7M4Q2");
-        expect(frage).toContain("nicht rückgängig");
+        expect(frage).toContain("8 Sekunden lang „Rückgängig“");
         expect(mocks.uiSuccess).toHaveBeenCalledWith("Übung „Dienstabend A“ gelöscht.");
     });
 
@@ -157,6 +216,7 @@ describe("AdminController", () => {
             lastVisible: { __mockIndex: 13 }
         });
         await c.loescheUebung("u10");
+        await c.loeschenAbschliessen();
 
         await vi.waitFor(() => expect(mocks.renderPaginationInfo).toHaveBeenLastCalledWith(1, 10, 4, 14));
         expect(mocks.getUebungenPaged).toHaveBeenCalledTimes(3);
@@ -182,6 +242,7 @@ describe("AdminController", () => {
         mocks.getUebungenPaged.mockResolvedValueOnce({ uebungen: [], lastVisible: null });
         mocks.getUebungenPaged.mockResolvedValueOnce({ uebungen: seite1, lastVisible: { __mockIndex: 9 } });
         await c.loescheUebung("u10");
+        await c.loeschenAbschliessen();
 
         await vi.waitFor(() => expect(c.pagination.currentPage).toBe(0));
         expect(mocks.renderUebungsListe.mock.lastCall?.[0]).toHaveLength(10);
@@ -319,8 +380,11 @@ describe("AdminController", () => {
 
         mocks.uiConfirm.mockReturnValueOnce(true);
         mocks.deleteUebung.mockRejectedValueOnce(new Error("nope"));
+        mocks.getUebungenPaged.mockResolvedValueOnce({ uebungen: [], lastVisible: null });
+        mocks.getUebungenCount.mockResolvedValueOnce(0);
         await c.loescheUebung("u9");
-        expect(mocks.uiError).toHaveBeenCalled();
+        await c.loeschenAbschliessen();
+        expect(mocks.uiError).toHaveBeenCalledWith(expect.stringContaining("konnte nicht gelöscht werden"));
 
         c.setDb({ other: true } as never);
         mocks.getAdminStats.mockResolvedValueOnce({

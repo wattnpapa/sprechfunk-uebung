@@ -2,6 +2,8 @@ import type { Firestore, QueryDocumentSnapshot } from "firebase/firestore";
 import { FirebaseService } from "../services/FirebaseService";
 import { AdminView, type JahresEintrag } from "./AdminView";
 import { uiFeedback } from "../core/UiFeedback";
+import { LOESCH_VERZOEGERUNG_MS, LoeschPuffer, type OffeneLoeschung } from "./loeschPuffer";
+import { loeschRueckfrage, uebungsName } from "./loeschTexte";
 
 type ListenCursor = QueryDocumentSnapshot | { __mockIndex: number } | { __fallbackIndex: number } | null;
 
@@ -34,9 +36,17 @@ export class AdminController {
     /** Die gerade angezeigten Übungen; die Lösch-Rückfrage nennt daraus Name und Datum. */
     private angezeigteUebungen: UebungsListe = [];
     private readonly cacheTtlMs = 120000;
+    private readonly loeschPuffer = new LoeschPuffer(eintrag => this.loescheEndgueltig(eintrag));
 
     constructor() {
         this.view = new AdminView();
+        // Wer die Verwaltung verlässt, bekommt die vorgemerkte Löschung
+        // ausgeführt, statt dass sie still liegen bleibt.
+        if (typeof window !== "undefined" && typeof window.addEventListener === "function") {
+            const abschliessen = () => void this.loeschenAbschliessen();
+            window.addEventListener("hashchange", abschliessen);
+            window.addEventListener("pagehide", abschliessen);
+        }
 
         this.pagination = {
             totalCount: 0,
@@ -81,7 +91,9 @@ export class AdminController {
         const avgTeilnehmer = stats.total > 0 ? (stats.totalTeilnehmer / stats.total).toFixed(1) : "0";
         const totalKB = (stats.totalBytes / 1024).toFixed(1) + " kB";
 
-        // 6️⃣ Durchschnittliche Dauer (Schätzung)
+        // 6️⃣ Reine Sprechzeit (15 s je Spruch), bewusst anders benannt als die
+        // „Dauer (optimal)“ des Generators, die Mitschrift und Verbindungsaufbau
+        // einrechnet (THW-Review 2026-10-05, new-user P3-7).
         const avgDauerSek = stats.total > 0 ? (stats.totalSprueche * 15) / stats.total : 0;
         const avgMin = Math.floor(avgDauerSek / 60);
         const avgSek = Math.round(avgDauerSek % 60);
@@ -152,60 +164,64 @@ export class AdminController {
         this.zeigeSeite(result.uebungen);
     }
 
+    /**
+     * Nach der Rückfrage verschwindet die Zeile, gelöscht wird erst nach
+     * einigen Sekunden; bis dahin holt „Rückgängig“ sie zurück.
+     */
     async loescheUebung(uebungId: string) {
-        const service = this.getFirebaseService();
-        if (!service) {
+        if (!this.getFirebaseService()) {
             return;
         }
         const uebung = this.angezeigteUebungen.find(eintrag => eintrag.id === uebungId);
         if (!uiFeedback.confirm(AdminController.loeschRueckfrage(uebung))) {
             return;
         }
-
-        try {
-            await service.deleteUebung(uebungId);
-            this.invalidateCaches();
-            // Auf der aktuellen Seite bleiben statt zurück auf Seite 1 zu springen.
-            this.ladeAlleUebungen("refresh");
-            uiFeedback.success(`Übung „${AdminController.uebungsName(uebung)}“ gelöscht.`);
-        } catch (error) {
-            console.error("❌ Fehler beim Löschen der Übung:", error);
-            uiFeedback.error("Fehler beim Löschen der Übung.");
-        }
+        const name = uebungsName(uebung);
+        await this.loeschPuffer.plane({ id: uebungId, name });
+        this.zeigeSeite(this.angezeigteUebungen);
+        this.view.zeigeLoeschHinweis(
+            `Übung „${name}“ wird in ${LOESCH_VERZOEGERUNG_MS / 1000} Sekunden gelöscht.`,
+            () => this.loeschenRueckgaengig()
+        );
     };
 
-    private static uebungsName(uebung: UebungsListe[number] | undefined): string {
-        return uebung?.name?.trim() || "ohne Namen";
-    }
-
-    /** Merkmale, an denen man die Übung in der Löschrückfrage erkennt. */
-    private static loeschDetails(uebung: UebungsListe[number]): string[] {
-        const datum = uebung.datum ? new Date(uebung.datum) : null;
-        const istGueltig = !!datum && !Number.isNaN(datum.getTime());
-        return [
-            istGueltig ? `Datum ${datum.toLocaleDateString("de-DE")}` : "",
-            uebung.rufgruppe ? `Rufgruppe ${uebung.rufgruppe}` : "",
-            uebung.teilnehmerListe ? `${uebung.teilnehmerListe.length} Teilnehmer` : "",
-            uebung.uebungCode ? `Übungscode ${uebung.uebungCode}` : ""
-        ].filter(Boolean);
-    }
-
-    /**
-     * Die Rückfrage nennt die Übung und die Folgen, statt nur „diese Übung“
-     * (THW-Review destructive-action P1-1, error-recovery P2-6).
-     */
-    static loeschRueckfrage(uebung: UebungsListe[number] | undefined): string {
-        const zeilen = [`Übung „${AdminController.uebungsName(uebung)}“ endgültig löschen?`];
-        const details = uebung ? AdminController.loeschDetails(uebung) : [];
-        if (details.length > 0) {
-            zeilen.push(details.join(" · "));
+    /** Holt die vorgemerkte Übung zurück, bevor sie gelöscht wird. */
+    public loeschenRueckgaengig(): void {
+        const eintrag = this.loeschPuffer.rueckgaengig();
+        this.view.versteckeLoeschHinweis();
+        if (eintrag) {
+            this.zeigeSeite(this.angezeigteUebungen);
+            uiFeedback.success(`Übung „${eintrag.name}“ bleibt erhalten.`);
         }
-        zeilen.push(
-            "",
-            "Alle Teilnehmer- und Leitungs-Links dieser Übung funktionieren danach nicht mehr. " +
-            "Das lässt sich nicht rückgängig machen."
-        );
-        return zeilen.join("\n");
+    }
+
+    /** Führt eine vorgemerkte Löschung sofort aus, etwa beim Verlassen der Seite. */
+    public loeschenAbschliessen(): Promise<void> {
+        return this.loeschPuffer.abschliessen();
+    }
+
+    private async loescheEndgueltig(eintrag: OffeneLoeschung): Promise<void> {
+        this.view.versteckeLoeschHinweis();
+        const service = this.getFirebaseService();
+        if (!service) {
+            return;
+        }
+        try {
+            await service.deleteUebung(eintrag.id);
+            this.invalidateCaches();
+            uiFeedback.success(`Übung „${eintrag.name}“ gelöscht.`);
+        } catch (error) {
+            console.error("❌ Fehler beim Löschen der Übung:", error);
+            uiFeedback.error(`Übung „${eintrag.name}“ konnte nicht gelöscht werden. Prüfe die Verbindung und versuche es erneut.`);
+        }
+        // Auf der aktuellen Seite bleiben statt zurück auf Seite 1 zu springen;
+        // nach einem Fehler steht die Zeile so wieder da.
+        await this.ladeAlleUebungen("refresh");
+    }
+
+    /** Rückfrage vor dem Löschen; die Texte liegen in `loeschTexte.ts`. */
+    static loeschRueckfrage(uebung: UebungsListe[number] | undefined): string {
+        return loeschRueckfrage(uebung);
     }
 
     offeneUebungsleitung(uebungId: string): void {
@@ -440,7 +456,8 @@ export class AdminController {
 
     private zeigeSeite(uebungen: UebungsListe): void {
         this.angezeigteUebungen = uebungen;
-        this.view.renderUebungsListe(uebungen);
+        const ausstehend = this.loeschPuffer.ausstehendeId;
+        this.view.renderUebungsListe(ausstehend ? uebungen.filter(uebung => uebung.id !== ausstehend) : uebungen);
         this.view.renderPaginationInfo(
             this.pagination.currentPage,
             this.pagination.pageSize,
