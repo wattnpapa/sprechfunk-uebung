@@ -1,7 +1,7 @@
 import { readFileSync } from "node:fs";
 import path from "node:path";
 import { describe, expect, it, vi } from "vitest";
-import { FirebaseService } from "../../src/services/FirebaseService";
+import { sanitizeDataForSave } from "../../src/services/firestoreSanitize";
 import { FunkUebung } from "../../src/models/FunkUebung";
 import {
     toLeitungLiveDoc,
@@ -57,12 +57,9 @@ function baueVollstaendigeUebung(): FunkUebung {
     return u;
 }
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-function speicherAbbild(uebung: FunkUebung): Record<string, any> {
+function speicherAbbild(uebung: FunkUebung): Record<string, unknown> {
     vi.stubGlobal("window", { localStorage: { getItem: () => null } });
-    const service = new FirebaseService({} as never);
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    return (service as any).sanitizeDataForSave(JSON.parse(uebung.toJson()));
+    return sanitizeDataForSave(JSON.parse(uebung.toJson()));
 }
 
 describe("firestore.rules Feldvertrag", () => {

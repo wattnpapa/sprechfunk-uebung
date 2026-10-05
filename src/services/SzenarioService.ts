@@ -42,17 +42,7 @@ export function parseSzenario(slug: string, roh: unknown): Szenario {
         throw new SzenarioParseError(slug, ["Wurzel ist kein Objekt"]);
     }
 
-    const text = (feld: string, maxLaenge: number): string => {
-        const wert = obj[feld];
-        if (typeof wert !== "string" || wert.trim().length === 0) {
-            fehler.push(`Feld "${feld}" fehlt oder ist leer`);
-            return "";
-        }
-        if (wert.length > maxLaenge) {
-            fehler.push(`Feld "${feld}" ist länger als ${maxLaenge} Zeichen`);
-        }
-        return wert.trim();
-    };
+    const text = (feld: string, maxLaenge: number): string => pflichtText(obj, feld, maxLaenge, fehler);
 
     const parsedSlug = text("slug", 64);
     if (parsedSlug && parsedSlug !== slug) {
@@ -61,13 +51,7 @@ export function parseSzenario(slug: string, roh: unknown): Szenario {
     const titel = text("titel", 120);
     const beschreibung = text("beschreibung", 300);
     const lage = text("lage", 1200);
-
-    const minTeilnehmer = typeof obj["minTeilnehmer"] === "number" && Number.isInteger(obj["minTeilnehmer"])
-        ? obj["minTeilnehmer"]
-        : (fehler.push("Feld \"minTeilnehmer\" fehlt oder ist keine ganze Zahl"), 0);
-    if (minTeilnehmer < 2) {
-        fehler.push("minTeilnehmer muss mindestens 2 sein (Partner-Sprüche brauchen ein Gegenüber)");
-    }
+    const minTeilnehmer = parseMinTeilnehmer(obj["minTeilnehmer"], fehler);
 
     const einleitung = parseRahmenListe(obj["einleitung"], "einleitung", fehler);
     const abschluss = parseRahmenListe(obj["abschluss"], "abschluss", fehler);
@@ -82,6 +66,28 @@ export function parseSzenario(slug: string, roh: unknown): Szenario {
     }
 
     return { slug, titel, beschreibung, lage, minTeilnehmer, einleitung, straenge, abschluss };
+}
+
+function pflichtText(obj: Record<string, unknown>, feld: string, maxLaenge: number, fehler: string[]): string {
+    const wert = obj[feld];
+    if (typeof wert !== "string" || wert.trim().length === 0) {
+        fehler.push(`Feld "${feld}" fehlt oder ist leer`);
+        return "";
+    }
+    if (wert.length > maxLaenge) {
+        fehler.push(`Feld "${feld}" ist länger als ${maxLaenge} Zeichen`);
+    }
+    return wert.trim();
+}
+
+function parseMinTeilnehmer(roh: unknown, fehler: string[]): number {
+    const minTeilnehmer = typeof roh === "number" && Number.isInteger(roh)
+        ? roh
+        : (fehler.push("Feld \"minTeilnehmer\" fehlt oder ist keine ganze Zahl"), 0);
+    if (minTeilnehmer < 2) {
+        fehler.push("minTeilnehmer muss mindestens 2 sein (Partner-Sprüche brauchen ein Gegenüber)");
+    }
+    return minTeilnehmer;
 }
 
 function parseRahmenListe(roh: unknown, feld: string, fehler: string[]): SzenarioRahmenSpruch[] {

@@ -15,19 +15,26 @@ import {
     getAggregateFromServer,
     count,
     sum,
-    Timestamp,
     type QueryConstraint
 } from "firebase/firestore";
 import { Uebung } from "../types/Uebung";
-import type { Nachricht } from "../types/Nachricht";
-import {
-    MELDEARTEN,
-    UEBERMITTLUNGS_WEGE,
-    type FuehrungsstellenKonfiguration,
-    type Meldeart,
-    type UebermittlungsWeg
-} from "../types/FuehrungsstellenUebung";
 import { FunkUebung } from "../models/FunkUebung";
+import { mapUebungToDomain } from "./firestoreMapping";
+import { isMissingIndexError, sanitizeDataForSave } from "./firestoreSanitize";
+import {
+    isLocalMockMode,
+    mockAdminStats,
+    mockUebungCode,
+    mockJahresCounts,
+    mockMonatsCounts,
+    paginateEntries,
+    readMockEntries,
+    readMockStore,
+    sortByCreateDateDesc,
+    writeMockStore,
+    type MockDokument,
+    type MockStore
+} from "./firestoreMockStore";
 
 export class FirebaseService {
     /**
@@ -42,67 +49,24 @@ export class FirebaseService {
 
     constructor(private db: Firestore) {}
 
-    private isMissingIndexError(error: unknown): boolean {
-        if (!error || typeof error !== "object") {
-            return false;
-        }
-        const maybe = error as { code?: string; message?: string; customData?: { serverResponse?: string } };
-        const code = typeof maybe.code === "string" ? maybe.code : "";
-        if (code === "failed-precondition" || code.endsWith("/failed-precondition")) {
-            return true;
-        }
-        const message = typeof maybe.message === "string" ? maybe.message.toLowerCase() : "";
-        if (message.includes("requires an index") || message.includes("create_composite")) {
-            return true;
-        }
-        const serverResponse = typeof maybe.customData?.serverResponse === "string"
-            ? maybe.customData.serverResponse.toLowerCase()
-            : "";
-        return serverResponse.includes("requires an index") || serverResponse.includes("create_composite");
+    private isLocalMockMode(): boolean {
+        return isLocalMockMode();
     }
 
-    private hasNonEmptyRecord(val: unknown): boolean {
-        if (!val || typeof val !== "object") {
-            return false;
-        }
-        return Object.keys(val as Record<string, unknown>).length > 0;
+    private readMockStore(): MockStore {
+        return readMockStore();
     }
 
-    private sortByCreateDateDesc(entries: FunkUebung[]): FunkUebung[] {
-        return entries.sort((a, b) => {
-            const da = new Date(a.createDate).getTime();
-            const db = new Date(b.createDate).getTime();
-            return db - da;
-        });
+    private writeMockStore(store: MockStore): void {
+        writeMockStore(store);
     }
 
-    private paginateEntries(
-        entries: FunkUebung[],
-        pageSize: number,
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        startAfterCursor: any,
-        cursorKey: "__mockIndex" | "__fallbackIndex"
-    ) {
-        let start = 0;
-        if (startAfterCursor && typeof startAfterCursor[cursorKey] === "number") {
-            start = startAfterCursor[cursorKey] + 1;
-        }
-        const page = entries.slice(start, start + pageSize);
-        const lastIndex = start + page.length - 1;
-        const visibleCursor = (() => {
-            if (page.length === 0) {
-                return null;
-            }
-            if (cursorKey === "__mockIndex") {
-                return { __mockIndex: lastIndex };
-            }
-            return { __fallbackIndex: lastIndex };
-        })();
-        return {
-            uebungen: page,
-            lastVisible: visibleCursor,
-            size: page.length
-        };
+    private mapToDomain(id: string, data: unknown): FunkUebung {
+        return mapUebungToDomain(id, data);
+    }
+
+    private sanitizeDataForSave(data: unknown): Record<string, unknown> {
+        return sanitizeDataForSave(data);
     }
 
     private readAlleUebungenLocal(onlyTestExercises: boolean): FunkUebung[] {
@@ -111,13 +75,13 @@ export class FirebaseService {
         if (onlyTestExercises) {
             allEntries = allEntries.filter(entry => entry.istStandardKonfiguration === true);
         }
-        return this.sortByCreateDateDesc(allEntries);
+        return sortByCreateDateDesc(allEntries);
     }
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     private getUebungenPagedLocal(pageSize: number, startAfterCursor: any, onlyTestExercises: boolean) {
         const allEntries = this.readAlleUebungenLocal(onlyTestExercises);
-        return this.paginateEntries(allEntries, pageSize, startAfterCursor, "__mockIndex");
+        return paginateEntries(allEntries, pageSize, startAfterCursor, "__mockIndex");
     }
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -142,11 +106,11 @@ export class FirebaseService {
                 size: snapshot.size
             };
         } catch (error) {
-            if (!(onlyTestExercises && this.isMissingIndexError(error))) {
+            if (!(onlyTestExercises && isMissingIndexError(error))) {
                 throw error;
             }
-            const all = this.sortByCreateDateDesc(await this.readAlleUebungenRemoteUnfiltered(true));
-            return this.paginateEntries(all, pageSize, startAfterCursor, "__fallbackIndex");
+            const all = sortByCreateDateDesc(await this.readAlleUebungenRemoteUnfiltered(true));
+            return paginateEntries(all, pageSize, startAfterCursor, "__fallbackIndex");
         }
     }
 
@@ -158,313 +122,6 @@ export class FirebaseService {
         const allSnap = await getDocs(collection(this.db, "uebungen"));
         const all = allSnap.docs.map(doc => this.mapToDomain(doc.id, doc.data()));
         return onlyTestExercises ? all.filter(entry => entry.istStandardKonfiguration === true) : all;
-    }
-
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    private cleanupRecordKeys(obj: any): Record<string, unknown> {
-        if (!obj || typeof obj !== "object" || Array.isArray(obj)) {
-            return {};
-        }
-        return Object.fromEntries(
-            Object.entries(obj).filter(([key, value]) => String(key).trim() !== "" && value !== undefined)
-        );
-    }
-
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    private sanitizeDataForSave(data: any): Record<string, unknown> {
-        if (!data || typeof data !== "object") {
-            return {};
-        }
-
-        const cleaned = { ...data } as Record<string, unknown>;
-        const teilnehmerListe = Array.isArray(cleaned["teilnehmerListe"])
-            ? (cleaned["teilnehmerListe"] as unknown[])
-                .map(t => typeof t === "string" ? t.trim() : "")
-                .filter((t): t is string => t.length > 0)
-            : [];
-
-        cleaned["teilnehmerListe"] = teilnehmerListe;
-        cleaned["uebungCode"] = typeof cleaned["uebungCode"] === "string"
-            ? cleaned["uebungCode"].trim().toUpperCase()
-            : "";
-
-        cleaned["nachrichten"] = this.cleanupRecordKeys(cleaned["nachrichten"]);
-        cleaned["loesungsStaerken"] = this.cleanupRecordKeys(cleaned["loesungsStaerken"]);
-        cleaned["loesungswoerter"] = this.cleanupRecordKeys(cleaned["loesungswoerter"]);
-        cleaned["teilnehmerIds"] = this.cleanupRecordKeys(cleaned["teilnehmerIds"]);
-        cleaned["teilnehmerStellen"] = this.cleanupRecordKeys(cleaned["teilnehmerStellen"]);
-
-        Object.assign(cleaned, this.buildStatistikFelder(cleaned));
-
-        Object.keys(cleaned).forEach(key => {
-            if (cleaned[key] === undefined) {
-
-                delete cleaned[key];
-            }
-        });
-
-        return cleaned;
-    }
-
-    /**
-     * Denormalisierte Kennzahlen, damit das Admin-Dashboard über
-     * Aggregations-Queries auswerten kann, statt jedes Dokument zu laden.
-     * Werden bei jedem Speichern neu berechnet.
-     */
-    private buildStatistikFelder(cleaned: Record<string, unknown>): Record<string, unknown> {
-        const teilnehmerListe = Array.isArray(cleaned["teilnehmerListe"]) ? cleaned["teilnehmerListe"] : [];
-        const nachrichten = (cleaned["nachrichten"] || {}) as Record<string, unknown>;
-
-        let nachrichtenAnzahl = 0;
-        Object.values(nachrichten).forEach(msgs => {
-            if (Array.isArray(msgs)) {
-                nachrichtenAnzahl += msgs.length;
-            }
-        });
-
-        const datum = this.extractDatum(cleaned["datum"]);
-
-        return {
-            statTeilnehmerAnzahl: teilnehmerListe.length,
-            statNachrichtenAnzahl: nachrichtenAnzahl,
-            // Grobe Schätzung der Dokumentgröße, wie bisher im Admin-Dashboard ausgewiesen.
-            statBytes: JSON.stringify(cleaned).length,
-            statHatLoesungswoerter: this.hasNonEmptyRecord(cleaned["loesungswoerter"]),
-            statHatLoesungsStaerken: this.hasNonEmptyRecord(cleaned["loesungsStaerken"]),
-            statHatBuchstabieren: Number(cleaned["buchstabierenAn"] || 0) > 0,
-            // undefined bei unlesbarem Datum -> Feld wird verworfen, Übung taucht
-            // dann nicht im Monatsdiagramm auf.
-            statMonat: datum?.getMonth(),
-            statJahr: datum?.getFullYear()
-        };
-    }
-
-    private extractDatum(rohwert: unknown): Date | undefined {
-        if (!rohwert) {
-            return undefined;
-        }
-        const maybeTimestamp = rohwert as { toDate?: () => Date };
-        const datum = typeof maybeTimestamp.toDate === "function"
-            ? maybeTimestamp.toDate()
-            : new Date(rohwert as string | number | Date);
-        if (!(datum instanceof Date) || isNaN(datum.getTime())) {
-            return undefined;
-        }
-        return datum;
-    }
-
-    private isLocalMockMode(): boolean {
-        if (typeof window === "undefined") {
-            return false;
-        }
-        try {
-            return window.localStorage.getItem("useFirestoreEmulator") === "1";
-        } catch {
-            return false;
-        }
-    }
-
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    private readMockStore(): Record<string, any> {
-        if (!this.isLocalMockMode() || typeof window === "undefined") {
-            return {};
-        }
-        try {
-            const raw = window.localStorage.getItem("e2eFirestoreSeed");
-            if (!raw) {
-                return {};
-            }
-            const parsed = JSON.parse(raw) as Record<string, unknown>;
-            if (!parsed || typeof parsed !== "object") {
-                return {};
-            }
-            return parsed as Record<string, unknown>;
-        } catch {
-            return {};
-        }
-    }
-
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    private writeMockStore(store: Record<string, any>): void {
-        if (!this.isLocalMockMode() || typeof window === "undefined") {
-            return;
-        }
-        window.localStorage.setItem("e2eFirestoreSeed", JSON.stringify(store));
-    }
-
-    /**
-     * Wandelt ein Firestore-Dokument in ein sauberes Uebung-Objekt um (Domain-Modell).
-     */
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    private mapToDomain(id: string, data: any): FunkUebung {
-        // Helper function to safely convert dates
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const toDate = (val: any): Date => {
-            if (val instanceof Timestamp) {
-                return val.toDate();
-            }
-            if (typeof val === "string" || typeof val === "number") {
-                const d = new Date(val);
-                return isNaN(d.getTime()) ? new Date() : d;
-            }
-            return val instanceof Date ? val : new Date();
-        };
-
-        const toStringArray = (val: unknown): string[] => {
-            if (!Array.isArray(val)) {
-                return [];
-            }
-            return val.filter(v => typeof v === "string") as string[];
-        };
-
-        const toRecordString = (val: unknown): Record<string, string> => {
-            if (!val || typeof val !== "object") {
-                return {};
-            }
-            return Object.entries(val as Record<string, unknown>)
-                .filter(([, v]) => typeof v === "string")
-                .reduce<Record<string, string>>((acc, [k, v]) => {
-                    acc[k] = v as string;
-                    return acc;
-                }, {});
-        };
-
-        const toNumber = (val: unknown, fallback = 0): number => {
-            if (typeof val === "number" && Number.isFinite(val)) {
-                return val;
-            }
-            if (typeof val === "string" && val.trim() !== "") {
-                const parsed = Number(val);
-                return Number.isFinite(parsed) ? parsed : fallback;
-            }
-            return fallback;
-        };
-
-        const parseNachricht = (val: unknown): Nachricht | null => {
-            if (!val || typeof val !== "object") {
-                return null;
-            }
-            const obj = val as Record<string, unknown>;
-            const id = toNumber(obj["id"], NaN);
-            const nachricht = typeof obj["nachricht"] === "string" ? obj["nachricht"] : "";
-            const empfaenger = toStringArray(obj["empfaenger"]);
-            if (!Number.isFinite(id) || !nachricht || empfaenger.length === 0) {
-                return null;
-            }
-            const loesungsbuchstaben = Array.isArray(obj["loesungsbuchstaben"])
-                ? (obj["loesungsbuchstaben"] as unknown[]).filter(v => typeof v === "string") as string[]
-                : undefined;
-            const staerken = Array.isArray(obj["staerken"])
-                ? (obj["staerken"] as unknown[])
-                    .map(s => {
-                        if (!s || typeof s !== "object") {
-                            return null;
-                        }
-                        const st = s as Record<string, unknown>;
-                        const fuehrer = toNumber(st["fuehrer"], NaN);
-                        const unterfuehrer = toNumber(st["unterfuehrer"], NaN);
-                        const helfer = toNumber(st["helfer"], NaN);
-                        if (!Number.isFinite(fuehrer) || !Number.isFinite(unterfuehrer) || !Number.isFinite(helfer)) {
-                            return null;
-                        }
-                        return { fuehrer, unterfuehrer, helfer };
-                    })
-                    .filter(Boolean) as { fuehrer: number; unterfuehrer: number; helfer: number }[]
-                : undefined;
-
-            const base: Nachricht = {
-                id,
-                empfaenger,
-                nachricht
-            };
-            if (loesungsbuchstaben && loesungsbuchstaben.length > 0) {
-                base.loesungsbuchstaben = loesungsbuchstaben;
-            }
-            if (staerken && staerken.length > 0) {
-                base.staerken = staerken;
-            }
-            const xZeitSlot = typeof obj["xZeitSlot"] === "number" && Number.isFinite(obj["xZeitSlot"])
-                ? obj["xZeitSlot"]
-                : undefined;
-            if (xZeitSlot !== undefined) {
-                base.xZeitSlot = xZeitSlot;
-            }
-            if (obj["art"] === "spruch" || obj["art"] === "durchsage") {
-                base.art = obj["art"];
-            }
-            const szenarioNr = typeof obj["szenarioNr"] === "number" && Number.isFinite(obj["szenarioNr"])
-                ? obj["szenarioNr"]
-                : undefined;
-            if (szenarioNr !== undefined) {
-                base.szenarioNr = szenarioNr;
-            }
-            Object.assign(base, parseFuehrungsstellenFelder(obj));
-            return base;
-        };
-
-        const toNachrichtenRecord = (val: unknown): Record<string, Nachricht[]> => {
-            if (!val || typeof val !== "object") {
-                return {};
-            }
-            const entries = Object.entries(val as Record<string, unknown>);
-            return entries.reduce<Record<string, Nachricht[]>>((acc, [sender, list]) => {
-                if (!Array.isArray(list)) {
-                    acc[sender] = [];
-                    return acc;
-                }
-                acc[sender] = list
-                    .map(parseNachricht)
-                    .filter((n): n is Nachricht => n !== null);
-                return acc;
-            }, {});
-        };
-
-        const uebung = new FunkUebung(typeof data.buildVersion === "string" ? data.buildVersion : "");
-        Object.assign(uebung, {
-            id: id,
-            uebungCode: typeof data.uebungCode === "string" ? data.uebungCode.toUpperCase() : "",
-            name: typeof data.name === "string" ? data.name : "",
-            datum: toDate(data.datum),
-            createDate: toDate(data.createDate),
-            buildVersion: typeof data.buildVersion === "string" ? data.buildVersion : "",
-            leitung: typeof data.leitung === "string" ? data.leitung : "",
-            rufgruppe: typeof data.rufgruppe === "string" ? data.rufgruppe : "",
-            teilnehmerListe: toStringArray(data.teilnehmerListe),
-            teilnehmerIds: toRecordString(data.teilnehmerIds),
-            teilnehmerStellen: toRecordString(data.teilnehmerStellen),
-            nachrichten: toNachrichtenRecord(data.nachrichten),
-            spruecheProTeilnehmer: toNumber(data.spruecheProTeilnehmer, 0),
-            spruecheAnAlle: toNumber(data.spruecheAnAlle, 0),
-            spruecheAnMehrere: toNumber(data.spruecheAnMehrere, 0),
-            buchstabierenAn: toNumber(data.buchstabierenAn, 0),
-            loesungswoerter: toRecordString(data.loesungswoerter),
-            loesungsStaerken: toRecordString(data.loesungsStaerken),
-            checksumme: typeof data.checksumme === "string" ? data.checksumme : "",
-            funksprueche: toStringArray(data.funksprueche),
-            anmeldungAktiv: typeof data.anmeldungAktiv === "boolean" ? data.anmeldungAktiv : true,
-            nachrichtenArtAktiv: typeof data.nachrichtenArtAktiv === "boolean" ? data.nachrichtenArtAktiv : false,
-            spruchAnteilProzent: typeof data.spruchAnteilProzent === "number" ? data.spruchAnteilProzent : 50,
-            seed: typeof data.seed === "string" ? data.seed : undefined,
-            verwendeteVorlagen: toStringArray(data.verwendeteVorlagen),
-            istStandardKonfiguration: typeof data.istStandardKonfiguration === "boolean" ? data.istStandardKonfiguration : false,
-            spielModus: data.spielModus === "xZeit" ? "xZeit" : undefined,
-            xZeitIntervallMinuten: typeof data.xZeitIntervallMinuten === "number" ? data.xZeitIntervallMinuten : undefined,
-            xZeitStartOffsetMinuten: typeof data.xZeitStartOffsetMinuten === "number" ? data.xZeitStartOffsetMinuten : undefined,
-            szenarioSlug: typeof data.szenarioSlug === "string" && data.szenarioSlug.trim() !== ""
-                ? data.szenarioSlug
-                : undefined,
-            fuehrungsstelle: parseFuehrungsstellenKonfiguration(data.fuehrungsstelle)
-        });
-
-        // Legacy-Daten kompatibel machen: "Alle" immer in explizite Empfängerliste auflösen.
-        Object.entries(uebung.nachrichten || {}).forEach(([sender, list]) => {
-            list.forEach(n => {
-                if (n.empfaenger.includes("Alle")) {
-                    n.empfaenger = uebung.teilnehmerListe.filter(t => t !== sender);
-                }
-            });
-        });
-        return uebung;
     }
 
     /**
@@ -497,11 +154,9 @@ export class FirebaseService {
 
         if (this.isLocalMockMode()) {
             const store = this.readMockStore();
-            const kandidaten = Object.entries(store).filter(([, value]) =>
-                typeof value?.uebungCode === "string" && value.uebungCode.toUpperCase() === uebungCode
-            );
+            const kandidaten = Object.entries(store).filter(([, value]) => mockUebungCode(value) === uebungCode);
             for (const [uebungId, data] of kandidaten) {
-                const treffer = this.matchTeilnehmerCode(data?.teilnehmerIds, teilnehmerCode);
+                const treffer = this.matchTeilnehmerCode((data as MockDokument)?.["teilnehmerIds"], teilnehmerCode);
                 if (treffer) {
                     return { uebungId, ...treffer };
                 }
@@ -555,9 +210,7 @@ export class FirebaseService {
         if (this.isLocalMockMode()) {
             const store = this.readMockStore();
             return Object.entries(store).some(([id, value]) =>
-                id !== exceptId
-                && typeof value?.uebungCode === "string"
-                && value.uebungCode.toUpperCase() === code
+                id !== exceptId && mockUebungCode(value) === code
             );
         }
 
@@ -576,8 +229,7 @@ export class FirebaseService {
     async saveUebung(uebung: FunkUebung | Uebung): Promise<void> {
         if (this.isLocalMockMode()) {
             const id = uebung.id;
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            const store = this.readMockStore() as Record<string, any>;
+            const store = this.readMockStore();
             if (uebung instanceof FunkUebung) {
                 store[id] = JSON.parse(uebung.toJson());
             } else {
@@ -607,8 +259,7 @@ export class FirebaseService {
 
     async deleteUebung(id: string): Promise<void> {
         if (this.isLocalMockMode()) {
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            const store = this.readMockStore() as Record<string, any>;
+            const store = this.readMockStore();
              
             delete store[id];
             this.writeMockStore(store);
@@ -650,10 +301,10 @@ export class FirebaseService {
             );
             return snapshot.docs.map(doc => this.mapToDomain(doc.id, doc.data()));
         } catch (error) {
-            if (!(onlyTestExercises && this.isMissingIndexError(error))) {
+            if (!(onlyTestExercises && isMissingIndexError(error))) {
                 throw error;
             }
-            return this.sortByCreateDateDesc(await this.readAlleUebungenRemoteUnfiltered(true));
+            return sortByCreateDateDesc(await this.readAlleUebungenRemoteUnfiltered(true));
         }
     }
 
@@ -662,7 +313,7 @@ export class FirebaseService {
      */
     async getUebungenCount(onlyTestExercises = false): Promise<number> {
         if (this.isLocalMockMode()) {
-            return this.readMockEntries(onlyTestExercises).length;
+            return readMockEntries(onlyTestExercises).length;
         }
         const snapshot = await getCountFromServer(this.buildUebungenQuery(onlyTestExercises));
         return snapshot.data().count;
@@ -676,15 +327,7 @@ export class FirebaseService {
      */
     async getUebungenMonatsCounts(onlyTestExercises = false, jahr?: number): Promise<number[]> {
         if (this.isLocalMockMode()) {
-            const counts = Array.from({ length: 12 }, () => 0);
-            this.readMockEntries(onlyTestExercises).forEach(data => {
-                const datum = this.extractDatum(data["datum"]);
-                if (datum && (jahr === undefined || datum.getFullYear() === jahr)) {
-                    const monat = datum.getMonth();
-                    counts[monat] = (counts[monat] ?? 0) + 1;
-                }
-            });
-            return counts;
+            return mockMonatsCounts(onlyTestExercises, jahr);
         }
 
         const jahresFilter = jahr === undefined ? [] : [where("statJahr", "==", jahr)];
@@ -704,16 +347,7 @@ export class FirebaseService {
      */
     async getUebungenJahresCounts(onlyTestExercises = false): Promise<{ jahr: number; anzahl: number }[]> {
         if (this.isLocalMockMode()) {
-            const counts = new Map<number, number>();
-            this.readMockEntries(onlyTestExercises).forEach(data => {
-                const jahr = this.extractDatum(data["datum"])?.getFullYear();
-                if (jahr !== undefined) {
-                    counts.set(jahr, (counts.get(jahr) ?? 0) + 1);
-                }
-            });
-            return [...counts.entries()]
-                .map(([jahr, anzahl]) => ({ jahr, anzahl }))
-                .sort((a, b) => a.jahr - b.jahr);
+            return mockJahresCounts(onlyTestExercises);
         }
 
         const aktuellesJahr = new Date().getFullYear();
@@ -768,13 +402,6 @@ export class FirebaseService {
         return query(collection(this.db, "uebungen"), ...constraints);
     }
 
-    private readMockEntries(onlyTestExercises: boolean): Record<string, unknown>[] {
-        const store = this.readMockStore();
-        return (Object.values(store) as Record<string, unknown>[]).filter(data =>
-            !onlyTestExercises || Boolean(data["istStandardKonfiguration"])
-        );
-    }
-
     /**
      * Lädt Statistiken für das Admin-Dashboard.
      *
@@ -786,45 +413,7 @@ export class FirebaseService {
      */
     async getAdminStats() {
         if (this.isLocalMockMode()) {
-            const store = this.readMockStore();
-            const docs = Object.values(store) as Record<string, unknown>[];
-
-            let totalTeilnehmer = 0;
-            let totalBytes = 0;
-            let totalSprueche = 0;
-            let loesungsCount = 0;
-            let staerkeCount = 0;
-            let buchstabierCount = 0;
-
-            docs.forEach(data => {
-                totalTeilnehmer += ((data["teilnehmerListe"] as unknown[])?.length || 0);
-                if (this.hasNonEmptyRecord(data["loesungswoerter"])) {
-                    loesungsCount++;
-                }
-                if (this.hasNonEmptyRecord(data["loesungsStaerken"])) {
-                    staerkeCount++;
-                }
-                if ((data["buchstabierenAn"] as number || 0) > 0) {
-                    buchstabierCount++;
-                }
-                totalBytes += JSON.stringify(data).length;
-                const nachrichten = data["nachrichten"] as Record<string, unknown[]> || {};
-                Object.values(nachrichten).forEach(msgs => {
-                    if (Array.isArray(msgs)) {
-                        totalSprueche += msgs.length;
-                    }
-                });
-            });
-
-            return {
-                total: docs.length,
-                totalTeilnehmer,
-                totalBytes,
-                totalSprueche,
-                loesungsCount,
-                staerkeCount,
-                buchstabierCount
-            };
+            return mockAdminStats();
         }
         const uebungenCol = collection(this.db, "uebungen");
 
@@ -859,74 +448,4 @@ export class FirebaseService {
         );
         return snapshot.data().count;
     }
-}
-
-/**
- * Felder einer Führungsstellen-Nachricht beim Laden übernehmen; unbekannte
- * Werte fallen weg, damit die Ansichten nur mit gültigen Wegen und Arten
- * arbeiten.
- */
-function parseFuehrungsstellenFelder(obj: Record<string, unknown>): Partial<Nachricht> {
-    const felder: Partial<Nachricht> = {};
-    if (UEBERMITTLUNGS_WEGE.includes(obj["weg"] as UebermittlungsWeg)) {
-        felder.weg = obj["weg"] as UebermittlungsWeg;
-    }
-    if (MELDEARTEN.includes(obj["meldeart"] as Meldeart)) {
-        felder.meldeart = obj["meldeart"] as Meldeart;
-    }
-    if (typeof obj["betreff"] === "string" && obj["betreff"].trim() !== "") {
-        felder.betreff = obj["betreff"];
-    }
-    if (typeof obj["erwartung"] === "string" && obj["erwartung"].trim() !== "") {
-        felder.erwartung = obj["erwartung"];
-    }
-    return felder;
-}
-
-/** Rollenbesetzung einer Führungsstellen-Übung; unvollständige Daten ergeben undefined. */
-function parseFuehrungsstellenKonfiguration(roh: unknown): FuehrungsstellenKonfiguration | undefined {
-    if (!roh || typeof roh !== "object") {
-        return undefined;
-    }
-    const obj = roh as Record<string, unknown>;
-    const slug = nichtLeererText(obj["slug"]);
-    const beuebteStelle = nichtLeererText(obj["beuebteStelle"]);
-    const uebergeordnet = nichtLeererText(obj["uebergeordnet"]);
-    const unterstellt = Array.isArray(obj["unterstellt"])
-        ? (obj["unterstellt"] as unknown[]).map(nichtLeererText).filter((v): v is string => v !== undefined)
-        : [];
-    if (!slug || !beuebteStelle || !uebergeordnet || unterstellt.length === 0) {
-        return undefined;
-    }
-    const beginn = parseBeginn(obj["beginn"]);
-    const stellen = parseStellen(obj["stellen"]);
-    return {
-        slug, beuebteStelle, uebergeordnet, unterstellt,
-        ...(beginn ? { beginn } : {}),
-        ...(stellen ? { stellen } : {})
-    };
-}
-
-/** Übungsbeginn „HH:MM“; alles andere wird verworfen. */
-function parseBeginn(roh: unknown): string | undefined {
-    const beginn = nichtLeererText(roh);
-    return beginn !== undefined && /^\d{1,2}:\d{2}$/.test(beginn) ? beginn : undefined;
-}
-
-/** Stellenname je Funkrufname; nur Einträge mit Text auf beiden Seiten. */
-function parseStellen(roh: unknown): Record<string, string> | undefined {
-    if (!roh || typeof roh !== "object" || Array.isArray(roh)) {
-        return undefined;
-    }
-    const stellen: Record<string, string> = {};
-    Object.entries(roh as Record<string, unknown>).forEach(([name, stelle]) => {
-        if (name.trim() !== "" && nichtLeererText(stelle) !== undefined) {
-            stellen[name] = stelle as string;
-        }
-    });
-    return Object.keys(stellen).length > 0 ? stellen : undefined;
-}
-
-function nichtLeererText(wert: unknown): string | undefined {
-    return typeof wert === "string" && wert.trim() !== "" ? wert : undefined;
 }

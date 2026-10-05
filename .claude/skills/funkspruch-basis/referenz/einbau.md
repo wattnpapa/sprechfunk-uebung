@@ -71,8 +71,9 @@ anpassen. Pflicht:
 
 ## 5. Seiten-Registry
 
-`scripts/site-pages.mjs`, ein Eintrag in `SITE_PAGES` nach dem Muster der
-anderen Archivseiten:
+`scripts/lib/archiv-seiten.mjs`, ein Eintrag in `ARCHIV_SEITEN` nach dem
+Muster der anderen Archivseiten. Die Liste wird an fester Stelle in `SITE_PAGES`
+(`scripts/site-pages.mjs`) eingefügt; die Registry bleibt die einzige Quelle:
 
 ```js
 {

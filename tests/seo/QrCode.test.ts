@@ -63,42 +63,57 @@ const mul = (a: number, b: number): number => (a === 0 || b === 0 ? 0 : EXP[LOG[
 
 // ------------------------------------------------------------- Decoder
 
-/** Welche Module gehören zu Funktionsmustern und tragen keine Daten. */
-function funktionsmodule(version: number, groesse: number): boolean[][] {
-    const belegt = Array.from({ length: groesse }, () => new Array(groesse).fill(false));
-    const markiere = (zeile: number, spalte: number): void => {
-        if (zeile >= 0 && zeile < groesse && spalte >= 0 && spalte < groesse) belegt[zeile][spalte] = true;
-    };
+type Markiere = (zeile: number, spalte: number) => void;
 
-    // Suchmuster samt Trennlinie und dem daneben liegenden Formatfeld.
+/** Suchmuster samt Trennlinie und dem daneben liegenden Formatfeld. */
+function markiereSuchmuster(markiere: Markiere, groesse: number): void {
     for (const [z0, s0] of [[0, 0], [0, groesse - 8], [groesse - 8, 0]]) {
         for (let z = 0; z < 9; z++) for (let s = 0; s < 9; s++) markiere(z0 + z, s0 + s);
     }
+}
+
+function liegtBeiSuchmuster(z0: number, s0: number, groesse: number): boolean {
+    return (z0 <= 8 && s0 <= 8)
+        || (z0 <= 8 && s0 >= groesse - 9)
+        || (z0 >= groesse - 9 && s0 <= 8);
+}
+
+/** Ausrichtungsmuster, außer neben den Suchmustern. */
+function markiereAusrichtung(markiere: Markiere, version: number, groesse: number): void {
+    const zentren = ZENTREN[version];
+    for (const z0 of zentren) {
+        for (const s0 of zentren.filter(s => !liegtBeiSuchmuster(z0, s, groesse))) {
+            for (let z = -2; z <= 2; z++) for (let s = -2; s <= 2; s++) markiere(z0 + z, s0 + s);
+        }
+    }
+}
+
+/** Versionsfeld ab Version 7. */
+function markiereVersionsfeld(markiere: Markiere, version: number, groesse: number): void {
+    if (version < 7) return;
+    for (let i = 0; i < 6; i++) {
+        for (let j = 0; j < 3; j++) {
+            markiere(groesse - 11 + j, i);
+            markiere(i, groesse - 11 + j);
+        }
+    }
+}
+
+/** Welche Module gehören zu Funktionsmustern und tragen keine Daten. */
+function funktionsmodule(version: number, groesse: number): boolean[][] {
+    const belegt = Array.from({ length: groesse }, () => new Array(groesse).fill(false));
+    const markiere: Markiere = (zeile, spalte) => {
+        if (zeile >= 0 && zeile < groesse && spalte >= 0 && spalte < groesse) belegt[zeile][spalte] = true;
+    };
+
+    markiereSuchmuster(markiere, groesse);
     // Taktmuster.
     for (let i = 0; i < groesse; i++) {
         markiere(6, i);
         markiere(i, 6);
     }
-    // Ausrichtungsmuster.
-    const zentren = ZENTREN[version];
-    for (const z0 of zentren) {
-        for (const s0 of zentren) {
-            const beiSuchmuster = (z0 <= 8 && s0 <= 8)
-                || (z0 <= 8 && s0 >= groesse - 9)
-                || (z0 >= groesse - 9 && s0 <= 8);
-            if (beiSuchmuster) continue;
-            for (let z = -2; z <= 2; z++) for (let s = -2; s <= 2; s++) markiere(z0 + z, s0 + s);
-        }
-    }
-    // Versionsfeld ab Version 7.
-    if (version >= 7) {
-        for (let i = 0; i < 6; i++) {
-            for (let j = 0; j < 3; j++) {
-                markiere(groesse - 11 + j, i);
-                markiere(i, groesse - 11 + j);
-            }
-        }
-    }
+    markiereAusrichtung(markiere, version, groesse);
+    markiereVersionsfeld(markiere, version, groesse);
     return belegt;
 }
 
@@ -128,36 +143,43 @@ const MASKEN: ((i: number, j: number) => boolean)[] = [
     (i, j) => (((i + j) % 2) + ((i * j) % 3)) % 2 === 0
 ];
 
-/** Liest die Nutzdaten aus einer Modulmatrix zurück. */
-function dekodiere(matrix: Matrix, groesse: number): { text: string; codewoerter: number[]; version: number } {
-    const version = (groesse - 17) / 4;
-    const belegt = funktionsmodule(version, groesse);
-    const { maske } = leseMaske(matrix);
-
-    // Zickzack von rechts unten, Taktspalte 6 überspringen.
-    const bits: number[] = [];
+/** Modulpositionen im Zickzack von rechts unten, Taktspalte 6 übersprungen. */
+function* zickzack(groesse: number): Generator<[number, number]> {
     let aufwaerts = true;
     for (let rechts = groesse - 1; rechts > 0; rechts -= 2) {
         if (rechts === 6) rechts = 5;
         for (let schritt = 0; schritt < groesse; schritt++) {
             const zeile = aufwaerts ? groesse - 1 - schritt : schritt;
-            for (const spalte of [rechts, rechts - 1]) {
-                if (belegt[zeile][spalte]) continue;
-                const roh = matrix[zeile][spalte];
-                bits.push((MASKEN[maske](zeile, spalte) ? !roh : roh) ? 1 : 0);
-            }
+            yield [zeile, rechts];
+            yield [zeile, rechts - 1];
         }
         aufwaerts = !aufwaerts;
     }
+}
 
+/** Datenbits in Lesereihenfolge, demaskiert. */
+function leseDatenbits(matrix: Matrix, groesse: number, belegt: boolean[][], maske: number): number[] {
+    const bits: number[] = [];
+    for (const [zeile, spalte] of zickzack(groesse)) {
+        if (belegt[zeile][spalte]) continue;
+        const roh = matrix[zeile][spalte];
+        bits.push((MASKEN[maske](zeile, spalte) ? !roh : roh) ? 1 : 0);
+    }
+    return bits;
+}
+
+function zuBytes(bits: number[]): number[] {
     const strom: number[] = [];
     for (let i = 0; i + 8 <= bits.length; i += 8) {
         let byte = 0;
         for (let j = 0; j < 8; j++) byte = (byte << 1) | bits[i + j];
         strom.push(byte);
     }
+    return strom;
+}
 
-    // Verschränkung rückgängig machen.
+/** Verschränkung rückgängig machen: Daten- und EC-Codewörter je Block. */
+function entschraenke(strom: number[], version: number): { bloecke: number[][]; ecBloecke: number[][] } {
     const [ecAnzahl, b1, d1, b2, d2] = BLOCKSTRUKTUR[version];
     const laengen = [...Array(b1).fill(d1), ...Array(b2).fill(d2)];
     const bloecke: number[][] = laengen.map(() => []);
@@ -171,8 +193,11 @@ function dekodiere(matrix: Matrix, groesse: number): { text: string; codewoerter
     for (let i = 0; i < ecAnzahl; i++) {
         for (let b = 0; b < laengen.length; b++) ecBloecke[b].push(strom[index++]);
     }
+    return { bloecke, ecBloecke };
+}
 
-    const daten = bloecke.flat();
+/** Bitstrom im Byte-Modus parsen und als UTF-8 lesen. */
+function parseBitstrom(daten: number[], version: number): string {
     const datenBits: number[] = [];
     for (const byte of daten) for (let i = 7; i >= 0; i--) datenBits.push((byte >> i) & 1);
 
@@ -187,11 +212,22 @@ function dekodiere(matrix: Matrix, groesse: number): { text: string; codewoerter
     const laenge = lies(4, zaehlerBits);
     const nutz: number[] = [];
     for (let i = 0; i < laenge; i++) nutz.push(lies(4 + zaehlerBits + i * 8, 8));
+    return new TextDecoder().decode(new Uint8Array(nutz));
+}
+
+/** Liest die Nutzdaten aus einer Modulmatrix zurück. */
+function dekodiere(matrix: Matrix, groesse: number): { text: string; codewoerter: number[]; version: number } {
+    const version = (groesse - 17) / 4;
+    const belegt = funktionsmodule(version, groesse);
+    const { maske } = leseMaske(matrix);
+
+    const strom = zuBytes(leseDatenbits(matrix, groesse, belegt, maske));
+    const { bloecke, ecBloecke } = entschraenke(strom, version);
 
     // Vollständige Codewörter je Block, für die Syndromprobe.
     const vollstaendig = bloecke.map((block, i) => [...block, ...ecBloecke[i]]);
     return {
-        text: new TextDecoder().decode(new Uint8Array(nutz)),
+        text: parseBitstrom(bloecke.flat(), version),
         codewoerter: vollstaendig.flat(),
         version
     };
