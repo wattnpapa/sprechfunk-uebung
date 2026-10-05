@@ -193,43 +193,45 @@ export class MultiSelect {
     private onKeyDown(event: KeyboardEvent): void {
         switch (event.key) {
             case "ArrowDown":
-                event.preventDefault();
-                this.openDropdown();
-                this.moveActive(1);
-                break;
             case "ArrowUp":
                 event.preventDefault();
                 this.openDropdown();
-                this.moveActive(-1);
+                this.moveActive(event.key === "ArrowDown" ? 1 : -1);
                 break;
-            case "Enter": {
-                const option = this.filtered[this.activeIndex];
-                if (!this.open || !option) {
-                    return;
-                }
-                event.preventDefault();
-                this.setSelected(option.value, !option.selected);
+            case "Enter":
+                this.onEnter(event);
                 break;
-            }
             case "Escape":
                 if (this.open) {
                     event.preventDefault();
                     this.close();
                 }
                 break;
-            case "Backspace": {
-                if (this.search.value !== "") {
-                    return;
-                }
-                const last = this.selectedOptions().pop();
-                if (last) {
-                    event.preventDefault();
-                    this.setSelected(last.value, false);
-                }
+            case "Backspace":
+                this.onBackspace(event);
                 break;
-            }
             default:
                 break;
+        }
+    }
+
+    private onEnter(event: KeyboardEvent): void {
+        const option = this.filtered[this.activeIndex];
+        if (!this.open || !option) {
+            return;
+        }
+        event.preventDefault();
+        this.setSelected(option.value, !option.selected);
+    }
+
+    private onBackspace(event: KeyboardEvent): void {
+        if (this.search.value !== "") {
+            return;
+        }
+        const last = this.selectedOptions().pop();
+        if (last) {
+            event.preventDefault();
+            this.setSelected(last.value, false);
         }
     }
 

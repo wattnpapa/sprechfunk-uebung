@@ -50,18 +50,38 @@ export class AdminView {
             if (uebung.istStandardKonfiguration) {
                 tr.classList.add("admin-standard-uebung-row");
             }
-            // Namen, Rufgruppen und Teilnehmer stammen aus anonym schreibbaren
-            // Dokumenten und werden deshalb maskiert.
-            const id = AdminView.escapeAttribute(String(uebung.id ?? ""));
-            const name = AdminView.escapeHtml(String(uebung.name ?? ""));
-            const nameAttr = AdminView.escapeAttribute(String(uebung.name ?? "ohne Namen"));
-            tr.innerHTML = `
-                <td>${uebung.createDate ? new Date(uebung.createDate).toLocaleString() : "-"}</td>
+            tr.innerHTML = AdminView.zeileHtml(uebung);
+            tbody.appendChild(tr);
+        });
+    }
+
+    private static datumText(wert: Uebung["datum"] | Uebung["createDate"] | undefined, mitZeit: boolean): string {
+        if (!wert) {
+            return "-";
+        }
+        const datum = new Date(wert);
+        return mitZeit ? datum.toLocaleString() : datum.toLocaleDateString();
+    }
+
+    private static text(wert: unknown): string {
+        return AdminView.escapeHtml(String(wert ?? ""));
+    }
+
+    /** Zellen einer Zeile der Übungsliste. */
+    private static zeileHtml(uebung: Uebung): string {
+        // Namen, Rufgruppen und Teilnehmer stammen aus anonym schreibbaren
+        // Dokumenten und werden deshalb maskiert.
+        const id = AdminView.escapeAttribute(String(uebung.id ?? ""));
+        const name = AdminView.text(uebung.name);
+        const nameAttr = AdminView.escapeAttribute(String(uebung.name ?? "ohne Namen"));
+        const teilnehmer = uebung.teilnehmerListe || [];
+        return `
+                <td>${AdminView.datumText(uebung.createDate, true)}</td>
                 <td><a href="#/generator/${id}" target="_blank">${name}</a></td>
-                <td>${uebung.datum ? new Date(uebung.datum).toLocaleDateString() : "-"}</td>
-                <td>${AdminView.escapeHtml(String(uebung.rufgruppe ?? ""))}</td>
-                <td>${AdminView.escapeHtml(String(uebung.leitung ?? ""))}</td>
-                <td title="${AdminView.escapeAttribute((uebung.teilnehmerListe || []).join("\n"))}">${uebung.teilnehmerListe?.length ?? 0}</td>
+                <td>${AdminView.datumText(uebung.datum, false)}</td>
+                <td>${AdminView.text(uebung.rufgruppe)}</td>
+                <td>${AdminView.text(uebung.leitung)}</td>
+                <td title="${AdminView.escapeAttribute(teilnehmer.join("\n"))}">${uebung.teilnehmerListe?.length ?? 0}</td>
                 ${AdminView.merkmalZelle(spielModusMerkmal(uebung))}
                 ${AdminView.merkmalZelle(funkspruchQuelleMerkmal(uebung))}
                 <td class="text-end text-nowrap admin-aktionen">
@@ -76,8 +96,6 @@ export class AdminView {
                     </button>
                 </td>
             `;
-            tbody.appendChild(tr);
-        });
     }
 
     /** Zelle mit Kurzform; die Details (Vorlagennamen, Szenariotitel) erscheinen als Tooltip. */

@@ -84,16 +84,7 @@ function findField(snapshot: FieldFocusSnapshot): FocusableLike | null {
     return null;
 }
 
-export function restoreFieldFocus(snapshot: FieldFocusSnapshot | null): void {
-    if (!snapshot || typeof document === "undefined") {
-        return;
-    }
-    const field = findField(snapshot);
-    if (!field?.focus) {
-        return;
-    }
-    field.focus({ preventScroll: true });
-
+function restoreSelection(field: FocusableLike, snapshot: FieldFocusSnapshot): void {
     const { selectionStart } = snapshot;
     if (selectionStart === null || !field.setSelectionRange) {
         return;
@@ -106,4 +97,16 @@ export function restoreFieldFocus(snapshot: FieldFocusSnapshot | null): void {
     } catch {
         // Feld unterstützt keine Textauswahl – Fokus allein genügt.
     }
+}
+
+export function restoreFieldFocus(snapshot: FieldFocusSnapshot | null): void {
+    if (!snapshot || typeof document === "undefined") {
+        return;
+    }
+    const field = findField(snapshot);
+    if (!field?.focus) {
+        return;
+    }
+    field.focus({ preventScroll: true });
+    restoreSelection(field, snapshot);
 }
