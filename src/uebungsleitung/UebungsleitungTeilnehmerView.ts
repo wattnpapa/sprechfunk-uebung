@@ -393,7 +393,7 @@ export class UebungsleitungTeilnehmerView {
         const geraet = this.renderGeraetHinweis(fortschritt, jetztMs);
         const letzte = letzteMeldungUm
             ? `<small class="text-body-secondary">zuletzt ${formatNatoDate(letzteMeldungUm)}</small>${herkunft}${geraet}`
-            : `<small class="text-body-secondary">noch nichts übertragen</small>${geraet}`;
+            : `<small class="text-body-secondary">noch nichts abgesetzt</small>${geraet}`;
         // Der Balken startet auf dem zuletzt gezeigten Wert und bekommt den
         // neuen erst im nächsten Frame; so legt er die Strecke sichtbar zurück.
         const start = this.letzterProzent.get(name) ?? percent;

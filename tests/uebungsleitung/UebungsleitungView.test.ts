@@ -607,7 +607,7 @@ describe("UebungsleitungView – Live-Status", () => {
             });
 
             expect(document.getElementById("uebungsleitungTeilnehmer")?.textContent)
-                .toContain("noch nichts übertragen");
+                .toContain("noch nichts abgesetzt");
         });
 
         it("markiert Nachzügler gegenüber dem Median der Gruppe", () => {

@@ -131,7 +131,7 @@
                     <img src="../assets/anleitung/generator-uebersicht.png"
                          class="figure-img img-fluid rounded border"
                          alt="Generator-Ansicht mit den drei Karten Kopfdaten, Einstellungen und Teilnehmerverwaltung"
-                         width="1600" height="1084" loading="lazy" decoding="async">
+                         width="1600" height="1907" loading="lazy" decoding="async">
                     <figcaption class="figure-caption">Der Generator mit einer ausgefüllten Beispielübung:
                         Kopfdaten, Einstellungen und Teilnehmerverwaltung nebeneinander.</figcaption>
                 </figure>
@@ -148,7 +148,7 @@
                     <img src="../assets/anleitung/generator-kopfdaten.png"
                          class="figure-img img-fluid rounded border" style="max-width: 460px;"
                          alt="Kopfdaten-Karte mit Feldern für Datum, Name der Übung, Rufgruppe und Funkrufname der Übungsleitung"
-                         width="912" height="1052" loading="lazy" decoding="async">
+                         width="1384" height="1138" loading="lazy" decoding="async">
                     <figcaption class="figure-caption">Die Kopfdaten der Übung. Der Spiel-Modus
                         <a href="../x-zeit/">der X-Zeit-Modus</a> verteilt Nachrichten zusätzlich auf feste Zeitfenster.</figcaption>
                 </figure>
@@ -164,7 +164,7 @@
                     <img src="../assets/anleitung/generator-teilnehmer.png"
                          class="figure-img img-fluid rounded border" style="max-width: 460px;"
                          alt="Teilnehmerverwaltung mit Funkrufnamen, individuellen Lösungswörtern und Löschen-Buttons"
-                         width="912" height="928" loading="lazy" decoding="async">
+                         width="1600" height="570" loading="lazy" decoding="async">
                     <figcaption class="figure-caption">Vier Teilnehmer mit Funkrufnamen. Die Spalte
                         „Lösungswort“ erscheint, sobald individuelle Lösungswörter aktiviert sind.</figcaption>
                 </figure>
@@ -212,7 +212,7 @@
                     <img src="../assets/anleitung/generator-einstellungen.png"
                          class="figure-img img-fluid rounded border" style="max-width: 460px;"
                          alt="Einstellungen-Karte mit Nachrichtenverteilung, Vorlagen-Auswahl und Lösungswort-Optionen"
-                         width="912" height="1840" loading="lazy" decoding="async">
+                         width="1384" height="2220" loading="lazy" decoding="async">
                     <figcaption class="figure-caption">Die Einstellungen-Karte bündelt die Schritte 3
                         bis 5: Nachrichtenverteilung, Quelle der Funksprüche und Lösungswörter.</figcaption>
                 </figure>
@@ -231,7 +231,7 @@
                     <img src="../assets/anleitung/generator-links.png"
                          class="figure-img img-fluid rounded border"
                          alt="Ergebnisbereich mit Links für Übung, Übungsleitung und Teilnehmer sowie ZIP-Download"
-                         width="1600" height="848" loading="lazy" decoding="async">
+                         width="1600" height="1154" loading="lazy" decoding="async">
                     <figcaption class="figure-caption">Der Ergebnisbereich: pro Teilnehmer ein Link mit
                         Teilnehmercode, darunter der ZIP-Download aller Druckdaten.</figcaption>
                 </figure>
@@ -245,7 +245,7 @@
                     <img src="../assets/anleitung/generator-statistik.png"
                          class="figure-img img-fluid rounded border"
                          alt="Statistik-Tab mit Nachrichtenverteilung als Diagramm und geschätzter Übungsdauer"
-                         width="1600" height="848" loading="lazy" decoding="async">
+                         width="1600" height="849" loading="lazy" decoding="async">
                     <figcaption class="figure-caption">Nachrichtenverteilung und geschätzte Dauer:
                         Bei 4 Teilnehmern mit je 15 Funksprüchen etwa 3 Stunden.</figcaption>
                 </figure>
@@ -308,7 +308,7 @@
                     „Übungsleitung“). Die Ansicht zeigt oben die Übungsdaten mit
                     <strong>Übungscode</strong> und Übungs-ID, darunter die Teilnehmertabelle
                     und den Nachrichtenplan. Alles synchronisiert sich <strong>live</strong>:
-                    Sobald ein Teilnehmer eine Nachricht als übertragen markiert, erscheint das
+                    Sobald ein Teilnehmer eine Nachricht als abgesetzt markiert, erscheint das
                     hier, ohne dass jemand die Seite neu laden muss.
                 </p>
                 <figure class="figure my-3 w-100">
@@ -317,13 +317,13 @@
                          alt="Übungsleitungs-Ansicht mit Übungsdaten, Übungscode und Teilnehmertabelle mit Fortschritt"
                          width="1600" height="1111" loading="lazy" decoding="async">
                     <figcaption class="figure-caption">Die Übungsüberwachung: Der erste Teilnehmer hat
-                        sich angemeldet und 2 von 15 Nachrichten übertragen.</figcaption>
+                        sich angemeldet und 2 von 15 Nachrichten abgesetzt.</figcaption>
                 </figure>
 
                 <h3 class="h5">Teilnehmer-Tracking</h3>
                 <p>Die Teilnehmertabelle zeigt je Teilnehmer:</p>
                 <ul>
-                    <li><strong>Fortschritt</strong> – Fortschrittsbalken mit „übertragen / gesamt“
+                    <li><strong>Fortschritt</strong> – Fortschrittsbalken mit „abgesetzt / gesamt“
                         und dem Zeitpunkt der letzten Meldung,</li>
                     <li><strong>Angemeldet</strong> – per Klick auf „Anmelden“ dokumentierst du
                         die Anmeldung im Sprechfunkverkehrskreis,</li>
@@ -372,21 +372,22 @@
                 <h3 class="h5">Tabellenansicht</h3>
                 <ul>
                     <li>Zeigt alle eigenen Nachrichten mit Empfänger und Text.</li>
-                    <li>Status „offen/übertragen“ wird per Schalter markiert – der Fortschritt
-                        erscheint live bei der Übungsleitung.</li>
+                    <li>Mit „Als abgesetzt markieren“ hakst du eine Nachricht ab, „Zurücknehmen“ macht
+                        sie wieder offen – der Fortschritt erscheint live bei der Übungsleitung.
+                        Auf dem Handy steht jede Nachricht als Karte mit großem Knopf untereinander.</li>
                     <li>Bestätigt die Übungsleitung eine Nachricht, erscheint das in der Spalte
                         „Leitung“.</li>
                     <li>Suche nach Nachricht, Empfänger oder Nummer möglich.</li>
-                    <li>Übertragene Nachrichten können ausgeblendet werden.</li>
+                    <li>Abgesetzte Nachrichten können ausgeblendet werden.</li>
                     <li>„ZIP herunterladen“ liefert die eigenen Druckunterlagen.</li>
                 </ul>
                 <figure class="figure my-3 w-100">
                     <img src="../assets/anleitung/teilnehmer-uebersicht.png"
                          class="figure-img img-fluid rounded border"
                          alt="Teilnehmeransicht mit Funkspruch-Tabelle und Status je Nachricht"
-                         width="1600" height="1424" loading="lazy" decoding="async">
+                         width="1600" height="911" loading="lazy" decoding="async">
                     <figcaption class="figure-caption">Die Teilnehmeransicht: Die ersten beiden
-                        Nachrichten sind als übertragen markiert, „Sync: live“ zeigt die
+                        Nachrichten sind als abgesetzt markiert, „Sync: live“ zeigt die
                         aktive Verbindung zur Übungsleitung.</figcaption>
                 </figure>
 
@@ -394,7 +395,7 @@
                 <ul>
                     <li>Umschalten auf <strong>Meldevordruck</strong> oder <strong>Nachrichtenvordruck</strong>.</li>
                     <li>Es ist immer nur eine Seite sichtbar; mit links/rechts wird geblättert.</li>
-                    <li>Die Nachricht kann direkt als „übertragen“ markiert werden.</li>
+                    <li>Die Nachricht kann direkt mit dem Knopf „Als abgesetzt markieren“ abgehakt werden, auch per Touch.</li>
                 </ul>
                 <figure class="figure my-3 w-100">
                     <img src="../assets/anleitung/teilnehmer-vordruck.png"
@@ -409,10 +410,10 @@
                 <ul>
                     <li><kbd>Esc</kbd> – schließen</li>
                     <li><kbd>←</kbd> / <kbd>→</kbd> – blättern</li>
-                    <li><kbd>Leertaste</kbd> – aktuelle Nachricht als übertragen markieren</li>
+                    <li><kbd>Leertaste</kbd> – aktuelle Nachricht als abgesetzt markieren</li>
                     <li><kbd>M</kbd> – Meldevordruck</li>
                     <li><kbd>N</kbd> – Nachrichtenvordruck</li>
-                    <li><kbd>Ü</kbd> – übertragene Nachrichten ein-/ausblenden</li>
+                    <li><kbd>Ü</kbd> – abgesetzte Nachrichten ein-/ausblenden</li>
                 </ul>
             </div>
         </div>

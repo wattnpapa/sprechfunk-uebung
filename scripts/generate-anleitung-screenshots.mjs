@@ -145,8 +145,15 @@ await page.waitForSelector("#teilnehmerNachrichtenBody tr");
 // Zwei Nachrichten als abgesetzt markieren, damit der Status sichtbar wird
 await page.locator("#teilnehmerNachrichtenBody tr").nth(0).locator("[data-aktion='absetzen']").click();
 await page.locator("#teilnehmerNachrichtenBody tr").nth(1).locator("[data-aktion='absetzen']").click();
-await page.waitForTimeout(500);
-await shot(page.locator("#teilnehmerArea"), "teilnehmer-uebersicht");
+// Der Rückgängig-Hinweis steht 8 s – abwarten, damit er nicht im Bild liegt.
+await page.waitForTimeout(8500);
+// Nur Kopf und die ersten Zeilen: die ganze Liste sprengt die 200-KB-Grenze.
+const teilnehmerBox = await page.locator("#teilnehmerArea").boundingBox();
+await page.screenshot({
+    path: path.join(OUT, "teilnehmer-uebersicht.png"),
+    clip: { x: teilnehmerBox.x, y: teilnehmerBox.y, width: teilnehmerBox.width, height: Math.min(teilnehmerBox.height, 820) }
+});
+console.log("✓ teilnehmer-uebersicht");
 
 // Vordruck-Ansicht (Meldevordruck) als ganzer Viewport inklusive Tastenkürzeln
 await page.locator("[data-doc-view='meldevordruck']").first().click();
@@ -179,8 +186,12 @@ await page.goto(`${BASE}/#/uebungsleitung/${uebungId}`);
 await page.reload();
 await page.waitForSelector("#uebungsleitungTeilnehmer tr");
 // Einen Teilnehmer anmelden und eine Nachricht absetzen, damit das Tracking sichtbar wird
-await page.locator("#uebungsleitungTeilnehmer tr", { hasText: names[0] })
-    .locator("button[data-action='anmelden']").click();
+// Hat der Teilnehmer seinen Anmelde-Funkspruch schon abgehakt, gilt er bereits
+// als angemeldet und der Knopf fehlt – dann nur den nächsten Teilnehmer anmelden.
+const anmeldeKnopf = page.locator("#uebungsleitungTeilnehmer button[data-action='anmelden']").first();
+if (await anmeldeKnopf.count()) {
+    await anmeldeKnopf.click();
+}
 await page.locator("#uebungsleitungNachrichten button[data-action='abgesetzt']").first().click();
 await page.waitForTimeout(500);
 
@@ -270,7 +281,12 @@ for (const name of await dateienNach(OUT)) {
     const kopf = await (await import("node:fs/promises")).readFile(datei);
     const breite = kopf.readUInt32BE(16);
     if (breite > MAX_BREITE) {
-        await lauf("sips", ["--resampleWidth", String(MAX_BREITE), datei]);
+        // sips gibt es nur unter macOS; sonst ImageMagick (convert).
+        if (process.platform === "darwin") {
+            await lauf("sips", ["--resampleWidth", String(MAX_BREITE), datei]);
+        } else {
+            await lauf("convert", [datei, "-resize", `${MAX_BREITE}x`, datei]);
+        }
     }
 }
 await lauf("npx", ["-y", "pngquant-bin", "--quality=70-90", "--speed", "1",
