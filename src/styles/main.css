@@ -2595,11 +2595,18 @@ select option {
    zweispaltig mit mitlaufender Leiste links.
    ========================================================================== */
 
+/* minmax(0, 1fr) statt 1fr: sonst wächst die Spalte auf die Mindestbreite
+   des breitesten Inhalts (Tabelle, Brotkrumen) – auf 375 px war der Inhalt
+   518 px breit und rechts abgeschnitten (beim THW-Review 2026-10-05 gefunden). */
 .wissen-layout {
     display: grid;
-    grid-template-columns: 1fr;
+    grid-template-columns: minmax(0, 1fr);
     gap: 1rem;
     align-items: start;
+}
+
+.wissen-inhalt {
+    min-width: 0;
 }
 
 .wissen-sidebar {
