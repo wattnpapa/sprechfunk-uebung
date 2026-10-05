@@ -165,3 +165,75 @@ test.describe("@smoke Offline", () => {
         }
     });
 });
+
+// Befunde aus dem zweiten THW-Review vom 2026-10-05 (docs/reviews/2026-10-05-thw/).
+test("@uebungsleitung Debrief: ein Klick, genau ein Download (offline P3-4)", async ({ page }) => {
+    await page.goto("/#/uebungsleitung/u1");
+    const knopf = page.locator("button[data-action=\"download-debrief\"]").first();
+    await expect(knopf).toBeVisible();
+    let downloads = 0;
+    page.on("download", () => {
+        downloads += 1;
+    });
+    const erster = page.waitForEvent("download");
+    await knopf.click();
+    const datei = await erster;
+    await page.waitForTimeout(1500);
+    expect(downloads).toBe(1);
+    // Nur ASCII im Dateinamen, sonst kam die Datei als „download“ an.
+    expect(datei.suggestedFilename()).toMatch(/^[\x20-\x7E]+\.pdf$/);
+});
+
+test("@generator Druckteil nach Netzaussetzer ohne Neuladen wieder ladbar, eine Meldung (offline P1-1, P3-2)", async ({ page }) => {
+    // Auch Neuversuche mit angehängtem Parameter blockieren.
+    const druckteil = /\/pdfGenerator-[^/]*\.js/;
+    await page.route(druckteil, route => route.abort("internetdisconnected"));
+    await page.goto("/#/generator/u1");
+    const zip = page.locator("#zipAllPdfsBtn");
+    await expect(zip).toBeVisible();
+
+    await zip.click();
+    await expect(page.locator(".app-toast.is-error")).toHaveCount(1);
+    await zip.click();
+    await expect(page.locator(".app-toast.is-error")).toHaveCount(1);
+    await expect(page.locator(".app-toast.is-error")).toContainText("Druckfunktion");
+
+    await page.unroute(druckteil);
+    const download = page.waitForEvent("download", { timeout: 20_000 });
+    await zip.click();
+    expect((await download).suggestedFilename()).toMatch(/^[\x20-\x7E]+\.zip$/);
+});
+
+test.describe("@seo Theme-Umschalter (Night Befunde 5, 6)", () => {
+    test("Inhaltsseite: umschalten, beschriften, merken", async ({ page }) => {
+        await page.goto("/buchstabiertafel/");
+        const knopf = page.getByTestId("theme-toggle-seite");
+        await expect(knopf).toHaveText("🌙 Dark Mode");
+        await knopf.click();
+        await expect(page.locator("body")).toHaveAttribute("data-theme", "dark");
+        await expect(knopf).toHaveText("☀️ Light Mode");
+        await page.reload();
+        await expect(page.locator("body")).toHaveAttribute("data-theme", "dark");
+        await expect(page.getByTestId("theme-toggle-seite")).toHaveText("☀️ Light Mode");
+    });
+
+    test("Inhaltsseite am Smartphone: Umschalter sichtbar, Inhalt nicht breiter als der Bildschirm", async ({ page }) => {
+        await page.setViewportSize({ width: 375, height: 800 });
+        for (const pfad of ["/buchstabiertafel/", "/anleitung/"]) {
+            await page.goto(pfad);
+            await expect(page.getByTestId("theme-toggle-seite-mobil")).toBeVisible();
+            const breite = await page.locator("main").evaluate(el => el.getBoundingClientRect().right);
+            expect(breite, pfad).toBeLessThanOrEqual(375);
+        }
+    });
+
+    test("App: Beschriftung stimmt schon vor dem Bundle", async ({ page, context }) => {
+        await context.addInitScript(() => window.localStorage.setItem("theme", "dark"));
+        await page.route("**/bundle.js", async route => {
+            await new Promise(resolve => setTimeout(resolve, 1500));
+            await route.continue();
+        });
+        await page.goto("/", { waitUntil: "commit" });
+        await expect(page.getByTestId("theme-toggle-desktop")).toHaveText("☀️ Light Mode", { timeout: 1200 });
+    });
+});

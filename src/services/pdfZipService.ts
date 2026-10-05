@@ -1,7 +1,6 @@
 import JSZip from "jszip";
 import { FunkUebung } from "../models/FunkUebung";
 import { formatNatoDate } from "../utils/date";
-import { hatEigeneUnterlagen } from "../pdf/druckTeilnehmer";
 
 type PdfZipDeps = {
     sanitizeFileName: (name: string) => string;
@@ -75,8 +74,12 @@ export async function generateAllPDFsAsZipBlob(
 ): Promise<Blob> {
     const zip = new JSZip();
     // Teilnehmerordner nur für Stellen mit eigenen Unterlagen (workflow W8).
+    // Bewusst ohne Import aus src/pdf: Was dieser Chunk aus dem Druckteil-Chunk
+    // importiert, scheitert dauerhaft, wenn dessen erster Abruf scheiterte
+    // (siehe chunkLaden.ts) – der Notfall-ZIP muss trotzdem gehen.
+    const beuebteStelle = funkUebung.fuehrungsstelle?.beuebteStelle;
     const teilnehmerDatei = (teilnehmer: string, datei: string, blob: Blob) => {
-        if (hatEigeneUnterlagen(funkUebung, teilnehmer)) {
+        if (teilnehmer !== beuebteStelle) {
             zip.file(`Teilnehmer/${deps.sanitizeFileName(teilnehmer)}/${datei}`, blob);
         }
     };

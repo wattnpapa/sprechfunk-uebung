@@ -9,6 +9,9 @@ import {
     type PdfGeneratorService
 } from "../../src/services/pdfGeneratorLazy";
 import { uiFeedback } from "../../src/core/UiFeedback";
+import { findeNamensraum, hatFunktion } from "../../src/services/chunkLaden";
+import { readFileSync } from "node:fs";
+import path from "node:path";
 
 // B3 (THW-Review 2026-10-04): Ein fehlgeschlagener Lazy-Import blieb gecacht,
 // Vordruck und ZIP gingen danach bis zum Neuladen nicht mehr – ohne Meldung.
@@ -75,6 +78,33 @@ describe("ladePdfGenerator", () => {
         expect(chunkUrlAusFehler("kein Fehler")).toBeUndefined();
         expect(neuerVersuchUrl(url, 2)).toBe(`${url}?neuladen=2`);
         expect(neuerVersuchUrl(`${url}?v=1`, 2)).toBe(`${url}?v=1&neuladen=2`);
+    });
+
+    it("findet im gebündelten Chunk das Namensraum-Objekt trotz verkürzter Exportnamen", () => {
+        const dienst = { default: { generateAllPDFsAsZip: () => undefined } };
+        const gebuendelt = { a: { default: 1 }, p: dienst };
+        expect(findeNamensraum(gebuendelt, hatFunktion("default", "generateAllPDFsAsZip"))).toBe(dienst);
+        expect(findeNamensraum(dienst, hatFunktion("default", "generateAllPDFsAsZip"))).toBe(dienst);
+        const zip = { generateAllPDFsAsZipBlob: () => undefined };
+        expect(findeNamensraum({ z: zip }, hatFunktion("generateAllPDFsAsZipBlob"))).toBe(zip);
+        expect(() => findeNamensraum({ x: 1 }, hatFunktion("default", "x"))).toThrow();
+    });
+
+    // Ein Chunk, der aus dem Druckteil-Chunk importiert, scheitert dauerhaft,
+    // wenn dessen erster Abruf scheiterte – der ZIP-Teil darf das nicht.
+    it("der ZIP-Dienst importiert nichts aus src/pdf", () => {
+        const quelle = readFileSync(path.resolve(__dirname, "..", "..", "src", "services", "pdfZipService.ts"), "utf8");
+        expect(quelle).not.toMatch(/from "\.\.\/pdf\//);
+    });
+
+    // analog-first P3-2: Der Notfall-ZIP ging auf einem reinen
+    // Teilnehmer-Gerät offline nicht, weil JSZip ein eigener Chunk ist.
+    it("vorladen lädt mit dem Druckteil auch den ZIP-Teil", async () => {
+        const vorladenZip = vi.fn(async () => undefined);
+        setzePdfGeneratorImporterFuerTests(vi.fn().mockResolvedValue({ ...dienst, vorladenZip }));
+        vorladenPdfGenerator();
+        await new Promise(resolve => setTimeout(resolve, 0));
+        expect(vorladenZip).toHaveBeenCalledTimes(1);
     });
 
     it("ohne Adresse in der Meldung bleibt es beim Original-Import", async () => {

@@ -1,5 +1,8 @@
 import type pdfGenerator from "./pdfGenerator";
 import { uiFeedback } from "../core/UiFeedback";
+import { erzeugeChunkLader, hatFunktion, importiereUrl, type ChunkImporter } from "./chunkLaden";
+
+export { chunkUrlAusFehler, neuerVersuchUrl } from "./chunkLaden";
 
 // jsPDF und JSZip machen einen erheblichen Teil des Start-Bundles aus, werden
 // aber erst beim ersten Export-Klick gebraucht. Der dynamische Import lagert
@@ -20,54 +23,16 @@ export const PDF_LADEFEHLER_MELDUNG =
 /** Wie lange nach der Ladefehler-Meldung Folgemeldungen derselben Ursache unterdrückt werden. */
 const FOLGEFEHLER_MS = 2000;
 
-type Importer = (url?: string) => Promise<PdfGeneratorService>;
-
-const standardImporter: Importer = url => (url
-    // Ein gescheiterter Modulabruf bleibt im Browser für die Lebensdauer der
-    // Seite gemerkt: import() derselben URL scheitert sofort wieder, ohne das
-    // Netz zu fragen (THW-Review 2026-10-05, offline P1-1). Ein angehängter
-    // Parameter macht daraus eine neue URL, die der Browser wirklich abruft.
-    ? (import(/* @vite-ignore */ url) as Promise<{ default: PdfGeneratorService }>)
+// Ein gescheitertes import() merkt sich der Browser bis zum Neuladen; der
+// Lader ruft den Chunk beim nächsten Versuch unter neuer Adresse ab
+// (THW-Review 2026-10-05, offline P1-1, siehe chunkLaden.ts).
+const lader = erzeugeChunkLader<PdfGeneratorService>(url => (url
+    ? importiereUrl<{ default: PdfGeneratorService }>(url, hatFunktion("default", "generateAllPDFsAsZip"))
     : import("./pdfGenerator")
-).then(m => m.default);
-
-let importer: Importer = standardImporter;
-let modulePromise: Promise<PdfGeneratorService> | undefined;
-let fehlgeschlageneUrl: string | undefined;
-let versuch = 0;
-
-/**
- * Liest die Adresse des Chunks aus der Fehlermeldung (Chromium: „Failed to
- * fetch dynamically imported module: <url>“, Firefox: „error loading
- * dynamically imported module: <url>“). Safari nennt keine Adresse; dort
- * bleibt nur das Neuladen, das die Meldung ebenfalls nennt.
- */
-export function chunkUrlAusFehler(err: unknown): string | undefined {
-    const text = err instanceof Error ? err.message : String(err ?? "");
-    const treffer = /(https?:\/\/\S+?\.m?js)(?:\?\S*)?(?=\s|$|["'),])/.exec(text);
-    return treffer?.[1];
-}
-
-/** Neue Adresse für den nächsten Versuch: gleiche Datei, anderer Cache-Schlüssel. */
-export function neuerVersuchUrl(url: string, nummer: number): string {
-    return `${url}${url.includes("?") ? "&" : "?"}neuladen=${nummer}`;
-}
+).then(m => m.default));
 
 function lade(): Promise<PdfGeneratorService> {
-    if (modulePromise) {
-        return modulePromise;
-    }
-    const url = fehlgeschlageneUrl ? neuerVersuchUrl(fehlgeschlageneUrl, ++versuch) : undefined;
-    modulePromise = importer(url).catch((err: unknown) => {
-        // Ein fehlgeschlagener Import darf nicht gecacht bleiben, sonst bleiben
-        // Vordruck und ZIP nach einem kurzen Netzaussetzer bis zum Neuladen
-        // kaputt (THW-Review 2026-10-04, B3). Der nächste Klick versucht es
-        // neu – mit neuer Adresse, falls der Browser sie verraten hat.
-        modulePromise = undefined;
-        fehlgeschlageneUrl ??= chunkUrlAusFehler(err);
-        throw err;
-    });
-    return modulePromise;
+    return lader.lade();
 }
 
 /**
@@ -91,13 +56,13 @@ export async function ladePdfGenerator(): Promise<PdfGeneratorService> {
  * Service Workers) liegen. Fehler bleiben hier stumm; der echte Klick meldet sie.
  */
 export function vorladenPdfGenerator(): void {
-    lade().catch(() => undefined);
+    // Mit dem Druckteil auch das ZIP (JSZip, eigener Chunk): sonst ging der
+    // Notfall-ZIP auf einem reinen Teilnehmer-Gerät offline nicht
+    // (THW-Review 2026-10-05, analog-first P3-2).
+    lade().then(dienst => dienst.vorladenZip()).catch(() => undefined);
 }
 
 /** Nur für Tests: Import ersetzen bzw. Zustand zurücksetzen. */
-export function setzePdfGeneratorImporterFuerTests(neu: Importer | null): void {
-    importer = neu ?? standardImporter;
-    modulePromise = undefined;
-    fehlgeschlageneUrl = undefined;
-    versuch = 0;
+export function setzePdfGeneratorImporterFuerTests(neu: ChunkImporter<PdfGeneratorService> | null): void {
+    lader.setzeZurueck(neu ?? undefined);
 }

@@ -15,6 +15,7 @@ import type { FuehrungsstellenUebung } from "../types/FuehrungsstellenUebung";
 import { uiFeedback } from "../core/UiFeedback";
 import { asciiDateiname } from "../utils/dateiname";
 import { teilnehmerMitUnterlagen } from "../pdf/druckTeilnehmer";
+import { erzeugeChunkLader, hatFunktion, importiereUrl } from "./chunkLaden";
 import { UebungsleitungStorage } from "../types/Storage";
 import { generateTeilnehmerDebriefPdfBlob } from "./pdfDebriefService";
 import {
@@ -32,7 +33,10 @@ import {
 } from "./pdfA5Vordrucke";
 // pdfZipService wird bewusst nur bei Bedarf geladen: JSZip samt pako sind rund
 // 200 kB, der ZIP-Export laeuft aber erst auf Klick. Rollup legt daraus einen
-// eigenen Chunk an, der beim Start nicht mitgeladen wird.
+// eigenen Chunk an, der beim Start nicht mitgeladen wird. Der Lader übersteht
+// einen Netzaussetzer (chunkLaden.ts) und lässt sich vorladen (vorladenZip).
+type ZipDienst = typeof import("./pdfZipService");
+const zipLader = erzeugeChunkLader<ZipDienst>(url => (url ? importiereUrl<ZipDienst>(url, hatFunktion("generateAllPDFsAsZipBlob")) : import("./pdfZipService")));
 
 /**
  * Startet den Download eines Blobs. Die Objekt-URL wird erst nach einer
@@ -226,6 +230,11 @@ class PDFGenerator {
         herunterladen(blob, `Uebungsleitung_${this.sanitizeFileName(uebung.name)}_${uebung.id}.pdf`.replace(/\s+/g, "_"));
     }
 
+    /** Lädt den ZIP-Teil still vor, solange Netz da ist (Notfall-ZIP offline, analog-first P3-2). */
+    vorladenZip(): Promise<void> {
+        return zipLader.lade().then(() => undefined, () => undefined);
+    }
+
     /** Teil eines Dateinamens: nur ASCII, Umlaute umschrieben (siehe asciiDateiname). */
     sanitizeFileName(name: string) {
         return asciiDateiname(name);
@@ -310,7 +319,7 @@ class PDFGenerator {
     }
 
     async generateAllPDFsAsZip(funkUebung: FunkUebung) {
-        const { createZipDownloadName, generateAllPDFsAsZipBlob } = await import("./pdfZipService");
+        const { createZipDownloadName, generateAllPDFsAsZipBlob } = await zipLader.lade();
         const zipBlob = await generateAllPDFsAsZipBlob(funkUebung, {
             sanitizeFileName: this.sanitizeFileName,
             generateDrehbuchPDFBlob: this.generateDrehbuchPDFBlob.bind(this),
@@ -336,7 +345,7 @@ class PDFGenerator {
     }
 
     async generateTeilnehmerPDFsAsZip(funkUebung: FunkUebung, teilnehmer: string): Promise<Blob> {
-        const { generateTeilnehmerPDFsAsZipBlob } = await import("./pdfZipService");
+        const { generateTeilnehmerPDFsAsZipBlob } = await zipLader.lade();
         return generateTeilnehmerPDFsAsZipBlob(funkUebung, teilnehmer, {
             sanitizeFileName: this.sanitizeFileName,
             generateTeilnehmerPDFsBlob: this.generateTeilnehmerPDFsBlob.bind(this),
