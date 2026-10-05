@@ -80,4 +80,25 @@ export interface NachrichtenStatus {
     nachgetragen?: boolean;
     /** Zeitpunkt der letzten Änderung an `notiz` (Live-Sync-Merge). */
     notizGeaendertUm?: string;
+    /**
+     * Bewusst ausgelassen (z. B. nach einer Unterbrechung übersprungen). Zählt
+     * weder als offen noch als abgesetzt; teilt sich `statusGeaendertUm` mit
+     * `abgesetztUm`, weil beides Zustände derselben Zeile sind.
+     */
+    ausgelassen?: boolean;
+    /**
+     * `abgesetztUm` stammt aus der Meldung des Teilnehmers (Sammelbestätigung)
+     * – also eine Klickzeit, keine von der Leitung gehörte Absetzzeit.
+     */
+    zeitVomTeilnehmer?: boolean;
+    /** Führungsstellen-Übung: Reaktion der beübten Stelle auf diese Einspielung. */
+    reaktion?: ReaktionBewertung;
+    /** Zeitpunkt der letzten Änderung an `reaktion` (Live-Sync-Merge). */
+    reaktionGeaendertUm?: string;
 }
+
+/**
+ * Bewertung der Reaktion der beübten Stelle auf eine Einspielung:
+ * wie erwartet, abweichend oder gar nicht.
+ */
+export type ReaktionBewertung = "erfolgt" | "abweichend" | "ausgeblieben";

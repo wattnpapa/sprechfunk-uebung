@@ -140,6 +140,20 @@ export function mergeTeilnehmerLiveDoc(
 
 // --- Übungsleitung ------------------------------------------------------
 
+/**
+ * Kennzeichen einer Bestätigung: „nachgetragen“ und „Zeit vom Teilnehmer“
+ * gehören zu einer abgesetzten Zeile, „ausgelassen“ zu einer nicht abgesetzten.
+ */
+function bestaetigungsKennzeichen(status: NachrichtenStatus): Pick<LeitungBestaetigung, "nachgetragen" | "zeitVomTeilnehmer" | "ausgelassen"> {
+    if (status.abgesetztUm) {
+        return {
+            ...(status.nachgetragen ? { nachgetragen: true } : {}),
+            ...(status.zeitVomTeilnehmer ? { zeitVomTeilnehmer: true } : {})
+        };
+    }
+    return status.ausgelassen ? { ausgelassen: true } : {};
+}
+
 export function toLeitungPublicLiveDoc(storage: UebungsleitungStorage): LeitungPublicLiveDoc {
     const nachrichten: Record<string, LeitungBestaetigung> = {};
     Object.entries(storage.nachrichten).forEach(([key, status]) => {
@@ -153,10 +167,7 @@ export function toLeitungPublicLiveDoc(storage: UebungsleitungStorage): LeitungP
         if (status.statusGeaendertUm) {
             entry.geaendertUm = status.statusGeaendertUm;
         }
-        if (status.nachgetragen && status.abgesetztUm) {
-            entry.nachgetragen = true;
-        }
-        nachrichten[key] = entry;
+        nachrichten[key] = { ...entry, ...bestaetigungsKennzeichen(status) };
     });
 
     const doc: LeitungPublicLiveDoc = {
@@ -176,7 +187,7 @@ export function toLeitungPublicLiveDoc(storage: UebungsleitungStorage): LeitungP
 export function toLeitungLiveDoc(storage: UebungsleitungStorage): LeitungLiveDoc {
     const nachrichtenNotizen: Record<string, LeitungNotiz> = {};
     Object.entries(storage.nachrichten).forEach(([key, status]) => {
-        if (status.notiz === undefined && !status.notizGeaendertUm) {
+        if (status.notiz === undefined && !status.notizGeaendertUm && !status.reaktionGeaendertUm) {
             return;
         }
         const entry: LeitungNotiz = {};
@@ -185,6 +196,12 @@ export function toLeitungLiveDoc(storage: UebungsleitungStorage): LeitungLiveDoc
         }
         if (status.notizGeaendertUm) {
             entry.geaendertUm = status.notizGeaendertUm;
+        }
+        if (status.reaktion) {
+            entry.reaktion = status.reaktion;
+        }
+        if (status.reaktionGeaendertUm) {
+            entry.reaktionGeaendertUm = status.reaktionGeaendertUm;
         }
         nachrichtenNotizen[key] = entry;
     });
@@ -217,6 +234,8 @@ export function mergeLeitungPublicLiveDoc(
         }
         setOptional(next, "statusGeaendertUm", remoteEntry.geaendertUm);
         setOptional(next, "nachgetragen", remoteEntry.nachgetragen && remoteEntry.abgesetztUm ? true : undefined);
+        setOptional(next, "zeitVomTeilnehmer", remoteEntry.zeitVomTeilnehmer && remoteEntry.abgesetztUm ? true : undefined);
+        setOptional(next, "ausgelassen", remoteEntry.ausgelassen && !remoteEntry.abgesetztUm ? true : undefined);
         nachrichten[key] = next;
         changed = true;
     });
@@ -265,6 +284,29 @@ export function uebernehmeLeitungsBasis(
     return { merged, changed: true };
 }
 
+/**
+ * Notiz und Reaktionsbewertung einer Zeile haben je einen eigenen
+ * Zeitstempel und werden getrennt zusammengeführt (Last-Write-Wins).
+ * @returns den neuen Eintrag oder `null`, wenn sich nichts ändert.
+ */
+function mergeNotizEintrag(localEntry: NachrichtenStatus | undefined, remoteEntry: LeitungNotiz): NachrichtenStatus | null {
+    const notizNeuer = !localEntry || isNewer(remoteEntry.geaendertUm, localEntry.notizGeaendertUm);
+    const reaktionNeuer = isNewer(remoteEntry.reaktionGeaendertUm, localEntry?.reaktionGeaendertUm);
+    if (!notizNeuer && !reaktionNeuer) {
+        return null;
+    }
+    const next: NachrichtenStatus = { ...localEntry };
+    if (notizNeuer) {
+        setOptional(next, "notiz", remoteEntry.notiz);
+        setOptional(next, "notizGeaendertUm", remoteEntry.geaendertUm);
+    }
+    if (reaktionNeuer) {
+        setOptional(next, "reaktion", remoteEntry.reaktion);
+        setOptional(next, "reaktionGeaendertUm", remoteEntry.reaktionGeaendertUm);
+    }
+    return next;
+}
+
 export function mergeLeitungLiveDoc(
     local: UebungsleitungStorage,
     remote: LeitungLiveDoc
@@ -278,19 +320,11 @@ export function mergeLeitungLiveDoc(
     let notizenChanged = false;
 
     Object.entries(remote.nachrichtenNotizen ?? {}).forEach(([key, remoteEntry]) => {
-        const localEntry = nachrichten[key];
-        if (localEntry && !isNewer(remoteEntry.geaendertUm, localEntry.notizGeaendertUm)) {
-            return;
+        const next = mergeNotizEintrag(nachrichten[key], remoteEntry);
+        if (next) {
+            nachrichten[key] = next;
+            notizenChanged = true;
         }
-        const next: NachrichtenStatus = { ...localEntry };
-        if (remoteEntry.notiz !== undefined) {
-            next.notiz = remoteEntry.notiz;
-        } else {
-            delete next.notiz;
-        }
-        setOptional(next, "notizGeaendertUm", remoteEntry.geaendertUm);
-        nachrichten[key] = next;
-        notizenChanged = true;
     });
 
     return {
