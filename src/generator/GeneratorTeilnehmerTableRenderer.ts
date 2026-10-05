@@ -88,3 +88,41 @@ export class GeneratorTeilnehmerTableRenderer {
         `;
     }
 }
+
+export interface TeilnehmerHandler {
+    onTeilnehmerNameChange: (index: number, val: string) => void;
+    onStellennameChange: (index: number, val: string) => void;
+    onDelete: (index: number) => void;
+    onShowStellennameToggle: (checked: boolean) => void;
+}
+
+/** Ereignisse der Teilnehmertabelle, delegiert am Container. */
+export function bindeTeilnehmerContainer(signal: AbortSignal, handler: TeilnehmerHandler): void {
+    const container = document.getElementById("teilnehmer-container");
+    if (!container) {
+        return;
+    }
+    container.addEventListener("input", e => {
+        const target = e.target as HTMLElement;
+        if (target.classList.contains("teilnehmer-input")) {
+            handler.onTeilnehmerNameChange(Number(target.dataset["index"]), (target as HTMLInputElement).value);
+        }
+        if (target.classList.contains("stellenname-input")) {
+            handler.onStellennameChange(Number(target.dataset["index"]), (target as HTMLInputElement).value);
+        }
+    }, { signal });
+
+    container.addEventListener("click", e => {
+        const btn = (e.target as HTMLElement).closest(".delete-teilnehmer") as HTMLElement;
+        if (btn) {
+            handler.onDelete(Number(btn.dataset["index"]));
+        }
+    }, { signal });
+
+    container.addEventListener("change", e => {
+        const target = e.target as HTMLInputElement;
+        if (target.id === "showStellennameCheckbox") {
+            handler.onShowStellennameToggle(target.checked);
+        }
+    }, { signal });
+}

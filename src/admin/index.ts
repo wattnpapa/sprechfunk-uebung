@@ -178,19 +178,25 @@ export class AdminController {
         return uebung?.name?.trim() || "ohne Namen";
     }
 
+    /** Merkmale, an denen man die Übung in der Löschrückfrage erkennt. */
+    private static loeschDetails(uebung: UebungsListe[number]): string[] {
+        const datum = uebung.datum ? new Date(uebung.datum) : null;
+        const istGueltig = !!datum && !Number.isNaN(datum.getTime());
+        return [
+            istGueltig ? `Datum ${datum.toLocaleDateString("de-DE")}` : "",
+            uebung.rufgruppe ? `Rufgruppe ${uebung.rufgruppe}` : "",
+            uebung.teilnehmerListe ? `${uebung.teilnehmerListe.length} Teilnehmer` : "",
+            uebung.uebungCode ? `Übungscode ${uebung.uebungCode}` : ""
+        ].filter(Boolean);
+    }
+
     /**
      * Die Rückfrage nennt die Übung und die Folgen, statt nur „diese Übung“
      * (THW-Review destructive-action P1-1, error-recovery P2-6).
      */
     static loeschRueckfrage(uebung: UebungsListe[number] | undefined): string {
         const zeilen = [`Übung „${AdminController.uebungsName(uebung)}“ endgültig löschen?`];
-        const datum = uebung?.datum ? new Date(uebung.datum) : null;
-        const details = [
-            datum && !Number.isNaN(datum.getTime()) ? `Datum ${datum.toLocaleDateString("de-DE")}` : "",
-            uebung?.rufgruppe ? `Rufgruppe ${uebung.rufgruppe}` : "",
-            uebung?.teilnehmerListe ? `${uebung.teilnehmerListe.length} Teilnehmer` : "",
-            uebung?.uebungCode ? `Übungscode ${uebung.uebungCode}` : ""
-        ].filter(Boolean);
+        const details = uebung ? AdminController.loeschDetails(uebung) : [];
         if (details.length > 0) {
             zeilen.push(details.join(" · "));
         }

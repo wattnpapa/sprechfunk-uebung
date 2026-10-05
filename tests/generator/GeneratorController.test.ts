@@ -102,17 +102,19 @@ const makeController = async () => {
     return GeneratorController.getInstance();
 };
 
+const setzeGlobals = () => {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    (globalThis as any).localStorage = makeLocalStorage();
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    (globalThis as any).confirm = vi.fn(() => true);
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    (globalThis as any).alert = vi.fn();
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    (globalThis as any).document = makeDocument().document;
+};
+
 describe("GeneratorController", () => {
-    beforeEach(() => {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        (globalThis as any).localStorage = makeLocalStorage();
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        (globalThis as any).confirm = vi.fn(() => true);
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        (globalThis as any).alert = vi.fn();
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        (globalThis as any).document = makeDocument().document;
-    });
+    beforeEach(setzeGlobals);
 
     it("handleRoute loads uebung and updates UI", async () => {
         const controller = await makeController();
@@ -579,6 +581,11 @@ describe("GeneratorController", () => {
             { verteilung: 1 }
         );
     });
+
+});
+
+describe("GeneratorController – Bindungen, Laden und Wrapper", () => {
+    beforeEach(setzeGlobals);
 
     it("renderTeilnehmer enables stellenname when data present", async () => {
         const controller = await makeController();

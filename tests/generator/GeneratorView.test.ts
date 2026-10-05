@@ -28,25 +28,27 @@ vi.mock("../../src/core/UiFeedback", () => ({
 import { GeneratorView } from "../../src/generator/GeneratorView";
 import { FunkUebung } from "../../src/models/FunkUebung";
 
+const setzeDom = () => {
+    vi.clearAllMocks();
+    const dom = new JSDOM("<div id=\"mainAppArea\"></div><div id=\"output-container\" style=\"display:none\"></div><div id=\"uebungsId\"></div><div id=\"version\"></div>");
+    vi.stubGlobal("window", dom.window);
+    vi.stubGlobal("document", dom.window.document);
+    vi.stubGlobal("AbortController", dom.window.AbortController);
+    // JSDOM prueft die Event-Identitaet: Node-globales Event wuerde von
+    // dispatchEvent() abgelehnt.
+    vi.stubGlobal("Event", dom.window.Event);
+    vi.stubGlobal("navigator", { clipboard: { writeText: vi.fn().mockResolvedValue(undefined) } });
+    vi.stubGlobal("setTimeout", vi.fn((cb: () => void) => { cb(); return 1; }));
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    (globalThis.URL as any).createObjectURL = vi.fn(() => "blob:test");
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    (globalThis.URL as any).revokeObjectURL = vi.fn();
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    (document as any).execCommand = vi.fn(() => true);
+};
+
 describe("GeneratorView", () => {
-    beforeEach(() => {
-        vi.clearAllMocks();
-        const dom = new JSDOM("<div id=\"mainAppArea\"></div><div id=\"output-container\" style=\"display:none\"></div><div id=\"uebungsId\"></div><div id=\"version\"></div>");
-        vi.stubGlobal("window", dom.window);
-        vi.stubGlobal("document", dom.window.document);
-        vi.stubGlobal("AbortController", dom.window.AbortController);
-        // JSDOM prueft die Event-Identitaet: Node-globales Event wuerde von
-        // dispatchEvent() abgelehnt.
-        vi.stubGlobal("Event", dom.window.Event);
-        vi.stubGlobal("navigator", { clipboard: { writeText: vi.fn().mockResolvedValue(undefined) } });
-        vi.stubGlobal("setTimeout", vi.fn((cb: () => void) => { cb(); return 1; }));
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        (globalThis.URL as any).createObjectURL = vi.fn(() => "blob:test");
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        (globalThis.URL as any).revokeObjectURL = vi.fn();
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        (document as any).execCommand = vi.fn(() => true);
-    });
+    beforeEach(setzeDom);
 
     it("renders app and can read form data", () => {
         const view = new GeneratorView();
@@ -374,6 +376,11 @@ describe("GeneratorView", () => {
         await Promise.resolve();
         expect(mocks.zip).toHaveBeenCalled();
     });
+
+});
+
+describe("GeneratorView – Links, Hilfsfunktionen und Führungsstelle", () => {
+    beforeEach(setzeDom);
 
     it("covers private helper branches", async () => {
         const view = new GeneratorView();
