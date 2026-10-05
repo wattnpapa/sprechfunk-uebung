@@ -141,8 +141,11 @@ function handleRoute(): void {
         footerView.setUebungId(uebungId || "-");
         if (uebungId) {
             store.setState({ aktuelleUebungId: uebungId });
-            initUebungsleitung(db);
         }
+        // Auch ohne ID: die Ansicht zeigt dann „Im Link fehlt die Übungs-ID“
+        // mit Weiter-Wegen statt eines leeren Gerüsts (THW-Review 2026-10-05,
+        // error-recovery P3-4).
+        initUebungsleitung(db);
         return;
     }
 

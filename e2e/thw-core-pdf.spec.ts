@@ -184,6 +184,11 @@ test("@uebungsleitung Debrief: ein Klick, genau ein Download (offline P3-4)", as
     expect(datei.suggestedFilename()).toMatch(/^[\x20-\x7E]+\.pdf$/);
 });
 
+test("@uebungsleitung Link ohne Übungs-ID zeigt eine Meldung statt eines leeren Gerüsts (error-recovery P3-4)", async ({ page }) => {
+    await page.goto("/#/uebungsleitung/");
+    await expect(page.locator("#uebungsleitungMeta")).toContainText("fehlt die Übungs-ID");
+});
+
 test("@generator Druckteil nach Netzaussetzer ohne Neuladen wieder ladbar, eine Meldung (offline P1-1, P3-2)", async ({ page }) => {
     // Auch Neuversuche mit angehängtem Parameter blockieren.
     const druckteil = /\/pdfGenerator-[^/]*\.js/;

@@ -38,6 +38,19 @@ describe("abonniereRoutenwechsel", () => {
     });
 });
 
+// error-recovery P3-4: `#/uebungsleitung/` ohne ID zeigte ein leeres Gerüst.
+describe("Übungsleitung ohne ID", () => {
+    it("app.ts startet die Ansicht auch ohne ID, die Meldung kommt aus ladeUebung", async () => {
+        const app = readFileSync(path.resolve(__dirname, "..", "..", "src", "app.ts"), "utf8");
+        const zweig = app.slice(app.indexOf("if (mode === \"uebungsleitung\")"), app.indexOf("if (mode === \"teilnehmer\")"));
+        expect(zweig).toMatch(/\}\n\s*\/\/[^\n]*\n(\s*\/\/[^\n]*\n)*\s*initUebungsleitung\(db\);/);
+
+        const { ladeUebung } = await import("../../src/uebungsleitung/teilnehmerStand");
+        const ergebnis = await ladeUebung({} as never, null);
+        expect("fehler" in ergebnis && ergebnis.fehler).toMatch(/fehlt die Übungs-ID/);
+    });
+});
+
 // Offline P1-1: Im Generator wurde der Druckteil nie vorgeladen.
 describe("brauchtDruckteil", () => {
     it.each([
