@@ -75,10 +75,15 @@ export function speichereAktuellenEntwurf(ctrl: GeneratorController): void {
     if (!ctrl.isFreshExercise || istGespeichert(ctrl)) {
         return;
     }
+    speichereEntwurf(erfasseEntwurf(ctrl));
+}
+
+/** Aktueller Stand des Formulars als Entwurf; Grundlage auch für Profile. */
+export function erfasseEntwurf(ctrl: GeneratorController): GeneratorEntwurf {
     const formular = ctrl.view.getFormData();
     const quelle = ctrl.view.getSelectedSource();
     const option = ctrl.view.getSelectedLoesungswortOption();
-    const entwurf: GeneratorEntwurf = {
+    return {
         version: 1,
         gespeichertAm: new Date().toISOString(),
         formular: formularFuerEntwurf(formular),
@@ -90,7 +95,6 @@ export function speichereAktuellenEntwurf(ctrl: GeneratorController): void {
         loesungswortOption: option,
         loesungswoerter: option === "none" ? {} : leseLoesungswoerterAusFormular(ctrl, option)
     };
-    speichereEntwurf(entwurf);
 }
 
 function leseQuelle(ctrl: GeneratorController): FunkspruchQuelle {
@@ -142,7 +146,11 @@ export function aktualisiereStatusleiste(ctrl: GeneratorController): void {
     });
 }
 
-export function zeigeWiederhergestelltenEntwurf(ctrl: GeneratorController, entwurf: GeneratorEntwurf): void {
+export function zeigeWiederhergestelltenEntwurf(
+    ctrl: GeneratorController,
+    entwurf: GeneratorEntwurf,
+    profilName?: string
+): void {
     if (entwurf.quelle === "upload") {
         ctrl.view.setSelectedSource("upload");
     }
@@ -156,6 +164,7 @@ export function zeigeWiederhergestelltenEntwurf(ctrl: GeneratorController, entwu
     const zeitpunkt = new Date(entwurf.gespeichertAm);
     ctrl.hinweise.zeigeEntwurfHinweis(
         Number.isNaN(zeitpunkt.getTime()) ? new Date() : zeitpunkt,
-        () => ctrl.entwurfVerwerfen()
+        () => ctrl.entwurfVerwerfen(),
+        profilName
     );
 }
