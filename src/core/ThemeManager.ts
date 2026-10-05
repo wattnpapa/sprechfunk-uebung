@@ -15,6 +15,17 @@ export const THEME_FARBEN: Record<Theme, string> = {
     startrek: "#000000"
 };
 
+/**
+ * Beschriftung des Umschalters je Theme. Muss mit THEME_LABEL in
+ * scripts/lib/theme-init.mjs übereinstimmen: das Inline-Skript beschriftet
+ * die Knöpfe schon vor dem Bundle (tests/core/ThemeFarben.test.ts).
+ */
+export const THEME_LABEL: Record<Theme, string> = {
+    light: "🌙 Dark Mode",
+    dark: "☀️ Light Mode",
+    startrek: "🖖 Star Trek Theme"
+};
+
 const istTheme = (wert: string | null): wert is Theme =>
     wert === "dark" || wert === "light" || wert === "startrek";
 
@@ -39,11 +50,7 @@ export class ThemeManager {
 
     private applyTheme(theme: Theme): void {
         document.body.setAttribute("data-theme", theme);
-        const label = theme === "dark"
-            ? "☀️ Light Mode"
-            : theme === "startrek"
-                ? "🖖 Star Trek Theme"
-                : "🌙 Dark Mode";
+        const label = THEME_LABEL[theme];
         this.toggleBtns.forEach(btn => {
             btn.textContent = label;
         });

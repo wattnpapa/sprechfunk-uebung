@@ -15,7 +15,8 @@ vi.mock("../../src/core/chart", () => {
     const themeFarben = () => ({
         text: "#000", text2: "#555", linie: "#ddd", akzent: "#123", akzentHell: "#456", gut: "#060", warn: "#640"
     });
-    return { Chart: FakeChart, themeFarben };
+    const heatmapBalken = (anzahl: number, max: number) => ({ hoehePx: Math.max(8, Math.round((anzahl / Math.max(max, 1)) * 86)), deckkraft: 0.5 });
+    return { Chart: FakeChart, themeFarben, heatmapBalken };
 });
 
 import { RUECKGAENGIG_MS, UebungsleitungView } from "../../src/uebungsleitung/UebungsleitungView";
@@ -273,7 +274,7 @@ describe("UebungsleitungView", () => {
         expect((document.getElementById("nachrichtenProgressBar") as HTMLElement).style.width).toBe("40%");
         expect(document.getElementById("nachrichtenEtaLabel")?.textContent).toContain("ETA");
         expect(document.getElementById("nachrichtenTempoLabel")?.textContent).toBe("Tempo: 1");
-        expect((document.getElementById("nachrichtenHeatmapChart") as HTMLElement).innerHTML).toContain("rgba");
+        expect((document.getElementById("nachrichtenHeatmapChart") as HTMLElement).innerHTML).toContain("heatmap-balken");
         expect(chartCtor).toHaveBeenCalled();
         expect(destroyChart).toHaveBeenCalled();
     });

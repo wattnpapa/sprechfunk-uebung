@@ -21,6 +21,16 @@ export const THEME_FARBEN = {
     startrek: "#000000"
 };
 
+/**
+ * Beschriftung des Umschalters je Theme (identisch mit
+ * src/core/ThemeManager.ts, tests/core/ThemeFarben.test.ts hält beides gleich).
+ */
+export const THEME_LABEL = {
+    light: "🌙 Dark Mode",
+    dark: "☀️ Light Mode",
+    startrek: "🖖 Star Trek Theme"
+};
+
 /** Altes Snippet der Inhaltsseiten, das durch das frühe Skript ersetzt wird. */
 const ALTES_SNIPPET = /\s*<script>\s*\/\/ Gleiche Theme-Auswahl wie in der App anwenden[\s\S]*?<\/script>/;
 
@@ -41,6 +51,52 @@ export function fruehesThemaSkript() {
 }
 
 /**
+ * Skript direkt hinter </header>: beschriftet die Umschalter passend zum
+ * schon gesetzten Theme, bevor das Bundle lädt (THW-Review 2026-10-05,
+ * Night Befund 6: bis dahin hieß der Knopf auf dunkler Seite „Dark Mode“),
+ * hält die Beschriftung bei jedem Theme-Wechsel aktuell und bedient die
+ * Umschalter der Inhaltsseiten (`data-theme-schalter`), die kein Bundle laden
+ * (Night Befund 5). Die App-Knöpfe (#themeToggle) bedient der ThemeManager.
+ */
+export function themeSchalterSkript() {
+    const farben = JSON.stringify(THEME_FARBEN);
+    const label = JSON.stringify(THEME_LABEL);
+    return "<script>(function(){try{"
+        + "var f=" + farben + ",L=" + label + ",d=document,b=d.body;"
+        + "function l(){var t=b.getAttribute(\"data-theme\"),n=d.querySelectorAll(\"#themeToggle,#themeToggleMobile,[data-theme-schalter]\");"
+        + "for(var i=0;i<n.length;i++)n[i].textContent=L[t]||L.light;}"
+        + "l();"
+        + "var s=d.querySelectorAll(\"[data-theme-schalter]\");"
+        + "for(var i=0;i<s.length;i++)s[i].addEventListener(\"click\",function(){"
+        + "var t=b.getAttribute(\"data-theme\")===\"dark\"?\"light\":\"dark\";"
+        + "try{localStorage.setItem(\"theme\",t);}catch(e){}"
+        + "b.setAttribute(\"data-theme\",t);"
+        + "var m=d.querySelector('meta[name=\"theme-color\"]');if(m)m.setAttribute(\"content\",f[t]);});"
+        + "if(window.MutationObserver)new MutationObserver(l).observe(b,{attributes:true,attributeFilter:[\"data-theme\"]});"
+        + "}catch(e){}})();</script>";
+}
+
+/** Umschalter für Inhaltsseiten: Desktop in der Kopfleiste, mobil an der Stelle des Menüknopfs. */
+const SCHALTER_DESKTOP = `<button type="button" class="btn btn-outline-secondary" data-theme-schalter data-testid="theme-toggle-seite">${THEME_LABEL.light}</button>`;
+const SCHALTER_MOBIL = `<div class="app-header-burger d-md-none"><button type="button" class="btn btn-outline-secondary" data-theme-schalter data-testid="theme-toggle-seite-mobil">${THEME_LABEL.light}</button></div>`;
+
+/**
+ * Inhaltsseiten haben keinen Theme-Umschalter; die App bringt ihren eigenen
+ * mit (#themeToggle). Eingesetzt wird er ans Ende der Kopfleisten-Aktionen.
+ */
+export function setzeThemeSchalter(html) {
+    if (html.includes('id="themeToggle"') || html.includes("data-theme-schalter")) {
+        return html;
+    }
+    const aktionen = /(<div class="app-header-actions[^"]*">)([\s\S]*?)(\n\s*<\/div>)/;
+    if (!aktionen.test(html)) {
+        return html;
+    }
+    return html.replace(aktionen, (_ganz, auf, inhalt, zu) =>
+        `${auf}${inhalt}\n            ${SCHALTER_DESKTOP}${zu}\n        ${SCHALTER_MOBIL}`);
+}
+
+/**
  * Setzt das frühe Theme-Skript als erstes Element in <body>, entfernt das alte
  * DOMContentLoaded-Snippet und stellt die Grundfarbe der Adressleiste auf den
  * hellen Kopfbalken.
@@ -50,9 +106,13 @@ export function setzeFruehesThema(html) {
     if (!body.test(html)) {
         throw new Error("Kein <body> für das Theme-Skript gefunden.");
     }
-    return html
+    const mitSkript = setzeThemeSchalter(html)
         .replace(ALTES_SNIPPET, "")
         .replace(/<meta name="theme-color" content="[^"]*">/i,
             `<meta name="theme-color" content="${THEME_FARBEN.light}">`)
         .replace(body, (ganz) => `${ganz}\n${fruehesThemaSkript()}`);
+    // Ohne Kopfzeile (Einbett-Widget o. Ä.) gibt es keinen Umschalter.
+    return mitSkript.includes("</header>")
+        ? mitSkript.replace("</header>", `</header>\n${themeSchalterSkript()}`)
+        : mitSkript;
 }
