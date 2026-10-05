@@ -185,18 +185,9 @@ const MASKEN = [
     (i, j) => (((i + j) % 2) + ((i * j) % 3)) % 2 === 0
 ];
 
-/** Leere Matrix mit allen Funktionsmustern; `reserviert` markiert sie. */
-function grundmuster(version) {
-    const groesse = version * 4 + 17;
-    const matrix = Array.from({ length: groesse }, () => new Array(groesse).fill(false));
-    const reserviert = Array.from({ length: groesse }, () => new Array(groesse).fill(false));
-
-    const setze = (zeile, spalte, wert) => {
-        matrix[zeile][spalte] = wert;
-        reserviert[zeile][spalte] = true;
-    };
-
-    // Suchmuster mit Trennlinie, in allen drei Ecken.
+/** Suchmuster mit Trennlinie, in allen drei Ecken. */
+function setzeSuchmuster(feld) {
+    const { groesse, setze } = feld;
     for (const [zeile0, spalte0] of [[0, 0], [0, groesse - 7], [groesse - 7, 0]]) {
         for (let z = -1; z <= 7; z++) {
             for (let s = -1; s <= 7; s++) {
@@ -210,14 +201,19 @@ function grundmuster(version) {
             }
         }
     }
+}
 
-    // Taktmuster.
-    for (let i = 8; i < groesse - 8; i++) {
-        setze(6, i, i % 2 === 0);
-        setze(i, 6, i % 2 === 0);
+/** Taktmuster. */
+function setzeTaktmuster(feld) {
+    for (let i = 8; i < feld.groesse - 8; i++) {
+        feld.setze(6, i, i % 2 === 0);
+        feld.setze(i, 6, i % 2 === 0);
     }
+}
 
-    // Ausrichtungsmuster, außer wo sie ein Suchmuster überdecken würden.
+/** Ausrichtungsmuster, außer wo sie ein Suchmuster überdecken würden. */
+function setzeAusrichtungsmuster(feld, version) {
+    const { groesse, setze } = feld;
     const zentren = AUSRICHTUNG[version];
     for (const zeile0 of zentren) {
         for (const spalte0 of zentren) {
@@ -233,8 +229,11 @@ function grundmuster(version) {
             }
         }
     }
+}
 
-    // Dunkles Modul und die für das Formatfeld freigehaltenen Stellen.
+/** Dunkles Modul und die für das Formatfeld freigehaltenen Stellen. */
+function reserviereFormatfeld(feld) {
+    const { groesse, setze, reserviert } = feld;
     setze(groesse - 8, 8, true);
     for (let i = 0; i < 9; i++) {
         if (!reserviert[8][i]) setze(8, i, false);
@@ -244,16 +243,36 @@ function grundmuster(version) {
         if (!reserviert[8][groesse - 1 - i]) setze(8, groesse - 1 - i, false);
         if (!reserviert[groesse - 1 - i][8]) setze(groesse - 1 - i, 8, false);
     }
+}
 
-    // Versionsfeld ab Version 7.
-    if (version >= 7) {
-        for (let i = 0; i < 6; i++) {
-            for (let j = 0; j < 3; j++) {
-                setze(groesse - 11 + j, i, false);
-                setze(i, groesse - 11 + j, false);
-            }
+/** Versionsfeld ab Version 7. */
+function reserviereVersionsfeld(feld, version) {
+    if (version < 7) return;
+    for (let i = 0; i < 6; i++) {
+        for (let j = 0; j < 3; j++) {
+            feld.setze(feld.groesse - 11 + j, i, false);
+            feld.setze(i, feld.groesse - 11 + j, false);
         }
     }
+}
+
+/** Leere Matrix mit allen Funktionsmustern; `reserviert` markiert sie. */
+function grundmuster(version) {
+    const groesse = version * 4 + 17;
+    const matrix = Array.from({ length: groesse }, () => new Array(groesse).fill(false));
+    const reserviert = Array.from({ length: groesse }, () => new Array(groesse).fill(false));
+
+    const setze = (zeile, spalte, wert) => {
+        matrix[zeile][spalte] = wert;
+        reserviert[zeile][spalte] = true;
+    };
+    const feld = { matrix, reserviert, groesse, setze };
+
+    setzeSuchmuster(feld);
+    setzeTaktmuster(feld);
+    setzeAusrichtungsmuster(feld, version);
+    reserviereFormatfeld(feld);
+    reserviereVersionsfeld(feld, version);
 
     return { matrix, reserviert, groesse };
 }
@@ -325,11 +344,10 @@ function setzeVersion(matrix, groesse, version) {
     }
 }
 
-/** Bewertung nach den vier Straftermen der Norm; kleiner ist besser. */
-function strafpunkte(matrix, groesse) {
+/** Strafterm 1: Läufe gleicher Farbe ab fünf Modulen. */
+function strafeLaeufe(matrix, groesse) {
     let punkte = 0;
-
-    // 1: Läufe gleicher Farbe ab fünf Modulen.
+    const laufEnde = laenge => (laenge >= 5 ? 3 + (laenge - 5) : 0);
     for (let i = 0; i < groesse; i++) {
         for (const waagerecht of [true, false]) {
             let laufFarbe = null;
@@ -339,16 +357,20 @@ function strafpunkte(matrix, groesse) {
                 if (wert === laufFarbe) {
                     laufLaenge++;
                 } else {
-                    if (laufLaenge >= 5) punkte += 3 + (laufLaenge - 5);
+                    punkte += laufEnde(laufLaenge);
                     laufFarbe = wert;
                     laufLaenge = 1;
                 }
             }
-            if (laufLaenge >= 5) punkte += 3 + (laufLaenge - 5);
+            punkte += laufEnde(laufLaenge);
         }
     }
+    return punkte;
+}
 
-    // 2: gleichfarbige 2×2-Blöcke.
+/** Strafterm 2: gleichfarbige 2×2-Blöcke. */
+function strafeBloecke(matrix, groesse) {
+    let punkte = 0;
     for (let i = 0; i < groesse - 1; i++) {
         for (let j = 0; j < groesse - 1; j++) {
             const wert = matrix[i][j];
@@ -357,11 +379,20 @@ function strafpunkte(matrix, groesse) {
             }
         }
     }
+    return punkte;
+}
 
-    // 3: suchmusterähnliche Folgen.
-    const MUSTER = [true, false, true, true, true, false, true, false, false, false, false];
-    const UMGEKEHRT = [...MUSTER].reverse();
-    const passt = (werte, muster) => muster.every((wert, i) => werte[i] === wert);
+const SUCHMUSTER_FOLGE = [true, false, true, true, true, false, true, false, false, false, false];
+const SUCHMUSTER_UMGEKEHRT = [...SUCHMUSTER_FOLGE].reverse();
+
+function istSuchmusterFolge(werte) {
+    const passt = muster => muster.every((wert, i) => werte[i] === wert);
+    return passt(SUCHMUSTER_FOLGE) || passt(SUCHMUSTER_UMGEKEHRT);
+}
+
+/** Strafterm 3: suchmusterähnliche Folgen. */
+function strafeSuchmusterFolgen(matrix, groesse) {
+    let punkte = 0;
     for (let i = 0; i < groesse; i++) {
         for (let j = 0; j + 11 <= groesse; j++) {
             const waagerecht = [];
@@ -370,18 +401,27 @@ function strafpunkte(matrix, groesse) {
                 waagerecht.push(matrix[i][j + k]);
                 senkrecht.push(matrix[j + k][i]);
             }
-            if (passt(waagerecht, MUSTER) || passt(waagerecht, UMGEKEHRT)) punkte += 40;
-            if (passt(senkrecht, MUSTER) || passt(senkrecht, UMGEKEHRT)) punkte += 40;
+            if (istSuchmusterFolge(waagerecht)) punkte += 40;
+            if (istSuchmusterFolge(senkrecht)) punkte += 40;
         }
     }
+    return punkte;
+}
 
-    // 4: Abweichung vom hälftigen Dunkelanteil.
+/** Strafterm 4: Abweichung vom hälftigen Dunkelanteil. */
+function strafeDunkelanteil(matrix, groesse) {
     let dunkel = 0;
     for (const zeile of matrix) for (const wert of zeile) if (wert) dunkel++;
     const anteil = (dunkel * 100) / (groesse * groesse);
-    punkte += Math.floor(Math.abs(anteil - 50) / 5) * 10;
+    return Math.floor(Math.abs(anteil - 50) / 5) * 10;
+}
 
-    return punkte;
+/** Bewertung nach den vier Straftermen der Norm; kleiner ist besser. */
+function strafpunkte(matrix, groesse) {
+    return strafeLaeufe(matrix, groesse)
+        + strafeBloecke(matrix, groesse)
+        + strafeSuchmusterFolgen(matrix, groesse)
+        + strafeDunkelanteil(matrix, groesse);
 }
 
 /**

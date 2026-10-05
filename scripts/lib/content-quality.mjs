@@ -97,7 +97,14 @@ export function durchschnittlicheSatzlaenge(text) {
 export function pruefeSeite(seite, grenzen = GRENZEN) {
     const verstoesse = [];
     const melde = (regel, text) => verstoesse.push({ regel, seite: seite.slug, text });
+    for (const pruefung of SEITEN_PRUEFUNGEN) {
+        pruefung(seite, grenzen, melde);
+    }
+    return verstoesse;
+}
 
+/** Titel- und Description-Länge. */
+function pruefeMetaLaengen(seite, grenzen, melde) {
     const titelLaenge = (seite.titel ?? "").length;
     if (titelLaenge < grenzen.titelMin || titelLaenge > grenzen.titelMax) {
         melde("titel-laenge", `Titel hat ${titelLaenge} Zeichen (erlaubt ${grenzen.titelMin}–${grenzen.titelMax})`);
@@ -107,7 +114,10 @@ export function pruefeSeite(seite, grenzen = GRENZEN) {
     if (descLaenge < grenzen.descMin || descLaenge > grenzen.descMax) {
         melde("description-laenge", `Description hat ${descLaenge} Zeichen (erlaubt ${grenzen.descMin}–${grenzen.descMax})`);
     }
+}
 
+/** Umfang: Wortziel und eigener Text neben Archivlisten. */
+function pruefeUmfang(seite, grenzen, melde) {
     const ziel = ZIELWOERTER[seite.slug] ?? grenzen.woerterMin;
     if (seite.woerter < ziel) {
         melde("zu-kurz", `${seite.woerter} Wörter (Ziel ${ziel})`);
@@ -117,7 +127,10 @@ export function pruefeSeite(seite, grenzen = GRENZEN) {
         melde("zu-wenig-eigener-text",
             `${seite.eigeneWoerter ?? 0} Wörter eigener Text neben der Liste (mindestens ${grenzen.eigeneWoerterMin})`);
     }
+}
 
+/** Sprache: Floskeln, Satz- und Absatzlänge. */
+function pruefeSprache(seite, grenzen, melde) {
     for (const floskel of findeFloskeln(seite.text)) {
         melde("floskel", `enthält „${floskel}“`);
     }
@@ -133,7 +146,10 @@ export function pruefeSeite(seite, grenzen = GRENZEN) {
             melde("absatz-zu-lang", `Absatz mit ${laenge} Wörtern: „${absatz.slice(0, 60)}…“`);
         }
     }
+}
 
+/** Anker: Inhaltsverzeichnis, doppelte ids, Überschriften ohne id. */
+function pruefeAnker(seite, _grenzen, melde) {
     for (const anker of seite.ankerZiele ?? []) {
         if (!(seite.ankerVorhanden ?? []).includes(anker)) {
             melde("toter-anker", `Inhaltsverzeichnis verweist auf #${anker}, das es nicht gibt`);
@@ -151,7 +167,10 @@ export function pruefeSeite(seite, grenzen = GRENZEN) {
     if ((seite.h2OhneId ?? 0) > 0) {
         melde("h2-ohne-id", `${seite.h2OhneId} Überschriften ohne id`);
     }
+}
 
+/** Pflichtbausteine des Seitenformats. */
+function pruefeFormat(seite, _grenzen, melde) {
     for (const [feld, name] of [
         ["hatMetazeile", "Metazeile"],
         ["hatKurzGesagt", "„Kurz gesagt“-Block"],
@@ -160,7 +179,10 @@ export function pruefeSeite(seite, grenzen = GRENZEN) {
     ]) {
         if (seite[feld] === false) melde("format-unvollstaendig", `${name} fehlt`);
     }
+}
 
+/** Gewicht: übertragene und unkomprimierte Bytes. */
+function pruefeGewicht(seite, grenzen, melde) {
     if ((seite.transferBytes ?? 0) > grenzen.transferMaxBytes) {
         melde("zu-gross", `${Math.round(seite.transferBytes / 1024)} KB (höchstens ${grenzen.transferMaxBytes / 1024} KB)`);
     }
@@ -169,9 +191,17 @@ export function pruefeSeite(seite, grenzen = GRENZEN) {
         melde("zu-viel-markup",
             `${Math.round(seite.roheBytes / 1024)} KB unkomprimiert (höchstens ${grenzen.roheBytesMax / 1024} KB)`);
     }
-
-    return verstoesse;
 }
+
+/** Reihenfolge bestimmt die Reihenfolge der Meldungen. */
+const SEITEN_PRUEFUNGEN = [
+    pruefeMetaLaengen,
+    pruefeUmfang,
+    pruefeSprache,
+    pruefeAnker,
+    pruefeFormat,
+    pruefeGewicht
+];
 
 /** Titel und Descriptions müssen domainweit eindeutig sein. */
 export function pruefeEindeutigkeit(seiten) {

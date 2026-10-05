@@ -88,25 +88,11 @@ export function renderPageWithStructuredData({
     // der fertigen Seite, und die Liste bringt keine eigene h2 mit.
     html = setzeFunkspruchInhalte(html, page, bestand);
 
-    if (!page.faqFromPage && faq.length > 0) {
-        const block = renderFaqHtml(faq);
-        // Auf der Startseite steht der Platzhalter innerhalb von #seoIntroArea,
-        // das der Router nur ein- und ausblendet (src/core/AppView.ts). Vor
-        // </main> eingesetzt läge der Block außerhalb aller Routen-Bereiche.
-        if (html.includes(FAQ_PLATZHALTER)) {
-            html = html.replace(FAQ_PLATZHALTER, block);
-        } else if (html.includes("</main>")) {
-            html = html.replace("</main>", `${block}</main>`);
-        } else {
-            throw new Error(`Seite "${page.slug || "/"}": weder ${FAQ_PLATZHALTER} noch </main> gefunden.`);
-        }
-    }
+    html = setzeFaqBlock(html, page, faq);
 
     // Umfang der Sammlung für Archivseiten: die Zahl steht im ItemList-Knoten,
     // die Einträge selbst bleiben im sichtbaren HTML (AP-08).
-    const collectionAnzahl = page.archivVorlage && bestand
-        ? (bestand.nachVorlage.get(page.archivVorlage) ?? []).length
-        : undefined;
+    const collectionAnzahl = sammlungsAnzahl(page, bestand);
 
     const graph = buildGraph({
         page: { ...page, breadcrumb, faq, collectionAnzahl },
@@ -135,6 +121,32 @@ export function renderPageWithStructuredData({
     html = ersetzeJsonLd(html, graph);
     pruefeFaqSichtbar(page, faq, html);
     return { html, graph, faq, terme, title, description, breadcrumb };
+}
+
+/**
+ * Sichtbarer FAQ-Block. Auf der Startseite steht der Platzhalter innerhalb von
+ * #seoIntroArea, das der Router nur ein- und ausblendet (src/core/AppView.ts).
+ * Vor </main> eingesetzt läge der Block außerhalb aller Routen-Bereiche.
+ */
+function setzeFaqBlock(html, page, faq) {
+    if (page.faqFromPage || faq.length === 0) {
+        return html;
+    }
+    const block = renderFaqHtml(faq);
+    if (html.includes(FAQ_PLATZHALTER)) {
+        return html.replace(FAQ_PLATZHALTER, block);
+    }
+    if (html.includes("</main>")) {
+        return html.replace("</main>", `${block}</main>`);
+    }
+    throw new Error(`Seite "${page.slug || "/"}": weder ${FAQ_PLATZHALTER} noch </main> gefunden.`);
+}
+
+/** Anzahl der Einträge einer Archivseite, sonst undefined. */
+function sammlungsAnzahl(page, bestand) {
+    return page.archivVorlage && bestand
+        ? (bestand.nachVorlage.get(page.archivVorlage) ?? []).length
+        : undefined;
 }
 
 

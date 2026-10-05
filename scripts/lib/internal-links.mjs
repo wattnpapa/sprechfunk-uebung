@@ -57,6 +57,28 @@ export function ankerVarianten(links) {
     return varianten;
 }
 
+/** Ankertexte einer Seite, die auf mehr als ein Ziel zeigen. */
+function mehrdeutigeAnker(slug, aus) {
+    const verstoesse = [];
+    const ankerZuZielen = new Map();
+    for (const link of aus) {
+        const anker = String(link.anker ?? "").trim().toLowerCase();
+        if (anker === "") continue;
+        if (!ankerZuZielen.has(anker)) ankerZuZielen.set(anker, new Set());
+        ankerZuZielen.get(anker).add(link.zu);
+    }
+    for (const [anker, ziele] of ankerZuZielen) {
+        if (ziele.size > 1) {
+            verstoesse.push({
+                regel: "mehrdeutiger-anker",
+                seite: slug,
+                text: `Ankertext "${anker}" zeigt auf ${ziele.size} verschiedene Ziele: ${[...ziele].join(", ")}`
+            });
+        }
+    }
+    return verstoesse;
+}
+
 /**
  * Prüft alle Regeln und liefert eine Liste von Verstößen.
  * Jeder Verstoß: { regel, seite, text }
@@ -117,22 +139,7 @@ export function pruefeRegeln(seiten, links, grenzwerte = GRENZWERTE) {
         }
 
         // 5. Gleicher Ankertext für zwei verschiedene Ziele auf derselben Seite.
-        const ankerZuZielen = new Map();
-        for (const link of aus) {
-            const anker = String(link.anker ?? "").trim().toLowerCase();
-            if (anker === "") continue;
-            if (!ankerZuZielen.has(anker)) ankerZuZielen.set(anker, new Set());
-            ankerZuZielen.get(anker).add(link.zu);
-        }
-        for (const [anker, ziele] of ankerZuZielen) {
-            if (ziele.size > 1) {
-                verstoesse.push({
-                    regel: "mehrdeutiger-anker",
-                    seite: seite.slug,
-                    text: `Ankertext "${anker}" zeigt auf ${ziele.size} verschiedene Ziele: ${[...ziele].join(", ")}`
-                });
-            }
-        }
+        verstoesse.push(...mehrdeutigeAnker(seite.slug, aus));
     }
 
     // Nichtssagende Ankertexte melden.
