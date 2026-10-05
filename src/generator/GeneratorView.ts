@@ -31,7 +31,7 @@ import {
     toggleSourceView
 } from "./GeneratorQuelleDom";
 import { GeneratorLinksRenderer } from "./GeneratorLinksRenderer";
-import { GeneratorTeilnehmerTableRenderer } from "./GeneratorTeilnehmerTableRenderer";
+import { bindeTeilnehmerContainer, GeneratorTeilnehmerTableRenderer } from "./GeneratorTeilnehmerTableRenderer";
 import { GeneratorResultRenderer } from "./GeneratorResultRenderer";
 import {
     GeneratorFuehrungsstellenForm,
@@ -40,9 +40,7 @@ import {
     type FuehrungsstellenRollenFormular
 } from "./GeneratorFuehrungsstellenForm";
 
-export type { AbschnittsGrenzen, AbschnittZeile, FuehrungsstellenRollenFormular };
-
-export type { FunkspruchQuelle };
+export type { AbschnittsGrenzen, AbschnittZeile, FuehrungsstellenRollenFormular, FunkspruchQuelle };
 
 export class GeneratorView {
     private bindingController = new AbortController();
@@ -51,9 +49,6 @@ export class GeneratorView {
     private resultRenderer = new GeneratorResultRenderer();
     private fuehrungsstellenForm = new GeneratorFuehrungsstellenForm();
     private templatePicker: MultiSelect | null = null;
-    
-    // Cache für DOM-Elemente könnte hier angelegt werden, 
-    // aber für diesen Refactor reicht der direkte Zugriff über gekapselte Methoden.
 
     public resetBindings() {
         this.bindingController.abort();
@@ -65,7 +60,6 @@ export class GeneratorView {
         if(idEl) {
             idEl.textContent = id;
         }
-        
         const verEl = document.getElementById("version");
         if(verEl) {
             verEl.innerHTML = version;
@@ -162,39 +156,9 @@ export class GeneratorView {
         onDelete: (index: number) => void,
         onShowStellennameToggle: (checked: boolean) => void
     ) {
-        const container = document.getElementById("teilnehmer-container");
-        if (!container) {
-            return;
-        }
-        container.addEventListener("input", e => {
-            const target = e.target as HTMLElement;
-            if (target.classList.contains("teilnehmer-input")) {
-                const index = Number(target.dataset["index"]);
-                const newVal = (target as HTMLInputElement).value;
-                onTeilnehmerNameChange(index, newVal);
-            }
-            if (target.classList.contains("stellenname-input")) {
-                const index = Number(target.dataset["index"]);
-                const newVal = (target as HTMLInputElement).value;
-                onStellennameChange(index, newVal);
-            }
-        }, { signal: this.bindingController.signal });
-
-        container.addEventListener("click", e => {
-            const target = e.target as HTMLElement;
-            const btn = target.closest(".delete-teilnehmer") as HTMLElement;
-            if (btn) {
-                const index = Number(btn.dataset["index"]);
-                onDelete(index);
-            }
-        }, { signal: this.bindingController.signal });
-
-        container.addEventListener("change", e => {
-            const target = e.target as HTMLInputElement;
-            if (target.id === "showStellennameCheckbox") {
-                onShowStellennameToggle(target.checked);
-            }
-        }, { signal: this.bindingController.signal });
+        bindeTeilnehmerContainer(this.bindingController.signal, {
+            onTeilnehmerNameChange, onStellennameChange, onDelete, onShowStellennameToggle
+        });
     }
 
     public bindAnmeldungToggle(onToggle: (checked: boolean) => void) {
