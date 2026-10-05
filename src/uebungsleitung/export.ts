@@ -4,16 +4,20 @@ import { uiFeedback } from "../core/UiFeedback";
 import { ladePdfGenerator } from "../services/pdfGeneratorLazy";
 import type { EffektiverStatus } from "./auswertung";
 import type { AnmeldeZustand } from "./lagebild";
+import { mitAuswertungsVermerken, mitReaktionsBilanz, type ReaktionsBilanz } from "./reaktion";
 
 /**
- * Debrief-Daten: neben den Bestätigungen der Leitung auch die
- * Selbstmeldungen der Teilnehmer (`gemeldetUm`) und die Anmeldung aus dem
- * Anmelde-Funkspruch – getrennt ausgewiesen (THW-Review workflow F3).
+ * Gemeinsamer Stand für Übungsleitungs-PDF und Debrief: Die Anmeldezeit kommt
+ * aus derselben Quelle wie in der Tabelle (auch aus dem Anmelde-Funkspruch
+ * und seiner Zeitkorrektur), Ausgelassen, Reaktion und Herkunft der Zeit
+ * stehen als Vermerk vor der Notiz, die Reaktionssumme bei der beübten Stelle
+ * (THW-Review 2026-10-05, analog P2-1, command P2-1).
  */
-export function buildDebriefStorage(
+export function buildAuswertungsStand(
+    uebung: Pick<FunkUebung, "fuehrungsstelle">,
     storage: UebungsleitungStorage,
     anmeldungen: Record<string, AnmeldeZustand>,
-    effektiv: EffektiverStatus
+    bilanz: ReaktionsBilanz | null
 ): UebungsleitungStorage {
     const teilnehmer: Record<string, TeilnehmerStatus> = { ...storage.teilnehmer };
     Object.entries(anmeldungen).forEach(([name, zustand]) => {
@@ -21,7 +25,17 @@ export function buildDebriefStorage(
             teilnehmer[name] = { ...(teilnehmer[name] ?? {}), angemeldetUm: zustand.angemeldetUm };
         }
     });
-    return { ...storage, teilnehmer, nachrichten: effektiv };
+    const stand = { ...storage, teilnehmer, nachrichten: mitAuswertungsVermerken(storage.nachrichten) };
+    return bilanz ? mitReaktionsBilanz(stand, uebung.fuehrungsstelle?.beuebteStelle, bilanz) : stand;
+}
+
+/**
+ * Debrief-Daten: neben den Bestätigungen der Leitung auch die
+ * Selbstmeldungen der Teilnehmer (`gemeldetUm`) – getrennt ausgewiesen
+ * (THW-Review workflow F3).
+ */
+export function buildDebriefStorage(stand: UebungsleitungStorage, effektiv: EffektiverStatus): UebungsleitungStorage {
+    return { ...stand, nachrichten: mitAuswertungsVermerken(effektiv) };
 }
 
 export async function downloadTeilnehmerDebrief(uebung: FunkUebung, debriefStorage: UebungsleitungStorage, name: string): Promise<void> {

@@ -20,6 +20,11 @@ export interface AktionenHost {
     renderTeilnehmer(): void;
     renderNachrichten(): void;
     zeigeRueckgaengig(meldung: string, onUndo: () => void): void;
+    /**
+     * Schließt eine noch stehende Rückgängig-Leiste: Sie bezöge sich nach einer
+     * neuen Aktion auf die ältere (THW-Review 2026-10-05, error-recovery P3-2).
+     */
+    schliesseRueckgaengig(): void;
 }
 
 /**
@@ -80,9 +85,15 @@ export class LeitungAktionen {
         return uebung ? anmeldeNachrichtKey(uebung, name) : null;
     }
 
-    /** Ist `key` der Anmelde-Funkspruch eines noch nicht Angemeldeten, gilt er ab `um` als angemeldet. */
-    private meldeMitFunkspruchAn(storage: UebungsleitungStorage, sender: string, key: string, um: string): void {
-        if (key !== this.anmeldeKey(sender) || storage.teilnehmer[sender]?.angemeldetUm) {
+    /**
+     * Ist `key` der Anmelde-Funkspruch, gilt der Teilnehmer ab `um` als
+     * angemeldet – sofern er es noch nicht ist. Eine Zeitkorrektur von Hand
+     * (`korrektur`) zieht die Anmeldezeit immer mit: Anmeldung und
+     * Anmelde-Funkspruch sind ein Vorgang (THW-Review 2026-10-05, analog P2-1).
+     */
+    private meldeMitFunkspruchAn(storage: UebungsleitungStorage, ziel: { sender: string; key: string }, um: string, korrektur = false): void {
+        const { sender, key } = ziel;
+        if (key !== this.anmeldeKey(sender) || (!korrektur && storage.teilnehmer[sender]?.angemeldetUm)) {
             return;
         }
         const teilnehmer = this.touchTeilnehmer(sender);
@@ -107,6 +118,7 @@ export class LeitungAktionen {
      * angemeldet wird, dessen Anmelde-Funkspruch gilt als abgesetzt.
      */
     public markAngemeldet(name: string): void {
+        this.host.schliesseRueckgaengig();
         const entry = this.touchTeilnehmer(name);
         const storage = this.host.storage();
         if (!entry || !storage) {
@@ -135,6 +147,7 @@ export class LeitungAktionen {
         if (!storage) {
             return;
         }
+        this.host.schliesseRueckgaengig();
         const key = this.anmeldeKey(name);
         const vorherTeilnehmer: TeilnehmerStatus = { ...(storage.teilnehmer[name] ?? {}) };
         const vorherNachricht: NachrichtenStatus | undefined = key && storage.nachrichten[key]
@@ -202,13 +215,16 @@ export class LeitungAktionen {
             // Doppelklick: schon abgesetzt, nichts umschalten.
             return;
         }
+        this.host.schliesseRueckgaengig();
         const now = new Date().toISOString();
         entry.abgesetztUm = now;
         entry.statusGeaendertUm = now;
         delete entry.nachgetragen;
+        delete entry.zeitVomTeilnehmer;
+        delete entry.ausgelassen;
         storage.nachrichten[key] = entry;
         this.sperreRuecknahme(key);
-        this.meldeMitFunkspruchAn(storage, sender, key, now);
+        this.meldeMitFunkspruchAn(storage, { sender, key }, now);
         this.speichernUndZeichnen(false);
     }
 
@@ -235,6 +251,7 @@ export class LeitungAktionen {
         if (!storage || this.istRuecknahmeGesperrt(key)) {
             return;
         }
+        this.host.schliesseRueckgaengig();
         const vorher: NachrichtenStatus | undefined = storage.nachrichten[key]
             ? { ...storage.nachrichten[key] }
             : undefined;
@@ -271,28 +288,37 @@ export class LeitungAktionen {
         }
         const key = statusKey(sender, nr);
         const entry = storage.nachrichten[key] || {};
-        const iso = uhrzeitZuIso(hhmm, entry.abgesetztUm);
+        const datum = this.host.uebung()?.datum;
+        const iso = uhrzeitZuIso(hhmm, entry.abgesetztUm, new Date(), {
+            ...(datum ? { uebungsDatum: new Date(datum) } : {}),
+            ...(storage.xZeitBasis ? { basis: storage.xZeitBasis } : {})
+        });
         if (!iso) {
             uiFeedback.error("Bitte die Uhrzeit als HH:MM eintragen, z. B. 19:05.");
             return;
         }
+        this.host.schliesseRueckgaengig();
         entry.abgesetztUm = iso;
         entry.nachgetragen = true;
+        delete entry.zeitVomTeilnehmer;
+        delete entry.ausgelassen;
         entry.statusGeaendertUm = new Date().toISOString();
         storage.nachrichten[key] = entry;
-        this.meldeMitFunkspruchAn(storage, sender, key, iso);
+        this.meldeMitFunkspruchAn(storage, { sender, key }, iso, true);
         this.speichernUndZeichnen(false);
     }
 
     /**
      * Übernimmt alle vom Teilnehmer gemeldeten, noch unbestätigten Nachrichten
-     * mit dem Zeitpunkt der Teilnehmer-Meldung.
+     * mit dem Zeitpunkt der Teilnehmer-Meldung. Diese Zeit ist eine Tippzeit
+     * und wird so gekennzeichnet (THW-Review 2026-10-05, analog P3-1).
      */
     public gemeldeteBestaetigen(): void {
         const storage = this.host.storage();
         if (!storage) {
             return;
         }
+        this.host.schliesseRueckgaengig();
         const jetzt = new Date().toISOString();
         let anzahl = 0;
         Object.entries(this.host.effektiverStatus()).forEach(([key, status]) => {
@@ -302,6 +328,9 @@ export class LeitungAktionen {
             const entry = storage.nachrichten[key] || {};
             entry.abgesetztUm = status.gemeldetUm;
             entry.statusGeaendertUm = jetzt;
+            entry.zeitVomTeilnehmer = true;
+            delete entry.nachgetragen;
+            delete entry.ausgelassen;
             storage.nachrichten[key] = entry;
             anzahl++;
         });
@@ -309,7 +338,7 @@ export class LeitungAktionen {
             return;
         }
         this.speichernUndZeichnen(true);
-        uiFeedback.success(`${anzahl} gemeldete Nachricht${anzahl === 1 ? "" : "en"} bestätigt.`);
+        uiFeedback.success(`${anzahl} gemeldete Nachricht${anzahl === 1 ? "" : "en"} bestätigt – mit der Meldezeit des Teilnehmers. Papierzeiten trägst du über „Zeit ändern“ nach.`);
     }
 
     public persistNachrichtNotiz(sender: string, nr: number, val: string): void {
@@ -317,7 +346,7 @@ export class LeitungAktionen {
         if (!storage) {
             return;
         }
-        const key = `${sender}__${nr}`;
+        const key = statusKey(sender, nr);
         const entry = storage.nachrichten[key] || {};
         entry.notiz = val;
         entry.notizGeaendertUm = new Date().toISOString();

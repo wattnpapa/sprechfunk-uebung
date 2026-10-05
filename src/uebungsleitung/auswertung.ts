@@ -1,6 +1,6 @@
 import type { EffektiverNachrichtenStatus } from "../services/liveStatusMerge";
 import { formatNatoDate } from "../utils/date";
-import { formatUhrzeit, schaetzeEnde, statusKey } from "./lagebild";
+import { formatUhrzeit, istOffen, schaetzeEnde, statusKey } from "./lagebild";
 import { formatHHMM } from "./markup";
 import type { FlattenedNachricht, HeatmapBin, TeilnehmerTimeline, TimelineEvent } from "./nachrichtenTypen";
 
@@ -87,7 +87,7 @@ export function calculateEtaLabel(
     if (nachrichten.length === 0) {
         return "ETA: –";
     }
-    const offen = nachrichten.filter(n => !statusVon(effektiv, n)?.erledigtUm).length;
+    const offen = nachrichten.filter(n => istOffen(statusVon(effektiv, n))).length;
     return planEndeLabel(nachrichten, offen, planBasisMs) ?? hochrechnungLabel(nachrichten, effektiv, offen);
 }
 
@@ -125,7 +125,7 @@ export function calculateTempoLabel(sentNachrichten: SentNachricht[]): string {
     }
 
     const perMinute = 60000 / avgIntervalMs;
-    return `Tempo: ${perMinute.toFixed(1).replace(".", ",")} N/min`;
+    return `Tempo: ${perMinute.toFixed(1).replace(".", ",")} Sprüche/min`;
 }
 
 function getTopEntry(values: Map<string, number>): { name: string; count: number } | null {
@@ -162,19 +162,20 @@ export function calculateLoadLabel(sentNachrichten: SentNachricht[], alleTeilneh
     if (!topSender && !topReceiver) {
         return "Funklast: –";
     }
-    const senderText = topSender ? `S ${topSender.name} (${topSender.count})` : "S –";
-    const receiverText = topReceiver ? `E ${topReceiver.name} (${topReceiver.count})` : "E –";
+    // Klartext statt „S“/„E“ (THW-Review 2026-10-05, new-user P3-4).
+    const senderText = topSender ? `sendet am meisten ${topSender.name} (${topSender.count})` : "sendet am meisten –";
+    const receiverText = topReceiver ? `empfängt am meisten ${topReceiver.name} (${topReceiver.count})` : "empfängt am meisten –";
     return `Funklast: ${senderText} | ${receiverText}`;
 }
 
 export function calculateHeatmapLabel(bins: HeatmapBin[]): string {
     if (!bins.length) {
-        return "Heatmap 5m: –";
+        return "Sprüche je 5 min: –";
     }
     const lastBins = bins
         .slice(-6)
-        .map(bin => `${formatHHMM(bin.bucket)}=${bin.count}`);
-    return `Heatmap 5m: ${lastBins.join(" | ")}`;
+        .map(bin => `ab ${formatHHMM(bin.bucket)}: ${bin.count}`);
+    return `Sprüche je 5 min: ${lastBins.join(" | ")}`;
 }
 
 export function buildHeatmapBins(sentNachrichten: SentNachricht[]): HeatmapBin[] {

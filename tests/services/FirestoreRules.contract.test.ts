@@ -117,6 +117,17 @@ describe("firestore.rules Feldvertrag", () => {
                     notiz: "n",
                     notizGeaendertUm: jetzt,
                     nachgetragen: true
+                },
+                // THW-Review 2026-10-05: Ausgelassen, Herkunft der Zeit und Reaktion
+                // liegen innerhalb der Maps, deren Größe die Regeln prüfen – kein
+                // neues Feld auf Dokumentebene, kein zusätzlicher Ausdruck.
+                "Heros Jever 21/10__2": { ausgelassen: true, statusGeaendertUm: jetzt },
+                "Heros Jever 21/10__3": {
+                    abgesetztUm: jetzt,
+                    statusGeaendertUm: jetzt,
+                    zeitVomTeilnehmer: true,
+                    reaktion: "abweichend",
+                    reaktionGeaendertUm: jetzt
                 }
             }
         };

@@ -8,7 +8,7 @@ import type { Firestore } from "firebase/firestore";
 import type { FunkUebung } from "../models/FunkUebung";
 import { debounce } from "../utils/debounce";
 import { captureFieldFocus, restoreFieldFocus } from "../utils/focus";
-import { LiveStatusService } from "../services/LiveStatusService";
+import { LiveStatusService, type SyncInfo } from "../services/LiveStatusService";
 import {
     buildEffektiveNachrichtenStatus,
     mergeLeitungLiveDoc,
@@ -17,8 +17,6 @@ import {
     toLeitungPublicLiveDoc
 } from "../services/liveStatusMerge";
 import type { TeilnehmerLiveDoc } from "../types/LiveStatus";
-import { parseHHMMtoMs } from "../utils/xzeit";
-import { lageJeTeilnehmer } from "./lagebild";
 import { buildAnmeldungen, buildFortschritt, ladeUebung } from "./teilnehmerStand";
 import type { FlattenedNachricht } from "./nachrichtenTypen";
 import {
@@ -32,11 +30,15 @@ import {
     zaehleErledigt,
     type EffektiverStatus
 } from "./auswertung";
-import { buildFaelligkeit, buildPlan, buildSollUhrzeiten, naechsteFuerLage } from "./nachrichtenplan";
-import { buildCockpitAnzeige } from "./cockpit";
-import { LeitungAktionen } from "./aktionen";
-import { buildDebriefStorage, downloadTeilnehmerDebrief, exportTeilnehmerUebersicht, exportUebungsleitungPdf } from "./export";
+import { buildFaelligkeit, buildPlan, buildSollUhrzeiten } from "./nachrichtenplan";
+import { LeitungAktionen, type AktionenHost } from "./aktionen";
+import { PlanAktionen } from "./aktionenPlan";
+import { CockpitSteuerung } from "./cockpitSteuerung";
+import { buildAuswertungsStand, buildDebriefStorage, downloadTeilnehmerDebrief, exportTeilnehmerUebersicht, exportUebungsleitungPdf } from "./export";
 import { fuehreResetAus, resetBestaetigen } from "./zuruecksetzen";
+import { holeZurueckgesetzt, ladeAnsicht, speichereAnsicht } from "./ansicht";
+import { reaktionsBilanz } from "./reaktion";
+import { buildLageAnzeige } from "./lageAufbau";
 
 export { RUECKNAHME_SPERRE_MS } from "./aktionen";
 
@@ -47,8 +49,8 @@ export class UebungsleitungController {
     private uebung: FunkUebung | null = null;
     private storage: UebungsleitungStorage | null = null;
 
-    // State for filters
-    private hideAbgesetzt = false;
+    /** Ansicht je Gerät gemerkt (Ausblenden, Teilnehmertabelle eingeklappt). */
+    private ansicht = ladeAnsicht();
     private senderFilter = "";
     private empfaengerFilter = "";
     private textFilter = "";
@@ -61,14 +63,12 @@ export class UebungsleitungController {
     private debouncedSave = debounce(() => this.save(), 220);
     private db: Firestore;
     private liveStatus: LiveStatusService | null = null;
+    private syncInfo: SyncInfo | null = null;
     /** Zuletzt empfangene Selbstmeldungen der Teilnehmer. */
     private teilnehmerLiveDocs: TeilnehmerLiveDoc[] = [];
     private disposeListener: (() => void) | null = null;
-    private cockpitInterval: ReturnType<typeof setInterval> | null = null;
-    /** Minute des letzten Plan-Renderns – die Fälligkeit ändert sich minütlich. */
-    private letzteFaelligkeitsMinute = -1;
-    /** Bedienhandlungen an Teilnehmern und Nachrichten; lesen den Zustand dieses Controllers. */
-    private aktionen = new LeitungAktionen({
+    private disposed = false;
+    private host: AktionenHost = {
         storage: () => this.storage,
         uebung: () => this.uebung,
         effektiverStatus: () => this.buildEffektivenStatus(),
@@ -76,18 +76,35 @@ export class UebungsleitungController {
         debouncedSave: () => this.debouncedSave(),
         renderTeilnehmer: () => this.renderTeilnehmer(),
         renderNachrichten: () => this.renderNachrichten(),
-        zeigeRueckgaengig: (meldung, onUndo) => this.view.zeigeRueckgaengig(meldung, onUndo)
-    });
+        zeigeRueckgaengig: (meldung, onUndo) => this.view.zeigeRueckgaengig(meldung, onUndo),
+        schliesseRueckgaengig: () => this.view.schliesseRueckgaengig()
+    };
+    /** Bedienhandlungen an Teilnehmern und Nachrichten; lesen den Zustand dieses Controllers. */
+    private aktionen = new LeitungAktionen(this.host);
+    private planAktionen = new PlanAktionen(this.host);
+    private cockpit: CockpitSteuerung;
 
     constructor(db: Firestore) {
         this.view = new UebungsleitungView();
         this.firebaseService = new FirebaseService(db);
         this.db = db;
+        this.cockpit = new CockpitSteuerung({
+            storage: () => this.storage,
+            uebung: () => this.uebung,
+            effektiverStatus: () => this.buildEffektivenStatus(),
+            teilnehmerDocs: () => this.teilnehmerLiveDocs,
+            save: () => this.save(),
+            renderNachrichten: () => this.renderNachrichten(),
+            view: this.view
+        });
     }
 
     public async init() {
         const geladen = await ladeUebung(this.firebaseService, router.parseHash().params[0] ?? null);
         this.uebungId = geladen.uebungId ?? null;
+        if (this.disposed) {
+            return;
+        }
         if ("fehler" in geladen) {
             this.view.showLadefehler(geladen.fehler, geladen.uebungId);
             return;
@@ -101,22 +118,29 @@ export class UebungsleitungController {
 
         // Initial Render
         this.view.renderMeta(uebung, uebungId);
+        this.view.setTeilnehmerEingeklappt(this.ansicht.teilnehmerEingeklappt);
         this.renderTeilnehmer();
         this.renderNachrichten();
 
         this.bindEvents();
         this.startLiveSync();
         this.view.setResetModus(Boolean(this.liveStatus?.enabled));
-        this.initCockpit();
+        this.cockpit.init();
+        const zurueckgesetzt = holeZurueckgesetzt(uebungId);
+        if (zurueckgesetzt) {
+            this.view.zeigeZurueckgesetzt(zurueckgesetzt);
+        }
     }
 
     private bindEvents(): void {
         const aktionen = this.aktionen;
+        const plan = this.planAktionen;
         this.view.bindMetaEvents(
             () => this.exportPdf(),
             () => this.resetData(),
             () => this.exportTeilnehmerUebersicht()
         );
+        this.view.bindTeilnehmerEinklappen(() => this.toggleTeilnehmerEingeklappt());
 
         this.view.bindTeilnehmerEvents({
             onAnmelden: name => aktionen.markAngemeldet(name),
@@ -133,6 +157,9 @@ export class UebungsleitungController {
             onReset: (sender, nr) => aktionen.resetNachricht(sender, nr),
             onZeitNachtragen: (sender, nr, hhmm) => aktionen.zeitNachtragen(sender, nr, hhmm),
             onNotiz: (sender, nr, val) => aktionen.persistNachrichtNotiz(sender, nr, val),
+            onAuslassen: (sender, nr) => plan.auslassen(sender, nr),
+            onWiederOeffnen: (sender, nr) => plan.wiederOeffnen(sender, nr),
+            onReaktion: (sender, nr, wert) => plan.setzeReaktion(sender, nr, wert),
             onFilterSender: val => {
                 this.senderFilter = val; this.renderNachrichten();
             },
@@ -152,102 +179,15 @@ export class UebungsleitungController {
     }
 
     private setHideAbgesetzt(val: boolean): void {
-        this.hideAbgesetzt = val;
+        this.ansicht = { ...this.ansicht, hideAbgesetzt: val };
+        speichereAnsicht(this.ansicht);
         this.renderNachrichten();
     }
 
-    /**
-     * Cockpit-Kacheln (Uhrzeit, Laufzeit, X-Zeit, Plan-Status) – nur im
-     * X-Zeit-Modus, weil nur dort ein Zeitplan über die Slots existiert.
-     */
-    private initCockpit(): void {
-        if (this.uebung?.spielModus !== "xZeit") {
-            return;
-        }
-        this.view.setCockpitVisible(true);
-        if (this.storage?.xZeitBasis) {
-            this.view.setCockpitBasisInputValue(this.storage.xZeitBasis);
-        }
-        const uebernehmen = (value: string) => {
-            this.view.setCockpitBasisInputValue(value);
-            this.setCockpitBasis(value);
-        };
-        this.view.bindCockpitEvents(
-            value => this.setCockpitBasis(value),
-            () => {
-                const now = new Date();
-                uebernehmen(`${String(now.getHours()).padStart(2, "0")}:${String(now.getMinutes()).padStart(2, "0")}`);
-            },
-            uebernehmen,
-            () => this.view.scrollZuPlanZustand("ueberfaellig")
-        );
-        this.updateCockpit();
-        this.cockpitInterval = setInterval(() => this.tickCockpit(), 1000);
-        // Eigener Aufräum-Hook: der Listener aus startLiveSync fehlt, wenn der
-        // Live-Sync deaktiviert ist – der Ticker darf trotzdem nicht weiterlaufen.
-        window.addEventListener("hashchange", () => this.stopCockpit(), { once: true });
-    }
-
-    private stopCockpit(): void {
-        if (this.cockpitInterval !== null) {
-            clearInterval(this.cockpitInterval);
-            this.cockpitInterval = null;
-        }
-    }
-
-    private tickCockpit(): void {
-        this.updateCockpit();
-        // Überfällig / jetzt fällig / später ändert sich nur minütlich.
-        const minute = Math.floor(Date.now() / 60000);
-        if (minute !== this.letzteFaelligkeitsMinute) {
-            this.renderNachrichten();
-        }
-    }
-
-    /**
-     * Setzt die verbindliche X-Zeit-Basis. Sie geht über `leitung-public` an
-     * alle Leitungs-Arbeitsplätze und Teilnehmer.
-     */
-    private setCockpitBasis(value: string): void {
-        if (!this.storage) {
-            return;
-        }
-        if (value) {
-            this.storage.xZeitBasis = value;
-        } else {
-            delete this.storage.xZeitBasis;
-        }
-        this.storage.xZeitBasisGeaendertUm = new Date().toISOString();
-        this.save();
-        this.updateCockpit();
-        this.renderNachrichten();
-    }
-
-    /**
-     * Nur die Basis der Leitung ist verbindlich. Basen einzelner Rollenspieler
-     * werden nie stillschweigend übernommen (THW-Review workflow F2).
-     */
-    private effektiveXZeitBasis(): string | null {
-        return this.storage?.xZeitBasis || null;
-    }
-
-    /** Basis in Millisekunden – nur im X-Zeit-Modus, sonst `null`. */
-    private planBasisMs(now?: Date): number | null {
-        const basis = this.effektiveXZeitBasis();
-        return this.uebung?.spielModus === "xZeit" && basis ? parseHHMMtoMs(basis, now) : null;
-    }
-
-    private updateCockpit(): void {
-        if (!this.uebung) {
-            return;
-        }
-        this.view.updateCockpit(buildCockpitAnzeige({
-            uebung: this.uebung,
-            effektiv: this.buildEffektivenStatus(),
-            basis: this.effektiveXZeitBasis(),
-            docs: this.teilnehmerLiveDocs,
-            now: new Date()
-        }));
+    private toggleTeilnehmerEingeklappt(): void {
+        this.ansicht = { ...this.ansicht, teilnehmerEingeklappt: !this.ansicht.teilnehmerEingeklappt };
+        speichereAnsicht(this.ansicht);
+        this.view.setTeilnehmerEingeklappt(this.ansicht.teilnehmerEingeklappt);
     }
 
     /**
@@ -266,7 +206,7 @@ export class UebungsleitungController {
             return;
         }
 
-        live.onStateChange(state => this.view.updateLiveSyncState(state, live.getOffeneAenderungen()));
+        live.onSyncInfo(info => this.aufSyncInfo(info));
 
         live.subscribeAlleTeilnehmer(docs => {
             this.teilnehmerLiveDocs = docs;
@@ -280,8 +220,7 @@ export class UebungsleitungController {
                 return;
             }
             if (this.storage.xZeitBasis !== vorher) {
-                this.view.setCockpitBasisInputValue(this.storage.xZeitBasis ?? "");
-                this.updateCockpit();
+                this.cockpit.remoteBasisUebernommen();
             }
             this.renderTeilnehmer();
             this.renderNachrichten();
@@ -296,10 +235,16 @@ export class UebungsleitungController {
         });
 
         this.publishLeitungStatus();
+    }
 
-        const onHashChange = () => this.dispose();
-        window.addEventListener("hashchange", onHashChange, { once: true });
-        this.disposeListener = () => window.removeEventListener("hashchange", onHashChange);
+    /** Badge im Plan-Kopf und – bei Verbindungsverlust – Hinweis oben in der Lage. */
+    private aufSyncInfo(info: SyncInfo): void {
+        const zustandGewechselt = this.syncInfo?.state !== info.state;
+        this.syncInfo = info;
+        this.view.updateLiveSyncState(info.state, info.offeneAenderungen);
+        if (zustandGewechselt) {
+            this.renderNachrichten();
+        }
     }
 
     /** Übernimmt einen zusammengeführten Stand, falls er sich geändert hat. */
@@ -320,16 +265,29 @@ export class UebungsleitungController {
         this.liveStatus.publishLeitungInternal(toLeitungLiveDoc(this.storage));
     }
 
+    /** Beim Verlassen der Ansicht (oder wenn eine neue sie ersetzt). */
     public dispose(): void {
+        if (this.disposed) {
+            return;
+        }
+        this.disposed = true;
         // Noch ausstehende, gebündelte Eingaben (z. B. eine gerade getippte
         // Notiz) dürfen beim Verlassen der Seite nicht verloren gehen.
         this.save();
-        this.stopCockpit();
+        this.cockpit.stop();
+        this.view.dispose();
         void this.liveStatus?.flush();
         this.liveStatus?.dispose();
         this.liveStatus = null;
         this.disposeListener?.();
         this.disposeListener = null;
+    }
+
+    /** Räumt bei jedem Wechsel der Adresse auf – auch ohne Live-Sync. */
+    public aufraeumenBeiHashWechsel(): void {
+        const onHashChange = () => this.dispose();
+        window.addEventListener("hashchange", onHashChange, { once: true });
+        this.disposeListener = () => window.removeEventListener("hashchange", onHashChange);
     }
 
     private renderTeilnehmer() {
@@ -361,7 +319,7 @@ export class UebungsleitungController {
         // bearbeiteten Feldes (Notiz, Suchfeld) müssen das überleben.
         const focusSnapshot = captureFieldFocus();
         const now = new Date();
-        this.letzteFaelligkeitsMinute = Math.floor(now.getTime() / 60000);
+        this.cockpit.merkeRenderMinute(now.getTime());
 
         const nachrichten = buildPlan(this.uebung);
         // Fortschritt zählt jede Nachricht, die Teilnehmer oder Leitung markiert hat.
@@ -369,7 +327,7 @@ export class UebungsleitungController {
         const { done, nurGemeldet } = zaehleErledigt(nachrichten, effektiv);
         this.view.updateProgress(nachrichten.length, done, this.calculateEtaLabel(nachrichten, effektiv), nurGemeldet);
 
-        const basisMs = this.planBasisMs(now);
+        const basisMs = this.cockpit.basisMs(now);
         const faelligkeit = basisMs === null
             ? {}
             : buildFaelligkeit(nachrichten, effektiv, basisMs, { intervallMinuten: this.uebung.xZeitIntervallMinuten, jetztMs: now.getTime() });
@@ -377,21 +335,25 @@ export class UebungsleitungController {
         this.view.renderNachrichtenListe({
             nachrichten,
             nachrichtenStatus: effektiv,
-            hideAbgesetzt: this.hideAbgesetzt,
+            hideAbgesetzt: this.ansicht.hideAbgesetzt,
             senderFilter: this.senderFilter,
             empfaengerFilter: this.empfaengerFilter,
             textFilter: this.textFilter,
             faelligkeit,
             sollUhrzeit: basisMs === null ? {} : buildSollUhrzeiten(nachrichten, basisMs),
-            ruecknahmeGesperrt: this.aktionen.gesperrteRuecknahmen(now.getTime())
+            ruecknahmeGesperrt: this.aktionen.gesperrteRuecknahmen(now.getTime()),
+            jetztMs: now.getTime()
         });
-        this.view.renderLage({
-            teilnehmer: lageJeTeilnehmer(nachrichten, effektiv),
-            naechste: naechsteFuerLage(nachrichten, effektiv, faelligkeit),
-            zuBestaetigen: nurGemeldet,
-            hideAbgesetzt: this.hideAbgesetzt,
-            ueberfaellig: Object.values(faelligkeit).filter(f => f.zustand === "ueberfaellig").length
-        });
+        this.view.renderLage(buildLageAnzeige({
+            uebung: this.uebung,
+            teilnehmerStatus: this.storage.teilnehmer,
+            nachrichten,
+            effektiv,
+            faelligkeit,
+            hideAbgesetzt: this.ansicht.hideAbgesetzt,
+            syncInfo: this.syncInfo,
+            jetztMs: now.getTime()
+        }));
         // Heatmap und Timeline liegen in der eben neu gebauten Tabelle.
         this.renderAuswertung(nachrichten, effektiv);
 
@@ -419,7 +381,7 @@ export class UebungsleitungController {
         if (!this.storage) {
             return "ETA: –";
         }
-        return calculateEtaLabel(nachrichten, effektiv, this.planBasisMs());
+        return calculateEtaLabel(nachrichten, effektiv, this.cockpit.basisMs());
     }
 
     private toggleStaerkeDetails() {
@@ -427,21 +389,35 @@ export class UebungsleitungController {
         this.renderTeilnehmer();
     }
 
-    private async downloadTeilnehmerDebrief(name: string) {
+    /**
+     * Gemeinsamer Stand für Übungsleitungs-PDF und Debrief: dieselbe
+     * Anmeldezeit, dieselben Vermerke (THW-Review 2026-10-05, analog P2-1).
+     */
+    private auswertungsStand(): UebungsleitungStorage | null {
         if (!this.uebung || !this.storage) {
+            return null;
+        }
+        const effektiv = this.buildEffektivenStatus();
+        return buildAuswertungsStand(
+            this.uebung,
+            this.storage,
+            buildAnmeldungen(this.uebung, this.storage, effektiv),
+            this.uebung.fuehrungsstelle ? reaktionsBilanz(buildPlan(this.uebung), effektiv) : null
+        );
+    }
+
+    private async downloadTeilnehmerDebrief(name: string) {
+        const stand = this.auswertungsStand();
+        if (!this.uebung || !stand) {
             return;
         }
-        const debriefStorage = buildDebriefStorage(
-            this.storage,
-            buildAnmeldungen(this.uebung, this.storage, this.buildEffektivenStatus()),
-            this.buildEffektivenStatus()
-        );
-        await downloadTeilnehmerDebrief(this.uebung, debriefStorage, name);
+        await downloadTeilnehmerDebrief(this.uebung, buildDebriefStorage(stand, this.buildEffektivenStatus()), name);
     }
 
     private async exportPdf() {
-        if (this.uebung && this.storage) {
-            await exportUebungsleitungPdf(this.uebung, this.storage);
+        const stand = this.auswertungsStand();
+        if (this.uebung && stand) {
+            await exportUebungsleitungPdf(this.uebung, stand);
         }
     }
 
@@ -475,8 +451,24 @@ export class UebungsleitungController {
     }
 }
 
+/** Die gerade angezeigte Übungsleitung – ein zweiter Aufruf für dieselbe Adresse baut nichts doppelt auf. */
+let aktiv: { hash: string; controller: UebungsleitungController } | null = null;
+
 export async function initUebungsleitung(db: Firestore): Promise<void> {
+    const hash = typeof window !== "undefined" ? window.location?.hash ?? "" : "";
+    if (aktiv && aktiv.hash === hash) {
+        return;
+    }
+    aktiv?.controller.dispose();
     const controller = new UebungsleitungController(db);
+    const eintrag = { hash, controller };
+    aktiv = eintrag;
+    controller.aufraeumenBeiHashWechsel();
+    window.addEventListener("hashchange", () => {
+        if (aktiv === eintrag) {
+            aktiv = null;
+        }
+    }, { once: true });
     await controller.init();
 
     // Make area visible

@@ -6,7 +6,7 @@ import {
     berechneFaelligkeit,
     faelligFensterMs,
     formatUhrzeit,
-    naechsteOffene,
+    istOffen,
     sortiereNachrichtenplan,
     statusKey,
     vergibPlanNummern,
@@ -49,7 +49,7 @@ export function buildFaelligkeit(
     const fenster = faelligFensterMs(zeit.intervallMinuten);
     return nachrichten.reduce<Record<string, Faelligkeit>>((acc, n) => {
         const key = statusKey(n.sender, n.nr);
-        if (n.xZeitSlot === undefined || effektiv[key]?.erledigtUm) {
+        if (n.xZeitSlot === undefined || !istOffen(effektiv[key])) {
             return acc;
         }
         acc[key] = berechneFaelligkeit(n.xZeitSlot, basisMs, zeit.jetztMs, fenster);
@@ -67,16 +67,47 @@ export function buildSollUhrzeiten(nachrichten: FlattenedNachricht[], basisMs: n
     }, {});
 }
 
+/** Wie viele offene Zeilen überfällig bzw. gerade fällig sind. */
+export function zaehleFaelligkeit(faelligkeit: Record<string, Faelligkeit>): { ueberfaellig: number; faellig: number } {
+    const werte = Object.values(faelligkeit);
+    return {
+        ueberfaellig: werte.filter(f => f.zustand === "ueberfaellig").length,
+        faellig: werte.filter(f => f.zustand === "faellig").length
+    };
+}
+
+/**
+ * Auswahl für „Als Nächstes“: Bei Rückstand nur die älteste überfällige Zeile,
+ * daneben was gerade fällig ist und was danach kommt – wer nach einer
+ * Unterbrechung auf den aktuellen Takt springt, sieht beides
+ * (THW-Review 2026-10-05, command P2-2). Ohne Zeitplan die ersten offenen.
+ */
+export function waehleNaechste<T extends { sender: string; nr: number }>(
+    offene: T[],
+    faelligkeit: Record<string, Faelligkeit>,
+    anzahl: number
+): T[] {
+    const zustand = (n: T) => faelligkeit[statusKey(n.sender, n.nr)]?.zustand;
+    const ersteUeberfaellige = offene.find(n => zustand(n) === "ueberfaellig");
+    if (!ersteUeberfaellige) {
+        return offene.slice(0, anzahl);
+    }
+    const rest = offene.filter(n => zustand(n) !== "ueberfaellig");
+    return [ersteUeberfaellige, ...rest].slice(0, anzahl);
+}
+
 /** Die nächsten drei offenen Zeilen für die Lage-Kachel, mit Fälligkeit. */
 export function naechsteFuerLage(
     nachrichten: FlattenedNachricht[],
     effektiv: EffektiverStatus,
     faelligkeit: Record<string, Faelligkeit>
 ): LageAnzeige["naechste"] {
-    return naechsteOffene(nachrichten, effektiv, 3).map(n => {
+    const offene = nachrichten.filter(n => istOffen(effektiv[statusKey(n.sender, n.nr)]));
+    return waehleNaechste(offene, faelligkeit, 3).map(n => {
         const f = faelligkeit[statusKey(n.sender, n.nr)];
         return {
             planNr: n.planNr ?? n.nr,
+            absNr: n.nr,
             sender: n.sender,
             empfaenger: n.empfaenger,
             ...(f ? { faelligkeit: f } : {})

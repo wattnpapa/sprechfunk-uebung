@@ -30,6 +30,28 @@ const PUBLISH_DEBOUNCE_MS = 400;
  */
 export const SCHREIB_TIMEOUT_MS = 6000;
 
+/** So lange wartet {@link LiveStatusService.flushMitZeitlimit} höchstens auf den Server. */
+export const BESTAETIGUNG_TIMEOUT_MS = 10000;
+
+/**
+ * Was ein Gerät über seinen Sync-Stand wissen muss: Zustand, wie viele
+ * Dokumente noch nicht beim Server sind, und wann zuletzt ein Schreiben
+ * bestätigt wurde (THW-Review 2026-10-05, offline P2-2).
+ */
+export interface SyncInfo {
+    state: LiveSyncState;
+    offeneAenderungen: number;
+    /** ISO-Zeitpunkt der letzten Serverbestätigung eines Schreibvorgangs. */
+    letzteBestaetigungUm?: string;
+}
+
+/**
+ * Ergebnis von {@link LiveStatusService.flushMitZeitlimit}: `bestaetigt` heißt
+ * beim Server angekommen; `offline` wurde gar nicht erst versucht; `zeitlimit`
+ * und `fehler` heißen, die Änderung ist nicht bestätigt.
+ */
+export type FlushErgebnis = "bestaetigt" | "offline" | "zeitlimit" | "fehler";
+
 function browserMeldetOffline(): boolean {
     return typeof navigator !== "undefined" && navigator.onLine === false;
 }
@@ -57,6 +79,13 @@ export class LiveStatusService {
     private flushTimer: ReturnType<typeof setTimeout> | null = null;
     private state: LiveSyncState = "aus";
     private stateListeners: ((state: LiveSyncState) => void)[] = [];
+    private infoListeners: ((info: SyncInfo) => void)[] = [];
+    private letzteInfoSignatur = "";
+    /** Zeitpunkt, zu dem das jeweils wartende Dokument eingereiht wurde. */
+    private eingereihtUm = new Map<string, string>();
+    /** Je Dokument: Stand (Einreihzeit), bis zu dem der Server bestätigt hat. */
+    private bestaetigtBis = new Map<string, string>();
+    private letzteBestaetigungUm: string | undefined;
 
     /** Schreibvorgänge, die angestoßen, aber vom Server noch nicht bestätigt sind. */
     private unbestaetigt = 0;
@@ -109,6 +138,40 @@ export class LiveStatusService {
         listener(this.state);
     }
 
+    /** Zustand, offene Änderungen und letzte Bestätigung auf einen Blick. */
+    public getSyncInfo(): SyncInfo {
+        const info: SyncInfo = { state: this.state, offeneAenderungen: this.getOffeneAenderungen() };
+        if (this.letzteBestaetigungUm) {
+            info.letzteBestaetigungUm = this.letzteBestaetigungUm;
+        }
+        return info;
+    }
+
+    /**
+     * Meldet jede Änderung an {@link SyncInfo} – auch, wenn nur die Zahl der
+     * offenen Änderungen wechselt. Grundlage für „3 Markierungen nur auf diesem
+     * Gerät“ bzw. „alles übertragen um 21:07“.
+     */
+    public onSyncInfo(listener: (info: SyncInfo) => void): void {
+        this.infoListeners.push(listener);
+        listener(this.getSyncInfo());
+    }
+
+    /**
+     * Bis zu welchem Stand der Server ein Dokument bestätigt hat: Alles, was vor
+     * diesem Zeitpunkt geändert wurde, ist angekommen. `undefined`, solange
+     * nichts bestätigt ist. Damit lässt sich je Eintrag (`geaendertUm`) zeigen,
+     * ob er nur auf diesem Gerät liegt.
+     */
+    public getBestaetigtBis(docId: string): string | undefined {
+        return this.bestaetigtBis.get(docId);
+    }
+
+    /** Wie {@link getBestaetigtBis} für das Dokument eines Teilnehmers. */
+    public getTeilnehmerBestaetigtBis(teilnehmerId: string): string | undefined {
+        return this.getBestaetigtBis(teilnehmerDocId(teilnehmerId));
+    }
+
     private berechneZustand(): LiveSyncState {
         if (!this.backend) {
             return "aus";
@@ -124,11 +187,21 @@ export class LiveStatusService {
 
     private aktualisiereZustand(): void {
         const state = this.berechneZustand();
-        if (this.state === state) {
+        if (this.state !== state) {
+            this.state = state;
+            this.stateListeners.forEach(l => l(state));
+        }
+        this.meldeInfo();
+    }
+
+    private meldeInfo(): void {
+        const info = this.getSyncInfo();
+        const signatur = `${info.state}|${info.offeneAenderungen}|${info.letzteBestaetigungUm ?? ""}`;
+        if (signatur === this.letzteInfoSignatur) {
             return;
         }
-        this.state = state;
-        this.stateListeners.forEach(l => l(state));
+        this.letzteInfoSignatur = signatur;
+        this.infoListeners.forEach(l => l(info));
     }
 
     private setBrowserOffline(offline: boolean): void {
@@ -159,6 +232,8 @@ export class LiveStatusService {
             return;
         }
         this.pendingWrites.set(docId, data);
+        this.eingereihtUm.set(docId, new Date().toISOString());
+        this.meldeInfo();
         if (this.flushTimer !== null) {
             return;
         }
@@ -168,7 +243,7 @@ export class LiveStatusService {
         }, PUBLISH_DEBOUNCE_MS);
     }
 
-    private async schreibe(backend: LiveStatusBackend, docId: string, data: PlainDoc): Promise<boolean> {
+    private async schreibe(backend: LiveStatusBackend, docId: string, data: PlainDoc, standUm?: string): Promise<boolean> {
         this.unbestaetigt++;
         const timer = setTimeout(() => {
             this.haengt = true;
@@ -176,6 +251,8 @@ export class LiveStatusService {
         }, SCHREIB_TIMEOUT_MS);
         try {
             await backend.write(docId, data);
+            this.letzteBestaetigungUm = new Date().toISOString();
+            this.merkeBestaetigtBis(docId, standUm);
             this.bestaetigt();
             return true;
         } catch (error) {
@@ -188,6 +265,13 @@ export class LiveStatusService {
                 this.haengt = false;
             }
             this.aktualisiereZustand();
+        }
+    }
+
+    private merkeBestaetigtBis(docId: string, standUm: string | undefined): void {
+        const bisher = this.bestaetigtBis.get(docId);
+        if (standUm && (!bisher || standUm > bisher)) {
+            this.bestaetigtBis.set(docId, standUm);
         }
     }
 
@@ -208,10 +292,12 @@ export class LiveStatusService {
             clearTimeout(this.flushTimer);
             this.flushTimer = null;
         }
-        const writes = Array.from(this.pendingWrites.entries());
+        const writes = Array.from(this.pendingWrites.entries())
+            .map(([docId, data]) => ({ docId, data, standUm: this.eingereihtUm.get(docId) }));
         this.pendingWrites.clear();
+        this.eingereihtUm.clear();
 
-        const alle = Promise.all(writes.map(([docId, data]) => this.schreibe(backend, docId, data)))
+        const alle = Promise.all(writes.map(w => this.schreibe(backend, w.docId, w.data, w.standUm)))
             .then(ergebnisse => ergebnisse.every(Boolean));
         if (timeoutMs === undefined) {
             return alle;
@@ -225,6 +311,27 @@ export class LiveStatusService {
         } finally {
             clearTimeout(timer);
         }
+    }
+
+    /**
+     * Für folgenschwere Aktionen („für alle zurücksetzen“): ohne Verbindung
+     * sofort ablehnen statt zu warten, sonst höchstens `timeoutMs` auf die
+     * Bestätigung warten. Wartende Änderungen bleiben in der Warteschlange und
+     * werden nachgereicht; der Aufrufer darf bei allem außer `bestaetigt`
+     * nichts Lokales löschen (THW-Review 2026-10-05, offline P1-4).
+     */
+    public async flushMitZeitlimit(timeoutMs: number = BESTAETIGUNG_TIMEOUT_MS): Promise<FlushErgebnis> {
+        if (!this.backend) {
+            return "bestaetigt";
+        }
+        if (this.browserOffline || browserMeldetOffline() || this.state === "offline") {
+            return "offline";
+        }
+        const ok = await this.flush(timeoutMs);
+        if (ok) {
+            return "bestaetigt";
+        }
+        return this.fehler ? "fehler" : "zeitlimit";
     }
 
     public publishTeilnehmerStatus(liveDoc: TeilnehmerLiveDoc): void {
@@ -323,6 +430,9 @@ export class LiveStatusService {
             this.flushTimer = null;
         }
         this.pendingWrites.clear();
+        this.eingereihtUm.clear();
+        this.infoListeners = [];
+        this.stateListeners = [];
         if (typeof window !== "undefined" && typeof window.removeEventListener === "function") {
             window.removeEventListener("online", this.onBrowserOnline);
             window.removeEventListener("offline", this.onBrowserOffline);

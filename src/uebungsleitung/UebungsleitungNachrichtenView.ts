@@ -17,7 +17,7 @@ export type {
 } from "./nachrichtenTypen";
 
 function liveSyncLabel(state: LiveSyncState, offeneAenderungen: number): { text: string; css: string; title: string } {
-    const offen = offeneAenderungen > 0 ? ` (${offeneAenderungen} offen)` : "";
+    const offen = offeneAenderungen > 0 ? ` (${offeneAenderungen} warten)` : "";
     const labels: Record<LiveSyncState, { text: string; css: string; title: string }> = {
         aus: { text: "Live-Status: aus", css: "bg-secondary", title: "Live-Sync deaktiviert – es zählt nur, was auf diesem Gerät markiert wird." },
         verbinde: { text: "Live-Status: verbinde…", css: "bg-secondary", title: "Verbindung wird aufgebaut." },
@@ -89,15 +89,28 @@ export class UebungsleitungNachrichtenView {
                 this.rerender();
             }],
             ["zeit-speichern", (sender, nr, container) => this.speichereZeit(container, sender, nr, callbacks)],
-            ["notiz-oeffnen", (sender, nr, _container, btn) => this.oeffneNotiz(btn, sender, nr)]
+            ["notiz-oeffnen", (sender, nr, _container, btn) => this.oeffneNotiz(btn, sender, nr)],
+            ["auslassen", (sender, nr) => callbacks.onAuslassen?.(sender, nr)],
+            ["wieder-oeffnen", (sender, nr) => callbacks.onWiederOeffnen?.(sender, nr)],
+            ["reaktion", (sender, nr, _container, btn) => {
+                const wert = btn.dataset["reaktion"];
+                if (wert === "erfolgt" || wert === "abweichend" || wert === "ausgeblieben") {
+                    callbacks.onReaktion?.(sender, nr, wert);
+                }
+            }]
         ]);
     }
 
-    public bindEvents(callbacks: NachrichtenCallbacks): void {
+    /**
+     * @param signal beendet alle Listener, wenn die Ansicht verlassen bzw. neu
+     *               aufgebaut wird – der Container selbst bleibt im Dokument.
+     */
+    public bindEvents(callbacks: NachrichtenCallbacks, signal?: AbortSignal): void {
         const container = document.getElementById("uebungsleitungNachrichten");
         if (!container) {
             return;
         }
+        const opt: AddEventListenerOptions = signal ? { signal } : {};
         const aktionen = this.klickAktionen(callbacks);
         container.addEventListener("click", e => {
             const btn = (e.target as HTMLElement).closest("button");
@@ -106,9 +119,9 @@ export class UebungsleitungNachrichtenView {
                 return;
             }
             aktionen.get(btn.dataset["action"] ?? "")?.(sender, Number(btn.dataset["nr"]), container, btn);
-        });
+        }, opt);
 
-        container.addEventListener("keydown", e => this.handleZeitTaste(e, container, callbacks));
+        container.addEventListener("keydown", e => this.handleZeitTaste(e, container, callbacks), opt);
 
         container.addEventListener("change", e => {
             const target = e.target as HTMLInputElement | HTMLSelectElement;
@@ -121,9 +134,9 @@ export class UebungsleitungNachrichtenView {
             if (target.id === "toggleHideAbgesetzt") {
                 callbacks.onToggleHide((target as HTMLInputElement).checked);
             }
-        });
+        }, opt);
 
-        container.addEventListener("input", e => this.handleEingabe(e.target as HTMLTextAreaElement | HTMLInputElement, callbacks));
+        container.addEventListener("input", e => this.handleEingabe(e.target as HTMLTextAreaElement | HTMLInputElement, callbacks), opt);
     }
 
     private handleZeitTaste(e: KeyboardEvent, container: HTMLElement, callbacks: NachrichtenCallbacks): void {

@@ -151,11 +151,13 @@ export class UebungsleitungTeilnehmerView {
         }
     }
 
-    public bindEvents(callbacks: TeilnehmerCallbacks): void {
+    /** @param signal beendet die Listener, wenn die Ansicht neu aufgebaut wird. */
+    public bindEvents(callbacks: TeilnehmerCallbacks, signal?: AbortSignal): void {
         const container = document.getElementById("uebungsleitungTeilnehmer");
         if (!container) {
             return;
         }
+        const opt: AddEventListenerOptions = signal ? { signal } : {};
 
         container.addEventListener("click", e => {
             const target = e.target as HTMLElement;
@@ -166,11 +168,11 @@ export class UebungsleitungTeilnehmerView {
             this.handleAnmeldungZuruecknehmen(target, callbacks.onAnmeldungZuruecknehmen);
             this.handleToggleDetails(target, callbacks.onToggleDetails);
             this.handleDownloadDebrief(target, callbacks.onDownloadDebrief);
-        });
+        }, opt);
 
         container.addEventListener("change", e => {
             this.handleTeilnehmerChange(e.target as HTMLInputElement, callbacks);
-        });
+        }, opt);
 
         container.addEventListener("input", e => {
             const target = e.target as HTMLElement;
@@ -181,7 +183,7 @@ export class UebungsleitungTeilnehmerView {
             // Bereits beim Tippen übernehmen: ein Live-Update kann die Zeile neu
             // aufbauen, bevor `change` (erst beim Verlassen) je feuern würde.
             this.handleTeilnehmerChange(e.target as HTMLInputElement, callbacks);
-        });
+        }, opt);
     }
 
     private renderTeilnehmerRow(kontext: TeilnehmerTabellenKontext, zeile: TeilnehmerZeile): string {
@@ -197,9 +199,9 @@ export class UebungsleitungTeilnehmerView {
 
         return `
           <tr class="${zeilenKlassen}"${istNachzuegler ? " data-nachzuegler=\"1\"" : ""}>
-            <td>${renderTeilnehmerName(kontext, name)}</td>
-            <td>${fortschrittHtml}</td>
-            <td>${renderAnmeldeCell(name, anmeldungFuer(zeile.anmeldung, status))}</td>
+            <td data-label="Teilnehmer">${renderTeilnehmerName(kontext, name)}</td>
+            <td data-label="Fortschritt">${fortschrittHtml}</td>
+            <td data-label="Angemeldet">${renderAnmeldeCell(name, anmeldungFuer(zeile.anmeldung, status))}</td>
             ${kontext.showLoesungswort ? renderLoesungswortCell(name, status, kontext.loesungswoerter) : ""}
             ${kontext.showStaerke ? renderStaerkeCell(kontext, name, status) : ""}
             ${renderNotizUndDebriefCells(name, status)}

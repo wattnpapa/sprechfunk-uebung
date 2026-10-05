@@ -2,6 +2,7 @@ import type { UebungsleitungStorage } from "../types/Storage";
 import type { LiveStatusService } from "../services/LiveStatusService";
 import { toLeitungLiveDoc, toLeitungPublicLiveDoc } from "../services/liveStatusMerge";
 import { uiFeedback } from "../core/UiFeedback";
+import { merkeZurueckgesetzt } from "./ansicht";
 
 /** Wartezeit auf die Serverbestätigung beim Zurücksetzen für alle. */
 const RESET_BESTAETIGUNG_MS = 10000;
@@ -76,5 +77,7 @@ export async function fuehreResetAus(
         }
     }
     localStorage.removeItem(`sprechfunk:uebungsleitung:${uebungId}`);
+    // Nach dem Neuladen einmal bestätigen, was passiert ist (THW-Review 2026-10-05, destructive-action P3-3).
+    merkeZurueckgesetzt(uebungId);
     window.location.reload();
 }

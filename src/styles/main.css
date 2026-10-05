@@ -2061,6 +2061,298 @@ select option {
     }
 }
 
+/* --- Übungsleitung: Nachtrag THW-Review 2026-10-05 --------------------------- */
+
+/* Warn- und Hinweiszeilen mit eigenen Theme-Farben statt Bootstraps
+   text-*-emphasis, die im Dark Mode nicht umgestellt werden (night-visibility 1).
+   Zusätzlich Symbol und Rahmen, damit sie nicht nur an der Farbe hängen. */
+.ul-warnzeile {
+    color: var(--warn-text);
+    font-weight: 700;
+}
+
+.ul-gefahr-titel {
+    color: var(--alarm);
+    font-weight: 700;
+}
+
+.ul-hinweis {
+    padding: 0.45rem 0.7rem;
+    border: var(--strich) solid;
+    border-left-width: 6px;
+    border-radius: var(--radius);
+    font-size: var(--t-xs, 0.9rem);
+}
+
+.ul-hinweis--warn {
+    background: var(--warn-fond);
+    color: var(--warn-text);
+    border-color: var(--warn-linie);
+}
+
+.ul-hinweis--alarm {
+    background: var(--alarm-fond);
+    color: var(--alarm);
+    border-color: var(--alarm-linie);
+}
+
+/* Lagezeile bleibt beim Scrollen durch den Plan oben stehen – „Als Nächstes“
+   und ein Verbindungsverlust sind so immer im Blick (stress-test P2-3,
+   offline P3-3). Auf dem Handy nicht: dort fräße sie den Bildschirm. */
+@media (min-width: 992px) {
+    #uebungsleitungLage {
+        position: sticky;
+        top: 0;
+        z-index: 20;
+        box-shadow: 0 2px 6px rgb(0 0 0 / 12%);
+    }
+}
+
+/* Filter über dem Plan statt im Tabellenkopf – auch in der Kartenansicht da. */
+.ul-plan-filter {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-end;
+    gap: 0.5rem 1rem;
+    margin-bottom: 0.75rem;
+}
+
+.ul-filter-feld {
+    display: flex;
+    flex-direction: column;
+    min-width: 11rem;
+}
+
+.ul-filter-feld--text {
+    flex: 1 1 14rem;
+}
+
+.ul-schalter {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    min-height: 44px;
+    margin: 0;
+}
+
+.ul-schalter .form-check-input {
+    width: 2.6em;
+    height: 1.4em;
+    margin-top: 0;
+    flex-shrink: 0;
+}
+
+.ul-schalter .form-check-label {
+    cursor: pointer;
+}
+
+/* Ausgeschalteter Schalter im Dark Mode mit Kontur und hellem Knopf
+   (night-visibility 2). */
+[data-theme="dark"] #uebungsleitungNachrichten .form-check-input:not(:checked) {
+    border-color: var(--text-3);
+    background-color: var(--flaeche-2);
+    --bs-form-switch-bg: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='-4 -4 8 8'%3e%3ccircle r='3' fill='%23aab3c4'/%3e%3c/svg%3e");
+}
+
+/* „Zeit ändern“ und „zurücknehmen“ mit deutlichem Abstand untereinander
+   (glove-touch P2-4). */
+.ul-zeit-aktionen {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 1rem;
+    margin-top: 0.25rem;
+}
+
+.status-chip--ausgelassen {
+    background: var(--flaeche-2);
+    color: var(--text-2);
+    border-style: dotted;
+    border-color: var(--linie);
+}
+
+.status-ausgelassen-row > td {
+    background-color: var(--flaeche-2) !important;
+    color: var(--text-2) !important;
+    box-shadow: inset 4px 0 0 var(--linie);
+}
+
+.ul-auslassen {
+    color: var(--text-2);
+}
+
+.ul-reaktion-block {
+    display: flex;
+    flex-direction: column;
+    gap: 0.3rem;
+}
+
+.ul-reaktion-offen {
+    color: var(--warn-text);
+    font-weight: 600;
+}
+
+/* Platz unter dem Inhalt, solange die Rückgängig-Leiste steht – sie soll die
+   letzte Plan-Zeile nicht verdecken (destructive-action P3-2). */
+#uebungsleitungArea.ul-undo-offen .app-view-shell {
+    padding-bottom: 5rem;
+}
+
+.ul-cockpit-zeit {
+    width: 8.5rem;
+}
+
+.ul-kennzahlen-hilfe summary {
+    cursor: pointer;
+    color: var(--text-2);
+}
+
+/* Finger und Handschuh: alle Ziele der Übungsleitung mindestens 44 px
+   (glove-touch P2-4). */
+@media (pointer: coarse) {
+    #uebungsleitungArea .btn,
+    #uebungsleitungArea .form-select,
+    #uebungsleitungArea .form-control,
+    #uebungsleitungArea summary {
+        min-height: 44px;
+    }
+
+    #uebungsleitungArea .btn-link {
+        display: inline-flex;
+        align-items: center;
+    }
+
+    #uebungsleitungTeilnehmer input[data-action="staerke"] {
+        width: 3.4rem !important;
+    }
+
+    #uebungsleitungTeilnehmer [data-action="copy-link"] {
+        min-width: 44px;
+    }
+
+    #uebungsleitungTeilnehmer td .d-flex.gap-1 {
+        gap: 0.5rem !important;
+    }
+}
+
+/* Kartenansicht für Handy und Tablet hochkant: Sender, Empfänger, Soll-Zeit,
+   Status und Aktion jeder Zeile ohne Seitwärtswischen (command P2-3,
+   field-user P2, glove-touch P2-4, stress-test P3-1). */
+@media (max-width: 991.98px) {
+    #uebungsleitungNachrichten .ul-plan-wrapper,
+    #uebungsleitungTeilnehmer .table-responsive {
+        overflow-x: visible;
+    }
+
+    #uebungsleitungNachrichten table,
+    #uebungsleitungNachrichten tbody,
+    #uebungsleitungTeilnehmer table,
+    #uebungsleitungTeilnehmer tbody {
+        display: block;
+        width: 100%;
+        margin: 0;
+    }
+
+    #uebungsleitungNachrichten thead,
+    #uebungsleitungTeilnehmer thead {
+        display: none;
+    }
+
+    #uebungsleitungNachrichten tbody > tr,
+    #uebungsleitungTeilnehmer tbody > tr {
+        display: grid;
+        gap: 0.35rem 0.75rem;
+        padding: 0.7rem 0.8rem;
+        margin-bottom: 0.75rem;
+        border: var(--strich) solid var(--linie);
+        border-left-width: 6px;
+        border-radius: var(--radius);
+        background: var(--flaeche);
+    }
+
+    #uebungsleitungNachrichten tbody > tr {
+        grid-template-columns: 3.2rem minmax(0, 1fr) auto;
+        grid-template-areas:
+            "nr von soll"
+            "nr an soll"
+            "status status status"
+            "text text text"
+            "zeit zeit zeit";
+    }
+
+    #uebungsleitungNachrichten tbody > tr > td,
+    #uebungsleitungTeilnehmer tbody > tr > td {
+        display: block;
+        padding: 0;
+        border: 0 !important;
+        min-width: 0 !important;
+        width: auto !important;
+        background: transparent !important;
+        box-shadow: none !important;
+    }
+
+    #uebungsleitungNachrichten tbody > tr.status-pending-row { border-left-color: var(--warn-linie); }
+    #uebungsleitungNachrichten tbody > tr.plan-zeile--ueberfaellig { border-left-color: var(--alarm); }
+    #uebungsleitungNachrichten tbody > tr.status-ok-row { border-left-color: var(--gut); background: var(--gut-fond); }
+    #uebungsleitungNachrichten tbody > tr.status-gemeldet-row { border-left-color: var(--gut-linie); border-left-style: dashed; }
+    #uebungsleitungNachrichten tbody > tr.status-ausgelassen-row { background: var(--flaeche-2); }
+
+    #uebungsleitungNachrichten .ul-zelle-nr { grid-area: nr; text-align: left !important; }
+    #uebungsleitungNachrichten .ul-zelle-sender { grid-area: von; font-weight: 600; }
+    #uebungsleitungNachrichten .ul-zelle-empfaenger { grid-area: an; }
+    #uebungsleitungNachrichten .ul-zelle-soll { grid-area: soll; text-align: right; }
+    #uebungsleitungNachrichten .ul-zelle-status { grid-area: status; text-align: left !important; }
+    #uebungsleitungNachrichten .ul-zelle-text { grid-area: text; }
+    #uebungsleitungNachrichten .ul-zelle-zeit { grid-area: zeit; }
+
+    #uebungsleitungNachrichten .ul-zelle-sender::before,
+    #uebungsleitungNachrichten .ul-zelle-empfaenger::before,
+    #uebungsleitungTeilnehmer tbody > tr > td[data-label]::before {
+        content: attr(data-label) " ";
+        color: var(--text-2);
+        font-weight: 400;
+        font-size: var(--t-xs, 0.85rem);
+    }
+
+    #uebungsleitungNachrichten .ul-zelle-empfaenger > div {
+        display: inline;
+    }
+
+    #uebungsleitungNachrichten .ul-zelle-empfaenger > div + div::before {
+        content: ", ";
+    }
+
+    #uebungsleitungNachrichten .ul-status-zelle {
+        flex-direction: row;
+        flex-wrap: wrap;
+        align-items: center;
+        min-height: 0;
+    }
+
+    #uebungsleitungNachrichten .ul-status-zelle .ul-aktion {
+        flex: 1 1 12rem;
+        min-height: 44px;
+    }
+
+    #uebungsleitungNachrichten .ul-zeit-aktionen {
+        flex-direction: row;
+        flex-wrap: wrap;
+        gap: 0.5rem 2rem;
+    }
+
+    #uebungsleitungTeilnehmer tbody > tr {
+        grid-template-columns: minmax(0, 1fr);
+    }
+
+    #uebungsleitungTeilnehmer tbody > tr > td[data-label]::before {
+        display: block;
+    }
+
+    #uebungsleitungTeilnehmer tbody > tr > td[data-label="Teilnehmer"]::before {
+        display: none;
+    }
+}
+
 /* --- Teilnehmer: Kopf, Liste, Aktionen ----------------------------------- */
 /* THW-Review 2026-10-04: am Handy muss der erste Spruch samt Abhak-Knopf
    ohne Scrollen und ohne Seitwärtswischen erreichbar sein. Deshalb ein

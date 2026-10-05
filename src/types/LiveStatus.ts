@@ -1,4 +1,4 @@
-import type { NachrichtenStatusTeilnehmer, TeilnehmerStatus } from "./Storage";
+import type { NachrichtenStatusTeilnehmer, ReaktionBewertung, TeilnehmerStatus } from "./Storage";
 
 /**
  * Live-Sync des Übungsstatus über die Subcollection `uebungen/{uebungId}/status`.
@@ -42,6 +42,10 @@ export interface LeitungBestaetigung {
     geaendertUm?: string;
     /** Zeit von Hand eingetragen (Papier-Nachtrag), nicht beim Funken geklickt. */
     nachgetragen?: boolean;
+    /** Von der Leitung bewusst ausgelassen – nicht mehr fällig, nicht abgesetzt. */
+    ausgelassen?: boolean;
+    /** Zeit aus der Teilnehmer-Meldung übernommen (Sammelbestätigung). */
+    zeitVomTeilnehmer?: boolean;
 }
 
 /** Bestätigungen der Übungsleitung – für Teilnehmer sichtbar. */
@@ -62,6 +66,9 @@ export interface LeitungPublicLiveDoc {
 export interface LeitungNotiz {
     notiz?: string;
     geaendertUm?: string;
+    /** Reaktion der beübten Stelle (Führungsstellen-Übung), eigener Zeitstempel. */
+    reaktion?: ReaktionBewertung;
+    reaktionGeaendertUm?: string;
 }
 
 /** Interne Daten der Übungsleitung – nicht für Teilnehmer bestimmt. */

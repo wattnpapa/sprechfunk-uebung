@@ -12,7 +12,11 @@ import { UebungsleitungTeilnehmerView, type TeilnehmerZusatz } from "./Uebungsle
 import type { LiveSyncState } from "../types/LiveStatus";
 import type { EffektiverNachrichtenStatus } from "../services/liveStatusMerge";
 import { berechnePlanStatus, formatLaufzeit, formatXZeit } from "../utils/xzeit";
-import { faelligkeitLabel, formatUhrzeit, type Faelligkeit, type LageTeilnehmer, type PlanZustand } from "./lagebild";
+import type { Faelligkeit, PlanZustand } from "./lagebild";
+import { renderLageHtml, type LageAnzeige } from "./lageMarkup";
+import type { NachrichtenCallbacks } from "./nachrichtenTypen";
+
+export type { LageAnzeige } from "./lageMarkup";
 
 export interface CockpitAnzeige {
     /** Formatierte Uhrzeit, z. B. "14:03:27". */
@@ -29,15 +33,12 @@ export interface CockpitAnzeige {
     vorschlag?: string | null;
     /** Rollen, die mit einer abweichenden Basis laufen, z. B. "Kater 10 (19:18)". */
     abweichungen?: string[];
-}
-
-export interface LageAnzeige {
-    teilnehmer: LageTeilnehmer[];
-    naechste: { planNr: number; sender: string; empfaenger: string[]; faelligkeit?: Faelligkeit }[];
-    /** Vom Teilnehmer gemeldet, von der Leitung noch nicht bestätigt. */
-    zuBestaetigen: number;
-    hideAbgesetzt: boolean;
-    ueberfaellig: number;
+    /** Beschriftung des Vorschlag-Knopfs, z. B. „19:30 übernehmen (liegt 97 min zurück)“. */
+    vorschlagLabel?: string;
+    /** Ist schon eine Basis gesetzt? Dann heißt „Jetzt starten“ „Neu starten“. */
+    basisGesetzt?: boolean;
+    /** Offene Zeilen mit erreichter Soll-Zeit – dieselbe Zahl wie in der Lagezeile. */
+    hinterPlan?: { ueberfaellig: number; faellig: number } | null;
 }
 
 /** Wie lange das Rückgängig-Angebot stehen bleibt. */
@@ -47,6 +48,30 @@ export class UebungsleitungView {
     private teilnehmerView = new UebungsleitungTeilnehmerView();
     private nachrichtenView = new UebungsleitungNachrichtenView();
     private undoTimer: ReturnType<typeof setTimeout> | null = null;
+    /**
+     * Die Container stehen fest im Dokument; ohne Abbruch blieben die Listener
+     * einer früheren Ansicht hängen und jede Aktion liefe doppelt
+     * (THW-Review 2026-10-05, offline P3-4: zwei Debrief-Downloads je Klick).
+     */
+    private abort: AbortController | null = null;
+
+    /**
+     * Signal aus dem AbortController des Fensters, in dem die Container leben –
+     * im Browser derselbe, in Tests der des Test-DOM.
+     */
+    private get signal(): AbortSignal {
+        if (!this.abort) {
+            const fenster = (globalThis as { window?: { AbortController?: typeof AbortController } }).window;
+            this.abort = new (fenster?.AbortController ?? AbortController)();
+        }
+        return this.abort.signal;
+    }
+
+    /** Löst alle Listener dieser Ansicht und schließt die Rückgängig-Leiste. */
+    public dispose(): void {
+        this.abort?.abort();
+        this.schliesseRueckgaengig();
+    }
 
     public renderMeta(uebung: Uebung, uebungId: string): void {
         const metaEl = document.getElementById("uebungsleitungMeta");
@@ -89,11 +114,43 @@ export class UebungsleitungView {
     }
 
     public bindMetaEvents(onPdfExport: () => void, onReset: () => void, onUebersichtExport?: () => void): void {
-        document.getElementById("exportUebungsleitungPdf")?.addEventListener("click", onPdfExport);
-        document.getElementById("resetUebungsleitungLocalData")?.addEventListener("click", onReset);
+        const opt = { signal: this.signal };
+        document.getElementById("exportUebungsleitungPdf")?.addEventListener("click", onPdfExport, opt);
+        document.getElementById("resetUebungsleitungLocalData")?.addEventListener("click", onReset, opt);
         if (onUebersichtExport) {
-            document.getElementById("exportTeilnehmerUebersichtPdf")?.addEventListener("click", onUebersichtExport);
+            document.getElementById("exportTeilnehmerUebersichtPdf")?.addEventListener("click", onUebersichtExport, opt);
         }
+    }
+
+    /**
+     * Teilnehmertabelle ein- und ausklappen: Wer im Plan abhakt, scrollt sonst
+     * jedes Mal an Stärke- und Notizfeldern vorbei (THW-Review 2026-10-05,
+     * command P3-2, stress-test P2-3).
+     */
+    public setTeilnehmerEingeklappt(eingeklappt: boolean): void {
+        document.getElementById("uebungsleitungTeilnehmer")?.classList.toggle("d-none", eingeklappt);
+        const btn = document.getElementById("btn-teilnehmer-einklappen");
+        if (btn) {
+            btn.setAttribute("aria-expanded", String(!eingeklappt));
+            btn.textContent = eingeklappt ? "Teilnehmer zeigen" : "Teilnehmer einklappen";
+        }
+    }
+
+    public bindTeilnehmerEinklappen(onToggle: () => void): void {
+        document.getElementById("btn-teilnehmer-einklappen")?.addEventListener("click", onToggle, { signal: this.signal });
+    }
+
+    /** Einmalige Bestätigung nach „für alle zurücksetzen“ und dem Neuladen. */
+    public zeigeZurueckgesetzt(umIso: string): void {
+        const el = document.getElementById("uebungsleitungResetErfolg");
+        if (!el) {
+            return;
+        }
+        const um = new Date(umIso);
+        const uhrzeit = `${String(um.getHours()).padStart(2, "0")}:${String(um.getMinutes()).padStart(2, "0")}`;
+        el.textContent = `Übungsstand für alle zurückgesetzt (um ${uhrzeit}).`;
+        el.classList.remove("d-none");
+        globalThis.scrollTo?.({ top: 0 });
     }
 
     /**
@@ -139,20 +196,38 @@ export class UebungsleitungView {
         const vorschlagBtn = document.getElementById("btn-cockpit-xzeit-vorschlag");
         if (vorschlagBtn) {
             vorschlagBtn.classList.toggle("d-none", !anzeige.vorschlag);
-            vorschlagBtn.textContent = anzeige.vorschlag ? `${anzeige.vorschlag} übernehmen` : "";
+            vorschlagBtn.textContent = anzeige.vorschlag ? (anzeige.vorschlagLabel || `${anzeige.vorschlag} übernehmen`) : "";
             vorschlagBtn.dataset["basis"] = anzeige.vorschlag ?? "";
         }
+        // Läuft die Übung schon, ist „Jetzt starten“ ein Neustart für alle
+        // (THW-Review 2026-10-05, destructive-action P1-1).
+        this.setText("btn-cockpit-xzeit-jetzt", anzeige.basisGesetzt ? "Neu starten (verschiebt alle Zeiten)" : "Jetzt starten");
+        this.updatePlanBadge(anzeige);
+    }
 
+    /**
+     * „n hinter Plan“ zählt dieselben Zeilen wie die Lagezeile („überfällig“
+     * plus „jetzt fällig“) – zwei Zahlen ohne Erklärung verwirrten
+     * (THW-Review 2026-10-05, command P3-1).
+     */
+    private updatePlanBadge(anzeige: CockpitAnzeige): void {
         const badge = document.getElementById("cockpitPlanBadge");
-        if (badge) {
-            if (anzeige.soll === null) {
-                badge.className = "badge border-0 bg-secondary";
-                badge.textContent = "–";
-            } else {
-                const status = berechnePlanStatus(anzeige.ist, anzeige.soll);
-                badge.className = `badge border-0 ${status.css}`;
-                badge.textContent = status.label;
-            }
+        if (!badge) {
+            return;
+        }
+        if (anzeige.soll === null) {
+            badge.className = "badge border-0 bg-secondary";
+            badge.textContent = "–";
+            return;
+        }
+        const hinter = anzeige.hinterPlan;
+        const status = hinter
+            ? berechnePlanStatus(0, hinter.ueberfaellig + hinter.faellig)
+            : berechnePlanStatus(anzeige.ist, anzeige.soll);
+        badge.className = `badge border-0 ${status.css}`;
+        badge.textContent = status.label;
+        if (hinter) {
+            badge.setAttribute("title", `${hinter.ueberfaellig} überfällig, ${hinter.faellig} jetzt fällig – antippen springt zur ersten`);
         }
     }
 
@@ -169,19 +244,20 @@ export class UebungsleitungView {
         onVorschlag?: (value: string) => void,
         onPlanBadge?: () => void
     ): void {
+        const opt = { signal: this.signal };
         document.getElementById("cockpitXZeitBasisInput")?.addEventListener("change", e => {
             onBasisChange((e.target as HTMLInputElement).value);
-        });
-        document.getElementById("btn-cockpit-xzeit-jetzt")?.addEventListener("click", onJetzt);
+        }, opt);
+        document.getElementById("btn-cockpit-xzeit-jetzt")?.addEventListener("click", onJetzt, opt);
         const vorschlagBtn = document.getElementById("btn-cockpit-xzeit-vorschlag");
         vorschlagBtn?.addEventListener("click", () => {
             const basis = vorschlagBtn.dataset["basis"];
             if (basis && onVorschlag) {
                 onVorschlag(basis);
             }
-        });
+        }, opt);
         if (onPlanBadge) {
-            document.getElementById("cockpitPlanBadge")?.addEventListener("click", onPlanBadge);
+            document.getElementById("cockpitPlanBadge")?.addEventListener("click", onPlanBadge, opt);
         }
     }
 
@@ -212,46 +288,12 @@ export class UebungsleitungView {
         }
     }
 
-    /**
-     * Lagezeile oben: offen je Teilnehmer, was als Nächstes dran ist, und die
-     * Wege zu Filter und Auswertung (THW-Review command P1-3).
-     */
+    /** Lagezeile oben (Inhalt: {@link renderLageHtml}). */
     public renderLage(lage: LageAnzeige): void {
         const body = document.getElementById("uebungsleitungLageBody");
-        if (!body) {
-            return;
+        if (body) {
+            body.innerHTML = renderLageHtml(lage);
         }
-        const teilnehmer = lage.teilnehmer.length
-            ? lage.teilnehmer.map(t => {
-                const css = t.offen === 0 ? "lage-chip lage-chip--fertig" : "lage-chip";
-                const bestaetigen = t.nurGemeldet > 0 ? `, ${t.nurGemeldet} zu bestätigen` : "";
-                return `<span class="${css}" title="${escapeHtml(t.teilnehmer)}: ${t.offen} von ${t.gesamt} offen${bestaetigen}">${escapeHtml(t.teilnehmer)}: <strong>${t.offen === 0 ? "fertig" : `${t.offen} offen`}</strong>${bestaetigen}</span>`;
-            }).join("")
-            : "<span class=\"text-body-secondary\">Keine Nachrichten.</span>";
-
-        const naechste = lage.naechste.length
-            ? lage.naechste.map(n => {
-                const f = n.faelligkeit;
-                const zeit = f ? ` · ${formatUhrzeit(f.sollMs)} · ${faelligkeitLabel(f)}` : "";
-                return `<button type="button" class="btn btn-sm btn-outline-secondary lage-naechste" data-action="zu-plan-nr" data-plan-nr="${n.planNr}">Nr. ${n.planNr} · ${escapeHtml(n.sender)} → ${escapeHtml(n.empfaenger.join(", "))}${zeit}</button>`;
-            }).join("")
-            : "<span class=\"text-body-secondary\">Alles erledigt.</span>";
-
-        body.innerHTML = `
-          <div class="d-flex flex-wrap align-items-center gap-2 mb-2">
-            <strong class="me-1">Lage:</strong>
-            ${teilnehmer}
-          </div>
-          <div class="d-flex flex-wrap align-items-center gap-2">
-            <strong class="me-1">Als Nächstes:</strong>
-            ${naechste}
-          </div>
-          <div class="d-flex flex-wrap align-items-center gap-2 mt-2">
-            ${lage.ueberfaellig > 0 ? `<button type="button" class="btn btn-sm btn-danger" data-action="zu-ueberfaellig">${lage.ueberfaellig} überfällig – zur ersten</button>` : ""}
-            ${lage.zuBestaetigen > 0 ? `<button type="button" class="btn btn-sm btn-outline-primary" data-action="gemeldete-bestaetigen" title="Übernimmt alle vom Teilnehmer gemeldeten Nachrichten mit der Uhrzeit der Teilnehmer-Meldung">${lage.zuBestaetigen} gemeldete bestätigen</button>` : ""}
-            <button type="button" class="btn btn-sm btn-outline-secondary" data-action="lage-hide" aria-pressed="${lage.hideAbgesetzt}">${lage.hideAbgesetzt ? "Abgesetzte wieder zeigen" : "Abgesetzte ausblenden"}</button>
-            <button type="button" class="btn btn-sm btn-outline-secondary" data-action="zu-auswertung">Heatmap &amp; Timeline</button>
-          </div>`;
     }
 
     public bindLageEvents(callbacks: {
@@ -259,24 +301,21 @@ export class UebungsleitungView {
         onToggleHide: (val: boolean) => void;
     }): void {
         const body = document.getElementById("uebungsleitungLageBody");
+        const ziele: Record<string, (btn: HTMLElement) => void> = {
+            "gemeldete-bestaetigen": () => callbacks.onGemeldeteBestaetigen(),
+            "lage-hide": btn => callbacks.onToggleHide(btn.getAttribute("aria-pressed") !== "true"),
+            "zu-auswertung": () => this.hebeHervor(document.getElementById("nachrichtenAuswertung")),
+            "zu-ueberfaellig": btn => this.scrollZuPlanZustand(btn.dataset["ziel"] === "faellig" ? "faellig" : "ueberfaellig"),
+            "zu-plan-nr": btn => this.scrollZuPlanNr(Number(btn.dataset["planNr"])),
+            "zu-zuruecksetzen": () => this.hebeHervor(document.getElementById("uebungsleitungGefahrenbereich"))
+        };
         body?.addEventListener("click", e => {
             const btn = (e.target as HTMLElement).closest<HTMLElement>("button[data-action]");
-            const action = btn?.dataset["action"];
-            if (!btn || !action) {
-                return;
+            const aktion = btn ? ziele[btn.dataset["action"] ?? ""] : undefined;
+            if (btn && aktion) {
+                aktion(btn);
             }
-            if (action === "gemeldete-bestaetigen") {
-                callbacks.onGemeldeteBestaetigen();
-            } else if (action === "lage-hide") {
-                callbacks.onToggleHide(btn.getAttribute("aria-pressed") !== "true");
-            } else if (action === "zu-auswertung") {
-                this.hebeHervor(document.getElementById("nachrichtenAuswertung"));
-            } else if (action === "zu-ueberfaellig") {
-                this.scrollZuPlanZustand("ueberfaellig");
-            } else if (action === "zu-plan-nr") {
-                this.scrollZuPlanNr(Number(btn.dataset["planNr"]));
-            }
-        });
+        }, { signal: this.signal });
     }
 
     /**
@@ -295,20 +334,31 @@ export class UebungsleitungView {
             <button type="button" class="btn btn-sm btn-light" data-action="undo">Rückgängig</button>
             <button type="button" class="btn btn-sm btn-link text-reset" data-action="undo-schliessen" aria-label="Hinweis schließen">✕</button>`;
         el.classList.remove("d-none");
-        const schliessen = () => {
-            el.classList.add("d-none");
-            el.innerHTML = "";
-            if (this.undoTimer !== null) {
-                clearTimeout(this.undoTimer);
-                this.undoTimer = null;
-            }
-        };
+        document.getElementById("uebungsleitungArea")?.classList.add("ul-undo-offen");
         el.querySelector("[data-action='undo']")?.addEventListener("click", () => {
-            schliessen();
+            this.schliesseRueckgaengig();
             onUndo();
         }, { once: true });
-        el.querySelector("[data-action='undo-schliessen']")?.addEventListener("click", schliessen, { once: true });
-        this.undoTimer = setTimeout(schliessen, RUECKGAENGIG_MS);
+        el.querySelector("[data-action='undo-schliessen']")?.addEventListener("click", () => this.schliesseRueckgaengig(), { once: true });
+        this.undoTimer = setTimeout(() => this.schliesseRueckgaengig(), RUECKGAENGIG_MS);
+    }
+
+    /**
+     * Schließt die Rückgängig-Leiste – auch, sobald eine neue Aktion kommt: Ein
+     * „Rückgängig“ darf sich nie auf eine ältere Aktion beziehen als die
+     * zuletzt sichtbare (THW-Review 2026-10-05, error-recovery P3-2).
+     */
+    public schliesseRueckgaengig(): void {
+        const el = document.getElementById("uebungsleitungUndo");
+        if (el) {
+            el.classList.add("d-none");
+            el.innerHTML = "";
+        }
+        document.getElementById("uebungsleitungArea")?.classList.remove("ul-undo-offen");
+        if (this.undoTimer !== null) {
+            clearTimeout(this.undoTimer);
+            this.undoTimer = null;
+        }
     }
 
     public renderTeilnehmerListe(
@@ -329,7 +379,7 @@ export class UebungsleitungView {
         onToggleDetails: () => void;
         onDownloadDebrief: (name: string) => void;
     }): void {
-        this.teilnehmerView.bindEvents(callbacks);
+        this.teilnehmerView.bindEvents(callbacks, this.signal);
     }
 
     public renderNachrichtenListe(options: {
@@ -342,6 +392,7 @@ export class UebungsleitungView {
         faelligkeit?: Record<string, Faelligkeit>;
         sollUhrzeit?: Record<string, string>;
         ruecknahmeGesperrt?: Set<string>;
+        jetztMs?: number;
     }): void {
         this.nachrichtenView.render(options);
     }
@@ -362,17 +413,8 @@ export class UebungsleitungView {
         this.nachrichtenView.updateTeilnehmerTimeline(entries);
     }
 
-    public bindNachrichtenEvents(callbacks: {
-        onAbgesetzt: (sender: string, nr: number) => void;
-        onReset: (sender: string, nr: number) => void;
-        onZeitNachtragen?: (sender: string, nr: number, hhmm: string) => void;
-        onNotiz: (sender: string, nr: number, val: string) => void;
-        onFilterSender: (val: string) => void;
-        onFilterEmpfaenger: (val: string) => void;
-        onToggleHide: (val: boolean) => void;
-        onFilterText: (val: string) => void;
-    }): void {
-        this.nachrichtenView.bindEvents(callbacks);
+    public bindNachrichtenEvents(callbacks: NachrichtenCallbacks): void {
+        this.nachrichtenView.bindEvents(callbacks, this.signal);
     }
 
     /**
@@ -381,7 +423,8 @@ export class UebungsleitungView {
      */
     private buildMetaHtml(uebung: Uebung, uebungId: string): string {
         const safeName = escapeHtml(uebung.name || "–");
-        const safeDatum = escapeHtml(formatNatoDate(uebung.datum));
+        // Das Übungsdatum als Datum, nicht als DTG mit „0000“ (THW-Review 2026-10-05, workflow W9).
+        const safeDatum = escapeHtml(formatDatum(uebung.datum));
         const safeRufgruppe = escapeHtml(uebung.rufgruppe || "–");
         const safeLeitung = escapeHtml(uebung.leitung || "–");
         const safeCount = escapeHtml(String(uebung.teilnehmerListe?.length ?? 0));
@@ -395,7 +438,7 @@ export class UebungsleitungView {
             <div><span class="text-body-secondary">Rufgruppe</span> ${safeRufgruppe}</div>
             <div><span class="text-body-secondary">Übungsleitung</span> ${safeLeitung}</div>
             <div><span class="text-body-secondary">Teilnehmer</span> ${safeCount}</div>
-            <div><span class="text-body-secondary">Übungscode</span> <code class="fs-6">${safeUebungCode}</code></div>
+            <div><span class="text-body-secondary" title="Teilnehmer brauchen ihn zusammen mit ihrem Teilnehmercode">Übungscode</span> <code class="fs-6">${safeUebungCode}</code></div>
           </div>
           <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mt-2">
             <small class="text-body-secondary">Übungs-ID: <code>${safeUebungId}</code></small>
@@ -410,11 +453,20 @@ export class UebungsleitungView {
     /** Folgenschwere Aktion abgesetzt am Seitenende, nicht neben den Exporten. */
     private buildGefahrenbereichHtml(): string {
         return `
-          <h3 class="h6 text-danger-emphasis mb-2">Übungsstand zurücksetzen</h3>
+          <h3 class="h6 ul-gefahr-titel mb-2">⚠ Übungsstand zurücksetzen</h3>
           <p class="small text-body-secondary mb-2" id="uebungsleitungResetText"></p>
           <button class="btn btn-outline-danger" id="resetUebungsleitungLocalData">⟲ Übungsstand zurücksetzen</button>
         `;
     }
+}
+
+/** „05.10.2026“ – leer bzw. „–“, wenn kein gültiges Datum vorliegt. */
+function formatDatum(wert: unknown): string {
+    const d = wert instanceof Date ? wert : new Date(String(wert ?? ""));
+    if (Number.isNaN(d.getTime())) {
+        return formatNatoDate(wert, false);
+    }
+    return `${String(d.getDate()).padStart(2, "0")}.${String(d.getMonth() + 1).padStart(2, "0")}.${d.getFullYear()}`;
 }
 
 export type { FlattenedNachricht, HeatmapBin, TeilnehmerTimeline };

@@ -364,3 +364,61 @@ describe("buildTeilnehmerFortschritt – beide Quellen", () => {
         expect(result["B"]).toMatchObject({ online: false, gemeldet: 0, bestaetigt: 1, erledigt: 1 });
     });
 });
+
+describe("Live-Sync der Leitungsentscheidungen (THW-Review 2026-10-05)", () => {
+    const leer = (nachrichten: UebungsleitungStorage["nachrichten"]): UebungsleitungStorage => ({
+        version: 1, uebungId: "u1", lastUpdated: FRUEH, teilnehmer: {}, nachrichten
+    });
+
+    it("trägt „ausgelassen“ und „Zeit vom Teilnehmer“ über leitung-public zu anderen Arbeitsplätzen", () => {
+        const doc = toLeitungPublicLiveDoc(leer({
+            "A__1": { ausgelassen: true, statusGeaendertUm: SPAET },
+            "A__2": { abgesetztUm: FRUEH, statusGeaendertUm: SPAET, zeitVomTeilnehmer: true, ausgelassen: true },
+            "A__3": { abgesetztUm: FRUEH, statusGeaendertUm: SPAET, nachgetragen: true }
+        }));
+        expect(doc.nachrichten["A__1"]).toEqual({ geaendertUm: SPAET, ausgelassen: true });
+        expect(doc.nachrichten["A__2"]).toEqual({ abgesetztUm: FRUEH, geaendertUm: SPAET, zeitVomTeilnehmer: true });
+        expect(doc.nachrichten["A__3"]).toEqual({ abgesetztUm: FRUEH, geaendertUm: SPAET, nachgetragen: true });
+
+        const { merged, changed } = mergeLeitungPublicLiveDoc(leer({ "A__1": { statusGeaendertUm: FRUEH } }), doc);
+        expect(changed).toBe(true);
+        expect(merged.nachrichten["A__1"]).toEqual({ ausgelassen: true, statusGeaendertUm: SPAET });
+        expect(merged.nachrichten["A__2"]?.zeitVomTeilnehmer).toBe(true);
+        expect(merged.nachrichten["A__2"]?.ausgelassen).toBeUndefined();
+
+        // Wieder geöffnet (jünger) hebt „ausgelassen“ auf.
+        const wieder = mergeLeitungPublicLiveDoc(merged, { version: 1, lastUpdated: "", nachrichten: { "A__1": { geaendertUm: "2026-07-26T10:09:00.000Z" } } });
+        expect(wieder.merged.nachrichten["A__1"]?.ausgelassen).toBeUndefined();
+    });
+
+    it("führt Reaktion und Notiz getrennt nach ihrem eigenen Zeitstempel zusammen", () => {
+        const lokal = leer({ "A__1": { notiz: "lokal", notizGeaendertUm: SPAET, reaktion: "erfolgt", reaktionGeaendertUm: FRUEH } });
+        const remoteDoc = toLeitungLiveDoc(leer({
+            "A__1": { notiz: "alt", notizGeaendertUm: FRUEH, reaktion: "abweichend", reaktionGeaendertUm: SPAET },
+            "A__2": { reaktion: "ausgeblieben", reaktionGeaendertUm: SPAET }
+        }));
+        expect(remoteDoc.nachrichtenNotizen["A__2"]).toEqual({ reaktion: "ausgeblieben", reaktionGeaendertUm: SPAET });
+
+        const { merged, changed } = mergeLeitungLiveDoc(lokal, remoteDoc);
+        expect(changed).toBe(true);
+        expect(merged.nachrichten["A__1"]).toMatchObject({ notiz: "lokal", reaktion: "abweichend", reaktionGeaendertUm: SPAET });
+        expect(merged.nachrichten["A__2"]).toMatchObject({ reaktion: "ausgeblieben" });
+
+        // Eine aufgehobene Bewertung (jünger, ohne Wert) gewinnt ebenfalls.
+        const aufgehoben = mergeLeitungLiveDoc(merged, {
+            version: 1, lastUpdated: "", teilnehmer: {},
+            nachrichtenNotizen: { "A__1": { reaktionGeaendertUm: "2026-07-26T10:09:00.000Z" } }
+        });
+        expect(aufgehoben.merged.nachrichten["A__1"]?.reaktion).toBeUndefined();
+        expect(aufgehoben.merged.nachrichten["A__1"]?.notiz).toBe("lokal");
+
+        // Nichts Neueres: keine Änderung.
+        expect(mergeLeitungLiveDoc(aufgehoben.merged, remoteDoc).changed).toBe(false);
+    });
+
+    it("reicht Ausgelassen und Reaktion in den effektiven Status durch", () => {
+        const effektiv = buildEffektiveNachrichtenStatus({ "A__1": { ausgelassen: true }, "A__2": { abgesetztUm: FRUEH, reaktion: "erfolgt" } }, []);
+        expect(effektiv["A__1"]).toEqual({ ausgelassen: true });
+        expect(effektiv["A__2"]).toMatchObject({ reaktion: "erfolgt", erledigtUm: FRUEH });
+    });
+});

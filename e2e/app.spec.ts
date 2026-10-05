@@ -637,6 +637,8 @@ test("@routing @uebungsleitung route #/uebungsleitung without id still switches 
     await expect(page.locator("#uebungsleitungArea")).toBeVisible();
     await expect(page.locator("#mainAppArea")).toBeHidden();
     await expect(page.locator("#teilnehmerArea")).toBeHidden();
+    // THW-Review 2026-10-05, error-recovery P3-4: Fehlerseite statt leerer Karten.
+    await expect(page.getByTestId("uebungsleitung-ladefehler")).toContainText("Übungs-ID");
 });
 
 test("@routing @admin route #/admin switches to admin area and shows table ui", async ({ page }) => {
@@ -861,6 +863,47 @@ test("@uebungsleitung double click on 'abgesetzt' keeps the message abgesetzt", 
     await expect(zeile.locator("button[data-action='reset']")).toBeDisabled();
     await expect(zeile.locator("button[data-action='reset']")).toBeEnabled({ timeout: 5000 });
     await expect(zeile).toHaveClass(/status-ok-row/);
+});
+
+test("@uebungsleitung one click on the debrief button downloads exactly one PDF", async ({ page }) => {
+    // THW-Review 2026-10-05, offline P3-4: doppelt gebundene Listener lieferten zwei Downloads.
+    await page.goto("/#/uebungsleitung/u1");
+    const downloads: string[] = [];
+    page.on("download", d => downloads.push(d.suggestedFilename()));
+    await page.locator("#uebungsleitungTeilnehmer [data-action='download-debrief']").first().click();
+    await expect.poll(() => downloads.length, { timeout: 10000 }).toBe(1);
+    await page.waitForTimeout(1000);
+    expect(downloads).toHaveLength(1);
+});
+
+test("@uebungsleitung „Abgesetzte ausblenden“ survives a reload", async ({ page }) => {
+    await page.goto("/#/uebungsleitung/u1");
+    await page.locator("#uebungsleitungNachrichten button[data-action='abgesetzt']").first().click();
+    await page.locator("#toggleHideAbgesetzt").check();
+    await expect(page.locator(".ul-plan-filter")).toContainText("1 ausgeblendet");
+    await page.reload();
+    await expect(page.locator("#toggleHideAbgesetzt")).toBeChecked();
+    await expect(page.locator("#uebungsleitungNachrichten tbody tr")).toHaveCount(2);
+});
+
+test.describe("@uebungsleitung phone", () => {
+    test.use({ viewport: { width: 412, height: 839 }, hasTouch: true, isMobile: true });
+
+    test("@uebungsleitung plan rows are cards with sender, recipient and action visible", async ({ page }) => {
+        await page.goto("/#/uebungsleitung/u1");
+        const zeile = page.locator("#uebungsleitungNachrichten tbody tr").first();
+        await expect(zeile.locator(".ul-zelle-sender")).toBeVisible();
+        await expect(zeile.locator(".ul-zelle-empfaenger")).toBeVisible();
+        for (const ziel of [zeile.locator(".ul-zelle-sender"), zeile.locator(".ul-zelle-empfaenger"), zeile.locator("[data-action='abgesetzt']")]) {
+            const box = await ziel.boundingBox();
+            expect(box && box.x + box.width).toBeLessThanOrEqual(412);
+        }
+        const knopf = await zeile.locator("[data-action='abgesetzt']").boundingBox();
+        expect(knopf && knopf.height).toBeGreaterThanOrEqual(44);
+        const anmelden = await page.locator("#uebungsleitungTeilnehmer [data-action='anmelden']").first().boundingBox();
+        expect(anmelden && anmelden.x + anmelden.width).toBeLessThanOrEqual(412);
+        expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(412);
+    });
 });
 
 test("@uebungsleitung unknown exercise id shows a message instead of empty cards", async ({ page }) => {

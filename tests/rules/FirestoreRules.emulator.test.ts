@@ -183,7 +183,12 @@ describe.skipIf(!emulatorHost)("firestore.rules im Emulator", () => {
             uebungId: "klassisch-10",
             lastUpdated: jetzt,
             teilnehmer: {},
-            nachrichten: { "Heros Ort1 21/10__1": { abgesetztUm: jetzt, statusGeaendertUm: jetzt, nachgetragen: true } },
+            nachrichten: {
+                "Heros Ort1 21/10__1": { abgesetztUm: jetzt, statusGeaendertUm: jetzt, nachgetragen: true },
+                // THW-Review 2026-10-05: ausgelassen und Zeit vom Teilnehmer.
+                "Heros Ort1 21/10__2": { ausgelassen: true, statusGeaendertUm: jetzt },
+                "Heros Ort1 21/10__3": { abgesetztUm: jetzt, statusGeaendertUm: jetzt, zeitVomTeilnehmer: true }
+            },
             xZeitBasis: "09:00",
             xZeitBasisGeaendertUm: jetzt
         });
