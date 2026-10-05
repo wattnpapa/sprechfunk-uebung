@@ -1290,14 +1290,13 @@ test("@generator regenerating as a new exercise adds a name suffix and keeps the
 });
 
 test("@generator @uebungsleitung overwriting resets the live status of the exercise", async ({ page, context }) => {
-    await page.goto("/");
-    await setParticipants(page, ["Heros E2E 11/1", "Heros E2E 11/2"]);
-    await page.locator("#spruecheProTeilnehmer").fill("3");
-    await fillPflichtfelder(page);
-    await page.locator("#startUebungBtn").click();
+    // Seed-Übung statt frisch generierter: Der Seed wird bei jedem Seitenaufruf
+    // neu eingespielt und würde eine im ersten Tab erzeugte Übung im zweiten
+    // Tab wieder verdrängen.
+    const uebungId = "u1";
+    await page.goto(`/#/generator/${uebungId}`);
     await expect(page.locator("#uebung-links")).toBeVisible();
-    const uebungId = page.url().split("#/generator/")[1] ?? "";
-    expect(uebungId).not.toBe("");
+    await fillPflichtfelder(page);
 
     // Übungsleitung im zweiten Tab: einen Spruch abhaken.
     const leitung = await context.newPage();

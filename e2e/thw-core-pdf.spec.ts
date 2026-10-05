@@ -189,6 +189,11 @@ test("@uebungsleitung Link ohne Übungs-ID zeigt eine Meldung statt eines leeren
     await expect(page.locator("#uebungsleitungMeta")).toContainText("fehlt die Übungs-ID");
 });
 
+test.describe("Druckteil ohne Service Worker", () => {
+// Der Service Worker holt den Neuversuch sonst selbst ab, an page.route
+// vorbei; geprüft wird hier der Lader in der Seite.
+test.use({ serviceWorkers: "block" });
+
 test("@generator Druckteil nach Netzaussetzer ohne Neuladen wieder ladbar, eine Meldung (offline P1-1, P3-2)", async ({ page }) => {
     // Auch Neuversuche mit angehängtem Parameter blockieren.
     const druckteil = /\/pdfGenerator-[^/]*\.js/;
@@ -207,6 +212,7 @@ test("@generator Druckteil nach Netzaussetzer ohne Neuladen wieder ladbar, eine 
     const download = page.waitForEvent("download", { timeout: 20_000 });
     await zip.click();
     expect((await download).suggestedFilename()).toMatch(/^[\x20-\x7E]+\.zip$/);
+});
 });
 
 test.describe("@seo Theme-Umschalter (Night Befunde 5, 6)", () => {
