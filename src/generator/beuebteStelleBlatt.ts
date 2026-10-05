@@ -2,6 +2,49 @@ import type { Uebung } from "../types/Uebung";
 import type { FuehrungsstellenUebung } from "../types/FuehrungsstellenUebung";
 import { escapeHtml } from "../utils/html";
 
+type BlattUebung = Pick<Uebung, "name" | "datum" | "rufgruppe" | "leitung" | "fuehrungsstelle">;
+type BlattDrehbuch = Pick<FuehrungsstellenUebung, "titel" | "lage" | "auftrag" | "dauerMinuten">;
+type Zeile = [string, string];
+
+function datumText(datum: BlattUebung["datum"]): string {
+    const wert = datum ? new Date(datum) : null;
+    return wert && !Number.isNaN(wert.getTime()) ? wert.toLocaleDateString("de-DE") : "";
+}
+
+function kopfZeilen(uebung: BlattUebung, drehbuch: BlattDrehbuch): Zeile[] {
+    const beginn = uebung.fuehrungsstelle?.beginn;
+    return [
+        ["Übung", escapeHtml(uebung.name || "")],
+        ["Datum", escapeHtml(datumText(uebung.datum))],
+        ["Übungsbeginn", escapeHtml(beginn ? `${beginn} Uhr` : "laut Übungsleitung")],
+        ["Dauer", `${drehbuch.dauerMinuten} Minuten`],
+        ["Rufgruppe", escapeHtml(uebung.rufgruppe || "")]
+    ];
+}
+
+function funkrufnamenZeilen(rollen: BlattUebung["fuehrungsstelle"]): Zeile[] {
+    if (!rollen) {
+        return [];
+    }
+    const stellen = rollen.stellen ?? {};
+    const mitStelle = (funkrufname: string) => {
+        const stelle = stellen[funkrufname];
+        return stelle ? `${escapeHtml(funkrufname)} (${escapeHtml(stelle)})` : escapeHtml(funkrufname);
+    };
+    return [
+        ["Beübte Stelle (du)", mitStelle(rollen.beuebteStelle)],
+        ["Übergeordnete Stelle", mitStelle(rollen.uebergeordnet)],
+        ...rollen.unterstellt.map((name, i): Zeile => [`Einsatzabschnitt ${i + 1}`, mitStelle(name)])
+    ];
+}
+
+function tabelle(eintraege: Zeile[]): string {
+    return eintraege
+        .filter(([, wert]) => wert !== "")
+        .map(([schluessel, wert]) => `<tr><th>${escapeHtml(schluessel)}</th><td>${wert}</td></tr>`)
+        .join("");
+}
+
 /**
  * Blatt für die beübte Stelle einer Führungsstellen-Übung: Ausgangslage,
  * Auftrag und die Funkrufnamen, mit denen sie arbeitet. Die beübte Stelle
@@ -12,36 +55,9 @@ import { escapeHtml } from "../utils/html";
  * Bewusst nur Lage und Auftrag aus dem Drehbuch – keine Nachrichten, keine
  * Erwartungen, keine Rollenkarten.
  */
-export function baueBlattBeuebteStelle(
-    uebung: Pick<Uebung, "name" | "datum" | "rufgruppe" | "leitung" | "fuehrungsstelle">,
-    drehbuch: Pick<FuehrungsstellenUebung, "titel" | "lage" | "auftrag" | "dauerMinuten">
-): string {
-    const rollen = uebung.fuehrungsstelle;
-    const stellen = rollen?.stellen ?? {};
-    const mitStelle = (funkrufname: string) => {
-        const stelle = stellen[funkrufname];
-        return stelle ? `${escapeHtml(funkrufname)} (${escapeHtml(stelle)})` : escapeHtml(funkrufname);
-    };
-    const datum = uebung.datum ? new Date(uebung.datum) : null;
-    const datumText = datum && !Number.isNaN(datum.getTime()) ? datum.toLocaleDateString("de-DE") : "";
-    const zeilen: [string, string][] = [
-        ["Übung", escapeHtml(uebung.name || "")],
-        ["Datum", escapeHtml(datumText)],
-        ["Übungsbeginn", escapeHtml(rollen?.beginn ? `${rollen.beginn} Uhr` : "laut Übungsleitung")],
-        ["Dauer", `${drehbuch.dauerMinuten} Minuten`],
-        ["Rufgruppe", escapeHtml(uebung.rufgruppe || "")]
-    ];
-    const funkrufnamen: [string, string][] = rollen
-        ? [
-            ["Beübte Stelle (du)", mitStelle(rollen.beuebteStelle)],
-            ["Übergeordnete Stelle", mitStelle(rollen.uebergeordnet)],
-            ...rollen.unterstellt.map((name, i): [string, string] => [`Einsatzabschnitt ${i + 1}`, mitStelle(name)])
-        ]
-        : [];
-    const tabelle = (eintraege: [string, string][]) => eintraege
-        .filter(([, wert]) => wert !== "")
-        .map(([schluessel, wert]) => `<tr><th>${escapeHtml(schluessel)}</th><td>${wert}</td></tr>`)
-        .join("");
+export function baueBlattBeuebteStelle(uebung: BlattUebung, drehbuch: BlattDrehbuch): string {
+    const zeilen = kopfZeilen(uebung, drehbuch);
+    const funkrufnamen = funkrufnamenZeilen(uebung.fuehrungsstelle);
 
     return `<!doctype html>
 <html lang="de">

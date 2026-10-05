@@ -106,44 +106,49 @@ function istStringListe(wert: unknown): wert is string[] {
     return Array.isArray(wert) && wert.every(v => typeof v === "string");
 }
 
+const ZAHLEN: readonly (keyof EntwurfFormular)[] = [
+    "spruecheProTeilnehmer", "spruecheAnAlle", "spruecheAnMehrere", "buchstabierenAn",
+    "spruchAnteilProzent", "xZeitIntervallMinuten", "xZeitStartOffsetMinuten"
+];
+const TEXTE: readonly (keyof EntwurfFormular)[] = ["name", "datum", "rufgruppe", "leitung"];
+const SCHALTER: readonly (keyof EntwurfFormular)[] = ["anmeldungAktiv", "autoStaerkeErgaenzen", "nachrichtenArtAktiv"];
+
+function istGueltigesFormular(f: Partial<EntwurfFormular> | undefined): boolean {
+    if (!f || typeof f !== "object") {
+        return false;
+    }
+    return ZAHLEN.every(k => typeof f[k] === "number" && Number.isFinite(f[k]))
+        && TEXTE.every(k => typeof f[k] === "string")
+        && SCHALTER.every(k => typeof f[k] === "boolean")
+        && (f.spielModus === "klassisch" || f.spielModus === "xZeit");
+}
+
+function hatGueltigeListen(e: Partial<GeneratorEntwurf>): boolean {
+    return QUELLEN.includes(e.quelle as EntwurfQuelle)
+        && LOESUNGSWORT_OPTIONEN.includes(e.loesungswortOption as LoesungswortOption)
+        && istStringListe(e.vorlagen)
+        && istStringListe(e.teilnehmerListe)
+        && istStringRecord(e.teilnehmerStellen)
+        && istStringRecord(e.loesungswoerter)
+        && typeof e.gespeichertAm === "string";
+}
+
+function hatGueltigeQuellenangaben(e: Partial<GeneratorEntwurf>): boolean {
+    return (e.szenarioSlug === undefined || typeof e.szenarioSlug === "string")
+        && (e.fuehrungsstelle === undefined || istFuehrungsstellenKonfiguration(e.fuehrungsstelle));
+}
+
 /** Prüft einen gelesenen Entwurf; alles Unerwartete verwirft ihn ganz. */
 export function pruefeEntwurf(roh: unknown): GeneratorEntwurf | null {
     if (!roh || typeof roh !== "object") {
         return null;
     }
     const e = roh as Partial<GeneratorEntwurf>;
-    const f = e.formular as Partial<EntwurfFormular> | undefined;
-    if (e.version !== 1 || !f || typeof f !== "object") {
-        return null;
-    }
-    const zahlen: (keyof EntwurfFormular)[] = [
-        "spruecheProTeilnehmer", "spruecheAnAlle", "spruecheAnMehrere", "buchstabierenAn",
-        "spruchAnteilProzent", "xZeitIntervallMinuten", "xZeitStartOffsetMinuten"
-    ];
-    const texte: (keyof EntwurfFormular)[] = ["name", "datum", "rufgruppe", "leitung"];
-    const schalter: (keyof EntwurfFormular)[] = ["anmeldungAktiv", "autoStaerkeErgaenzen", "nachrichtenArtAktiv"];
-    if (!zahlen.every(k => typeof f[k] === "number" && Number.isFinite(f[k]))
-        || !texte.every(k => typeof f[k] === "string")
-        || !schalter.every(k => typeof f[k] === "boolean")
-        || (f.spielModus !== "klassisch" && f.spielModus !== "xZeit")) {
-        return null;
-    }
-    if (!QUELLEN.includes(e.quelle as EntwurfQuelle)
-        || !LOESUNGSWORT_OPTIONEN.includes(e.loesungswortOption as LoesungswortOption)
-        || !istStringListe(e.vorlagen)
-        || !istStringListe(e.teilnehmerListe)
-        || !istStringRecord(e.teilnehmerStellen)
-        || !istStringRecord(e.loesungswoerter)
-        || typeof e.gespeichertAm !== "string") {
-        return null;
-    }
-    if (e.szenarioSlug !== undefined && typeof e.szenarioSlug !== "string") {
-        return null;
-    }
-    if (e.fuehrungsstelle !== undefined && !istFuehrungsstellenKonfiguration(e.fuehrungsstelle)) {
-        return null;
-    }
-    return e as GeneratorEntwurf;
+    const gueltig = e.version === 1
+        && istGueltigesFormular(e.formular as Partial<EntwurfFormular> | undefined)
+        && hatGueltigeListen(e)
+        && hatGueltigeQuellenangaben(e);
+    return gueltig ? e as GeneratorEntwurf : null;
 }
 
 function istFuehrungsstellenKonfiguration(wert: unknown): wert is FuehrungsstellenKonfiguration {

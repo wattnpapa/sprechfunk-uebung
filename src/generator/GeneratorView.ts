@@ -4,6 +4,32 @@ import type { UebungsDauerStats, VerteilungsStats } from "./GeneratorStatsServic
 import type { PreviewPage } from "./GeneratorPreviewService";
 import { uiFeedback } from "../core/UiFeedback";
 import { GENERATOR_VIEW_MARKUP } from "./viewMarkup";
+import type { LoesungswortOption } from "./GeneratorStateService";
+import {
+    getFormData,
+    setFormData,
+    syncDistributionFromPercentInputs,
+    updateDistributionInputs,
+    updateNachrichtenArtOptionsVisibility,
+    updateXZeitOptionsVisibility
+} from "./GeneratorFormularDom";
+import {
+    getSelectedLoesungswortOption,
+    getZentralesLoesungswort,
+    selectLoesungswortOption,
+    setLoesungswortUI,
+    updateLoesungswortOptionUI
+} from "./GeneratorLoesungswortDom";
+import {
+    type FunkspruchQuelle,
+    getSelectedSource,
+    getSelectedTemplates,
+    populateSzenarioSelect,
+    populateTemplateSelect,
+    renderInfoZeilen,
+    setSelectedSource,
+    toggleSourceView
+} from "./GeneratorQuelleDom";
 import { GeneratorLinksRenderer } from "./GeneratorLinksRenderer";
 import { GeneratorTeilnehmerTableRenderer } from "./GeneratorTeilnehmerTableRenderer";
 import { GeneratorResultRenderer } from "./GeneratorResultRenderer";
@@ -16,7 +42,7 @@ import {
 
 export type { AbschnittsGrenzen, AbschnittZeile, FuehrungsstellenRollenFormular };
 
-export type FunkspruchQuelle = "vorlagen" | "upload" | "szenario" | "fuehrungsstelle";
+export type { FunkspruchQuelle };
 
 export class GeneratorView {
     private bindingController = new AbortController();
@@ -47,290 +73,68 @@ export class GeneratorView {
     }
 
     public getFormData(): Partial<FunkUebung> {
-        const datumVal = (document.getElementById("datum") as HTMLInputElement).value;
-        const spielModusRadio = document.querySelector<HTMLInputElement>("input[name=\"spielModus\"]:checked");
-        // Immer setzen: Sonst bliebe nach einer Führungsstellen-Übung (die den
-        // Modus auf X-Zeit stellt) der Altwert stehen, obwohl das Formular
-        // „Klassisch" zeigt.
-        const spielModus = spielModusRadio?.value === "xZeit" ? "xZeit" : "klassisch";
-
-        return {
-            name: (document.getElementById("nameDerUebung") as HTMLInputElement).value,
-            rufgruppe: (document.getElementById("rufgruppe") as HTMLInputElement).value,
-            leitung: (document.getElementById("leitung") as HTMLInputElement).value,
-            spruecheProTeilnehmer: Number((document.getElementById("spruecheProTeilnehmer") as HTMLInputElement).value),
-            spruecheAnAlle: Number((document.getElementById("spruecheAnAlle") as HTMLInputElement).value),
-            spruecheAnMehrere: Number((document.getElementById("spruecheAnMehrere") as HTMLInputElement).value),
-            buchstabierenAn: Number((document.getElementById("spruecheAnBuchstabieren") as HTMLInputElement).value),
-            datum: datumVal ? new Date(datumVal) : new Date(),
-            anmeldungAktiv: (document.getElementById("anmeldungAktiv") as HTMLInputElement).checked,
-            autoStaerkeErgaenzen: (document.getElementById("autoStaerkeErgaenzen") as HTMLInputElement).checked,
-            ...this.getNachrichtenArtFormData(),
-            spielModus,
-            xZeitIntervallMinuten: Number((document.getElementById("xZeitIntervallMinuten") as HTMLInputElement)?.value) || 3,
-            xZeitStartOffsetMinuten: Number((document.getElementById("xZeitStartOffsetMinuten") as HTMLInputElement)?.value) || 0
-        };
+        return getFormData();
     }
 
     public setFormData(uebung: FunkUebung) {
-        (document.getElementById("nameDerUebung") as HTMLInputElement).value = uebung.name || "";
-        (document.getElementById("rufgruppe") as HTMLInputElement).value = uebung.rufgruppe || "";
-        (document.getElementById("leitung") as HTMLInputElement).value = uebung.leitung || "";
-        (document.getElementById("spruecheProTeilnehmer") as HTMLInputElement).value = uebung.spruecheProTeilnehmer.toString();
-        
-        // Datum formatieren für Input type=date
-        const date = new Date(uebung.datum);
-        const pad = (n: number) => String(n).padStart(2, "0");
-        const isoDate = `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}`;
-        (document.getElementById("datum") as HTMLInputElement).value = isoDate;
-
-        (document.getElementById("anmeldungAktiv") as HTMLInputElement).checked = uebung.anmeldungAktiv;
-        (document.getElementById("autoStaerkeErgaenzen") as HTMLInputElement).checked = uebung.autoStaerkeErgaenzen;
-
-        this.setNachrichtenArtFormData(uebung);
-
-        // Spiel-Modus setzen
-        const modusVal = uebung.spielModus === "xZeit" ? "xZeit" : "klassisch";
-        const modusRadio = document.querySelector<HTMLInputElement>(`input[name="spielModus"][value="${modusVal}"]`);
-        if (modusRadio) {
-            modusRadio.checked = true;
-        }
-        const intervallInput = document.getElementById("xZeitIntervallMinuten") as HTMLInputElement | null;
-        if (intervallInput) {
-            intervallInput.value = String(uebung.xZeitIntervallMinuten ?? 3);
-        }
-        const startOffsetInput = document.getElementById("xZeitStartOffsetMinuten") as HTMLInputElement | null;
-        if (startOffsetInput) {
-            startOffsetInput.value = String(uebung.xZeitStartOffsetMinuten ?? 0);
-        }
-        this.updateXZeitOptionsVisibility();
-
-        // Prozentwerte und absolute Werte setzen
-        this.updateDistributionInputs(uebung);
-
-        // Lösungswort-Optionen setzen
-        this.setLoesungswortUI(uebung.loesungswoerter);
+        setFormData(uebung);
     }
 
     public updateXZeitOptionsVisibility(): void {
-        const radio = document.querySelector<HTMLInputElement>("input[name=\"spielModus\"]:checked");
-        const container = document.getElementById("xZeitOptionsContainer");
-        if (container) {
-            container.style.display = radio?.value === "xZeit" ? "block" : "none";
-        }
-    }
-
-    private getNachrichtenArtFormData(): Pick<FunkUebung, "nachrichtenArtAktiv" | "spruchAnteilProzent"> {
-        const checkbox = document.getElementById("nachrichtenArtAktiv") as HTMLInputElement | null;
-        const anteil = document.getElementById("prozentSprueche") as HTMLInputElement | null;
-        return {
-            nachrichtenArtAktiv: checkbox?.checked ?? false,
-            spruchAnteilProzent: Number(anteil?.value ?? 50)
-        };
-    }
-
-    private setNachrichtenArtFormData(uebung: FunkUebung): void {
-        const checkbox = document.getElementById("nachrichtenArtAktiv") as HTMLInputElement | null;
-        if (checkbox) {
-            checkbox.checked = uebung.nachrichtenArtAktiv ?? false;
-        }
-        const anteil = document.getElementById("prozentSprueche") as HTMLInputElement | null;
-        if (anteil) {
-            anteil.value = String(uebung.spruchAnteilProzent ?? 50);
-        }
-        this.updateNachrichtenArtOptionsVisibility();
+        updateXZeitOptionsVisibility();
     }
 
     public updateNachrichtenArtOptionsVisibility(): void {
-        const checkbox = document.getElementById("nachrichtenArtAktiv") as HTMLInputElement | null;
-        const container = document.getElementById("nachrichtenArtOptionsContainer");
-        if (container) {
-            container.style.display = checkbox?.checked ? "block" : "none";
-        }
+        updateNachrichtenArtOptionsVisibility();
     }
 
     public bindNachrichtenArtToggle(onChange: (aktiv: boolean) => void): void {
         const checkbox = document.getElementById("nachrichtenArtAktiv") as HTMLInputElement | null;
         checkbox?.addEventListener("change", () => {
-            this.updateNachrichtenArtOptionsVisibility();
+            updateNachrichtenArtOptionsVisibility();
             onChange(checkbox.checked);
         }, { signal: this.bindingController.signal });
     }
 
     public bindSpielModusToggle(): void {
         document.querySelectorAll<HTMLInputElement>("input[name=\"spielModus\"]").forEach(radio => {
-            radio.addEventListener("change", () => this.updateXZeitOptionsVisibility(), { signal: this.bindingController.signal });
+            radio.addEventListener("change", () => updateXZeitOptionsVisibility(), { signal: this.bindingController.signal });
         });
     }
 
     public updateDistributionInputs(uebung: FunkUebung) {
-        const proTeilnehmer = uebung.spruecheProTeilnehmer || 1;
-        
-        const update = (idProzent: string, idAnzahl: string, wert: number) => {
-            const prozent = Math.round((wert / proTeilnehmer) * 100);
-            const prozentInput = document.getElementById(idProzent) as HTMLInputElement;
-            if (prozentInput) {
-                prozentInput.value = prozent.toString();
-            }
-            
-            const anzahlInput = document.getElementById(idAnzahl) as HTMLInputElement;
-            if (anzahlInput) {
-                anzahlInput.value = wert.toString();
-            }
-            
-            // Calc Span update
-            // ID logic in HTML is slightly inconsistent: calcAnAlle vs spruecheAnAlle
-            // HTML IDs: calcAnAlle, calcAnMehrere, calcAnBuchstabieren
-            // Input IDs: spruecheAnAlle, spruecheAnMehrere, spruecheAnBuchstabieren
-            const simpleName = idAnzahl.replace("sprueche", ""); // AnAlle
-            const span = document.getElementById("calc" + simpleName);
-            if (span) {
-                span.textContent = wert.toString();
-            }
-        };
-
-        update("prozentAnAlle", "spruecheAnAlle", uebung.spruecheAnAlle || 0);
-        update("prozentAnMehrere", "spruecheAnMehrere", uebung.spruecheAnMehrere || 0);
-        update("prozentAnBuchstabieren", "spruecheAnBuchstabieren", uebung.buchstabierenAn || 0);
+        updateDistributionInputs(uebung);
     }
 
     public setLoesungswortUI(loesungswoerter: Record<string, string>) {
-        const noneRadio = document.getElementById("keineLoesungswoerter") as HTMLInputElement;
-        const centralRadio = document.getElementById("zentralLoesungswort") as HTMLInputElement;
-        const indivRadio = document.getElementById("individuelleLoesungswoerter") as HTMLInputElement;
-        const centralInput = document.getElementById("zentralLoesungswortInput") as HTMLInputElement;
-        const container = document.getElementById("zentralLoesungswortContainer") as HTMLElement;
-        const shuffleBtn = document.getElementById("shuffleButton") as HTMLElement;
-
-        if (!noneRadio || !centralRadio || !indivRadio || !centralInput || !container || !shuffleBtn) {
-            return;
-        }
-
-        const zentraleWorte = this.getZentraleWorte(loesungswoerter);
-        
-        this.applyLoesungswortSelection({
-            hasWords: !!loesungswoerter && Object.keys(loesungswoerter).length > 0,
-            zentraleWorte,
-            noneRadio,
-            centralRadio,
-            indivRadio,
-            centralInput
-        });
-
-        this.updateLoesungswortOptionUI();
-    }
-
-    private applyLoesungswortSelection(options: {
-        hasWords: boolean;
-        zentraleWorte: Set<string>;
-        noneRadio: HTMLInputElement;
-        centralRadio: HTMLInputElement;
-        indivRadio: HTMLInputElement;
-        centralInput: HTMLInputElement;
-    }): void {
-        const {
-            hasWords,
-            zentraleWorte,
-            noneRadio,
-            centralRadio,
-            indivRadio,
-            centralInput
-        } = options;
-        if (!hasWords) {
-            noneRadio.checked = true;
-            return;
-        }
-        if (zentraleWorte.size === 1) {
-            centralRadio.checked = true;
-            centralInput.value = [...zentraleWorte][0] ?? "";
-            return;
-        }
-        indivRadio.checked = true;
-    }
-
-    private getZentraleWorte(loesungswoerter: Record<string, string>): Set<string> {
-        return new Set(
-            Object.values(loesungswoerter || {}).filter(
-                (wort): wort is string => typeof wort === "string" && wort.trim().length > 0
-            )
-        );
+        setLoesungswortUI(loesungswoerter);
     }
 
     public updateLoesungswortOptionUI() {
-        const centralRadio = document.getElementById("zentralLoesungswort") as HTMLInputElement | null;
-        const noneRadio = document.getElementById("keineLoesungswoerter") as HTMLInputElement | null;
-        const container = document.getElementById("zentralLoesungswortContainer") as HTMLElement | null;
-        const shuffleBtn = document.getElementById("shuffleButton") as HTMLElement | null;
-
-        if (!centralRadio || !noneRadio || !container || !shuffleBtn) {
-            return;
-        }
-
-        const option = this.getSelectedLoesungswortOption();
-        container.style.display = centralRadio.checked ? "block" : "none";
-        shuffleBtn.style.display = option === "none" ? "none" : "block";
+        updateLoesungswortOptionUI();
     }
 
-    public selectLoesungswortOption(option: "none" | "central" | "individual") {
-        const radioId = option === "none"
-            ? "keineLoesungswoerter"
-            : option === "central" ? "zentralLoesungswort" : "individuelleLoesungswoerter";
-        const radio = document.getElementById(radioId) as HTMLInputElement | null;
-        if (radio) {
-            radio.checked = true;
-        }
-        this.updateLoesungswortOptionUI();
+    public selectLoesungswortOption(option: LoesungswortOption) {
+        selectLoesungswortOption(option);
     }
 
-    public getSelectedLoesungswortOption(): "none" | "central" | "individual" {
-        if ((document.getElementById("keineLoesungswoerter") as HTMLInputElement).checked) {
-            return "none";
-        }
-        if ((document.getElementById("zentralLoesungswort") as HTMLInputElement).checked) {
-            return "central";
-        }
-        return "individual";
+    public getSelectedLoesungswortOption(): LoesungswortOption {
+        return getSelectedLoesungswortOption();
     }
 
     public getZentralesLoesungswort(): string {
-        return (document.getElementById("zentralLoesungswortInput") as HTMLInputElement).value;
+        return getZentralesLoesungswort();
     }
 
     public bindDistributionInputs(onChange: (data: Partial<FunkUebung>) => void) {
         const ids = ["spruecheProTeilnehmer", "prozentAnAlle", "prozentAnMehrere", "prozentAnBuchstabieren"];
         ids.forEach(id => {
             document.getElementById(id)?.addEventListener("input", () => {
-                this.syncDistributionFromPercentInputs();
+                syncDistributionFromPercentInputs();
                 const data = this.getFormData();
                 onChange(data);
             }, { signal: this.bindingController.signal });
         });
-    }
-
-    private syncDistributionFromPercentInputs() {
-        const proTeilnehmerInput = document.getElementById("spruecheProTeilnehmer") as HTMLInputElement | null;
-        const proTeilnehmer = Math.max(1, Number(proTeilnehmerInput?.value) || 0);
-
-        const sync = (idProzent: string, idAnzahl: string) => {
-            const prozentInput = document.getElementById(idProzent) as HTMLInputElement | null;
-            const anzahlInput = document.getElementById(idAnzahl) as HTMLInputElement | null;
-            const simpleName = idAnzahl.replace("sprueche", "");
-            const span = document.getElementById("calc" + simpleName);
-            if (!prozentInput || !anzahlInput) {
-                return;
-            }
-
-            const prozent = Math.max(0, Math.min(100, Number(prozentInput.value) || 0));
-            const anzahl = Math.round((proTeilnehmer * prozent) / 100);
-            anzahlInput.value = String(anzahl);
-            if (span) {
-                span.textContent = String(anzahl);
-            }
-        };
-
-        sync("prozentAnAlle", "spruecheAnAlle");
-        sync("prozentAnMehrere", "spruecheAnMehrere");
-        sync("prozentAnBuchstabieren", "spruecheAnBuchstabieren");
     }
 
     public bindSourceToggle(onChange?: (source: FunkspruchQuelle) => void) {
@@ -466,45 +270,15 @@ export class GeneratorView {
     }
 
     public populateTemplateSelect(templates: Record<string, { text: string }>, selected: string[] = []) {
-        const selectBox = document.getElementById("funkspruchVorlage") as HTMLSelectElement;
-        if (!selectBox) {
-            return;
-        }
-        selectBox.innerHTML = "";
-
-        for (const [key, value] of Object.entries(templates)) {
-            const option = document.createElement("option");
-            option.value = key;
-            option.textContent = value.text;
-            // Keine Vorauswahl: Die Organisation kennt nur der Nutzer, und
-            // „Lustige Funksprüche“ sollen nie unbemerkt mitlaufen.
-            option.selected = selected.includes(key);
-            selectBox.appendChild(option);
-        }
-        // Das Multi-Select-Widget haengt an genau diesem Event und zeichnet
-        // Chips und Trefferliste daraufhin neu.
-        selectBox.dispatchEvent(new Event("change", { bubbles: true }));
+        populateTemplateSelect(templates, selected);
     }
 
     public getSelectedTemplates(): string[] {
-        const selectBox = document.getElementById("funkspruchVorlage") as HTMLSelectElement | null;
-        if (!selectBox) {
-            return [];
-        }
-        return Array.from(selectBox.selectedOptions).map(option => option.value);
+        return getSelectedTemplates();
     }
 
     public getSelectedSource(): FunkspruchQuelle {
-        if ((document.getElementById("optionFuehrungsstelle") as HTMLInputElement | null)?.checked) {
-            return "fuehrungsstelle";
-        }
-        if ((document.getElementById("optionSzenario") as HTMLInputElement | null)?.checked) {
-            return "szenario";
-        }
-        if ((document.getElementById("optionVorlagen") as HTMLInputElement).checked) {
-            return "vorlagen";
-        }
-        return "upload";
+        return getSelectedSource();
     }
 
     public getUploadedFile(): File | undefined {
@@ -512,76 +286,15 @@ export class GeneratorView {
     }
 
     public setSelectedSource(source: FunkspruchQuelle) {
-        const radioIds: Record<FunkspruchQuelle, string> = {
-            vorlagen: "optionVorlagen",
-            upload: "optionUpload",
-            szenario: "optionSzenario",
-            fuehrungsstelle: "optionFuehrungsstelle"
-        };
-        const radioId = radioIds[source];
-        const radio = document.getElementById(radioId) as HTMLInputElement | null;
-        if (radio) {
-            radio.checked = true;
-        }
-        this.toggleSourceView(source);
+        setSelectedSource(source);
     }
 
     public toggleSourceView(source: FunkspruchQuelle) {
-        const selectBoxContainer = document.getElementById("funkspruchVorlage")?.parentElement;
-        const fileUploadContainer = document.getElementById("fileUploadContainer");
-        if (!selectBoxContainer || !fileUploadContainer) {
-            return;
-        }
-
-        selectBoxContainer.style.display = source === "vorlagen" ? "block" : "none";
-        fileUploadContainer.style.display = source === "upload" ? "block" : "none";
-        this.setBlockSichtbar("szenarioContainer", source === "szenario");
-        this.setBlockSichtbar("fuehrungsstelleContainer", source === "fuehrungsstelle");
-
-        // Im Szenario-Modus bestimmen Drehbuch statt Regler die Verteilung;
-        // Lösungswörter und Auto-Stärken würden kuratierte Texte umschreiben.
-        const mitDrehbuch = source === "szenario" || source === "fuehrungsstelle";
-        this.setSichtbar(["verteilungSection", "loesungswortSection", "autoStaerkeContainer"], !mitDrehbuch);
-        // Die Führungsstellen-Übung bringt Rollen, Zeiten und Anmeldungen aus
-        // dem Drehbuch mit; Teilnehmerverwaltung und Spielmodus entfallen.
-        this.setSichtbar([
-            "spielModusSection", "anmeldungContainer", "nachrichtenArtContainer",
-            "nachrichtenArtOptionsContainer", "teilnehmerVerwaltungCard"
-        ], source !== "fuehrungsstelle");
-        if (source !== "fuehrungsstelle") {
-            this.updateNachrichtenArtOptionsVisibility();
-        }
-    }
-
-    private setBlockSichtbar(id: string, sichtbar: boolean): void {
-        const el = document.getElementById(id);
-        if (el) {
-            el.style.display = sichtbar ? "block" : "none";
-        }
-    }
-
-    private setSichtbar(ids: string[], sichtbar: boolean): void {
-        ids.forEach(id => {
-            const el = document.getElementById(id);
-            if (el) {
-                el.style.display = sichtbar ? "" : "none";
-            }
-        });
+        toggleSourceView(source);
     }
 
     public populateSzenarioSelect(szenarien: Record<string, { titel: string }>, selected?: string) {
-        const selectBox = document.getElementById("szenarioAuswahl") as HTMLSelectElement | null;
-        if (!selectBox) {
-            return;
-        }
-        selectBox.innerHTML = "";
-        for (const [slug, eintrag] of Object.entries(szenarien)) {
-            const option = document.createElement("option");
-            option.value = slug;
-            option.textContent = eintrag.titel;
-            option.selected = slug === selected;
-            selectBox.appendChild(option);
-        }
+        populateSzenarioSelect(szenarien, selected);
     }
 
     public getSelectedSzenario(): string {
@@ -596,21 +309,9 @@ export class GeneratorView {
     }
 
     public renderSzenarioInfo(zeilen: string[]) {
-        this.renderInfoZeilen("szenarioInfo", zeilen);
+        renderInfoZeilen("szenarioInfo", zeilen);
     }
 
-    private renderInfoZeilen(containerId: string, zeilen: string[]): void {
-        const info = document.getElementById(containerId);
-        if (!info) {
-            return;
-        }
-        info.innerHTML = "";
-        zeilen.forEach(zeile => {
-            const div = document.createElement("div");
-            div.textContent = zeile;
-            info.appendChild(div);
-        });
-    }
 
     // --- Führungsstellen-Übung (Formularteil in GeneratorFuehrungsstellenForm) ---
 
@@ -627,7 +328,7 @@ export class GeneratorView {
     }
 
     public renderFuehrungsstelleInfo(zeilen: string[]) {
-        this.renderInfoZeilen("fuehrungsstelleInfo", zeilen);
+        renderInfoZeilen("fuehrungsstelleInfo", zeilen);
     }
 
     public bindFuehrungsstellenAbschnittEvents(onAdd: () => void, onRemove: (index: number) => void) {
