@@ -10,7 +10,7 @@ import {
 } from "./UebungsleitungNachrichtenView";
 import { UebungsleitungTeilnehmerView, type TeilnehmerZusatz } from "./UebungsleitungTeilnehmerView";
 import type { LiveSyncState } from "../types/LiveStatus";
-import type { EffektiverNachrichtenStatus, TeilnehmerFortschritt } from "../services/liveStatusMerge";
+import type { EffektiverNachrichtenStatus } from "../services/liveStatusMerge";
 import { berechnePlanStatus, formatLaufzeit, formatXZeit } from "../utils/xzeit";
 import { faelligkeitLabel, formatUhrzeit, type Faelligkeit, type LageTeilnehmer, type PlanZustand } from "./lagebild";
 
@@ -315,10 +315,9 @@ export class UebungsleitungView {
         uebung: Uebung,
         teilnehmerStatus: Record<string, TeilnehmerStatus>,
         showStaerkeDetails: boolean,
-        fortschritt: Record<string, TeilnehmerFortschritt> = {},
         zusatz: TeilnehmerZusatz = {}
     ): void {
-        this.teilnehmerView.render(uebung, teilnehmerStatus, showStaerkeDetails, fortschritt, zusatz);
+        this.teilnehmerView.render(uebung, teilnehmerStatus, showStaerkeDetails, zusatz);
     }
 
     public bindTeilnehmerEvents(callbacks: {

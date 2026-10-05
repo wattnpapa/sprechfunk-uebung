@@ -500,22 +500,13 @@ describe("UebungsleitungView", () => {
                 events: [{ ts: new Date("2026-02-15T10:02:00Z").getTime(), type: "S", nr: 2 }]
             }
         ]);
-        const cfg = chartCtor.mock.calls.at(-1)?.[1] as { options?: { plugins?: { tooltip?: { callbacks?: { label?: (ctx: { raw: { x: number; y: number; kind: string; nr: number } }) => string } } } } };
-        const label = cfg?.options?.plugins?.tooltip?.callbacks?.label?.({
-            raw: { x: new Date("2026-02-15T10:02:00Z").getTime(), y: 0, kind: "S", nr: 2 }
-        });
-        expect(label ?? "").toContain("A");
-        const rawless = cfg?.options?.plugins?.tooltip?.callbacks?.label?.(
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            { raw: null } as any
-        );
-        expect(rawless ?? "").toBe("");
+        const { label, xTick, yTick } = timelineCallbacks(chartCtor.mock.calls.at(-1)?.[1]);
+        expect(label({ raw: { x: new Date("2026-02-15T10:02:00Z").getTime(), y: 0, kind: "S", nr: 2 } })).toContain("A");
+        expect(label({ raw: null })).toBe("");
 
-        const xTick = (cfg as { options?: { scales?: { x?: { ticks?: { callback?: (v: number) => string } } } } })?.options?.scales?.x?.ticks?.callback;
-        const yTick = (cfg as { options?: { scales?: { y?: { ticks?: { callback?: (v: number) => string } } } } })?.options?.scales?.y?.ticks?.callback;
-        expect(xTick?.(new Date("2026-02-15T10:03:00Z").getTime()) ?? "").toContain(":");
-        expect(yTick?.(0) ?? "").toBe("A");
-        expect(yTick?.(99) ?? "").toBe("");
+        expect(xTick(new Date("2026-02-15T10:03:00Z").getTime())).toContain(":");
+        expect(yTick(0)).toBe("A");
+        expect(yTick(99)).toBe("");
 
         // missing canvas branch
         const oldGet = document.getElementById.bind(document);
@@ -554,6 +545,24 @@ describe("UebungsleitungView", () => {
 
 });
 
+type TimelineRaw = { x: number; y: number; kind: string; nr: number } | null;
+type TimelineChartConfig = {
+    options: {
+        plugins: { tooltip: { callbacks: { label: (ctx: { raw: TimelineRaw }) => string } } };
+        scales: { x: { ticks: { callback: (v: number) => string } }; y: { ticks: { callback: (v: number) => string } } };
+    };
+};
+
+/** Die Rückrufe, die die Timeline dem Chart mitgibt – für Tooltip und Achsen. */
+function timelineCallbacks(cfg: unknown) {
+    const { options } = cfg as TimelineChartConfig;
+    return {
+        label: options.plugins.tooltip.callbacks.label,
+        xTick: options.scales.x.ticks.callback,
+        yTick: options.scales.y.ticks.callback
+    };
+}
+
 describe("UebungsleitungView – Live-Status", () => {
     beforeEach(() => {
         vi.clearAllMocks();
@@ -582,7 +591,7 @@ describe("UebungsleitungView – Live-Status", () => {
 
         it("zeigt Fortschritt und letzte Meldung je Teilnehmer", () => {
             const view = new UebungsleitungView();
-            view.renderTeilnehmerListe(uebung(["A"]), {}, false, {
+            view.renderTeilnehmerListe(uebung(["A"]), {}, false, { fortschritt: {
                 A: {
                     teilnehmer: "A",
                     gemeldet: 2,
@@ -592,7 +601,7 @@ describe("UebungsleitungView – Live-Status", () => {
                     online: true,
                     letzteMeldungUm: "2026-07-26T10:05:00.000Z"
                 }
-            });
+            } });
 
             const container = document.getElementById("uebungsleitungTeilnehmer");
             expect(container?.textContent).toContain("2");
@@ -602,9 +611,9 @@ describe("UebungsleitungView – Live-Status", () => {
 
         it("weist Teilnehmer ohne Meldung als noch nicht übertragen aus", () => {
             const view = new UebungsleitungView();
-            view.renderTeilnehmerListe(uebung(["A"]), {}, false, {
+            view.renderTeilnehmerListe(uebung(["A"]), {}, false, { fortschritt: {
                 A: { teilnehmer: "A", gemeldet: 0, bestaetigt: 0, erledigt: 0, gesamt: 0, online: true }
-            });
+            } });
 
             expect(document.getElementById("uebungsleitungTeilnehmer")?.textContent)
                 .toContain("noch nichts abgesetzt");
@@ -612,11 +621,11 @@ describe("UebungsleitungView – Live-Status", () => {
 
         it("markiert Nachzügler gegenüber dem Median der Gruppe", () => {
             const view = new UebungsleitungView();
-            view.renderTeilnehmerListe(uebung(["A", "B", "C"]), {}, false, {
+            view.renderTeilnehmerListe(uebung(["A", "B", "C"]), {}, false, { fortschritt: {
                 A: { teilnehmer: "A", gemeldet: 8, bestaetigt: 0, erledigt: 8, gesamt: 10, online: true },
                 B: { teilnehmer: "B", gemeldet: 8, bestaetigt: 0, erledigt: 8, gesamt: 10, online: true },
                 C: { teilnehmer: "C", gemeldet: 1, bestaetigt: 0, erledigt: 1, gesamt: 10, online: true }
-            });
+            } });
 
             const container = document.getElementById("uebungsleitungTeilnehmer");
             expect(container?.textContent).toContain("Nachzügler");
@@ -625,10 +634,10 @@ describe("UebungsleitungView – Live-Status", () => {
 
         it("markiert niemanden, solange zu wenige Teilnehmer melden", () => {
             const view = new UebungsleitungView();
-            view.renderTeilnehmerListe(uebung(["A", "B"]), {}, false, {
+            view.renderTeilnehmerListe(uebung(["A", "B"]), {}, false, { fortschritt: {
                 A: { teilnehmer: "A", gemeldet: 8, bestaetigt: 0, erledigt: 8, gesamt: 10, online: true },
                 B: { teilnehmer: "B", gemeldet: 0, bestaetigt: 0, erledigt: 0, gesamt: 10, online: true }
-            });
+            } });
 
             expect(document.getElementById("uebungsleitungTeilnehmer")?.textContent)
                 .not.toContain("Nachzügler");
@@ -641,13 +650,13 @@ describe("UebungsleitungView – Live-Status", () => {
             });
             const zeile = () => document.querySelector("#uebungsleitungTeilnehmer tbody tr");
 
-            view.renderTeilnehmerListe(uebung(["A"]), {}, false, stand(1));
+            view.renderTeilnehmerListe(uebung(["A"]), {}, false, { fortschritt: stand(1) });
             expect(zeile()?.className).not.toContain("ist-gemeldet");
 
-            view.renderTeilnehmerListe(uebung(["A"]), {}, false, stand(1));
+            view.renderTeilnehmerListe(uebung(["A"]), {}, false, { fortschritt: stand(1) });
             expect(zeile()?.className).not.toContain("ist-gemeldet");
 
-            view.renderTeilnehmerListe(uebung(["A"]), {}, false, stand(2));
+            view.renderTeilnehmerListe(uebung(["A"]), {}, false, { fortschritt: stand(2) });
             expect(zeile()?.className).toContain("ist-gemeldet");
         });
 
@@ -664,11 +673,11 @@ describe("UebungsleitungView – Live-Status", () => {
                 });
                 const balken = () => document.querySelector("#uebungsleitungTeilnehmer .progress-bar") as HTMLElement;
 
-                view.renderTeilnehmerListe(uebung(["A"]), {}, false, stand(1));
+                view.renderTeilnehmerListe(uebung(["A"]), {}, false, { fortschritt: stand(1) });
                 rahmen.splice(0).forEach(cb => cb(0));
                 expect(balken().style.transform).toBe("scaleX(0.25)");
 
-                view.renderTeilnehmerListe(uebung(["A"]), {}, false, stand(3));
+                view.renderTeilnehmerListe(uebung(["A"]), {}, false, { fortschritt: stand(3) });
                 // Vor dem naechsten Frame steht der Balken noch auf dem alten Wert.
                 expect(balken().style.transform).toBe("scaleX(0.25)");
                 rahmen.splice(0).forEach(cb => cb(0));
@@ -1108,7 +1117,7 @@ describe("UebungsleitungView – THW-Review", () => {
         const onAnmeldungZuruecknehmen = vi.fn();
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const uebung: any = { teilnehmerListe: ["A", "B", "C"], nachrichten: {} };
-        view.renderTeilnehmerListe(uebung, {}, false, {}, {
+        view.renderTeilnehmerListe(uebung, {}, false, {
             anmeldung: {
                 A: { angemeldetUm: "2026-10-04T17:01:00.000Z", quelle: "funkspruch" },
                 B: { angemeldetUm: "2026-10-04T17:02:00.000Z", quelle: "teilnehmer" },
@@ -1133,13 +1142,13 @@ describe("UebungsleitungView – THW-Review", () => {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const uebung: any = { teilnehmerListe: ["A", "B"], nachrichten: {} };
         const jetztMs = Date.parse("2026-10-04T17:30:00.000Z");
-        view.renderTeilnehmerListe(uebung, {}, false, {
+        view.renderTeilnehmerListe(uebung, {}, false, { fortschritt: {
             A: {
                 teilnehmer: "A", gemeldet: 1, bestaetigt: 2, erledigt: 3, gesamt: 8, online: true,
                 letzteMeldungUm: "2026-10-04T17:10:00.000Z", zuletztGesehenUm: "2026-10-04T17:10:00.000Z"
             },
             B: { teilnehmer: "B", gemeldet: 0, bestaetigt: 2, erledigt: 2, gesamt: 8, online: false, letzteMeldungUm: "2026-10-04T17:25:00.000Z" }
-        }, { jetztMs });
+        }, jetztMs });
 
         const zeilen = document.querySelectorAll("#uebungsleitungTeilnehmer tbody tr");
         expect(zeilen[0]?.textContent).toContain("TN 1 · Leitung 2");
