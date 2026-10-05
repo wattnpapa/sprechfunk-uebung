@@ -80,16 +80,17 @@ export function renderTeilnehmerTabelle(kontext: TeilnehmerTabellenKontext, rows
                 <th>Angemeldet</th>
                 ${showLoesungswort ? "<th>Lösungswort</th>" : ""}
                 ${showStaerke ? `<th>
-                  Stärke
+                  Stärke-Summe
                   <button
                     class="btn btn-sm btn-outline-secondary ms-2"
                     data-action="toggle-staerke-details"
+                    title="Zeigt die einzelnen Stärkemeldungen, die an diese Stelle gehen"
                    >
-                    Details
+                    Einzelmeldungen
                   </button>
                 </th>` : ""}
                 <th>Notizen</th>
-                <th style="width:150px;">Debrief</th>
+                <th style="width:150px;">Nachbesprechung</th>
               </tr>
             </thead>
             <tbody>
@@ -119,8 +120,8 @@ export function renderBeuebteStelleRow(kontext: TeilnehmerTabellenKontext, name:
               <span class="badge bg-primary mb-1">beübte Stelle</span><br>
               ${stelle ? `<strong>${escapeHtml(stelle)}</strong><br><small class="text-muted">${escapeHtml(name)}</small>` : `<strong>${escapeHtml(name)}</strong>`}
             </td>
-            <td><small>empfängt ${eingehend} Einspielungen</small></td>
-            <td><small class="text-body-secondary">kein Teilnehmerlink – wird beübt</small></td>
+            <td data-label="Fortschritt"><small>empfängt ${eingehend} Einspielungen</small></td>
+            <td data-label="Angemeldet"><small class="text-body-secondary">kein Teilnehmerlink – wird beübt</small></td>
             ${showLoesungswort ? leer : ""}
             ${showStaerke ? leer : ""}
             ${leer}
@@ -137,7 +138,7 @@ function renderCodeHint(uebung: Uebung, name: string, codeByTeilnehmer: Record<s
     const baseUrl = `${window.location.origin}${window.location.pathname}`;
     const joinLink = `${baseUrl}#/teilnehmer?${new URLSearchParams({ uc: uebungCode, tc: code }).toString()}`;
     return `<div class="d-flex align-items-center gap-2 text-muted mb-1">
-                    <small>Teilnehmer Code: ${escapeHtml(uebungCode)} / ${escapeHtml(code)}</small>
+                    <small>Übungscode <strong>${escapeHtml(uebungCode)}</strong> · Teilnehmercode <strong>${escapeHtml(code)}</strong></small>
                     <button
                       class="btn btn-sm btn-outline-secondary py-0 px-1"
                       type="button"
@@ -173,7 +174,9 @@ export function renderGeraetHinweis(fortschritt: TeilnehmerFortschritt, jetztMs:
         return "";
     }
     if (minuten >= STILL_SEIT_MINUTEN && fortschritt.erledigt < fortschritt.gesamt) {
-        return `<small class="d-block text-warning-emphasis fw-semibold" title="Seit ${minuten} Minuten keine Änderung vom Gerät – Funkloch oder Pause? Per Funk nachfragen.">seit ${minuten} min nichts vom Gerät</small>`;
+        // Eigene Warnklasse statt text-warning-emphasis: die ist im Dark Mode
+        // kaum lesbar (THW-Review 2026-10-05, night-visibility 1).
+        return `<small class="d-block ul-warnzeile" title="Seit ${minuten} Minuten keine Änderung vom Gerät – Funkloch oder Pause? Per Funk nachfragen.">⚠ seit ${minuten} min nichts vom Gerät</small>`;
     }
     return `<small class="text-body-secondary d-block">Gerät vor ${minuten} min</small>`;
 }
@@ -260,7 +263,7 @@ export function renderLoesungswortCell(
     loesungswoerter: Record<string, string>
 ): string {
     return `
-            <td>
+            <td data-label="Lösungswort">
               <div class="mb-1">
                 <small class="text-muted">Soll:</small>
                 <strong>${escapeHtml(loesungswoerter[name] ?? "–")}</strong>
@@ -316,8 +319,8 @@ export function renderStaerkeCell(kontext: TeilnehmerTabellenKontext, name: stri
                     style="width:3rem"
                     maxlength="3"
                     placeholder="${feld.kurz}"
-                    title="Empfangene Stärke: ${feld.lang}"
-                    aria-label="Empfangene Stärke ${feld.lang}"
+                    title="Von der Stelle gemeldete Summe: ${feld.lang}"
+                    aria-label="Gemeldete Summe ${feld.lang}"
                     data-action="staerke"
                     data-teilnehmer="${escapeAttr(name)}"
                     data-index="${i}"
@@ -325,10 +328,12 @@ export function renderStaerkeCell(kontext: TeilnehmerTabellenKontext, name: stri
                   />
                 `).join("");
 
+    // „Soll“ ist nicht die Stärke dieser Stelle, sondern die Summe der
+    // Stärken, die an sie gemeldet werden (THW-Review 2026-10-05, new-user P2-2).
     return `
-            <td>
+            <td data-label="Stärke-Summe">
               <div class="mb-1">
-                <small class="text-muted" title="Führer / Unterführer / Helfer / Gesamt">Soll (F/UF/H/Ges):</small>
+                <small class="text-muted" title="Summe aller Stärkemeldungen, die an diese Stelle gehen (Führer / Unterführer / Helfer / Gesamt). Trag unten ein, welche Summe die Stelle errechnet und gemeldet hat.">Erwartete Summe der an sie gemeldeten Stärken (F/UF/H/Ges):</small>
                 <span style="float: right;"><strong>${escapeHtml(staerken[name] ?? "–")}</strong></span>
                 ${renderStaerkeDetails(uebung, name, showStaerkeDetails)}
               </div>
@@ -339,7 +344,7 @@ export function renderStaerkeCell(kontext: TeilnehmerTabellenKontext, name: stri
 
 /** Notizfeld und Debrief-Knopf am Ende jeder Teilnehmerzeile. */
 export function renderNotizUndDebriefCells(name: string, status: TeilnehmerStatus | undefined): string {
-    return `<td>
+    return `<td data-label="Notiz">
               <textarea
                 class="form-control form-control-sm auto-grow"
                 rows="1"
@@ -348,12 +353,13 @@ export function renderNotizUndDebriefCells(name: string, status: TeilnehmerStatu
                 data-teilnehmer="${escapeAttr(name)}"
               >${escapeHtml(status?.notizen ?? "")}</textarea>
             </td>
-            <td>
+            <td data-label="Nachbesprechung">
               <button
                 class="btn btn-sm btn-outline-secondary"
                 data-action="download-debrief"
-                data-teilnehmer="${escapeAttr(name)}">
-                Debrief PDF
+                data-teilnehmer="${escapeAttr(name)}"
+                title="Debrief-PDF für die Nachbesprechung: alle Sprüche dieser Stelle mit Zeiten und Notizen">
+                Debrief (PDF)
               </button>
             </td>`;
 }

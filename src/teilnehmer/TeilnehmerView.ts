@@ -6,7 +6,6 @@ import { formatCountdown } from "../utils/xzeit";
 import { joinFormHtml, kopfHtml } from "./kopfMarkup";
 import {
     filtereNachrichten,
-    naechsteFaelligkeitMs,
     nachrichtZeileHtml,
     xZeitBadgeClass,
     xZeitBadgeLabel
@@ -26,6 +25,7 @@ import {
     type NachrichtenOptionen
 } from "./ansichtHelfer";
 import { sanitizeCode } from "./teilnehmerFormat";
+import { rolleCountdownText } from "../uebungsleitung/rueckstand";
 import { RueckgaengigHinweis } from "./rueckgaengigHinweis";
 
 export { teilnehmerTitel } from "./teilnehmerFormat";
@@ -379,10 +379,9 @@ export class TeilnehmerView {
     public updateXZeitCountdown(nachrichten: Nachricht[], storage: TeilnehmerStorage, xZeitBasis: string): void {
         const countdown = document.getElementById("xZeitCountdown");
         if (countdown) {
-            const next = naechsteFaelligkeitMs(nachrichten, storage, xZeitBasis);
-            countdown.textContent = next !== null
-                ? `Nächste in ${formatCountdown(next)}`
-                : "Keine ausstehenden Nachrichten";
+            // Rückstand zuerst, wie im Plan der Leitung (THW-Review 2026-10-05, workflow W2).
+            countdown.textContent = rolleCountdownText(nachrichten, id => Boolean(storage.nachrichten[id]?.uebertragen), xZeitBasis)
+                ?? "Keine ausstehenden Nachrichten";
         }
 
         this.updateFokusCard(nachrichten, storage, xZeitBasis);

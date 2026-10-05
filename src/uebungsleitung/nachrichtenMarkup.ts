@@ -5,6 +5,7 @@ import { nachrichtenArtBadgeClass, nachrichtenArtLabel } from "../utils/nachrich
 import { renderFuehrungsstellenHinweise } from "../utils/fuehrungsstelle";
 import { faelligkeitLabel, statusKey, type Faelligkeit } from "./lagebild";
 import { escapeAttr, hhmmAus } from "./markup";
+import { renderAusgelassenStatus, renderAuslassenKnopf, renderReaktionBlock } from "./planZeileMarkup";
 import type { FlattenedNachricht, NachrichtenRenderOptionen } from "./nachrichtenTypen";
 
 /** Zustand der Ansicht, der beim Neuaufbau der Tabelle erhalten bleibt. */
@@ -19,41 +20,63 @@ function filterOptionen(werte: string[], gewaehlt: string): string {
     return werte.map(w => `<option value="${escapeAttr(w)}" ${gewaehlt === w ? "selected" : ""}>${escapeHtml(w)}</option>`).join("");
 }
 
-export function renderNachrichtenTabelle(options: NachrichtenRenderOptionen, rows: string, zeigeXZeit: boolean): string {
-    const { nachrichten, hideAbgesetzt, senderFilter, empfaengerFilter, textFilter } = options;
+/** Erledigt oder ausgelassen – fällt bei „Abgesetzte ausblenden“ weg. */
+function istAusgeblendet(status: EffektiverNachrichtenStatus | undefined): boolean {
+    return Boolean(status?.abgesetztUm || status?.ausgelassen);
+}
+
+/**
+ * Filter und Schalter stehen über der Tabelle statt im Tabellenkopf: In der
+ * Kartenansicht (Handy, Tablet) gibt es keinen Kopf, und der Schalter
+ * „Abgesetzte ausblenden“ nennt, wie viele Zeilen er verbirgt
+ * (THW-Review 2026-10-05, night-visibility 2).
+ */
+function renderFilterLeiste(options: NachrichtenRenderOptionen): string {
+    const { nachrichten, nachrichtenStatus, hideAbgesetzt, senderFilter, empfaengerFilter, textFilter } = options;
     const uniqueSenders = Array.from(new Set(nachrichten.map(n => n.sender))).sort();
     const uniqueEmpfaenger = Array.from(new Set(nachrichten.flatMap(n => n.empfaenger))).sort();
+    const ausgeblendet = hideAbgesetzt
+        ? nachrichten.filter(n => istAusgeblendet(nachrichtenStatus[statusKey(n.sender, n.nr)])).length
+        : 0;
     return `
-            <div class="table-responsive">
+            <div class="ul-plan-filter">
+              <div class="form-check form-switch ul-schalter">
+                <input class="form-check-input" type="checkbox" role="switch" id="toggleHideAbgesetzt" ${hideAbgesetzt ? "checked" : ""}>
+                <label class="form-check-label" for="toggleHideAbgesetzt">Abgesetzte ausblenden${hideAbgesetzt ? ` <span class="badge text-bg-secondary">${ausgeblendet} ausgeblendet</span>` : ""}</label>
+              </div>
+              <label class="ul-filter-feld">
+                <span class="small text-body-secondary">Sender</span>
+                <select id="senderFilterSelect" class="form-select form-select-sm">
+                  <option value="">Alle</option>
+                  ${filterOptionen(uniqueSenders, senderFilter)}
+                </select>
+              </label>
+              <label class="ul-filter-feld">
+                <span class="small text-body-secondary">Empfänger</span>
+                <select id="empfaengerFilterSelect" class="form-select form-select-sm">
+                  <option value="">Alle</option>
+                  ${filterOptionen(uniqueEmpfaenger, empfaengerFilter)}
+                </select>
+              </label>
+              <label class="ul-filter-feld ul-filter-feld--text">
+                <span class="small text-body-secondary">Text</span>
+                <input id="nachrichtenTextFilterInput" type="search" class="form-control form-control-sm" placeholder="Suchen..." value="${escapeAttr(textFilter)}">
+              </label>
+            </div>`;
+}
+
+export function renderNachrichtenTabelle(options: NachrichtenRenderOptionen, rows: string, zeigeXZeit: boolean): string {
+    return `
+            ${renderFilterLeiste(options)}
+            <div class="table-responsive ul-plan-wrapper">
                 <table class="table table-bordered table-striped align-middle uebungsleitung-plan">
                     <thead>
                       <tr>
                         <th style="width:70px;" title="Fortlaufende Nummer im Plan; darunter die Nummer beim Absender, wie sie auf dem Vordruck steht">Nr</th>
-                        <th style="width:170px;" class="text-center">
-                          Status
-                          <div class="form-check form-switch d-flex justify-content-center gap-1 mt-1">
-                            <input class="form-check-input" type="checkbox" id="toggleHideAbgesetzt" ${hideAbgesetzt ? "checked" : ""}>
-                            <label class="form-check-label small" for="toggleHideAbgesetzt">Abgesetzte ausblenden</label>
-                          </div>
-                        </th>
-                        <th style="width:200px;">
-                          Empfänger
-                          <select id="empfaengerFilterSelect" class="form-select form-select-sm mt-1">
-                            <option value="">Alle</option>
-                            ${filterOptionen(uniqueEmpfaenger, empfaengerFilter)}
-                          </select>
-                        </th>
-                        <th style="width:180px;">
-                          Sender
-                          <select id="senderFilterSelect" class="form-select form-select-sm mt-1">
-                            <option value="">Alle</option>
-                            ${filterOptionen(uniqueSenders, senderFilter)}
-                          </select>
-                        </th>
-                        <th>
-                          Nachricht
-                          <input id="nachrichtenTextFilterInput" type="search" class="form-control form-control-sm mt-1" placeholder="Suchen..." value="${escapeAttr(textFilter)}">
-                        </th>
+                        <th style="width:170px;" class="text-center">Status</th>
+                        <th style="width:200px;">Empfänger</th>
+                        <th style="width:180px;">Sender</th>
+                        <th>Nachricht</th>
                         ${zeigeXZeit ? "<th style=\"width:110px;\" title=\"Soll-Uhrzeit laut Zeitplan und X-Zeit\">Soll</th>" : ""}
                         <th style="width:150px;">Zeit</th>
                       </tr>
@@ -62,11 +85,11 @@ export function renderNachrichtenTabelle(options: NachrichtenRenderOptionen, row
                 </table>
             </div>
             <div class="mt-3" id="nachrichtenAuswertung">
-              <div class="small text-body-secondary mb-2">Heatmap (5 Minuten)</div>
+              <div class="small text-body-secondary mb-2">Heatmap: erledigte Sprüche je 5 Minuten</div>
               <div id="nachrichtenHeatmapChart" class="d-flex align-items-end gap-1" style="height: 110px;"></div>
             </div>
             <div class="mt-3">
-              <div class="small text-body-secondary mb-2">Timeline je Teilnehmer</div>
+              <div class="small text-body-secondary mb-2">Timeline je Teilnehmer (S = gesendet, E = empfangen)</div>
               <div id="nachrichtenTeilnehmerTimeline"></div>
             </div>
         `;
@@ -86,7 +109,7 @@ export function passesFilter(nachricht: FlattenedNachricht, options: Nachrichten
     if (!hideAbgesetzt) {
         return true;
     }
-    return !nachrichtenStatus[statusKey(nachricht.sender, nachricht.nr)]?.abgesetztUm;
+    return !istAusgeblendet(nachrichtenStatus[statusKey(nachricht.sender, nachricht.nr)]);
 }
 
 interface ZeilenZustand {
@@ -98,6 +121,9 @@ interface ZeilenZustand {
 function zeilenZustand(status: EffektiverNachrichtenStatus, faelligkeit: Faelligkeit | undefined): ZeilenZustand {
     if (status.abgesetztUm) {
         return { klasse: "status-ok-row", faelligkeit: undefined };
+    }
+    if (status.ausgelassen) {
+        return { klasse: "status-ausgelassen-row", faelligkeit: undefined };
     }
     if (status.gemeldetUm) {
         return { klasse: "status-gemeldet-row", faelligkeit: undefined };
@@ -125,6 +151,27 @@ function renderNachrichtText(nachricht: FlattenedNachricht): string {
     return `${art}${hinweise.kopf}${escapeHtml(nachricht.text).replace(/\\n/g, "<br>").replace(/\n/g, "<br>")}${hinweise.fuss}`;
 }
 
+interface ZeitZeilenZustand {
+    gesperrt: boolean;
+    inBearbeitung: boolean;
+    auslassbar: boolean;
+    jetztMs: number;
+}
+
+function zeitZeilenZustand(
+    options: NachrichtenRenderOptionen,
+    key: string,
+    faelligkeit: Faelligkeit | undefined,
+    zustand: NachrichtenZeilenZustand
+): ZeitZeilenZustand {
+    return {
+        gesperrt: options.ruecknahmeGesperrt?.has(key) ?? false,
+        inBearbeitung: zustand.zeitEditKey === key,
+        auslassbar: Boolean(faelligkeit && faelligkeit.zustand !== "spaeter"),
+        jetztMs: options.jetztMs ?? Date.now()
+    };
+}
+
 export function renderNachrichtenRow(
     nachricht: FlattenedNachricht,
     options: NachrichtenRenderOptionen,
@@ -135,22 +182,24 @@ export function renderNachrichtenRow(
     const status: EffektiverNachrichtenStatus = options.nachrichtenStatus[key] ?? {};
     const { klasse, faelligkeit } = zeilenZustand(status, options.faelligkeit?.[key]);
     const planNr = nachricht.planNr ?? nachricht.nr;
-    const gesperrt = options.ruecknahmeGesperrt?.has(key) ?? false;
+    const zeit = zeitZeilenZustand(options, key, faelligkeit, zustand);
+    // data-label: Spaltenname in der Kartenansicht (Handy, Tablet), dort gibt es keinen Tabellenkopf.
     return `
                 <tr class="${klasse}" data-plan-nr="${planNr}"${faelligkeit ? ` data-plan-zustand="${faelligkeit.zustand}"` : ""}>
-                  <td class="text-center">
+                  <td class="text-center ul-zelle-nr" data-label="Nr">
                     <div class="fw-bold">${planNr}</div>
                     <small class="text-body-secondary text-nowrap" title="Nummer beim Absender – steht so auf dem Vordruck">Abs.-Nr. ${nachricht.nr}</small>
                   </td>
-                  <td class="text-center">${renderStatusCell(nachricht, status, faelligkeit)}</td>
-                  <td>${nachricht.empfaenger.map(e => `<div>${escapeHtml(e)}</div>`).join("")}</td>
-                  <td>${escapeHtml(nachricht.sender)}</td>
-                  <td class="nachricht-text">
+                  <td class="text-center ul-zelle-status" data-label="Status">${renderStatusCell(nachricht, status, faelligkeit)}</td>
+                  <td class="ul-zelle-empfaenger" data-label="an">${nachricht.empfaenger.map(e => `<div>${escapeHtml(e)}</div>`).join("")}</td>
+                  <td class="ul-zelle-sender" data-label="von">${escapeHtml(nachricht.sender)}</td>
+                  <td class="nachricht-text ul-zelle-text" data-label="Nachricht">
                       ${renderNachrichtText(nachricht)}
+                      ${renderReaktionBlock(nachricht, status, zeit.jetztMs)}
                       ${renderNotiz(nachricht, status.notiz ?? "", zustand.offeneNotizen.has(key))}
                     </td>
-                  ${zeigeXZeit ? `<td>${renderSollCell(nachricht, options.sollUhrzeit?.[key])}</td>` : ""}
-                  <td>${renderZeitCell(nachricht, status, gesperrt, zustand.zeitEditKey === key)}</td>
+                  ${zeigeXZeit ? `<td class="ul-zelle-soll" data-label="Soll">${renderSollCell(nachricht, options.sollUhrzeit?.[key])}</td>` : ""}
+                  <td class="ul-zelle-zeit" data-label="Zeit">${renderZeitCell(nachricht, status, zeit)}</td>
                 </tr>
               `;
 }
@@ -168,7 +217,8 @@ function renderStatusCell(
 ): string {
     const sender = escapeAttr(nachricht.sender);
     if (status.abgesetztUm) {
-        const herkunft = `Leitung ${hhmmAus(status.abgesetztUm)}${status.nachgetragen ? " · nachgetragen" : ""}`;
+        const quelle = status.nachgetragen ? " · nachgetragen" : (status.zeitVomTeilnehmer ? " · Zeit vom TN" : "");
+        const herkunft = `Leitung ${hhmmAus(status.abgesetztUm)}${quelle}`;
         const tn = status.gemeldetUm ? `<small class="text-body-secondary">TN ${hhmmAus(status.gemeldetUm)}</small>` : "";
         return `
                       <div class="ul-status-zelle">
@@ -176,6 +226,10 @@ function renderStatusCell(
                         <small class="text-body-secondary">${herkunft}</small>
                         ${tn}
                       </div>`;
+    }
+
+    if (status.ausgelassen) {
+        return renderAusgelassenStatus(nachricht, status);
     }
 
     if (status.gemeldetUm) {
@@ -209,22 +263,23 @@ function renderSollCell(nachricht: FlattenedNachricht, soll: string | undefined)
 
 /**
  * Zeit der Erledigung, Papier-Nachtrag und – räumlich getrennt von
- * „Als abgesetzt markieren“ – die Rücknahme.
+ * „Als abgesetzt markieren“ – die Rücknahme. „Zeit ändern“ und
+ * „zurücknehmen“ liegen mit Abstand untereinander (THW-Review 2026-10-05,
+ * glove-touch P2-4).
  */
 function renderZeitCell(
     nachricht: FlattenedNachricht,
     status: EffektiverNachrichtenStatus,
-    gesperrt: boolean,
-    inBearbeitung: boolean
+    zeile: ZeitZeilenZustand
 ): string {
     const sender = escapeAttr(nachricht.sender);
     const daten = `data-nr="${nachricht.nr}" data-sender="${sender}"`;
-    if (inBearbeitung) {
+    if (zeile.inBearbeitung) {
         return `
                 <div class="d-flex flex-column gap-1">
                   <label class="small text-body-secondary" for="ulZeitInput">Abgesetzt um</label>
                   <input type="time" id="ulZeitInput" class="form-control form-control-sm ul-zeit-input" ${daten} value="${hhmmAus(status.abgesetztUm ?? status.gemeldetUm)}">
-                  <div class="d-flex gap-1">
+                  <div class="d-flex gap-2">
                     <button type="button" class="btn btn-sm btn-primary" data-action="zeit-speichern" ${daten}>OK</button>
                     <button type="button" class="btn btn-sm btn-outline-secondary" data-action="zeit-abbrechen" ${daten}>Abbrechen</button>
                   </div>
@@ -234,13 +289,17 @@ function renderZeitCell(
     const zeitpunkt = status.erledigtUm ?? status.abgesetztUm;
     const zeit = zeitpunkt ? `<div>${formatNatoDate(zeitpunkt)}</div>` : "";
     if (!status.abgesetztUm) {
-        return `${zeit}<button type="button" class="btn btn-sm btn-link px-0" data-action="zeit-bearbeiten" ${daten} title="Auf Papier abgehakt? Absetzzeit von Hand eintragen">Zeit nachtragen</button>`;
+        const auslassen = zeile.auslassbar && !status.ausgelassen && !status.gemeldetUm ? renderAuslassenKnopf(nachricht) : "";
+        return `${zeit}<div class="ul-zeit-aktionen">
+                  <button type="button" class="btn btn-sm btn-link px-0" data-action="zeit-bearbeiten" ${daten} title="Auf Papier abgehakt? Absetzzeit von Hand eintragen">Zeit nachtragen</button>
+                  ${auslassen}
+                </div>`;
     }
-    const ruecknahme = gesperrt
+    const ruecknahme = zeile.gesperrt
         ? `<button type="button" class="btn btn-sm btn-link px-0 text-danger" data-action="reset" ${daten} disabled title="Kurz gesperrt, damit ein Doppeltipp die Markierung nicht aufhebt">zurücknehmen</button>`
-        : `<button type="button" class="btn btn-sm btn-link px-0 text-danger" data-action="reset" ${daten} title="Status zurücksetzen">zurücknehmen</button>`;
+        : `<button type="button" class="btn btn-sm btn-link px-0 text-danger" data-action="reset" ${daten} title="Status zurücksetzen – danach gibt es ein Rückgängig">zurücknehmen</button>`;
     return `${zeit}
-                <div class="d-flex flex-wrap gap-2">
+                <div class="ul-zeit-aktionen">
                   <button type="button" class="btn btn-sm btn-link px-0" data-action="zeit-bearbeiten" ${daten}>Zeit ändern</button>
                   ${ruecknahme}
                 </div>`;

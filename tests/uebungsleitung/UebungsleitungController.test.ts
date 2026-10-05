@@ -40,7 +40,12 @@ const mocks = vi.hoisted(() => ({
     bindCockpitEvents: vi.fn(),
     updateCockpit: vi.fn(),
     scrollZuPlanZustand: vi.fn(),
-    liveDispose: vi.fn()
+    liveDispose: vi.fn(),
+    schliesseRueckgaengig: vi.fn(),
+    setTeilnehmerEingeklappt: vi.fn(),
+    bindTeilnehmerEinklappen: vi.fn(),
+    zeigeZurueckgesetzt: vi.fn(),
+    viewDispose: vi.fn()
 }));
 
 vi.mock("../../src/services/LiveStatusService", () => ({
@@ -49,6 +54,7 @@ vi.mock("../../src/services/LiveStatusService", () => ({
         // eslint-disable-next-line @typescript-eslint/no-unused-vars
         constructor(_db: unknown, _uebungId: string) {}
         onStateChange = (cb: (state: string) => void) => cb("live");
+        onSyncInfo = (cb: (info: { state: string; offeneAenderungen: number }) => void) => cb({ state: "live", offeneAenderungen: 0 });
         publishLeitungPublic = mocks.publishLeitungPublic;
         publishLeitungInternal = mocks.publishLeitungInternal;
         subscribeAlleTeilnehmer = mocks.subscribeAlleTeilnehmer;
@@ -92,6 +98,11 @@ vi.mock("../../src/uebungsleitung/UebungsleitungView", () => ({
         bindCockpitEvents = mocks.bindCockpitEvents;
         updateCockpit = mocks.updateCockpit;
         scrollZuPlanZustand = mocks.scrollZuPlanZustand;
+        schliesseRueckgaengig = mocks.schliesseRueckgaengig;
+        setTeilnehmerEingeklappt = mocks.setTeilnehmerEingeklappt;
+        bindTeilnehmerEinklappen = mocks.bindTeilnehmerEinklappen;
+        zeigeZurueckgesetzt = mocks.zeigeZurueckgesetzt;
+        dispose = mocks.viewDispose;
     }
 }));
 vi.mock("../../src/state/store", () => ({ store: { setState: vi.fn() } }));
@@ -255,7 +266,7 @@ describe("UebungsleitungController", () => {
         expect(a.calculateTempoLabel(sent)).toContain("Tempo:");
         expect(a.calculateLoadLabel(sent, teilnehmer)).toContain("Funklast:");
         const bins = a.buildHeatmapBins(sent);
-        expect(a.calculateHeatmapLabel(bins)).toContain("Heatmap 5m:");
+        expect(a.calculateHeatmapLabel(bins)).toContain("Sprüche je 5 min:");
         const timeline = a.buildTeilnehmerTimeline(flat, effektiv, teilnehmer);
         expect(timeline.length).toBeGreaterThan(0);
     });
@@ -343,7 +354,7 @@ describe("UebungsleitungController", () => {
         const a = await import("../../src/uebungsleitung/auswertung");
         expect(a.calculateTempoLabel([])).toBe("Tempo: –");
         expect(a.calculateLoadLabel([], [])).toBe("Funklast: –");
-        expect(a.calculateHeatmapLabel([])).toBe("Heatmap 5m: –");
+        expect(a.calculateHeatmapLabel([])).toBe("Sprüche je 5 min: –");
         expect(a.buildHeatmapBins([])).toEqual([]);
 
         const sent = a.collectSentNachrichten([{ sender: "A", nr: 1, empfaenger: ["A"], text: "x" }], {});
@@ -389,7 +400,7 @@ describe("UebungsleitungController", () => {
             { sender: "B", empfaenger: ["A"], ts: 1 },
             { sender: "A", empfaenger: ["B"], ts: 2 }
         ], ["A", "B", "C"]);
-        expect(load).toBe("Funklast: S A (1) | E A (1)");
+        expect(load).toBe("Funklast: sendet am meisten A (1) | empfängt am meisten A (1)");
 
         // timeline without participants and without erledigte Nachrichten
         expect(a.buildTeilnehmerTimeline(flat, {}, [])).toEqual([]);
@@ -662,7 +673,7 @@ describe("UebungsleitungController – THW-Review", () => {
 
         c.aktionen.gemeldeteBestaetigen();
         expect(c.storage.nachrichten["A__2"].abgesetztUm).toBe("2026-10-04T18:10:00.000Z");
-        expect(mocks.uiSuccess).toHaveBeenCalledWith("1 gemeldete Nachricht bestätigt.");
+        expect(mocks.uiSuccess).toHaveBeenCalledWith(expect.stringContaining("1 gemeldete Nachricht bestätigt – mit der Meldezeit des Teilnehmers"));
 
         mocks.uiSuccess.mockClear();
         c.aktionen.gemeldeteBestaetigen();
@@ -695,8 +706,8 @@ describe("UebungsleitungController – THW-Review", () => {
         });
         c.teilnehmerLiveDocs = [{ version: 1, teilnehmerId: "X", teilnehmer: "B", lastUpdated: "", nachrichten: {}, xZeitBasis: "08:55" }];
 
-        expect(c.effektiveXZeitBasis()).toBeNull();
-        c.updateCockpit();
+        expect(c.cockpit.basis()).toBeNull();
+        c.cockpit.update();
         const anzeige = mocks.updateCockpit.mock.calls.at(-1)?.[0];
         expect(anzeige.vorschlag).toBe("09:00");
         expect(anzeige.basisHinweis).toContain("Geplanter Übungsbeginn");
@@ -704,10 +715,10 @@ describe("UebungsleitungController – THW-Review", () => {
         expect(anzeige.soll).toBeNull();
 
         c.liveStatus = { enabled: true, publishLeitungPublic: mocks.publishLeitungPublic, publishLeitungInternal: mocks.publishLeitungInternal };
-        c.setCockpitBasis("09:00");
+        c.cockpit.aendereBasis("09:00", "eingabe");
         expect(c.storage.xZeitBasisGeaendertUm).toBeTruthy();
         expect(mocks.publishLeitungPublic).toHaveBeenLastCalledWith(expect.objectContaining({ xZeitBasis: "09:00" }));
-        expect(c.effektiveXZeitBasis()).toBe("09:00");
+        expect(c.cockpit.basis()).toBe("09:00");
         const nachher = mocks.updateCockpit.mock.calls.at(-1)?.[0];
         expect(nachher.vorschlag).toBeNull();
         expect(nachher.basisHinweis).toContain("gilt für alle");
@@ -716,7 +727,7 @@ describe("UebungsleitungController – THW-Review", () => {
     it("schlägt ohne geplanten Beginn die früheste Rollenspieler-Basis vor, ohne sie zu übernehmen", async () => {
         const c = await controllerMit({ ...anmeldeUebung, spielModus: "xZeit" });
         c.teilnehmerLiveDocs = [{ version: 1, teilnehmerId: "X", teilnehmer: "B", lastUpdated: "", nachrichten: {}, xZeitBasis: "08:55" }];
-        c.updateCockpit();
+        c.cockpit.update();
         const anzeige = mocks.updateCockpit.mock.calls.at(-1)?.[0];
         expect(anzeige.vorschlag).toBe("08:55");
         expect(anzeige.basisHinweis).toContain("nicht übernommen");
@@ -779,5 +790,121 @@ describe("UebungsleitungController – THW-Review", () => {
         c.resetData();
         await vi.waitFor(() => expect(window.location.reload).toHaveBeenCalled());
         expect(localStorage.removeItem).toHaveBeenCalledWith("sprechfunk:uebungsleitung:u1");
+    });
+});
+
+describe("UebungsleitungController – THW-Review 2026-10-05", () => {
+    const fsUebung = {
+        id: "u1",
+        name: "FS",
+        teilnehmerListe: ["Stelle", "EA1"],
+        createDate: new Date("2026-10-05T18:00:00.000Z"),
+        fuehrungsstelle: { slug: "s", beuebteStelle: "Stelle", uebergeordnet: "Stab", unterstellt: ["EA1"] },
+        nachrichten: { EA1: [{ id: 1, empfaenger: ["Stelle"], nachricht: "a", erwartung: "quittieren", xZeitSlot: 0 }] }
+    };
+    let speicher: Map<string, string>;
+
+    beforeEach(() => {
+        vi.clearAllMocks();
+        speicher = new Map();
+        const ls = {
+            getItem: (k: string) => speicher.get(k) ?? null,
+            setItem: (k: string, v: string) => void speicher.set(k, v),
+            removeItem: (k: string) => void speicher.delete(k)
+        };
+        vi.stubGlobal("localStorage", ls);
+        vi.stubGlobal("sessionStorage", ls);
+        vi.stubGlobal("window", {
+            location: { reload: vi.fn(), hash: "#/uebungsleitung/u1" },
+            addEventListener: vi.fn(),
+            removeEventListener: vi.fn()
+        });
+        vi.stubGlobal("document", {
+            createElement: () => ({ href: "", download: "", click: vi.fn() }),
+            body: { appendChild: vi.fn(), removeChild: vi.fn() },
+            getElementById: () => ({ textContent: "", style: {} }),
+            activeElement: null
+        });
+        mocks.parseHash.mockReturnValue({ params: ["u1"] });
+        mocks.getUebung.mockResolvedValue(fsUebung);
+        mocks.loadStorage.mockReturnValue({ teilnehmer: {}, nachrichten: {}, version: 1, uebungId: "u1", lastUpdated: "" });
+    });
+
+    it("baut die Übungsleitung für dieselbe Adresse nur einmal auf (offline P3-4: doppelter Debrief)", async () => {
+        const { initUebungsleitung } = await import("../../src/uebungsleitung");
+        await Promise.all([initUebungsleitung({} as never), initUebungsleitung({} as never)]);
+        expect(mocks.getUebung).toHaveBeenCalledTimes(1);
+        expect(mocks.bindNachrichtenEvents).toHaveBeenCalledTimes(1);
+
+        // Eine andere Übung ersetzt die alte und räumt ihre Listener ab.
+        const vorher = mocks.viewDispose.mock.calls.length;
+        (window.location as { hash: string }).hash = "#/uebungsleitung/u2";
+        await initUebungsleitung({} as never);
+        expect(mocks.getUebung).toHaveBeenCalledTimes(2);
+        expect(mocks.viewDispose).toHaveBeenCalledTimes(vorher + 1);
+    });
+
+    it("merkt „Abgesetzte ausblenden“ und das Einklappen je Gerät und bestätigt ein Zurücksetzen", async () => {
+        speicher.set("sprechfunk:leitungsansicht", JSON.stringify({ hideAbgesetzt: true, teilnehmerEingeklappt: true }));
+        speicher.set("sprechfunk:leitung-zurueckgesetzt", JSON.stringify({ uebungId: "u1", um: "2026-10-05T19:05:00.000Z" }));
+        const { UebungsleitungController } = await import("../../src/uebungsleitung");
+        const c = new UebungsleitungController({} as never);
+        await c.init();
+        expect(mocks.renderNachrichtenListe.mock.calls.at(-1)?.[0].hideAbgesetzt).toBe(true);
+        expect(mocks.setTeilnehmerEingeklappt).toHaveBeenCalledWith(true);
+        expect(mocks.zeigeZurueckgesetzt).toHaveBeenCalledWith("2026-10-05T19:05:00.000Z");
+
+        const toggleHide = mocks.bindNachrichtenEvents.mock.calls[0]?.[0].onToggleHide;
+        toggleHide(false);
+        expect(JSON.parse(speicher.get("sprechfunk:leitungsansicht") ?? "{}")).toMatchObject({ hideAbgesetzt: false });
+        mocks.bindTeilnehmerEinklappen.mock.calls[0]?.[0]();
+        expect(mocks.setTeilnehmerEingeklappt).toHaveBeenLastCalledWith(false);
+    });
+
+    it("füllt die Lage mit Reaktionen und Verbindung und leitet Plan-Entscheidungen weiter", async () => {
+        const { UebungsleitungController } = await import("../../src/uebungsleitung");
+        const c = new UebungsleitungController({} as never);
+        await c.init();
+        const lage = mocks.renderLage.mock.calls.at(-1)?.[0];
+        expect(lage.reaktionen).toMatchObject({ ausstehend: 0 });
+        expect(lage.verbindung).toEqual({ state: "live", offen: 0 });
+
+        const cb = mocks.bindNachrichtenEvents.mock.calls[0]?.[0];
+        cb.onAbgesetzt("EA1", 1);
+        cb.onReaktion("EA1", 1, "ausgeblieben");
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const intern = c as any;
+        expect(intern.storage.nachrichten["EA1__1"].reaktion).toBe("ausgeblieben");
+        expect(mocks.renderLage.mock.calls.at(-1)?.[0].reaktionen).toMatchObject({ ausgeblieben: 1 });
+        cb.onAuslassen("EA1", 1);
+        expect(intern.storage.nachrichten["EA1__1"].ausgelassen).toBeUndefined();
+        cb.onWiederOeffnen("EA1", 1);
+
+        // Verbindungsverlust zeichnet die Lage neu.
+        const vorher = mocks.renderLage.mock.calls.length;
+        intern.aufSyncInfo({ state: "offline", offeneAenderungen: 2 });
+        expect(mocks.updateLiveSyncState).toHaveBeenLastCalledWith("offline", 2);
+        expect(mocks.renderLage.mock.calls.length).toBe(vorher + 1);
+        expect(mocks.renderLage.mock.calls.at(-1)?.[0].verbindung).toEqual({ state: "offline", offen: 2 });
+        intern.aufSyncInfo({ state: "offline", offeneAenderungen: 3 });
+        expect(mocks.renderLage.mock.calls.length).toBe(vorher + 1);
+
+        await intern.exportPdf();
+        const stand = mocks.downloadUebungsleitungPdf.mock.calls.at(-1)?.[1];
+        expect(stand.teilnehmer.Stelle.notizen).toContain("1 ausgeblieben");
+        expect(stand.nachrichten["EA1__1"].notiz).toContain("ausgeblieben");
+
+        c.dispose();
+        c.dispose();
+        expect(mocks.viewDispose).toHaveBeenCalledTimes(1);
+    });
+
+    it("hört nach dem Verlassen während des Ladens auf", async () => {
+        const { UebungsleitungController } = await import("../../src/uebungsleitung");
+        const c = new UebungsleitungController({} as never);
+        const laden = c.init();
+        c.dispose();
+        await laden;
+        expect(mocks.renderMeta).not.toHaveBeenCalled();
     });
 });

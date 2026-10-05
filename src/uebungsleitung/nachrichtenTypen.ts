@@ -2,6 +2,7 @@ import type { EffektiverNachrichtenStatus } from "../services/liveStatusMerge";
 import type { NachrichtArt } from "../types/Nachricht";
 import type { Meldeart, UebermittlungsWeg } from "../types/FuehrungsstellenUebung";
 import type { Faelligkeit } from "./lagebild";
+import type { ReaktionBewertung } from "../types/Storage";
 
 export interface FlattenedNachricht {
     nr: number;
@@ -42,6 +43,9 @@ export type NachrichtenCallbacks = {
     onReset: (sender: string, nr: number) => void;
     onZeitNachtragen?: (sender: string, nr: number, hhmm: string) => void;
     onNotiz: (sender: string, nr: number, val: string) => void;
+    onAuslassen?: (sender: string, nr: number) => void;
+    onWiederOeffnen?: (sender: string, nr: number) => void;
+    onReaktion?: (sender: string, nr: number, wert: ReaktionBewertung) => void;
     onFilterSender: (val: string) => void;
     onFilterEmpfaenger: (val: string) => void;
     onToggleHide: (val: boolean) => void;
@@ -61,4 +65,6 @@ export interface NachrichtenRenderOptionen {
     sollUhrzeit?: Record<string, string>;
     /** Zeilen, deren Rücknahme direkt nach dem Markieren noch gesperrt ist. */
     ruecknahmeGesperrt?: Set<string>;
+    /** Bezugszeit für „Reaktion ausstehend seit n min“ – für Tests einstellbar. */
+    jetztMs?: number;
 }

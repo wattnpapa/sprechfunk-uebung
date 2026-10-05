@@ -3,7 +3,8 @@ import type { TeilnehmerLiveDoc } from "../types/LiveStatus";
 import { berechneSollFortschritt, fruehesteBasis, parseHHMMtoMs } from "../utils/xzeit";
 import type { CockpitAnzeige } from "./UebungsleitungView";
 import type { EffektiverStatus } from "./auswertung";
-import { statusKey } from "./lagebild";
+import { istOffen, statusKey } from "./lagebild";
+import { vorschlagLabel } from "./xZeitBasisWechsel";
 
 export interface BasisVorschlag {
     basis: string;
@@ -49,7 +50,7 @@ function formatUhrzeitMitSekunden(now: Date): string {
 
 function zaehleIst(uebung: FunkUebung, effektiv: EffektiverStatus): number {
     return Object.entries(uebung.nachrichten ?? {})
-        .reduce((summe, [sender, msgs]) => summe + msgs.filter(msg => effektiv[statusKey(sender, msg.id)]?.erledigtUm).length, 0);
+        .reduce((summe, [sender, msgs]) => summe + msgs.filter(msg => !istOffen(effektiv[statusKey(sender, msg.id)])).length, 0);
 }
 
 /**
@@ -63,6 +64,8 @@ export function buildCockpitAnzeige(daten: {
     basis: string | null;
     docs: TeilnehmerLiveDoc[];
     now: Date;
+    /** Offene Zeilen, deren Soll-Zeit erreicht ist – `null` ohne Basis. */
+    hinterPlan?: { ueberfaellig: number; faellig: number } | null;
 }): CockpitAnzeige {
     const { uebung, effektiv, basis, docs, now } = daten;
     const alleNachrichten = Object.values(uebung.nachrichten ?? {}).flat();
@@ -76,6 +79,9 @@ export function buildCockpitAnzeige(daten: {
         soll: basisMs !== null ? berechneSollFortschritt(alleNachrichten, basisMs, now.getTime()) : null,
         basisHinweis: basisHinweis(basis, vorschlag),
         vorschlag: vorschlag && vorschlag.basis !== basis ? vorschlag.basis : null,
-        abweichungen: abweichendeBasen(docs, basis)
+        vorschlagLabel: vorschlag ? vorschlagLabel(vorschlag.basis, now) : "",
+        abweichungen: abweichendeBasen(docs, basis),
+        basisGesetzt: Boolean(basis),
+        hinterPlan: daten.hinterPlan ?? null
     };
 }

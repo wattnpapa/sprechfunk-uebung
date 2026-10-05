@@ -138,8 +138,10 @@ function handleRoute(): void {
         footerView.setUebungId(uebungId || "-");
         if (uebungId) {
             store.setState({ aktuelleUebungId: uebungId });
-            initUebungsleitung(db);
         }
+        // Auch ohne ID: die Übungsleitung zeigt dann ihre Fehlerseite mit
+        // Weiter-Wegen statt leerer Karten (THW-Review 2026-10-05, error-recovery P3-4).
+        initUebungsleitung(db);
         return;
     }
 

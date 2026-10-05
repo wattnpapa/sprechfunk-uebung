@@ -14,6 +14,14 @@ export function statusKey(sender: string, nr: number): string {
     return `${sender}__${nr}`;
 }
 
+/**
+ * Offen ist eine Zeile, die weder erledigt (Teilnehmer-Meldung oder
+ * Bestätigung der Leitung) noch bewusst ausgelassen ist.
+ */
+export function istOffen(status: Pick<EffektiverNachrichtenStatus, "erledigtUm" | "ausgelassen"> | undefined): boolean {
+    return !status?.erledigtUm && !status?.ausgelassen;
+}
+
 /** Minimale Sicht auf eine Plan-Zeile, die die Helfer hier brauchen. */
 export interface PlanEintrag {
     nr: number;
@@ -166,24 +174,25 @@ export interface AnmeldeZustand {
 /**
  * Eine Wahrheit je Teilnehmer: angemeldet ist, wer über „Anmeldung erhalten“
  * erfasst wurde, wessen Anmelde-Funkspruch abgesetzt ist oder wer ihn selbst
- * als übertragen gemeldet hat. Es zählt der früheste Zeitpunkt.
+ * als übertragen gemeldet hat. Es zählt der früheste Zeitpunkt – außer die
+ * Leitung hat die Zeit des Anmelde-Funkspruchs von Hand eingetragen: Diese
+ * Korrektur gilt dann überall (THW-Review 2026-10-05, analog P2-1).
  */
 export function anmeldeZustand(
     teilnehmerStatus: TeilnehmerStatus | undefined,
     anmeldeStatus: EffektiverNachrichtenStatus | NachrichtenStatus | undefined
 ): AnmeldeZustand {
-    const kandidaten: { um: string; quelle: NonNullable<AnmeldeZustand["quelle"]> }[] = [];
-    if (teilnehmerStatus?.angemeldetUm) {
-        kandidaten.push({ um: teilnehmerStatus.angemeldetUm, quelle: "leitung" });
+    const korrektur = anmeldeStatus?.nachgetragen ? anmeldeStatus.abgesetztUm : undefined;
+    if (korrektur && Number.isFinite(Date.parse(korrektur))) {
+        return { angemeldetUm: korrektur, quelle: "funkspruch" };
     }
-    if (anmeldeStatus?.abgesetztUm) {
-        kandidaten.push({ um: anmeldeStatus.abgesetztUm, quelle: "funkspruch" });
-    }
-    const gemeldetUm = (anmeldeStatus as EffektiverNachrichtenStatus | undefined)?.gemeldetUm;
-    if (gemeldetUm) {
-        kandidaten.push({ um: gemeldetUm, quelle: "teilnehmer" });
-    }
-    const gueltig = kandidaten.filter(k => Number.isFinite(Date.parse(k.um)));
+    const kandidaten: { um: string | undefined; quelle: NonNullable<AnmeldeZustand["quelle"]> }[] = [
+        { um: teilnehmerStatus?.angemeldetUm, quelle: "leitung" },
+        { um: anmeldeStatus?.abgesetztUm, quelle: "funkspruch" },
+        { um: (anmeldeStatus as EffektiverNachrichtenStatus | undefined)?.gemeldetUm, quelle: "teilnehmer" }
+    ];
+    const gueltig = kandidaten.filter((k): k is { um: string; quelle: NonNullable<AnmeldeZustand["quelle"]> } =>
+        Boolean(k.um) && Number.isFinite(Date.parse(k.um ?? "")));
     if (!gueltig.length) {
         return {};
     }
@@ -194,28 +203,7 @@ export function anmeldeZustand(
 
 // --- Papier-Nachtrag ------------------------------------------------------
 
-/**
- * Deutet eine von Hand eingegebene Uhrzeit „HH:MM“ als Zeitpunkt. Bezugstag ist
- * der eines schon vorhandenen Zeitpunkts (Korrektur), sonst heute; liegt das
- * Ergebnis in der Zukunft, ist der Vortag gemeint (Nachtrag nach Mitternacht).
- */
-export function uhrzeitZuIso(hhmm: string, referenzIso?: string, now: Date = new Date()): string | null {
-    const m = hhmm.trim().match(/^(\d{1,2}):(\d{2})$/);
-    if (!m || !m[1] || !m[2]) {
-        return null;
-    }
-    const h = Number(m[1]);
-    const min = Number(m[2]);
-    if (h > 23 || min > 59) {
-        return null;
-    }
-    const referenz = referenzIso && Number.isFinite(Date.parse(referenzIso)) ? new Date(referenzIso) : now;
-    const ziel = new Date(referenz.getFullYear(), referenz.getMonth(), referenz.getDate(), h, min, 0, 0);
-    if (ziel.getTime() > now.getTime()) {
-        ziel.setDate(ziel.getDate() - 1);
-    }
-    return ziel.toISOString();
-}
+export { uhrzeitZuIso } from "./nachtrag";
 
 // --- Lage je Teilnehmer ---------------------------------------------------
 
@@ -236,9 +224,9 @@ export function lageJeTeilnehmer(
         const eintrag = lage.get(n.sender) ?? { teilnehmer: n.sender, offen: 0, gesamt: 0, nurGemeldet: 0 };
         eintrag.gesamt++;
         const status = effektiv[statusKey(n.sender, n.nr)];
-        if (!status?.erledigtUm) {
+        if (istOffen(status)) {
             eintrag.offen++;
-        } else if (!status.abgesetztUm) {
+        } else if (status?.erledigtUm && !status.abgesetztUm) {
             eintrag.nurGemeldet++;
         }
         lage.set(n.sender, eintrag);
@@ -252,5 +240,5 @@ export function naechsteOffene<T extends PlanEintrag>(
     effektiv: Record<string, EffektiverNachrichtenStatus>,
     anzahl: number
 ): T[] {
-    return sortiert.filter(n => !effektiv[statusKey(n.sender, n.nr)]?.erledigtUm).slice(0, anzahl);
+    return sortiert.filter(n => istOffen(effektiv[statusKey(n.sender, n.nr)])).slice(0, anzahl);
 }

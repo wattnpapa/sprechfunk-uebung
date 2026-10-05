@@ -111,6 +111,7 @@
 <script>if(/^#\/(teilnehmer|uebungsleitung|admin)([/?]|$)|^#(teilnehmer|uebungsleitung|admin)\//.test(location.hash))document.documentElement.classList.add("app-route-laedt");</script>
 <div id="uebungsleitungArea" data-testid="route-uebungsleitung" style="display:none;">
     <div class="container my-4 app-view-shell">
+        <div class="alert alert-success d-none" id="uebungsleitungResetErfolg" role="status"></div>
         <div class="card mb-3">
             <div class="card-header"><h2 class="h4 mb-0"><i class="fas fa-eye"></i> Übungsüberwachung – Übungsleitung</h2></div>
             <div class="card-body" id="uebungsleitungMeta"></div>
@@ -140,7 +141,7 @@
                     <div class="col-12 col-lg-4">
                         <label class="small text-body-secondary" for="cockpitXZeitBasisInput">X-Zeit-Basis (Übungsbeginn, gilt für alle)</label>
                         <div class="d-flex flex-wrap align-items-center gap-2">
-                            <input type="time" class="form-control form-control-sm" id="cockpitXZeitBasisInput" style="width:130px;">
+                            <input type="time" class="form-control form-control-sm ul-cockpit-zeit" id="cockpitXZeitBasisInput" lang="de-DE" aria-describedby="cockpitBasisHinweis">
                             <button class="btn btn-sm btn-outline-primary text-nowrap" id="btn-cockpit-xzeit-jetzt" type="button">Jetzt starten</button>
                             <button class="btn btn-sm btn-primary text-nowrap d-none" id="btn-cockpit-xzeit-vorschlag" type="button" data-testid="cockpit-vorschlag"></button>
                         </div>
@@ -154,7 +155,10 @@
             <div class="card-body py-2" id="uebungsleitungLageBody"></div>
         </div>
         <div class="card mb-3">
-            <div class="card-header"><h2 class="h4 mb-0"><i class="fas fa-users"></i> Teilnehmer</h2></div>
+            <div class="card-header d-flex flex-wrap justify-content-between align-items-center gap-2">
+                <h2 class="h4 mb-0"><i class="fas fa-users"></i> Teilnehmer</h2>
+                <button type="button" class="btn btn-sm btn-outline-secondary ul-einklappen" id="btn-teilnehmer-einklappen" aria-controls="uebungsleitungTeilnehmer" aria-expanded="true">Teilnehmer einklappen</button>
+            </div>
             <div class="card-body" id="uebungsleitungTeilnehmer"></div>
         </div>
         <div class="card">
@@ -171,10 +175,22 @@
                 </div>
                 <div id="nachrichtenStatsStrip" class="d-flex flex-wrap gap-2 mt-2">
                     <span class="badge bg-secondary" id="uebungsleitungLiveSyncBadge" aria-live="polite" title="Status der Live-Meldungen der Teilnehmer">Live-Status: –</span>
-                    <small class="badge text-bg-secondary" id="nachrichtenTempoLabel" title="Tempo: abgesetzte Nachrichten pro Minute, gemittelt über die letzten sechs (ohne nachgetragene Zeiten)">Tempo: –</small>
-                    <small class="badge text-bg-secondary" id="nachrichtenLoadLabel" title="Funklast: wer bisher am meisten gesendet (S) und empfangen (E) hat">Funklast: –</small>
-                    <small class="badge text-bg-secondary" id="nachrichtenHeatmapLabel" title="Heatmap: erledigte Nachrichten je 5 Minuten">Heatmap 5m: –</small>
+                    <small class="badge text-bg-secondary" id="nachrichtenTempoLabel" title="Tempo: abgesetzte Sprüche pro Minute, gemittelt über die letzten sechs (ohne nachgetragene Zeiten)">Tempo: –</small>
+                    <small class="badge text-bg-secondary" id="nachrichtenLoadLabel" title="Funklast: wer bisher am meisten gesendet und empfangen hat">Funklast: –</small>
+                    <small class="badge text-bg-secondary" id="nachrichtenHeatmapLabel" title="Erledigte Sprüche je 5 Minuten, die letzten sechs Abschnitte">Sprüche je 5 min: –</small>
                 </div>
+                <details class="ul-kennzahlen-hilfe mt-1">
+                    <summary class="small">Was bedeuten die Kennzahlen?</summary>
+                    <ul class="small mb-0 mt-1">
+                        <li><strong>Live-Status</strong>: ob dieses Gerät mit dem Server verbunden ist. „offline“ heißt: deine Markierungen liegen hier und werden nachgereicht.</li>
+                        <li><strong>Tempo</strong>: abgesetzte Sprüche pro Minute über die letzten sechs, ohne von Hand nachgetragene Zeiten.</li>
+                        <li><strong>Funklast</strong>: welche Stelle bisher am meisten gesendet und welche am meisten empfangen hat.</li>
+                        <li><strong>Sprüche je 5 min</strong> und <strong>Heatmap</strong>: wie viele Sprüche in jedem 5-Minuten-Abschnitt erledigt wurden.</li>
+                        <li><strong>ETA</strong>: geschätztes Ende. Im X-Zeit-Modus aus dem Zeitplan, sonst aus dem bisherigen Tempo (erst ab fünf Sprüchen).</li>
+                        <li><strong>Nr</strong> zählt den Plan durch, <strong>Abs.-Nr.</strong> ist die Nummer beim Absender – die nennt er am Funk und sie steht auf seinem Vordruck.</li>
+                        <li><strong>gemeldet (TN)</strong>: der Teilnehmer hat den Spruch abgehakt; mit „Bestätigen“ hältst du fest, dass du ihn gehört hast.</li>
+                    </ul>
+                </details>
             </div>
             <div class="card-body" id="uebungsleitungNachrichten"></div>
         </div>

@@ -124,7 +124,7 @@ describe("UebungsleitungView", () => {
             onToggleDetails,
             onDownloadDebrief
         });
-        expect(document.getElementById("uebungsleitungTeilnehmer")?.textContent).toContain("Teilnehmer Code: K7M4Q2 / A1B2");
+        expect(document.getElementById("uebungsleitungTeilnehmer")?.textContent).toContain("Übungscode K7M4Q2 · Teilnehmercode A1B2");
         const copyBtn = document.querySelector("button[data-action='copy-link']") as HTMLButtonElement | null;
         expect(copyBtn).toBeTruthy();
         expect(copyBtn?.getAttribute("aria-label")).toBe("Teilnehmer-Link kopieren");
@@ -707,7 +707,7 @@ describe("UebungsleitungView – Live-Status", () => {
             expect(badge?.className).toContain("bg-success");
 
             view.updateLiveSyncState("offline", 3);
-            expect(badge?.textContent).toContain("offline – wird nachgereicht (3 offen)");
+            expect(badge?.textContent).toContain("offline – wird nachgereicht (3 warten)");
             expect(badge?.className).toContain("bg-warning");
 
             view.updateLiveSyncState("fehler");
