@@ -27,6 +27,8 @@ import { errorMonitoring } from "./services/errorMonitoring";
 import { initFirebaseClient } from "./services/firebaseClient";
 import { vorladenPdfGenerator } from "./services/pdfGeneratorLazy";
 import { registriereServiceWorker } from "./core/serviceWorker";
+import { abonniereRoutenwechsel, brauchtDruckteil } from "./core/routenStart";
+import { initOfflineStandHinweis } from "./core/OfflineStandHinweis";
 
 // Registriert die genutzten Chart.js-Bausteine (Bar + Scatter) einmalig.
 import { initChartTheme } from "./core/chart";
@@ -126,9 +128,10 @@ function handleRoute(): void {
     // Update UI based on mode
     appView.applyAppMode(mode);
 
-    // Teilnehmer und Übungsleitung brauchen Vordruck und Ausdrucke gerade
-    // dann, wenn das Netz wackelt: den Druckteil vorladen, solange Netz da ist.
-    if (mode === "teilnehmer" || mode === "uebungsleitung") {
+    // Teilnehmer, Übungsleitung und ein Generator-Ergebnis brauchen Vordruck
+    // und Ausdrucke gerade dann, wenn das Netz wackelt: den Druckteil
+    // vorladen, solange Netz da ist (THW-Review 2026-10-05, offline P1-1).
+    if (brauchtDruckteil(mode, params)) {
         globalThis.setTimeout(vorladenPdfGenerator, 1500);
     }
 
@@ -170,6 +173,7 @@ window.addEventListener("DOMContentLoaded", () => {
     initChartTheme();
     appView.initModals();
     appView.initGlobalListeners();
+    initOfflineStandHinweis();
     // Routing sofort starten: Die Ansicht darf nicht auf den build.json-Fetch
     // warten, sonst springt der Einstiegstext nach dem ersten Paint (CLS) und
     // die Startseite rendert einen Netzwerk-Roundtrip später als nötig. Die
@@ -179,7 +183,11 @@ window.addEventListener("DOMContentLoaded", () => {
     registriereServiceWorker();
 });
 
-router.subscribe(() => handleRoute());
+// Nur echte Wechsel: Die erste Route startet oben im DOMContentLoaded. Vorher
+// lief sie doppelt (subscribe ruft sofort auf), jede Ansicht wurde zweimal
+// gebunden – ein Klick auf „Debrief PDF“ lud die Datei zweimal herunter
+// (THW-Review 2026-10-05, offline P3-4).
+abonniereRoutenwechsel(router, () => handleRoute());
 
 // Expose globals for legacy/inline usage
 window.admin = admin;

@@ -1,5 +1,5 @@
 import { FunkUebung } from "../models/FunkUebung";
-import { ladePdfGenerator } from "../services/pdfGeneratorLazy";
+import { ladePdfGenerator, vorladenPdfGenerator } from "../services/pdfGeneratorLazy";
 
 interface LinkRowOptions {
     /** Fachlicher Typ, landet in data-link-type (übung, übungsleitung, teilnehmer). */
@@ -34,6 +34,9 @@ export class GeneratorLinksRenderer {
         if (!linkContainer || !teilnehmerLinksContainer || !uebung.id) {
             return;
         }
+
+        // Ergebnis steht: Druckteil laden, solange Netz da ist (offline P1-1).
+        vorladenPdfGenerator();
 
         const baseUrl = this.getBaseUrl();
         const urlUebung = `${baseUrl}#/generator/${uebung.id}`;
