@@ -1,6 +1,21 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { JSDOM } from "jsdom";
-import { TeilnehmerView } from "../../src/teilnehmer/TeilnehmerView";
+import { TeilnehmerView, type TeilnehmerEventHandler } from "../../src/teilnehmer/TeilnehmerView";
+
+/** Alle Rückrufe als vi.fn(), einzelne überschreibbar. */
+const handler = (eigene: Partial<TeilnehmerEventHandler> = {}): TeilnehmerEventHandler => ({
+    onToggleUebertragen: vi.fn(),
+    onToggleHide: vi.fn(),
+    onReset: vi.fn(),
+    onDocViewChange: vi.fn(),
+    onDocPrev: vi.fn(),
+    onDocNext: vi.fn(),
+    onDocClose: vi.fn(),
+    onDocToggleCurrent: vi.fn(),
+    onDownloadZip: vi.fn(),
+    onSearch: vi.fn(),
+    ...eigene
+});
 
 const setupDom = () => {
     const dom = new JSDOM("<div id=\"teilnehmerContent\"></div>");
@@ -111,10 +126,7 @@ describe("TeilnehmerView", () => {
             onDownloadZip: vi.fn(),
             onSearch: vi.fn()
         };
-        view.bindEvents(
-            cb.onToggleUebertragen, cb.onToggleHide, cb.onReset, cb.onDocViewChange, cb.onDocPrev, cb.onDocNext,
-            cb.onDocClose, cb.onDocToggleCurrent, cb.onDownloadZip, cb.onSearch
-        );
+        view.bindEvents(cb);
 
         (document.getElementById("btn-reset-teilnehmer-data") as HTMLButtonElement).click();
         (document.getElementById("btn-download-teilnehmer-zip") as HTMLButtonElement).click();
@@ -201,14 +213,14 @@ describe("TeilnehmerView", () => {
         const view = new TeilnehmerView();
         const onToggle = vi.fn();
         // no container branch
-        view.bindEvents(onToggle, vi.fn(), vi.fn(), vi.fn(), vi.fn(), vi.fn(), vi.fn(), vi.fn(), vi.fn(), vi.fn());
+        view.bindEvents(handler({ onToggleUebertragen: onToggle }));
 
         const full = renderBase();
         full.renderNachrichten([{ id: 1, empfaenger: ["B"], nachricht: "x" }], {
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             hideTransmitted: false, nachrichten: {}
         } as any);
-        full.bindEvents(onToggle, vi.fn(), vi.fn(), vi.fn(), vi.fn(), vi.fn(), vi.fn(), vi.fn(), vi.fn(), vi.fn());
+        full.bindEvents(handler({ onToggleUebertragen: onToggle }));
 
         const tbody = document.getElementById("teilnehmerNachrichtenBody") as HTMLElement;
         tbody.innerHTML += "<button data-aktion='absetzen' data-id='x'>x</button><button data-aktion='quatsch' data-id='1'>y</button>";
@@ -227,10 +239,7 @@ describe("TeilnehmerView", () => {
         const onDocToggleCurrent = vi.fn();
         const onToggleHide = vi.fn();
         const onDocClose = vi.fn();
-        view.bindEvents(
-            vi.fn(), onToggleHide, vi.fn(), onDocViewChange, vi.fn(), vi.fn(),
-            onDocClose, onDocToggleCurrent, vi.fn(), vi.fn()
-        );
+        view.bindEvents(handler({ onToggleHide, onDocViewChange, onDocClose, onDocToggleCurrent }));
 
         // Modal offen, damit ausschliesslich der Tipp-Schutz greift.
         (document.getElementById("teilnehmerDocModal") as HTMLElement).classList.add("show");
@@ -257,10 +266,7 @@ describe("TeilnehmerView", () => {
         const onDocViewChange = vi.fn();
         const onDocToggleCurrent = vi.fn();
         const onToggleHide = vi.fn();
-        view.bindEvents(
-            vi.fn(), onToggleHide, vi.fn(), onDocViewChange, vi.fn(), vi.fn(),
-            vi.fn(), onDocToggleCurrent, vi.fn(), vi.fn()
-        );
+        view.bindEvents(handler({ onToggleHide, onDocViewChange, onDocToggleCurrent }));
 
         document.dispatchEvent(new window.KeyboardEvent("keydown", { code: "Space" }));
         document.dispatchEvent(new window.KeyboardEvent("keydown", { key: "[" }));
@@ -274,10 +280,7 @@ describe("TeilnehmerView", () => {
         const view = renderBase();
         const onDocViewChange = vi.fn();
         const onDocToggleCurrent = vi.fn();
-        view.bindEvents(
-            vi.fn(), vi.fn(), vi.fn(), onDocViewChange, vi.fn(), vi.fn(),
-            vi.fn(), onDocToggleCurrent, vi.fn(), vi.fn()
-        );
+        view.bindEvents(handler({ onDocViewChange, onDocToggleCurrent }));
 
         (document.getElementById("teilnehmerDocModal") as HTMLElement).classList.add("show");
         const checkbox = document.getElementById("toggle-hide-transmitted-modal") as HTMLInputElement;
@@ -305,7 +308,7 @@ describe("TeilnehmerView", () => {
         expect(document.getElementById("teilnehmerNachrichtenBody")?.innerHTML).toContain("<br>");
 
         const onToggle = vi.fn();
-        full.bindEvents(onToggle, vi.fn(), vi.fn(), vi.fn(), vi.fn(), vi.fn(), vi.fn(), vi.fn(), vi.fn(), vi.fn());
+        full.bindEvents(handler({ onToggleUebertragen: onToggle }));
         const tbody = document.getElementById("teilnehmerNachrichtenBody") as HTMLElement;
         tbody.innerHTML += "<button data-aktion='zuruecknehmen' data-id='abc'>x</button>";
         const invalidChip = tbody.querySelector("[data-id='abc']") as HTMLButtonElement;
@@ -619,7 +622,7 @@ describe("TeilnehmerView – Bedienung am Handy (THW-Review 2026-10-04)", () => 
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         view.renderHeader({ name: "Wellenbrecher", datum: "2026-10-04T09:00:00.000Z", rufgruppe: "RG", leitung: "L" } as any, "Alpha");
         const cb = callbacks();
-        view.bindEvents(cb.onToggle, vi.fn(), vi.fn(), vi.fn(), vi.fn(), vi.fn(), vi.fn(), cb.onDocToggle, vi.fn(), vi.fn());
+        view.bindEvents(handler({ onToggleUebertragen: cb.onToggle, onDocToggleCurrent: cb.onDocToggle }));
         view.renderNachrichten(
             [
                 { id: 1, empfaenger: ["B"], nachricht: "eins" },

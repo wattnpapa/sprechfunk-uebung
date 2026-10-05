@@ -114,67 +114,69 @@ vi.mock("../../src/core/UiFeedback", () => ({
     }
 }));
 
-describe("TeilnehmerController", () => {
-    beforeEach(() => {
-        vi.clearAllMocks();
-        vi.stubGlobal("localStorage", {
-            getItem: () => null,
-            setItem: () => {},
-            removeItem: () => {}
-        });
-        vi.stubGlobal("window", {
-            addEventListener: vi.fn(),
-            location: { reload: vi.fn() }
-        });
-        vi.stubGlobal("document", {
-            createElement: () => ({
-                href: "",
-                download: "",
-                click: vi.fn()
-            }),
-            getElementById: () => null,
-            body: {
-                appendChild: vi.fn(),
-                removeChild: vi.fn()
-            }
-        });
-        const urlCtor = globalThis.URL;
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        (urlCtor as any).createObjectURL = vi.fn(() => "blob:test");
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        (urlCtor as any).revokeObjectURL = vi.fn();
-        mocks.parseHash.mockReturnValue({ params: [] });
-        mocks.getUebung.mockResolvedValue(null);
-        mocks.loadTeilnehmerStorage.mockReturnValue({
-            version: 1,
-            uebungId: "u1",
-            teilnehmer: "Alpha",
-            lastUpdated: "",
-            nachrichten: {},
-            hideTransmitted: false
-        });
-        mocks.generateMeldevordruckPageBlob.mockResolvedValue(new Blob(["m"]));
-        mocks.generateNachrichtenvordruckPageBlob.mockResolvedValue(new Blob(["n"]));
+function setupGlobals(): void {
+    vi.clearAllMocks();
+    vi.stubGlobal("localStorage", {
+        getItem: () => null,
+        setItem: () => {},
+        removeItem: () => {}
     });
+    vi.stubGlobal("window", {
+        addEventListener: vi.fn(),
+        location: { reload: vi.fn() }
+    });
+    vi.stubGlobal("document", {
+        createElement: () => ({
+            href: "",
+            download: "",
+            click: vi.fn()
+        }),
+        getElementById: () => null,
+        body: {
+            appendChild: vi.fn(),
+            removeChild: vi.fn()
+        }
+    });
+    const urlCtor = globalThis.URL;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    (urlCtor as any).createObjectURL = vi.fn(() => "blob:test");
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    (urlCtor as any).revokeObjectURL = vi.fn();
+    mocks.parseHash.mockReturnValue({ params: [] });
+    mocks.getUebung.mockResolvedValue(null);
+    mocks.loadTeilnehmerStorage.mockReturnValue({
+        version: 1,
+        uebungId: "u1",
+        teilnehmer: "Alpha",
+        lastUpdated: "",
+        nachrichten: {},
+        hideTransmitted: false
+    });
+    mocks.generateMeldevordruckPageBlob.mockResolvedValue(new Blob(["m"]));
+    mocks.generateNachrichtenvordruckPageBlob.mockResolvedValue(new Blob(["n"]));
+}
 
-    const makeController = async () => {
-        const { TeilnehmerController } = await import("../../src/teilnehmer");
-        const controller = new TeilnehmerController({} as never);
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        (controller as any).uebung = { id: "u1", name: "Test Übung", nachrichten: { Alpha: [] } };
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        (controller as any).teilnehmerName = "Alpha";
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        (controller as any).storage = {
-            version: 1,
-            uebungId: "u1",
-            teilnehmer: "Alpha",
-            lastUpdated: "",
-            nachrichten: {},
-            hideTransmitted: false
-        };
-        return controller;
+const makeController = async () => {
+    const { TeilnehmerController } = await import("../../src/teilnehmer");
+    const controller = new TeilnehmerController({} as never);
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    (controller as any).uebung = { id: "u1", name: "Test Übung", nachrichten: { Alpha: [] } };
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    (controller as any).teilnehmerName = "Alpha";
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    (controller as any).storage = {
+        version: 1,
+        uebungId: "u1",
+        teilnehmer: "Alpha",
+        lastUpdated: "",
+        nachrichten: {},
+        hideTransmitted: false
     };
+    return controller;
+};
+
+describe("TeilnehmerController", () => {
+    beforeEach(setupGlobals);
 
     it("toggleUebertragen stores and removes transmission flags", async () => {
         const controller = await makeController();
@@ -519,6 +521,11 @@ describe("TeilnehmerController", () => {
         await c.setDocMode("table");
         expect(verlauf.back).toHaveBeenCalledTimes(1);
     });
+
+});
+
+describe("TeilnehmerController – Vordruck und Bedienung", () => {
+    beforeEach(setupGlobals);
 
     it("toggleHide updates storage", async () => {
         const controller = await makeController();
@@ -868,18 +875,18 @@ describe("TeilnehmerController", () => {
         });
         const c = new TeilnehmerController({} as never);
         await c.init();
-        const args = mocks.bindEvents.mock.calls.at(-1);
-        expect(args).toBeTruthy();
-        if (args) {
-            args[0](1, true);
-            args[1](true);
-            args[3]("meldevordruck");
-            args[4]();
-            args[5]();
-            args[6]();
-            args[7]();
-            await args[8]();
-            args[9]();
+        const h = mocks.bindEvents.mock.calls.at(-1)?.[0];
+        expect(h).toBeTruthy();
+        if (h) {
+            h.onToggleUebertragen(1, true);
+            h.onToggleHide(true);
+            h.onDocViewChange("meldevordruck");
+            h.onDocPrev();
+            h.onDocNext();
+            h.onDocClose();
+            h.onDocToggleCurrent();
+            await h.onDownloadZip();
+            h.onSearch();
         }
         await vi.runAllTimersAsync();
         expect(mocks.saveTeilnehmerStorage).toHaveBeenCalled();
