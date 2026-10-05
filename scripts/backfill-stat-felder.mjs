@@ -113,7 +113,7 @@ function hatEintraege(wert) {
     return Boolean(wert) && typeof wert === "object" && Object.keys(wert).length > 0;
 }
 
-/** Muss mit FirebaseService.buildStatistikFelder übereinstimmen. */
+/** Muss mit buildStatistikFelder in src/services/firestoreSanitize.ts übereinstimmen. */
 function buildStatistikFelder(data) {
     const teilnehmerListe = Array.isArray(data.teilnehmerListe) ? data.teilnehmerListe : [];
     const nachrichten = data.nachrichten || {};
