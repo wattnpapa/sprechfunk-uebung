@@ -83,7 +83,7 @@
     "@types/chart.js": "^4.0.1",
     "@types/crypto-js": "^4.2.2",
     "@types/jspdf": "^2.0.0",
-    "@types/node": "^26.6.3",
+    "@types/node": "^26.6.4",
     "@types/uuid": "^11.0.0",
     "@vitest/coverage-v8": "^5.0.3",
     "autoprefixer": "^10.6.1",
