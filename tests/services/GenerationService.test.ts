@@ -1,6 +1,7 @@
 import { describe, expect, it, vi } from "vitest";
 import { GenerationService } from "../../src/services/GenerationService";
 import { FunkUebung } from "../../src/models/FunkUebung";
+import { getRandomOther, getRandomSubsetOfOthers, shuffleSmart } from "../../src/services/generationVerteilung";
 import { zaehleBuchstabierAufgaben } from "../../src/utils/buchstabieren";
 
 describe("GenerationService", () => {
@@ -128,13 +129,9 @@ describe("GenerationService", () => {
     });
 
     it("covers random helper branches", () => {
-        const service = new GenerationService();
-
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        expect((service as any).getRandomOther(["A"], "A")).toBe("A");
+        expect(getRandomOther(["A"], "A", Math.random)).toBe("A");
         const randomSpy = vi.spyOn(Math, "random").mockReturnValue(0.1);
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const subset = (service as any).getRandomSubsetOfOthers(["A", "B", "C", "D"], "A");
+        const subset = getRandomSubsetOfOthers(["A", "B", "C", "D"], "A", Math.random);
         expect(subset.length).toBeGreaterThan(0);
         randomSpy.mockRestore();
     });
@@ -187,8 +184,7 @@ describe("GenerationService", () => {
             { nachricht: { empfaenger: ["Alle"] } },
             { nachricht: { empfaenger: ["B", "C"] } }
         ];
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const shuffled = (service as any).shuffleSmart(list);
+        const shuffled = shuffleSmart(list, Math.random);
         expect(shuffled).toHaveLength(2);
         expect(warn).toHaveBeenCalled();
         sortSpy.mockRestore();
@@ -211,8 +207,7 @@ describe("GenerationService", () => {
         const service = new GenerationService();
         const random = vi.spyOn(Math, "random");
         random.mockReturnValueOnce(0.85).mockReturnValueOnce(0.2).mockReturnValueOnce(0.96).mockReturnValue(0.4);
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const subset = (service as any).getRandomSubsetOfOthers(["A", "B", "C", "D", "E", "F", "G", "H"], "A");
+        const subset = getRandomSubsetOfOthers(["A", "B", "C", "D", "E", "F", "G", "H"], "A", Math.random);
         expect(subset.length).toBeGreaterThan(0);
         random.mockRestore();
 
