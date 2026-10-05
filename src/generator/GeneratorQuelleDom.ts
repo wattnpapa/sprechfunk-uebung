@@ -1,4 +1,6 @@
 import { updateNachrichtenArtOptionsVisibility } from "./GeneratorFormularDom";
+import type { FunkspruchVorlage } from "../data/funkspruchVorlagen";
+import { bindeVorlagenInfo, renderVorlagenInfo } from "./GeneratorVorlagenInfo";
 
 /** Spruchquelle im Formular des Generators: Auswahl, Listen und sichtbare Bereiche. */
 
@@ -72,14 +74,17 @@ export function toggleSourceView(source: FunkspruchQuelle): void {
     // dem Drehbuch mit; Teilnehmerverwaltung und Spielmodus entfallen.
     setSichtbar([
         "spielModusSection", "anmeldungContainer", "nachrichtenArtContainer",
-        "nachrichtenArtOptionsContainer", "teilnehmerVerwaltungCard"
+        "nachrichtenArtOptionsContainer", "teilnehmerVerwaltungCard", "optionenSection"
     ], source !== "fuehrungsstelle");
+    // Wofür der Funkrufname der Übungsleitung hier noch gebraucht wird
+    // (THW-Review 2026-10-05, new-user P3-6).
+    setSichtbar(["leitungHilfeFuehrungsstelle"], source === "fuehrungsstelle");
     if (source !== "fuehrungsstelle") {
         updateNachrichtenArtOptionsVisibility();
     }
 }
 
-export function populateTemplateSelect(templates: Record<string, { text: string }>, selected: string[]): void {
+export function populateTemplateSelect(templates: Record<string, FunkspruchVorlage>, selected: string[]): void {
     const selectBox = document.getElementById("funkspruchVorlage") as HTMLSelectElement;
     if (!selectBox) {
         return;
@@ -95,6 +100,8 @@ export function populateTemplateSelect(templates: Record<string, { text: string 
         option.selected = selected.includes(key);
         selectBox.appendChild(option);
     }
+    renderVorlagenInfo(templates, selected, selected.length === 0);
+    bindeVorlagenInfo(selectBox, templates);
     // Das Multi-Select-Widget haengt an genau diesem Event und zeichnet
     // Chips und Trefferliste daraufhin neu.
     selectBox.dispatchEvent(new Event("change", { bubbles: true }));

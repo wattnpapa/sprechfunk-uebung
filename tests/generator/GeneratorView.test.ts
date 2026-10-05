@@ -576,12 +576,19 @@ describe("GeneratorView – Links, Hilfsfunktionen und Führungsstelle", () => {
         expect((document.getElementById("fuehrungsstelleContainer") as HTMLElement).style.display).toBe("block");
         expect((document.getElementById("szenarioContainer") as HTMLElement).style.display).toBe("none");
         ["verteilungSection", "loesungswortSection", "autoStaerkeContainer", "spielModusSection",
-            "anmeldungContainer", "nachrichtenArtContainer", "teilnehmerVerwaltungCard"].forEach(id => {
+            "anmeldungContainer", "nachrichtenArtContainer", "teilnehmerVerwaltungCard", "optionenSection"].forEach(id => {
             expect((document.getElementById(id) as HTMLElement).style.display, id).toBe("none");
         });
+        // Keine leere Überschrift mehr, dafür eine Erklärung am Feld der Übungsleitung
+        // (THW-Review 2026-10-05, new-user P3-6).
+        const leitungHilfe = document.getElementById("leitungHilfeFuehrungsstelle") as HTMLElement;
+        expect(leitungHilfe.style.display).toBe("");
+        expect(leitungHilfe.textContent).toContain("Betriebsleitung");
 
         view.setSelectedSource("vorlagen");
         expect(view.getSelectedSource()).toBe("vorlagen");
+        expect(leitungHilfe.style.display).toBe("none");
+        expect((document.getElementById("optionenSection") as HTMLElement).style.display).toBe("");
         expect((document.getElementById("fuehrungsstelleContainer") as HTMLElement).style.display).toBe("none");
         ["spielModusSection", "anmeldungContainer", "teilnehmerVerwaltungCard", "verteilungSection"].forEach(id => {
             expect((document.getElementById(id) as HTMLElement).style.display, id).toBe("");
@@ -641,6 +648,36 @@ describe("GeneratorView – Links, Hilfsfunktionen und Führungsstelle", () => {
         expect(html).not.toContain("A1B2");
         expect(html).toContain("Einsatzstelle Nord");
         expect(html).toContain("Führungsstab");
+        // Zwei Codes, zwei Namen wie im Zugangsformular (THW-Review 2026-10-05, new-user P3-1).
+        const codes = document.querySelector("#links-teilnehmer-container .generator-link-row[data-link-type='teilnehmer'] .generator-link-url div");
+        expect(codes?.textContent).toBe("Übungscode K7M4Q2 · Teilnehmercode C3D4");
+        expect(html).not.toContain("Teilnehmer Code");
+    });
+
+    it("zeigt Lage, Umfang und Herkunft der Vorlagen unter der Auswahl", async () => {
+        const { FUNKSPRUCH_VORLAGEN } = await import("../../src/data/funkspruchVorlagen");
+        const view = new GeneratorView();
+        view.render();
+        view.populateTemplateSelect(FUNKSPRUCH_VORLAGEN, []);
+        const info = document.getElementById("funkspruchVorlageInfo") as HTMLDetailsElement;
+        // Ohne Auswahl aufgeklappt (THW-Review 2026-10-05, new-user P2-1).
+        expect(info.open).toBe(true);
+        const leer = info.querySelector("li[data-vorlage='thwleer']")?.textContent ?? "";
+        expect(leer).toContain("Ostfriesland");
+        expect(leer).toContain("118 Sprüche");
+        expect(leer).toContain("aus einer gefunkten Übung");
+        const feuerwehr = info.querySelector("li[data-vorlage='feuerwehrUnwetter']")?.textContent ?? "";
+        expect(feuerwehr).toContain("für den Generator geschrieben");
+        expect(info.querySelector("li[data-vorlage='vorlageLustig']")?.classList.contains("is-nebenbei")).toBe(true);
+
+        const select = document.getElementById("funkspruchVorlage") as HTMLSelectElement;
+        (select.querySelector("option[value='thwleer']") as HTMLOptionElement).selected = true;
+        select.dispatchEvent(new Event("change", { bubbles: true }));
+        expect(info.querySelector("li[data-vorlage='thwleer']")?.classList.contains("is-gewaehlt")).toBe(true);
+        expect(info.querySelector("li[data-vorlage='thwleer']")?.textContent).toContain("(gewählt)");
+
+        view.populateTemplateSelect(FUNKSPRUCH_VORLAGEN, ["thwmelle"]);
+        expect(info.open).toBe(false);
     });
 
     it("maskiert Teilnehmerwerte und zeigt Platzhalter statt Beispielnamen", () => {

@@ -123,7 +123,9 @@ describe("controllerQuellen", () => {
     it("bricht ohne Szenario-Auswahl oder bei Ladefehler ab", async () => {
         const ohne = baueCtrl({ getSelectedSzenario: () => "" });
         expect(await generiereSzenarioUebung(ohne)).toBe(false);
-        expect(mocks.error).toHaveBeenCalledWith("Bitte ein Szenario auswählen.");
+        // Eingabefehler: Kasten und Feld, kein Toast (THW-Review 2026-10-05, error-recovery P2-1).
+        expect(ohne.hinweise.zeigeFehlerBox).toHaveBeenCalledWith("Bitte ein Szenario auswählen.");
+        expect(mocks.error).not.toHaveBeenCalledWith("Bitte ein Szenario auswählen.");
 
         vi.spyOn(console, "error").mockImplementation(() => {});
         vi.stubGlobal("fetch", vi.fn().mockRejectedValue(new Error("offline")));

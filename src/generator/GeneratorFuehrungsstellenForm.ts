@@ -160,7 +160,7 @@ export class GeneratorFuehrungsstellenForm {
         stelle.className = "form-control fuehrungsstelle-abschnitt-stelle";
         stelle.dataset["index"] = String(index);
         stelle.value = daten.stelle;
-        stelle.placeholder = `Stellenname, z. B. Einsatzabschnitt ${index + 1}`;
+        stelle.placeholder = `Stelle, z. B. EA ${index + 1}`;
         stelle.setAttribute("aria-label", `Stellenname Einsatzabschnitt ${index + 1}`);
         const entfernen = document.createElement("button");
         entfernen.type = "button";

@@ -1,5 +1,5 @@
 import { FunkUebung } from "../models/FunkUebung";
-import { FUNKSPRUCH_VORLAGEN } from "../data/funkspruchVorlagen";
+import { FUNKSPRUCH_VORLAGEN, type FunkspruchVorlage } from "../data/funkspruchVorlagen";
 import { store } from "../state/store";
 import { FirebaseService } from "../services/FirebaseService";
 import { GenerationService } from "../services/GenerationService";
@@ -8,7 +8,14 @@ import { GeneratorStateService, type LoesungswortOption } from "./GeneratorState
 import { GeneratorStatsService } from "./GeneratorStatsService";
 import { GeneratorPreviewService } from "./GeneratorPreviewService";
 import { GeneratorHinweise } from "./GeneratorHinweise";
-import { entwurfHatInhalt, type GeneratorEntwurf, ladeEntwurf, verwerfeEntwurf, wendeEntwurfAn } from "./GeneratorEntwurf";
+import {
+    entwurfHatInhalt,
+    type GeneratorEntwurf,
+    ladeEntwurf,
+    speichereEntwurf,
+    verwerfeEntwurf,
+    wendeEntwurfAn
+} from "./GeneratorEntwurf";
 import { SZENARIEN } from "../data/szenarien";
 import type { Szenario } from "../types/Szenario";
 import { FUEHRUNGSSTELLEN_UEBUNGEN } from "../data/fuehrungsstellenUebungen";
@@ -44,6 +51,8 @@ import {
     zeigeDrehbuchDauer
 } from "./controllerFuehrungsstelle";
 import { updateSzenarioInfo } from "./controllerQuellen";
+import { renderZuletzt } from "./GeneratorZuletzt";
+import { vorladenPdfGenerator } from "../services/pdfGeneratorLazy";
 
 export type { GenerierModus } from "./controllerHilfen";
 
@@ -57,7 +66,7 @@ export class GeneratorController {
 
     public funkUebung!: FunkUebung;
     public predefinedLoesungswoerter: string[] = [];
-    public templatesFunksprueche: Record<string, { text: string; filename: string }> = {};
+    public templatesFunksprueche: Record<string, FunkspruchVorlage> = {};
     public szenarioCache = new Map<string, Szenario>();
     /** Entwertet überholte Info-Fetches bei schnellem Szenario-Wechsel. */
     public szenarioInfoToken = 0;
@@ -191,9 +200,22 @@ export class GeneratorController {
         return entwurf;
     }
 
-    public entwurfVerwerfen(): void {
+    /**
+     * Verwirft den Entwurf und bietet 10 s lang „Rückgängig“ an: Eine lange
+     * Teilnehmerliste neu zu tippen kostet Zeit und bringt Tippfehler
+     * (THW-Review 2026-10-05, destructive-action P2-2).
+     */
+    public async entwurfVerwerfen(): Promise<void> {
+        const sicherung = ladeEntwurf();
         verwerfeEntwurf();
-        void this.handleRoute([]);
+        await this.handleRoute([]);
+        if (!sicherung) {
+            return;
+        }
+        this.hinweise.zeigeEntwurfVerworfen(() => {
+            speichereEntwurf(sicherung);
+            void this.handleRoute([]);
+        });
     }
 
     private updateUI() {
@@ -208,6 +230,7 @@ export class GeneratorController {
             // (THW-Review workflow F1 – „FUNKER“ wurde sonst zu einem Zufallswort).
             this.renderTeilnehmer(false);
             this.renderResultIfAvailable();
+            renderZuletzt(this.isFreshExercise);
             aktualisiereModusAnzeige(this);
             aktualisiereStatusleiste(this);
         } finally {
@@ -349,6 +372,10 @@ export class GeneratorController {
 
         this.view.renderUebungResult(this.funkUebung, stats, chart);
         this.view.toggleFuehrungsstelleDownloads(!!this.funkUebung.fuehrungsstelle);
+        // Druckteil schon jetzt laden, solange Netz da ist: Sonst scheiterten
+        // ZIP und Übersicht nach einem Aussetzer (THW-Review 2026-10-05,
+        // offline-resilience P1-1, Teil Generator).
+        vorladenPdfGenerator();
         this.hinweise.markiereErgebnisVeraltet(false);
         this.hinweise.zeigeBeuebteStelle(this.funkUebung.fuehrungsstelle?.beuebteStelle ?? null);
         if (this.funkUebung.fuehrungsstelle) {

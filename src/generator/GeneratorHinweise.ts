@@ -42,6 +42,7 @@ function zeigen(element: HTMLElement | null, sichtbar: boolean): void {
 export class GeneratorHinweise {
     private formularBindung: AbortController | null = null;
     private entferntTimer: ReturnType<typeof setTimeout> | null = null;
+    private entwurfTimer: ReturnType<typeof setTimeout> | null = null;
 
     // --- Fehler am Feld ------------------------------------------------------
 
@@ -177,13 +178,23 @@ export class GeneratorHinweise {
     // --- Veraltetes Ergebnis --------------------------------------------------
 
     public markiereErgebnisVeraltet(veraltet: boolean): void {
+        if (veraltet) {
+            this.zeigeErgebnisHinweis(null);
+        }
         zeigen(el("generatorErgebnisVeraltet"), veraltet);
         el("output-container")?.classList.toggle("is-veraltet", veraltet);
     }
 
     // --- Entwurf ---------------------------------------------------------------
 
+    /**
+     * Hinweis auf einen wiederhergestellten Entwurf. Neben „Entwurf verwerfen“
+     * steht ein harmloses „Hinweis ausblenden“, damit der einzige Knopf nicht
+     * als Schließen missverstanden wird (THW-Review 2026-10-05,
+     * destructive-action P2-2).
+     */
     public zeigeEntwurfHinweis(gespeichertAm: Date | null, onVerwerfen?: () => void): void {
+        this.stoppeEntwurfTimer();
         const box = el("generatorEntwurfHinweis");
         if (!box) {
             return;
@@ -199,8 +210,74 @@ export class GeneratorHinweise {
         }
         const knopf = el<HTMLButtonElement>("generatorEntwurfVerwerfen");
         if (knopf) {
+            zeigen(knopf, true);
             knopf.onclick = onVerwerfen ? () => onVerwerfen() : null;
         }
+        zeigen(el("generatorEntwurfRueckgaengig"), false);
+        this.bindeAusblenden();
+    }
+
+    /** Nach dem Verwerfen: 10 s lang „Rückgängig“, wie beim Entfernen eines Teilnehmers. */
+    public zeigeEntwurfVerworfen(onRueckgaengig: () => void): void {
+        this.stoppeEntwurfTimer();
+        const box = el("generatorEntwurfHinweis");
+        if (!box) {
+            return;
+        }
+        const text = el("generatorEntwurfText");
+        if (text) {
+            text.textContent = "Entwurf verworfen, das Formular ist leer.";
+        }
+        zeigen(el("generatorEntwurfVerwerfen"), false);
+        const rueckgaengig = el<HTMLButtonElement>("generatorEntwurfRueckgaengig");
+        if (rueckgaengig) {
+            zeigen(rueckgaengig, true);
+            rueckgaengig.onclick = () => {
+                this.stoppeEntwurfTimer();
+                zeigen(box, false);
+                onRueckgaengig();
+            };
+        }
+        this.bindeAusblenden();
+        zeigen(box, true);
+        this.entwurfTimer = setTimeout(() => {
+            this.entwurfTimer = null;
+            zeigen(box, false);
+        }, ENTFERNT_ANZEIGEDAUER_MS);
+    }
+
+    private bindeAusblenden(): void {
+        const ausblenden = el<HTMLButtonElement>("generatorEntwurfAusblenden");
+        if (ausblenden) {
+            ausblenden.onclick = () => {
+                this.stoppeEntwurfTimer();
+                zeigen(el("generatorEntwurfHinweis"), false);
+            };
+        }
+    }
+
+    private stoppeEntwurfTimer(): void {
+        if (this.entwurfTimer !== null) {
+            clearTimeout(this.entwurfTimer);
+            this.entwurfTimer = null;
+        }
+    }
+
+    // --- Rückmeldung zum Ergebnis ------------------------------------------------
+
+    /**
+     * Steht oben im Ergebnis statt als Toast unten rechts, wo er die
+     * Linktabelle verdeckte (THW-Review 2026-10-05, stress-test P3-2).
+     */
+    public zeigeErgebnisHinweis(text: string | null, warnung = false): void {
+        const box = el("generatorErgebnisHinweis");
+        if (!box) {
+            return;
+        }
+        box.textContent = text ?? "";
+        box.classList.toggle("alert-success", !warnung);
+        box.classList.toggle("alert-warning", warnung);
+        zeigen(box, !!text);
     }
 
     // --- Teilnehmer entfernt ---------------------------------------------------

@@ -15,14 +15,20 @@ import {
     type GenerierModus,
     leseZahlAusFormular,
     mitZeitlimit,
+    nameFuerNeueUebung,
     rueckfrageText,
     setzeAdresseAufUebung,
+    setzeNameImFormular,
     sichereZustand,
     speicherFehlerText
 } from "./controllerHilfen";
 import { aktualisiereModusAnzeige, istGespeichert, meldeFehler } from "./controllerStatus";
 import { generiereFuehrungsstellenUebung } from "./controllerFuehrungsstelle";
 import { generiereSzenarioUebung, loadFunkspruecheFromSelectedSource, warnIfSpruchPoolTooSmall } from "./controllerQuellen";
+import { setzeLiveStatusZurueck } from "./liveStatusZuruecksetzen";
+import { merkeUebung } from "./GeneratorZuletzt";
+import { store } from "../state/store";
+import type { FunkUebung } from "../models/FunkUebung";
 import { uiFeedback } from "../core/UiFeedback";
 
 /** Ergebnis der Eingabeprüfung: gesammelte Feldfehler und Meldungen. */
@@ -55,7 +61,11 @@ export async function startUebung(ctrl: GeneratorController, modus: GenerierModu
     ctrl.hinweise.zeigeFehlerBox(null);
 
     const warGespeichert = istGespeichert(ctrl);
-    if (warGespeichert && !uiFeedback.confirm(rueckfrageText(modus, ctrl.funkUebung.name))) {
+    // Nur der folgenschwere Weg fragt nach. „Als neue Übung“ lässt die
+    // bisherige unverändert; eine Rückfrage dort trainierte nur das
+    // reflexhafte „OK“ (THW-Review 2026-10-05, destructive-action P3-1).
+    const ueberschreiben = warGespeichert && modus === "ueberschreiben";
+    if (ueberschreiben && !uiFeedback.confirm(rueckfrageText(ctrl.funkUebung.name))) {
         return;
     }
 
@@ -71,39 +81,73 @@ export async function startUebung(ctrl: GeneratorController, modus: GenerierModu
     const sicherung = sichereZustand(ctrl.funkUebung, ctrl.buildInfo);
     ctrl.laeuft = true;
     ctrl.hinweise.setzeBeschaeftigt(true);
-    let erfolg: boolean;
+    let ergebnis: { erfolg: boolean; statusZurueckgesetzt: boolean };
     try {
-        erfolg = await generiereUndSpeichere(ctrl, warGespeichert && modus === "neu", warGespeichert);
+        ergebnis = await generiereSpeichereUndSetzeZurueck(ctrl, sicherung, { modus, warGespeichert });
     } finally {
         ctrl.laeuft = false;
         ctrl.hinweise.setzeBeschaeftigt(false);
     }
-    if (!erfolg) {
+    if (!ergebnis.erfolg) {
         ctrl.funkUebung = sicherung;
         return;
     }
-    zeigeErgebnis(ctrl, modus, warGespeichert);
+    zeigeErgebnis(ctrl, modus, warGespeichert, ergebnis.statusZurueckgesetzt);
+}
+
+/**
+ * Nach einem Überschreiben wird der Live-Status gleich mit zurückgesetzt,
+ * solange der Knopf noch gesperrt ist.
+ */
+async function generiereSpeichereUndSetzeZurueck(
+    ctrl: GeneratorController,
+    sicherung: FunkUebung,
+    lauf: { modus: GenerierModus; warGespeichert: boolean }
+): Promise<{ erfolg: boolean; statusZurueckgesetzt: boolean }> {
+    const erfolg = await generiereUndSpeichere(ctrl, lauf.warGespeichert && lauf.modus === "neu", lauf.warGespeichert);
+    if (!erfolg || !lauf.warGespeichert || lauf.modus !== "ueberschreiben") {
+        return { erfolg, statusZurueckgesetzt: true };
+    }
+    const statusZurueckgesetzt = await setzeLiveStatusZurueck(store.getState().db ?? null, ctrl.funkUebung.id, {
+        alt: sicherung,
+        neu: ctrl.funkUebung
+    });
+    return { erfolg, statusZurueckgesetzt };
 }
 
 /** Anzeigen; die Adresse zeigt jetzt auf diese Übung. */
-function zeigeErgebnis(ctrl: GeneratorController, modus: GenerierModus, warGespeichert: boolean): void {
+function zeigeErgebnis(ctrl: GeneratorController, modus: GenerierModus, warGespeichert: boolean, statusZurueckgesetzt: boolean): void {
     ctrl.isFreshExercise = false;
     ctrl.ergebnisVeraltet = false;
     verwerfeEntwurf();
     ctrl.hinweise.zeigeEntwurfHinweis(null);
     setzeAdresseAufUebung(ctrl.funkUebung.id);
+    setzeNameImFormular(ctrl.funkUebung.name);
+    merkeUebung({
+        id: ctrl.funkUebung.id,
+        name: ctrl.funkUebung.name,
+        uebungCode: ctrl.funkUebung.uebungCode,
+        erstelltAm: new Date().toISOString()
+    });
     ctrl.renderUebungResult();
     aktualisiereModusAnzeige(ctrl);
     if (warGespeichert) {
-        uiFeedback.success(erfolgsText(modus, ctrl.funkUebung.uebungCode));
+        ctrl.hinweise.zeigeErgebnisHinweis(
+            erfolgsText(modus, ctrl.funkUebung.uebungCode, statusZurueckgesetzt),
+            !statusZurueckgesetzt
+        );
     }
 }
 
 async function generiereUndSpeichere(ctrl: GeneratorController, alsNeueUebung: boolean, warGespeichert: boolean): Promise<boolean> {
     // 1. Daten aus View übernehmen
+    const bisherigerName = ctrl.funkUebung.name;
     const source = uebernimmFormular(ctrl);
     if (alsNeueUebung) {
         alsNeueUebungVorbereiten(ctrl.funkUebung, ctrl.buildInfo);
+        // Gleicher Name wie die bisherige Übung: Zusatz „(2)“, damit sich
+        // beide in der Liste unterscheiden (THW-Review 2026-10-05, error-recovery P2-2).
+        ctrl.funkUebung.name = nameFuerNeueUebung(ctrl.funkUebung.name, bisherigerName);
     }
 
     // 2./3. Prüfen und generieren, je nach Quelle

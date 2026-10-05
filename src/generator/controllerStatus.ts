@@ -27,13 +27,20 @@ export function aktualisiereModusAnzeige(ctrl: GeneratorController): void {
     });
 }
 
-/** Fehler bleibt an der Aktionsleiste stehen; der Toast macht zusätzlich darauf aufmerksam. */
+/**
+ * Fehler bleibt an der Aktionsleiste stehen. Eingabefehler stehen zusätzlich
+ * am Feld und bekommen keinen Toast mehr: Fehler-Toasts bleiben stehen, bis
+ * man sie wegtippt, und stapelten sich bei jedem Versuch – auch längst
+ * behobene (THW-Review 2026-10-05, error-recovery P2-1, workflow W9).
+ * Andere Fehler (Verbindung, Speichern) kommen weiter zusätzlich als Toast.
+ */
 export function meldeFehler(ctrl: GeneratorController, text: string, feldFehler: FeldFehler[] = []): void {
-    uiFeedback.error(text);
     ctrl.hinweise.zeigeFehlerBox(text);
     if (feldFehler.length > 0) {
         ctrl.hinweise.zeigeFeldFehler(feldFehler);
+        return;
     }
+    uiFeedback.error(text);
 }
 
 export function formularGeaendert(ctrl: GeneratorController): void {

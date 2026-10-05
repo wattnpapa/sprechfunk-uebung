@@ -26,6 +26,11 @@ interface TeilnehmerMailtoOptions {
     teilnehmerCode: string;
 }
 
+/** Beschriftung der beiden Zugangscodes in der Linktabelle. */
+export function zugangsCodesText(uebungCode: string, teilnehmerCode: string): string {
+    return `Übungscode ${uebungCode} · Teilnehmercode ${teilnehmerCode}`;
+}
+
 export class GeneratorLinksRenderer {
     public renderLinks(uebung: FunkUebung): void {
         const linkContainer = document.getElementById("uebung-links");
@@ -75,10 +80,14 @@ export class GeneratorLinksRenderer {
                 }
                 const normalizedParticipantCode = participantCode.toUpperCase();
                 const joinUrl = this.createTeilnehmerJoinUrl(uebungCode, normalizedParticipantCode);
+                // Zwei Codes, zwei Namen – wie im Zugangsformular, das getrennt
+                // nach Übungscode und Teilnehmercode fragt (new-user P3-1).
+                const codeText = zugangsCodesText(uebungCode, normalizedParticipantCode);
                 const joinText = [
                     `Teilnehmer-Zugang für "${uebung.name || "Sprechfunk-Übung"}"`,
                     `URL: ${joinUrl}`,
-                    `Teilnehmer Code: ${uebungCode} / ${normalizedParticipantCode}`
+                    `Übungscode: ${uebungCode}`,
+                    `Teilnehmercode: ${normalizedParticipantCode}`
                 ].join("\n");
                 this.appendLinkRow(
                     teilnehmerLinksContainer,
@@ -94,7 +103,7 @@ export class GeneratorLinksRenderer {
                             teilnehmerCode: normalizedParticipantCode
                         }),
                         uebung,
-                        codeText: `Teilnehmer Code: ${uebungCode} / ${normalizedParticipantCode}`,
+                        codeText,
                         empfaengerHinweis: "Link oder Codes an diese Funkstelle weitergeben.",
                         copyValue: joinText,
                         ...(uebung.teilnehmerStellen?.[name] ? { stelle: uebung.teilnehmerStellen[name] } : {})

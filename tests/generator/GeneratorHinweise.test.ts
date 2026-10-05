@@ -111,6 +111,47 @@ describe("GeneratorHinweise", () => {
         expect($("generatorEntwurfHinweis").hidden).toBe(true);
     });
 
+    it("blendet den Entwurf-Hinweis harmlos aus und bietet nach dem Verwerfen Rückgängig (THW-Review 2026-10-05)", () => {
+        vi.useFakeTimers();
+        const hinweise = new GeneratorHinweise();
+        const verwerfen = vi.fn();
+        hinweise.zeigeEntwurfHinweis(new Date(2026, 9, 5, 21, 3), verwerfen);
+        expect($("generatorEntwurfRueckgaengig").hidden).toBe(true);
+        // „Hinweis ausblenden“ verwirft nichts (destructive-action P2-2).
+        $("generatorEntwurfAusblenden").click();
+        expect($("generatorEntwurfHinweis").hidden).toBe(true);
+        expect(verwerfen).not.toHaveBeenCalled();
+
+        const rueckgaengig = vi.fn();
+        hinweise.zeigeEntwurfVerworfen(rueckgaengig);
+        expect($("generatorEntwurfHinweis").hidden).toBe(false);
+        expect($("generatorEntwurfText").textContent).toBe("Entwurf verworfen, das Formular ist leer.");
+        expect($("generatorEntwurfVerwerfen").hidden).toBe(true);
+        $("generatorEntwurfRueckgaengig").click();
+        expect(rueckgaengig).toHaveBeenCalledTimes(1);
+        expect($("generatorEntwurfHinweis").hidden).toBe(true);
+
+        hinweise.zeigeEntwurfVerworfen(rueckgaengig);
+        vi.advanceTimersByTime(10001);
+        expect($("generatorEntwurfHinweis").hidden).toBe(true);
+
+        // Ein neuer Entwurf-Hinweis bringt den Verwerfen-Knopf zurück.
+        hinweise.zeigeEntwurfHinweis(new Date(), verwerfen);
+        expect($("generatorEntwurfVerwerfen").hidden).toBe(false);
+        expect($("generatorEntwurfRueckgaengig").hidden).toBe(true);
+    });
+
+    it("zeigt die Rückmeldung zum Ergebnis oben im Ergebnis und räumt sie bei Änderungen weg", () => {
+        const hinweise = new GeneratorHinweise();
+        hinweise.zeigeErgebnisHinweis("Neue Übung angelegt.");
+        expect($("generatorErgebnisHinweis").hidden).toBe(false);
+        expect($("generatorErgebnisHinweis").classList.contains("alert-success")).toBe(true);
+        hinweise.zeigeErgebnisHinweis("Nicht bestätigt.", true);
+        expect($("generatorErgebnisHinweis").classList.contains("alert-warning")).toBe(true);
+        hinweise.markiereErgebnisVeraltet(true);
+        expect($("generatorErgebnisHinweis").hidden).toBe(true);
+    });
+
     it("bietet nach dem Entfernen kurz Rückgängig an", () => {
         vi.useFakeTimers();
         const hinweise = new GeneratorHinweise();

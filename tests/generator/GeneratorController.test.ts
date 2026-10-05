@@ -99,7 +99,9 @@ const makeController = async () => {
     const { GeneratorController } = await import("../../src/generator/index");
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     (GeneratorController as any).instance = undefined;
-    return GeneratorController.getInstance();
+    const controller = GeneratorController.getInstance();
+    vi.spyOn(controller.hinweise, "zeigeFehlerBox");
+    return controller;
 };
 
 const setzeGlobals = () => {
@@ -411,7 +413,8 @@ describe("GeneratorController", () => {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         (controller as any).view = { getFormData: vi.fn() };
 
-        await controller.startUebung();
+        // Nur das Überschreiben fragt nach (THW-Review 2026-10-05, destructive-action P3-1).
+        await controller.startUebung("ueberschreiben");
 
         expect((globalThis as any).confirm).toHaveBeenCalled();
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -484,7 +487,9 @@ describe("GeneratorController", () => {
         await controller.startUebung();
 
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        expect((globalThis as any).alert).toHaveBeenCalled();
+        // Eingabefehler: Kasten und Feld, kein Toast (THW-Review 2026-10-05, error-recovery P2-1).
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        expect((controller as any).hinweise.zeigeFehlerBox).toHaveBeenCalledWith(expect.any(String));
     });
 
     it("startUebung validates missing templates", async () => {
@@ -538,7 +543,9 @@ describe("GeneratorController", () => {
         await controller.startUebung();
 
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        expect((globalThis as any).alert).toHaveBeenCalled();
+        // Eingabefehler: Kasten und Feld, kein Toast (THW-Review 2026-10-05, error-recovery P2-1).
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        expect((controller as any).hinweise.zeigeFehlerBox).toHaveBeenCalledWith(expect.any(String));
     });
 
     it("renderResultIfAvailable only renders when messages exist", async () => {
@@ -613,7 +620,9 @@ describe("GeneratorController – Bindungen, Laden und Wrapper", () => {
 
         expect(isValid).toBe(false);
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        expect((globalThis as any).alert).toHaveBeenCalled();
+        // Eingabefehler: Kasten und Feld, kein Toast (THW-Review 2026-10-05, error-recovery P2-1).
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        expect((controller as any).hinweise.zeigeFehlerBox).toHaveBeenCalledWith(expect.any(String));
     });
 
     it("loadUebung returns cached exercise when id matches", async () => {
@@ -1011,7 +1020,9 @@ describe("GeneratorController – Bindungen, Laden und Wrapper", () => {
         const isValid = (controller as any).validateSpruchVerteilung();
         expect(isValid).toBe(false);
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        expect((globalThis as any).alert).toHaveBeenCalled();
+        // Eingabefehler: Kasten und Feld, kein Toast (THW-Review 2026-10-05, error-recovery P2-1).
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        expect((controller as any).hinweise.zeigeFehlerBox).toHaveBeenCalledWith(expect.any(String));
     });
 
     it("covers defensive missing-template throw in map callback", async () => {

@@ -8,6 +8,8 @@
  * die Vorlagenauswahl heißt `funkspruchVorlage`.
  */
 
+import { SHORT_CODE_ALPHABET, TEILNEHMER_CODE_LENGTH, UEBUNG_CODE_LENGTH } from "../services/generationCodes";
+
 export interface FeldFehler {
     feld: string;
     text: string;
@@ -184,6 +186,44 @@ export function pruefeXZeit(werte: {
     }
     if (werte.startOffset !== undefined && (!Number.isInteger(werte.startOffset) || werte.startOffset < 0)) {
         fehler.push({ feld: "xZeitStartOffsetMinuten", text: "Bitte eine ganze Zahl ab 0 Minuten eintragen." });
+    }
+    return fehler;
+}
+
+const QUICKJOIN_FELDER = {
+    uebung: "generatorQuickJoinUebungCode",
+    teilnehmer: "generatorQuickJoinTeilnehmerCode"
+} as const;
+
+function pruefeEinenCode(code: string, laenge: number, art: "Übungscode" | "Teilnehmercode"): string | null {
+    if (code === "") {
+        return `Bitte den ${art} eintragen (${laenge} Zeichen).`;
+    }
+    const fremd = [...new Set([...code].filter(zeichen => !SHORT_CODE_ALPHABET.includes(zeichen)))];
+    if (fremd.length > 0) {
+        return `„${fremd.join("“, „")}“ kommt in Codes nicht vor. Codes enthalten kein O, 0, I oder 1 ` +
+            "und keine Sonderzeichen; sieh bei Q, G und 6 genau hin.";
+    }
+    if (code.length !== laenge) {
+        return `Der ${art} hat ${laenge} Zeichen, eingegeben sind ${code.length}.`;
+    }
+    return null;
+}
+
+/**
+ * Codes im Schnellzugang der Startseite. Eine falsche Länge führte bisher
+ * ohne Meldung ins Code-Formular (THW-Review 2026-10-05, error-recovery P3-3).
+ * Erwartet die Codes bereits getrimmt und in Großbuchstaben.
+ */
+export function pruefeZugangsCodes(uebungCode: string, teilnehmerCode: string): FeldFehler[] {
+    const fehler: FeldFehler[] = [];
+    const uebung = pruefeEinenCode(uebungCode, UEBUNG_CODE_LENGTH, "Übungscode");
+    if (uebung) {
+        fehler.push({ feld: QUICKJOIN_FELDER.uebung, text: uebung });
+    }
+    const teilnehmer = pruefeEinenCode(teilnehmerCode, TEILNEHMER_CODE_LENGTH, "Teilnehmercode");
+    if (teilnehmer) {
+        fehler.push({ feld: QUICKJOIN_FELDER.teilnehmer, text: teilnehmer });
     }
     return fehler;
 }

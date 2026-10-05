@@ -8,7 +8,8 @@ import {
     pruefeKopfdaten,
     pruefeTeilnehmerListe,
     pruefeVerteilung,
-    pruefeXZeit
+    pruefeXZeit,
+    pruefeZugangsCodes
 } from "../../src/generator/GeneratorValidierung";
 
 describe("GeneratorValidierung", () => {
@@ -71,5 +72,17 @@ describe("GeneratorValidierung", () => {
         expect(fehler.map(f => f.feld)).toEqual(["fuehrungsstelleUebergeordnet", "abschnitt-1"]);
         expect(pruefeFuehrungsstellenRollen({ beuebteStelle: "A", uebergeordnet: "B", unterstellt: ["", "C"] })[0]?.text)
             .toContain("Zeile mit ×");
+    });
+
+    it("prüft die Codes im Schnellzugang auf Länge und Zeichen (THW-Review 2026-10-05, error-recovery P3-3)", () => {
+        expect(pruefeZugangsCodes("K7M4Q2", "A2B3")).toEqual([]);
+        expect(pruefeZugangsCodes("K7M4Q", "A2B3")).toEqual([
+            { feld: "generatorQuickJoinUebungCode", text: "Der Übungscode hat 6 Zeichen, eingegeben sind 5." }
+        ]);
+        expect(pruefeZugangsCodes("", "")).toHaveLength(2);
+        // O, 0, I und 1 kommen in Codes nicht vor; die Meldung nennt das Zeichen (field-user P3).
+        const zeichen = pruefeZugangsCodes("T2VAFO", "A2B3");
+        expect(zeichen[0]?.text).toContain("„O“ kommt in Codes nicht vor");
+        expect(pruefeZugangsCodes("K7M4Q2", "A1-3")[0]?.text).toContain("„1“, „-“");
     });
 });

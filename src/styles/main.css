@@ -1721,8 +1721,14 @@ select option {
     margin-bottom: 0;
 }
 
-/* Tippziele auf Touch-Geräten (THW-Review glove-touch P3-1/P3-2) */
-@media (pointer: coarse) {
+/* Tippziele auf Touch-Geräten (THW-Review glove-touch P3-1/P3-2). Auch nach
+   Breite, weil Handys nicht immer „pointer: coarse“ melden (2026-10-05, P3-3). */
+@media (pointer: coarse), (max-width: 767.98px) {
+    .generator-quick-join-card .form-control,
+    .generator-quick-join-card .btn {
+        min-height: 44px;
+    }
+
     .generator-setup-layout .form-check,
     #vorlagenUploadToggle > div {
         min-height: 44px;
@@ -1777,6 +1783,132 @@ select option {
     color: var(--text-2);
     border-color: var(--linie);
     background-color: var(--flaeche-2);
+}
+
+/* --- Generator und Admin: Ergänzungen THW-Review 2026-10-05 ---------------- */
+
+.generator-entwurf-knoepfe {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--r-2);
+}
+
+.generator-entwurf-knoepfe [hidden],
+.generator-ergebnis-hinweis[hidden],
+.generator-zuletzt[hidden],
+.admin-loesch-hinweis[hidden] {
+    display: none;
+}
+
+/* Der folgenschwere Weg steht mit Abstand neben dem Hauptknopf
+   (destructive-action P3-1). */
+.generator-action-buttons #ueberschreibenBtn {
+    margin-right: var(--r-4);
+}
+
+.generator-vorlagen-info summary {
+    cursor: pointer;
+    color: var(--akzent);
+    font-size: var(--t-s);
+}
+
+.generator-vorlagen-liste {
+    padding-left: 1.1rem;
+}
+
+.generator-vorlagen-liste li {
+    margin-bottom: 0.35rem;
+}
+
+.generator-vorlagen-liste li.is-gewaehlt > strong {
+    color: var(--akzent);
+}
+
+/* Die Spaßvorlage steht sichtbar abgesetzt am Ende der Liste. */
+.generator-vorlagen-liste li.is-nebenbei {
+    margin-top: 0.6rem;
+    padding-top: 0.4rem;
+    border-top: 1px dashed var(--linie);
+    list-style: none;
+    margin-left: -1.1rem;
+}
+
+.generator-vorlage-gewaehlt {
+    font-weight: 600;
+    color: var(--akzent);
+}
+
+.admin-loesch-hinweis {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--r-2);
+}
+
+.admin-uebungscode {
+    font-family: ui-monospace, monospace;
+    letter-spacing: 0.05em;
+}
+
+/* Im Dark Mode waren ausgeschaltete Checkboxen kaum vom Grund zu trennen
+   (night-visibility Befund 2). */
+[data-theme="dark"] #adminArea .form-check-input:not(:checked),
+[data-theme="dark"] .generator-setup-layout .form-check-input:not(:checked) {
+    border-color: var(--text-3);
+    background-color: var(--flaeche-2);
+}
+
+/* Übungsverwaltung am Handy: Karten statt seitlich wischbarer Tabelle,
+   Aktionen in jeder Karte sichtbar, Löschen abgesetzt (glove-touch P3-4). */
+@media (max-width: 575.98px) {
+    .admin-uebungstabelle thead {
+        display: none;
+    }
+
+    .admin-uebungstabelle,
+    .admin-uebungstabelle tbody,
+    .admin-uebungstabelle tr,
+    .admin-uebungstabelle td {
+        display: block;
+        width: 100%;
+    }
+
+    .admin-uebungstabelle tr {
+        border: 1px solid var(--linie);
+        border-radius: var(--radius);
+        margin-bottom: var(--r-3);
+        padding: var(--r-2);
+    }
+
+    .admin-uebungstabelle td {
+        border: 0;
+        padding: 0.15rem 0;
+        text-align: left;
+    }
+
+    .admin-uebungstabelle td[data-label]::before {
+        content: attr(data-label) ": ";
+        color: var(--text-2);
+        font-size: var(--t-s);
+    }
+
+    .admin-uebungstabelle td.admin-aktionen {
+        text-align: left !important;
+        white-space: normal !important;
+        display: flex;
+        flex-wrap: wrap;
+        gap: var(--r-2);
+        padding-top: var(--r-2);
+    }
+
+    .admin-aktionen .btn + .btn {
+        margin-left: 0;
+    }
+
+    .admin-aktionen .admin-loeschen {
+        margin-left: auto;
+    }
 }
 
 /* --- Übungsleitung -------------------------------------------------------- */

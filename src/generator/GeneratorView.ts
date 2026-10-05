@@ -4,6 +4,7 @@ import type { UebungsDauerStats, VerteilungsStats } from "./GeneratorStatsServic
 import type { PreviewPage } from "./GeneratorPreviewService";
 import { uiFeedback } from "../core/UiFeedback";
 import { GENERATOR_VIEW_MARKUP } from "./viewMarkup";
+import type { FunkspruchVorlage } from "../data/funkspruchVorlagen";
 import type { LoesungswortOption } from "./GeneratorStateService";
 import {
     getFormData,
@@ -233,7 +234,7 @@ export class GeneratorView {
         this.updateLoesungswortOptionUI();
     }
 
-    public populateTemplateSelect(templates: Record<string, { text: string }>, selected: string[] = []) {
+    public populateTemplateSelect(templates: Record<string, FunkspruchVorlage>, selected: string[] = []) {
         populateTemplateSelect(templates, selected);
     }
 
@@ -388,8 +389,9 @@ export class GeneratorView {
         this.templatePicker = MultiSelect.enhance(
             document.getElementById("funkspruchVorlage") as HTMLSelectElement | null,
             {
-                placeholder: "Vorlagen auswählen ...",
-                search: "Vorlage suchen ...",
+                // Ein Platzhalter statt zwei hintereinander (new-user P2-1).
+                placeholder: "Vorlagen auswählen oder suchen …",
+                search: "",
                 empty: "Keine passende Vorlage"
             }
         );

@@ -13,7 +13,8 @@ const mocks = vi.hoisted(() => ({
     success: vi.fn(),
     confirm: vi.fn(() => true),
     lade: vi.fn(),
-    zip: vi.fn()
+    zip: vi.fn(),
+    zuruecksetzen: vi.fn(() => Promise.resolve(true))
 }));
 
 vi.mock("../../src/core/chart", () => ({ Chart: { register: vi.fn() } }));
@@ -21,7 +22,11 @@ vi.mock("../../src/core/UiFeedback", () => ({
     uiFeedback: { error: mocks.error, info: mocks.info, success: mocks.success, confirm: mocks.confirm }
 }));
 vi.mock("../../src/services/pdfGeneratorLazy", () => ({
-    ladePdfGenerator: () => Promise.resolve({ generateAllPDFsAsZip: mocks.zip })
+    ladePdfGenerator: () => Promise.resolve({ generateAllPDFsAsZip: mocks.zip }),
+    vorladenPdfGenerator: vi.fn()
+}));
+vi.mock("../../src/generator/liveStatusZuruecksetzen", () => ({
+    setzeLiveStatusZurueck: mocks.zuruecksetzen
 }));
 vi.mock("../../src/services/FuehrungsstellenUebungService", () => ({
     ladeFuehrungsstellenUebung: mocks.lade
@@ -105,6 +110,8 @@ function baueHinweise() {
         zeigeModus: vi.fn(),
         markiereErgebnisVeraltet: vi.fn(),
         zeigeEntwurfHinweis: vi.fn(),
+        zeigeEntwurfVerworfen: vi.fn(),
+        zeigeErgebnisHinweis: vi.fn(),
         zeigeEntferntHinweis: vi.fn(),
         aktualisiereStatusleiste: vi.fn(),
         setzeDauer: vi.fn(),
@@ -158,6 +165,7 @@ describe("GeneratorController – THW-Review", () => {
     beforeEach(() => {
         vi.clearAllMocks();
         mocks.confirm.mockReturnValue(true);
+        mocks.zuruecksetzen.mockResolvedValue(true);
         storage = makeStorage();
         vi.stubGlobal("localStorage", storage);
         vi.stubGlobal("document", { body: { innerHTML: "" }, getElementById: () => null });
@@ -177,9 +185,15 @@ describe("GeneratorController – THW-Review", () => {
         const controller = await makeController();
         machGespeichert(controller);
 
+        controller.funkUebung.name = "Dienstabend";
+        controller.view = baueView({ getFormData: () => ({ ...baueView().getFormData(), name: "Dienstabend" }) });
+
         await controller.startUebung();
 
-        expect(mocks.confirm.mock.calls[0]?.[0]).toContain("Als neue Übung anlegen?");
+        // Keine Rückfrage: Die bisherige Übung bleibt ja unverändert (destructive-action P3-1).
+        expect(mocks.confirm).not.toHaveBeenCalled();
+        // Gleicher Name bekommt einen Zusatz (error-recovery P2-2).
+        expect(controller.funkUebung.name).toBe("Dienstabend (2)");
         expect(controller.funkUebung.id).not.toBe("alt-id");
         expect(controller.funkUebung.uebungCode).toBe("NEU123");
         expect(controller.funkUebung.teilnehmerIds).toEqual({});
@@ -187,7 +201,16 @@ describe("GeneratorController – THW-Review", () => {
         const gespeichert = controller.firebaseService.saveUebung.mock.calls[0]?.[0];
         expect(gespeichert.id).toBe(controller.funkUebung.id);
         expect(window.history.replaceState).toHaveBeenCalledWith(null, "", `#/generator/${controller.funkUebung.id}`);
-        expect(mocks.success).toHaveBeenCalledWith(expect.stringContaining("bisherige Übung bleibt unverändert"));
+        // Rückmeldung oben im Ergebnis statt als Toast über der Linktabelle (stress-test P3-2).
+        expect(mocks.success).not.toHaveBeenCalled();
+        expect(controller.hinweise.zeigeErgebnisHinweis).toHaveBeenCalledWith(
+            expect.stringContaining("bisherige Übung bleibt unverändert"), false
+        );
+        expect(mocks.zuruecksetzen).not.toHaveBeenCalled();
+        // Die neue Übung steht in „Zuletzt in diesem Browser erstellt“.
+        expect(JSON.parse(storage.getItem("generatorZuletzt:v1") ?? "[]")[0]).toMatchObject({
+            id: controller.funkUebung.id, name: "Dienstabend (2)", uebungCode: "NEU123"
+        });
         expect(controller.hinweise.zeigeModus).toHaveBeenLastCalledWith(expect.objectContaining({ gespeichert: true }));
     });
 
@@ -200,11 +223,32 @@ describe("GeneratorController – THW-Review", () => {
         const frage = mocks.confirm.mock.calls[0]?.[0] as string;
         expect(frage).toContain("überschreiben");
         expect(frage).toContain("Ausdrucke");
-        expect(frage).toContain("Status");
+        expect(frage).toContain("Übungsstand wird für alle zurückgesetzt");
         expect(frage).toContain("nicht rückgängig");
         expect(controller.funkUebung.id).toBe("alt-id");
         expect(controller.funkUebung.uebungCode).toBe("ALT123");
         expect(controller.firebaseService.saveUebung).toHaveBeenCalled();
+        // Der Live-Status wird gleich mit zurückgesetzt, mit alter und neuer Fassung
+        // (destructive-action P2-1, workflow W3).
+        const [, uebungId, staende] = mocks.zuruecksetzen.mock.calls[0] as unknown as [unknown, string, Beliebig];
+        expect(uebungId).toBe("alt-id");
+        expect(staende.alt.nachrichten["Heros 21/11"][0].nachricht).toBe("alt");
+        expect(staende.neu.nachrichten["Heros 21/11"][0].nachricht).toBe("neu");
+        expect(controller.hinweise.zeigeErgebnisHinweis).toHaveBeenCalledWith(
+            expect.stringContaining("Übungsstand ist für alle zurückgesetzt"), false
+        );
+    });
+
+    it("warnt sichtbar, wenn der Server das Zurücksetzen des Übungsstands nicht bestätigt", async () => {
+        const controller = await makeController();
+        machGespeichert(controller);
+        mocks.zuruecksetzen.mockResolvedValue(false);
+
+        await controller.startUebung("ueberschreiben");
+
+        expect(controller.hinweise.zeigeErgebnisHinweis).toHaveBeenCalledWith(
+            expect.stringContaining("noch nicht bestätigt"), true
+        );
     });
 
     it("bricht ab, wenn die Rückfrage verneint wird", async () => {
@@ -248,6 +292,9 @@ describe("GeneratorController – THW-Review", () => {
 
         const text = controller.hinweise.zeigeFehlerBox.mock.calls.at(-1)?.[0] as string;
         expect(text).toContain("nicht rechtzeitig geantwortet");
+        // Ehrlich: Das Speichern kann noch ankommen (offline-resilience P2-1).
+        expect(text).toContain("Speichern nicht bestätigt");
+        expect(text).toContain("kann noch ankommen");
         expect(text).toContain("Gib noch keine Links weiter");
         expect(controller.funkUebung.nachrichten).toEqual({});
     });
@@ -296,7 +343,9 @@ describe("GeneratorController – THW-Review", () => {
 
         await controller.startUebung();
 
-        const meldung = mocks.error.mock.calls.at(-1)?.[0] as string;
+        // Eingabefehler stehen am Feld und im Kasten, ohne Toast (error-recovery P2-1).
+        expect(mocks.error).not.toHaveBeenCalled();
+        const meldung = controller.hinweise.zeigeFehlerBox.mock.calls.at(-1)?.[0] as string;
         expect(meldung).toContain("Übungsleitung");
         expect(meldung).toContain("Teilnehmernamen müssen eindeutig sein.");
         expect(meldung).toContain("Höchstens 200");
@@ -339,10 +388,15 @@ describe("GeneratorController – THW-Review", () => {
 
         // Verwerfen löscht den Entwurf und zeichnet das leere Formular neu.
         const verwerfen = controller.hinweise.zeigeEntwurfHinweis.mock.calls.at(-1)?.[1] as () => void;
-        verwerfen();
-        await Promise.resolve();
-        await Promise.resolve();
+        await verwerfen();
         expect(storage.getItem("generatorEntwurf:v1")).toBeNull();
+        expect(controller.funkUebung.name).not.toBe("Entwurf");
+
+        // Rückgängig holt den Entwurf zurück (destructive-action P2-2).
+        const rueckgaengig = controller.hinweise.zeigeEntwurfVerworfen.mock.calls.at(-1)?.[0] as () => void;
+        rueckgaengig();
+        await vi.waitFor(() => expect(controller.funkUebung.name).toBe("Entwurf"));
+        expect(JSON.parse(storage.getItem("generatorEntwurf:v1") ?? "{}").formular.name).toBe("Entwurf");
     });
 
     it("meldet eine nicht gefundene Übungs-ID", async () => {
@@ -504,5 +558,18 @@ describe("GeneratorController – THW-Review", () => {
 
         expect(controller.hinweise.zeigeBeuebteStelle).toHaveBeenCalledWith("EL");
         expect(controller.hinweise.setzeDauer).toHaveBeenCalledWith("180 Min (Drehbuch)");
+    });
+
+    it("lädt den Druckteil vor, sobald ein Ergebnis angezeigt wird", async () => {
+        // Ohne Vorladen blieben ZIP und Übersicht nach einem Netzaussetzer bis zum
+        // Neuladen kaputt (THW-Review 2026-10-05, offline-resilience P1-1).
+        const { vorladenPdfGenerator } = await import("../../src/services/pdfGeneratorLazy");
+        const controller = await makeController();
+        controller.statsService = {
+            berechneUebungsdauer: () => ({}),
+            berechneVerteilung: () => ({ labels: [], counts: [] })
+        };
+        controller.renderUebungResult();
+        expect(vorladenPdfGenerator).toHaveBeenCalled();
     });
 });

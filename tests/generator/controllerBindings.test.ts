@@ -7,11 +7,12 @@ const mocks = vi.hoisted(() => ({
         generateAllTeilnehmerUebersichtPrint: vi.fn(),
         generateDrehbuchPDF: vi.fn()
     },
-    lade: vi.fn()
+    lade: vi.fn(),
+    ladePdf: vi.fn()
 }));
 
 vi.mock("../../src/core/UiFeedback", () => ({ uiFeedback: { error: mocks.error } }));
-vi.mock("../../src/services/pdfGeneratorLazy", () => ({ ladePdfGenerator: () => Promise.resolve(mocks.pdf) }));
+vi.mock("../../src/services/pdfGeneratorLazy", () => ({ ladePdfGenerator: mocks.ladePdf }));
 vi.mock("../../src/services/FuehrungsstellenUebungService", () => ({ ladeFuehrungsstellenUebung: mocks.lade }));
 
 import { bindEvents } from "../../src/generator/controllerBindings";
@@ -52,7 +53,7 @@ function baueCtrl() {
         loesungswortOption: "central",
         showStellenname: false,
         stateService: { resetLoesungswoerter: vi.fn() },
-        hinweise: { bindAktionen: vi.fn((h: Record<string, Handler>) => Object.assign(handler, h)), bindFormularAenderung: merke("formular"), zeigeFehlerBox: vi.fn() },
+        hinweise: { bindAktionen: vi.fn((h: Record<string, Handler>) => Object.assign(handler, h)), bindFormularAenderung: merke("formular"), zeigeFehlerBox: vi.fn(), zeigeFeldFehler: vi.fn(), entferneFeldFehler: vi.fn() },
         renderTeilnehmer: vi.fn(),
         updateFuehrungsstelleInfo: vi.fn().mockResolvedValue(undefined),
         aendereAbschnitte: vi.fn(),
@@ -75,6 +76,7 @@ function baueCtrl() {
 describe("controllerBindings", () => {
     beforeEach(() => {
         vi.clearAllMocks();
+        mocks.ladePdf.mockResolvedValue(mocks.pdf);
         vi.stubGlobal("window", { location: { hash: "" } });
     });
 
@@ -126,12 +128,22 @@ describe("controllerBindings", () => {
         expect(ctrl.formularGeaendert).toHaveBeenCalled();
     });
 
-    it("öffnet den Teilnehmer-Zugang nur mit beiden Codes", () => {
-        const { handler } = baueCtrl();
-        handler["quickJoin"]?.("", "A1B2");
-        expect(mocks.error).toHaveBeenCalledWith("Bitte Übungscode und Teilnehmercode eingeben.");
-        handler["quickJoin"]?.("K7M4Q2", "A1B2");
-        expect(window.location.hash).toBe("#/teilnehmer?uc=K7M4Q2&tc=A1B2");
+    it("öffnet den Teilnehmer-Zugang nur mit gültigen Codes und meldet Fehler am Feld", () => {
+        const { ctrl, handler } = baueCtrl();
+        handler["quickJoin"]?.("", "A2B3");
+        expect(ctrl.hinweise.zeigeFeldFehler).toHaveBeenLastCalledWith([
+            { feld: "generatorQuickJoinUebungCode", text: "Bitte den Übungscode eintragen (6 Zeichen)." }
+        ]);
+        // Falsche Länge führte bisher ohne Meldung ins Code-Formular (error-recovery P3-3).
+        handler["quickJoin"]?.("K7M4Q", "A2B");
+        expect(ctrl.hinweise.zeigeFeldFehler).toHaveBeenLastCalledWith([
+            { feld: "generatorQuickJoinUebungCode", text: "Der Übungscode hat 6 Zeichen, eingegeben sind 5." },
+            { feld: "generatorQuickJoinTeilnehmerCode", text: "Der Teilnehmercode hat 4 Zeichen, eingegeben sind 3." }
+        ]);
+        expect(window.location.hash).toBe("");
+        handler["quickJoin"]?.("K7M4Q2", "A2B3");
+        expect(window.location.hash).toBe("#/teilnehmer?uc=K7M4Q2&tc=A2B3");
+        expect(mocks.error).not.toHaveBeenCalled();
     });
 
     it("verdrahtet Aktionen und Druckdaten", async () => {
@@ -168,5 +180,15 @@ describe("controllerBindings", () => {
         mocks.pdf.generateAllPDFsAsZip.mockRejectedValueOnce(new Error("offline"));
         await handler["onZipAllPdfs"]?.();
         expect(mocks.error).toHaveBeenCalledWith(expect.stringContaining("Druckdaten konnten nicht erstellt werden"));
+    });
+
+    it("meldet einen nicht ladbaren Druckteil nur einmal", async () => {
+        const { handler } = baueCtrl();
+        vi.spyOn(console, "error").mockImplementation(() => {});
+        // ladePdfGenerator meldet selbst; der Generator legt keine zweite Meldung dazu
+        // (THW-Review 2026-10-05, offline-resilience P3-2).
+        mocks.ladePdf.mockRejectedValueOnce(new Error("Failed to fetch dynamically imported module"));
+        await handler["onZipAllPdfs"]?.();
+        expect(mocks.error).not.toHaveBeenCalled();
     });
 });

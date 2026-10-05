@@ -37,45 +37,82 @@ export function mitZeitlimit<T>(versprechen: Promise<T>): Promise<T> {
     return Promise.race([versprechen, ablauf]).finally(() => clearTimeout(timer));
 }
 
-export function rueckfrageText(modus: GenerierModus, uebungName: string): string {
+/** Rückfrage vor dem Überschreiben; „Als neue Übung“ fragt nicht nach. */
+export function rueckfrageText(uebungName: string): string {
     const name = uebungName || "ohne Namen";
-    if (modus === "ueberschreiben") {
-        return [
-            `Bestehende Übung „${name}“ überschreiben?`,
-            "",
-            "Die Funksprüche werden neu verteilt, Übungscode und Teilnehmer-Links bleiben gleich. Danach gilt:",
-            "• Verteilte Ausdrucke und Vordrucke passen nicht mehr zur Übung.",
-            "• Geöffnete Teilnehmer-Links zeigen andere Funksprüche; umbenannte Teilnehmer bekommen einen neuen Code.",
-            "• Gesetzte Status (abgesetzt, übertragen, Anmeldungen) hängen an den Nachrichtennummern und passen nicht " +
-            "mehr zum neuen Inhalt. Setze sie in der Übungsleitung zurück.",
-            "• Geänderte Lösungswörter gelten sofort, auch gegenüber schon ausgedruckten.",
-            "",
-            "Das lässt sich nicht rückgängig machen."
-        ].join("\n");
-    }
     return [
-        "Als neue Übung anlegen?",
+        `Bestehende Übung „${name}“ überschreiben?`,
         "",
-        "Die Übung bekommt eine neue ID, einen neuen Übungscode und neue Teilnehmercodes. " +
-        `Die bisherige Übung „${name}“ bleibt mit ihren Links und Ausdrucken unverändert bestehen.`
+        "Die Funksprüche werden neu verteilt, Übungscode und Teilnehmer-Links bleiben gleich. Danach gilt:",
+        "• Verteilte Ausdrucke und Vordrucke passen nicht mehr zur Übung.",
+        "• Geöffnete Teilnehmer-Links zeigen andere Funksprüche; umbenannte Teilnehmer bekommen einen neuen Code.",
+        "• Der Übungsstand wird für alle zurückgesetzt: abgesetzte Sprüche, Anmeldungen, empfangene " +
+        "Lösungswörter und Stärken sowie die Notizen der Übungsleitung. Sie gehören zur alten Fassung. " +
+        "Wer ihn behalten will, sichert ihn vorher in der Übungsleitung mit „Übungsleitung als PDF“.",
+        "• Geänderte Lösungswörter gelten sofort, auch gegenüber schon ausgedruckten.",
+        "",
+        "Das lässt sich nicht rückgängig machen."
     ].join("\n");
 }
 
+/**
+ * Nach einem Fehler oder Zeitlimit. Ein abgelaufenes Zeitlimit heißt nicht
+ * „nicht gespeichert“: Der Schreibvorgang bleibt in der Warteschlange und kann
+ * ankommen, sobald die Verbindung zurück ist (THW-Review 2026-10-05,
+ * offline-resilience P2-1).
+ */
 export function speicherFehlerText(error: unknown, warGespeichert: boolean): string {
-    const grund = error instanceof ZeitlimitFehler
-        ? "Der Server hat nicht rechtzeitig geantwortet – vermutlich keine oder eine schwache Internetverbindung."
-        : "Prüfe die Internetverbindung.";
+    if (error instanceof ZeitlimitFehler) {
+        const folge = warGespeichert
+            ? "Unten stehen weiter die Links der zuletzt bestätigten Fassung. Kommt das Speichern noch an, " +
+              "gilt die neue Fassung. Öffne die Übung später mit Netz über ihren Bearbeiten-Link neu, um zu sehen, welche gilt."
+            : "Gib noch keine Links weiter. Kommt das Speichern noch an, erscheint die Übung später unter " +
+              "„Gespeicherte Übungen“; erzeugst du sie jetzt neu, gibt es sie dann womöglich doppelt.";
+        return "Speichern nicht bestätigt: Der Server hat nicht rechtzeitig geantwortet, vermutlich keine oder eine " +
+            `schwache Internetverbindung. Das Speichern kann noch ankommen, solange diese Seite offen ist. ${folge}`;
+    }
     const stand = warGespeichert
         ? "Es wurde nichts verändert: Die angezeigten Links gehören weiter zur zuletzt gespeicherten Fassung."
         : "Gib noch keine Links weiter – es gibt noch keine gespeicherte Übung.";
-    return `Die Übung wurde nicht gespeichert. ${grund} ${stand}`;
+    return `Die Übung wurde nicht gespeichert. Prüfe die Internetverbindung. ${stand}`;
 }
 
-/** Erfolgsmeldung nach erneutem Generieren einer schon gespeicherten Übung. */
-export function erfolgsText(modus: GenerierModus, uebungCode: string): string {
-    return modus === "neu"
-        ? `Neue Übung angelegt (Übungscode ${uebungCode}). Die bisherige Übung bleibt unverändert.`
-        : "Übung überschrieben. Verteile die Unterlagen neu und setze Status in der Übungsleitung zurück.";
+/** Rückmeldung nach erneutem Generieren einer schon gespeicherten Übung. */
+export function erfolgsText(modus: GenerierModus, uebungCode: string, statusZurueckgesetzt = true): string {
+    if (modus === "neu") {
+        return `Neue Übung angelegt (Übungscode ${uebungCode}). Die bisherige Übung bleibt unverändert. ` +
+            "Die Links unten gehören zur neuen Übung.";
+    }
+    return statusZurueckgesetzt
+        ? "Übung überschrieben, der Übungsstand ist für alle zurückgesetzt. Verteile die Unterlagen neu."
+        : "Übung überschrieben. Das Zurücksetzen des Übungsstands hat der Server noch nicht bestätigt; es wird " +
+          "nachgereicht, solange diese Seite offen ist. Zeigt die Übungsleitung noch alte Status, setze sie dort zurück. " +
+          "Verteile die Unterlagen neu.";
+}
+
+/**
+ * Name für „Als neue Übung“: Hat der Nutzer ihn nicht geändert, bekommt er
+ * einen Zusatz („(2)“, „(3)“ …), sonst gäbe es zwei gleichnamige Übungen.
+ */
+export function nameFuerNeueUebung(name: string, bisherigerName: string): string {
+    const aktuell = (name ?? "").trim();
+    if (aktuell === "" || aktuell !== (bisherigerName ?? "").trim()) {
+        return name;
+    }
+    const treffer = /^(.*?)\s*\((\d+)\)$/.exec(aktuell);
+    return treffer
+        ? `${treffer[1]} (${Number(treffer[2]) + 1})`
+        : `${aktuell} (2)`;
+}
+
+export function setzeNameImFormular(name: string): void {
+    if (typeof document === "undefined" || typeof document.getElementById !== "function") {
+        return;
+    }
+    const input = document.getElementById("nameDerUebung") as HTMLInputElement | null;
+    if (input) {
+        input.value = name;
+    }
 }
 
 /**

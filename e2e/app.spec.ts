@@ -282,7 +282,8 @@ test("@generator generates exercise with extended custom participant list", asyn
     await expect(page.locator("#links-teilnehmer-container")).toContainText("Florian Musterstadt 54/2");
     await expect(page.locator("#links-teilnehmer-container")).toContainText("Heros Beispielstadt 61/10");
     await expect(page.locator("#links-teilnehmer-container .generator-link-row[data-link-type='teilnehmer'] .generator-link-url code").first()).toContainText("#/teilnehmer?uc=");
-    await expect(page.locator("#links-teilnehmer-container")).toContainText("Teilnehmer Code:");
+    await expect(page.locator("#links-teilnehmer-container")).toContainText("Übungscode ");
+    await expect(page.locator("#links-teilnehmer-container")).toContainText(" · Teilnehmercode ");
 });
 
 test("@generator generates exercise from szenario source", async ({ page }) => {
@@ -367,7 +368,9 @@ test("@generator blocks generation when participant names are duplicates", async
 
     await page.locator("#startUebungBtn").click();
 
-    await expect(page.locator("#globalToastContainer")).toContainText("Teilnehmernamen müssen eindeutig sein.");
+    // Eingabefehler stehen am Feld und im Kasten; gestapelte Toasts gibt es dafür
+    // nicht mehr (THW-Review 2026-10-05, error-recovery P2-1).
+    await expect(page.locator("#globalToastContainer .app-toast.is-error")).toHaveCount(0);
     await expect(page.locator("#uebung-links")).toBeHidden();
     // Die Meldung steht dauerhaft am Feld, nicht nur im Toast.
     await expect(page.locator("#teilnehmer-body .teilnehmer-input.is-invalid")).toHaveCount(2);
@@ -382,7 +385,8 @@ test("@generator blocks generation when no participant name is provided", async 
 
     await page.locator("#startUebungBtn").click();
 
-    await expect(page.locator("#globalToastContainer")).toContainText("Bitte mindestens einen Teilnehmer mit Funkrufnamen angeben.");
+    await expect(page.locator("#generatorFehler")).toContainText("Bitte mindestens einen Teilnehmer mit Funkrufnamen angeben.");
+    await expect(page.locator("#globalToastContainer .app-toast.is-error")).toHaveCount(0);
     await expect(page.locator("#uebung-links")).toBeHidden();
     await expect(page.locator("#teilnehmer-body .teilnehmer-input").first()).toHaveClass(/is-invalid/);
 });
@@ -752,10 +756,37 @@ test("@admin admin previous returns to first page after next", async ({ page }) 
 test("@admin admin delete removes seeded exercise row", async ({ page }) => {
     await page.goto("/#/admin");
 
+    // Der Übungscode steht in der Liste (THW-Review 2026-10-05, error-recovery P2-2).
+    await expect(page.getByRole("columnheader", { name: "Übungscode" })).toBeVisible();
+    await expect(page.locator("#adminUebungslisteBody tr", { hasText: "Mock Übung" }).first()).toContainText("K7M4Q2");
+
     page.once("dialog", dialog => dialog.accept());
     const targetRow = page.locator("#adminUebungslisteBody tr", { hasText: "Mock Übung" }).first();
     await targetRow.locator("button[data-action='delete']").click();
     await expect(page.locator("#adminUebungslisteBody")).not.toContainText("Mock Übung");
+    await expect(page.locator("#adminLoeschHinweis")).toContainText("wird in 8 Sekunden gelöscht");
+    // Nach Ablauf der Frist wirklich gelöscht: Die Gesamtzahl sinkt.
+    await expect(page.locator("#adminUebungslisteInfo")).toHaveText("Zeige 1 - 10 von 11", { timeout: 15_000 });
+    await expect(page.locator("#adminLoeschHinweis")).toBeHidden();
+});
+
+test("@admin admin delete can be undone within the grace period", async ({ page }) => {
+    await page.goto("/#/admin");
+
+    page.once("dialog", dialog => dialog.accept());
+    await page.locator("#adminUebungslisteBody tr", { hasText: "Mock Übung" }).first()
+        .locator("button[data-action='delete']").click();
+    await expect(page.locator("#adminUebungslisteBody")).not.toContainText("Mock Übung");
+
+    await page.getByTestId("admin-loeschen-rueckgaengig").click();
+    await expect(page.locator("#adminUebungslisteBody")).toContainText("Mock Übung");
+    await expect(page.locator("#adminLoeschHinweis")).toBeHidden();
+
+    // Auch nach Ablauf der Frist bleibt die Übung erhalten.
+    await page.waitForTimeout(9000);
+    await page.reload();
+    await expect(page.locator("#adminUebungslisteBody")).toContainText("Mock Übung");
+    await expect(page.locator("#adminUebungslisteInfo")).toHaveText("Zeige 1 - 10 von 12");
 });
 
 test("@admin admin delete keeps the current page", async ({ page }) => {
@@ -768,7 +799,8 @@ test("@admin admin delete keeps the current page", async ({ page }) => {
     const targetRow = page.locator("#adminUebungslisteBody tr", { hasText: "Seed Übung 11" }).first();
     await targetRow.locator("button[data-action='delete']").click();
 
-    await expect(page.locator("#adminUebungslisteInfo")).toHaveText("Zeige 11 - 11 von 11");
+    // Gelöscht wird erst nach der Rückgängig-Frist von 8 s.
+    await expect(page.locator("#adminUebungslisteInfo")).toHaveText("Zeige 11 - 11 von 11", { timeout: 15_000 });
     await expect(page.locator("#adminUebungslisteBody")).toContainText("Seed Übung 12");
     await expect(page.locator("#adminUebungslisteBody")).not.toContainText("Seed Übung 11");
 });
@@ -786,7 +818,8 @@ test("@admin admin delete falls back to the previous page when the page empties"
         await expect(page.locator("#adminUebungslisteBody")).not.toContainText(name);
     }
 
-    await expect(page.locator("#adminUebungslisteInfo")).toHaveText("Zeige 1 - 10 von 10");
+    // Die zweite Löschung schließt die erste sofort ab, die zweite folgt nach der Frist.
+    await expect(page.locator("#adminUebungslisteInfo")).toHaveText("Zeige 1 - 10 von 10", { timeout: 15_000 });
     await expect(page.getByRole("button", { name: "← Vorherige" })).toBeDisabled();
     await expect(page.getByRole("button", { name: "Nächste →" })).toBeDisabled();
 });
@@ -1098,4 +1131,118 @@ test("@generator @pdf zip download contains generated pdfs", async ({ page }) =>
     // ZIP-Signatur "PK\x03\x04" und mindestens ein enthaltener PDF-Dateiname.
     expect(zip.subarray(0, 4).toString("latin1")).toBe("PK\x03\x04");
     expect(zip.toString("latin1")).toContain(".pdf");
+});
+
+test("@generator quick join reports wrong code length at the field", async ({ page }) => {
+    await page.goto("/#/generator");
+    await expect(page.locator("#generatorQuickJoinUebungCode")).toHaveAttribute("placeholder", "z. B. K7M4Q2");
+
+    await page.locator("#generatorQuickJoinUebungCode").fill("K7M4Q");
+    await page.locator("#generatorQuickJoinTeilnehmerCode").fill("A1B");
+    await page.locator("#generatorQuickJoinForm button[type='submit']").click();
+
+    // Falsche Länge führte bisher ohne Meldung ins Code-Formular (THW-Review 2026-10-05, error-recovery P3-3).
+    await expect(page).toHaveURL(/#\/generator/);
+    await expect(page.locator("#generatorQuickJoinUebungCode")).toHaveClass(/is-invalid/);
+    await expect(page.locator("#generatorQuickJoinUebungCode-fehler")).toContainText("6 Zeichen, eingegeben sind 5");
+    await expect(page.locator("#generatorQuickJoinTeilnehmerCode-fehler")).toContainText("„1“ kommt in Codes nicht vor");
+});
+
+test("@generator template picker describes every template", async ({ page }) => {
+    await page.goto("/");
+
+    const info = page.locator("#funkspruchVorlageInfo");
+    await expect(info).toHaveAttribute("open", "");
+    await expect(info.locator("li[data-vorlage='thwleer']")).toContainText("Ostfriesland");
+    await expect(info.locator("li[data-vorlage='thwleer']")).toContainText("aus einer gefunkten Übung");
+    await expect(info.locator("li[data-vorlage='vorlageLustig']")).toContainText("nicht für die fachliche Ausbildung");
+    // Nur ein Platzhalter im Auswahlfeld (THW-Review 2026-10-05, new-user P2-1).
+    await expect(page.locator(".multiselect-search")).toHaveAttribute("placeholder", "");
+});
+
+test("@generator discarded draft can be restored", async ({ page }) => {
+    await page.goto("/");
+    await page.locator("#nameDerUebung").fill("Entwurf E2E");
+    await setParticipants(page, ["Heros E2E 11/1"]);
+    await page.waitForTimeout(600);
+    await page.reload();
+
+    await expect(page.locator("#generatorEntwurfHinweis")).toBeVisible();
+    await expect(page.locator("#nameDerUebung")).toHaveValue("Entwurf E2E");
+
+    // „Hinweis ausblenden“ lässt die Eingaben stehen (THW-Review 2026-10-05, destructive-action P2-2).
+    await page.getByTestId("generator-entwurf-ausblenden").click();
+    await expect(page.locator("#generatorEntwurfHinweis")).toBeHidden();
+    await expect(page.locator("#nameDerUebung")).toHaveValue("Entwurf E2E");
+
+    await page.reload();
+    await page.getByTestId("generator-entwurf-verwerfen").click();
+    await expect(page.locator("#nameDerUebung")).not.toHaveValue("Entwurf E2E");
+    await page.getByTestId("generator-entwurf-rueckgaengig").click();
+    await expect(page.locator("#nameDerUebung")).toHaveValue("Entwurf E2E");
+    await expect(page.locator("#teilnehmer-body .teilnehmer-input").first()).toHaveValue("Heros E2E 11/1");
+});
+
+test("@generator regenerating as a new exercise adds a name suffix and keeps the old one", async ({ page }) => {
+    await page.goto("/");
+    await page.locator("#nameDerUebung").fill("Dienstabend E2E");
+    await setParticipants(page, ["Heros E2E 11/1", "Heros E2E 11/2"]);
+    await page.locator("#spruecheProTeilnehmer").fill("3");
+    await fillPflichtfelder(page);
+    await page.locator("#startUebungBtn").click();
+    await expect(page.locator("#uebung-links")).toBeVisible();
+    const ersteAdresse = page.url();
+
+    // Kein Dialog für „Als neue Übung“ (THW-Review 2026-10-05, destructive-action P3-1).
+    let dialoge = 0;
+    page.on("dialog", dialog => {
+        dialoge++;
+        void dialog.dismiss();
+    });
+    await page.locator("#startUebungBtn").click();
+    await expect(page.locator("#generatorErgebnisHinweis")).toContainText("Neue Übung angelegt");
+    expect(dialoge).toBe(0);
+    await expect(page.locator("#nameDerUebung")).toHaveValue("Dienstabend E2E (2)");
+    expect(page.url()).not.toBe(ersteAdresse);
+    // Die Rückmeldung steht im Ergebnis, nicht als Toast über der Linktabelle (stress-test P3-2).
+    await expect(page.locator("#globalToastContainer .app-toast.is-success")).toHaveCount(0);
+
+    // Beide Übungen stehen unter „Zuletzt in diesem Browser erstellt“.
+    await page.goto("/#/generator");
+    await expect(page.locator("#generatorZuletzt")).toBeVisible();
+    await expect(page.locator("#generatorZuletztListe li")).toHaveCount(2);
+    await expect(page.locator("#generatorZuletztListe li").first()).toContainText("Dienstabend E2E (2)");
+});
+
+test("@generator @uebungsleitung overwriting resets the live status of the exercise", async ({ page, context }) => {
+    await page.goto("/");
+    await setParticipants(page, ["Heros E2E 11/1", "Heros E2E 11/2"]);
+    await page.locator("#spruecheProTeilnehmer").fill("3");
+    await fillPflichtfelder(page);
+    await page.locator("#startUebungBtn").click();
+    await expect(page.locator("#uebung-links")).toBeVisible();
+    const uebungId = page.url().split("#/generator/")[1] ?? "";
+    expect(uebungId).not.toBe("");
+
+    // Übungsleitung im zweiten Tab: einen Spruch abhaken.
+    const leitung = await context.newPage();
+    await leitung.goto(`/#/uebungsleitung/${uebungId}`);
+    const abhaken = leitung.locator("#uebungsleitungNachrichten button", { hasText: "Als abgesetzt markieren" }).first();
+    await abhaken.click();
+    await expect(leitung.locator("#uebungsleitungNachrichten")).toContainText(/abgesetzt/i);
+    const vorher = await leitung.locator("#uebungsleitungNachrichten button", { hasText: "Als abgesetzt markieren" }).count();
+
+    // Überschreiben: Rückfrage nennt das Zurücksetzen, danach ist der Stand weg
+    // (THW-Review 2026-10-05, destructive-action P2-1, workflow W3).
+    page.once("dialog", dialog => {
+        expect(dialog.message()).toContain("Übungsstand wird für alle zurückgesetzt");
+        void dialog.accept();
+    });
+    await page.getByTestId("generator-ueberschreiben").click();
+    await expect(page.locator("#generatorErgebnisHinweis")).toContainText("Übungsstand ist für alle zurückgesetzt");
+
+    await leitung.reload();
+    await expect.poll(
+        () => leitung.locator("#uebungsleitungNachrichten button", { hasText: "Als abgesetzt markieren" }).count()
+    ).toBe(vorher + 1);
 });

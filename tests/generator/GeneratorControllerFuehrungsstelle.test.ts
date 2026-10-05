@@ -17,7 +17,8 @@ const mocks = vi.hoisted(() => ({
 
 vi.mock("../../src/core/chart", () => ({ Chart: { register: vi.fn() } }));
 vi.mock("../../src/services/pdfGeneratorLazy", () => ({
-    ladePdfGenerator: () => Promise.resolve({ generateDrehbuchPDF: mocks.generateDrehbuchPDF })
+    ladePdfGenerator: () => Promise.resolve({ generateDrehbuchPDF: mocks.generateDrehbuchPDF }),
+    vorladenPdfGenerator: vi.fn()
 }));
 vi.mock("../../src/core/UiFeedback", () => ({
     uiFeedback: { error: mocks.error, info: mocks.info, confirm: mocks.confirm, success: vi.fn() }
@@ -145,8 +146,12 @@ describe("GeneratorController Führungsstellen-Übung", () => {
         const controller = await makeController();
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         (controller as any).view = baueView({ getSelectedFuehrungsstelle: () => "" });
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const fehlerBox = vi.spyOn((controller as any).hinweise, "zeigeFehlerBox");
         await controller.startUebung();
-        expect(mocks.error).toHaveBeenCalledWith("Bitte ein Drehbuch auswählen.");
+        // Eingabefehler: am Feld und im Kasten, kein Toast (THW-Review 2026-10-05, error-recovery P2-1).
+        expect(fehlerBox).toHaveBeenCalledWith("Bitte ein Drehbuch auswählen.");
+        expect(mocks.error).not.toHaveBeenCalledWith("Bitte ein Drehbuch auswählen.");
 
         mocks.lade.mockRejectedValueOnce(new Error("HTTP 404"));
         // eslint-disable-next-line @typescript-eslint/no-explicit-any

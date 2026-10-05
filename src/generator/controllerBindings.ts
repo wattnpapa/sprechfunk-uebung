@@ -1,21 +1,38 @@
 import type { GeneratorController } from "./index";
 import type { FunkspruchQuelle } from "./GeneratorView";
-import { ladePdfGenerator } from "../services/pdfGeneratorLazy";
+import { ladePdfGenerator, type PdfGeneratorService } from "../services/pdfGeneratorLazy";
 import { uiFeedback } from "../core/UiFeedback";
 import { ladeDrehbuchDerUebung, stelleTeilnehmerWiederHer } from "./controllerFuehrungsstelle";
 import { updateSzenarioInfo } from "./controllerQuellen";
+import { pruefeZugangsCodes } from "./GeneratorValidierung";
 
 /** Verdrahtet die Ereignisse der GeneratorView mit dem Controller. */
 
+/** Der Druckteil ließ sich nicht laden; ladePdfGenerator hat das schon gemeldet. */
+class DruckteilNichtGeladen extends Error {}
+
+async function ladeDruckteil(): Promise<PdfGeneratorService> {
+    try {
+        return await ladePdfGenerator();
+    } catch (error) {
+        throw new DruckteilNichtGeladen(String(error));
+    }
+}
+
 /**
  * Druckdaten ohne Netz: Bisher passierte beim Klick gar nichts
- * (THW-Review offline-resilience P0-2). Jetzt kommt eine Meldung.
+ * (THW-Review offline-resilience P0-2). Jetzt kommt eine Meldung – genau
+ * eine je Ursache: Scheitert schon das Laden des Druckteils, steht dessen
+ * Meldung bereits da (THW-Review 2026-10-05, offline-resilience P3-2).
  */
 async function mitDruckFehlermeldung(aktion: () => Promise<void>): Promise<void> {
     try {
         await aktion();
     } catch (error) {
         console.error("Druckdaten konnten nicht erstellt werden:", error);
+        if (error instanceof DruckteilNichtGeladen) {
+            return;
+        }
         uiFeedback.error("Die Druckdaten konnten nicht erstellt werden. Prüfe die Internetverbindung und versuche es erneut.");
     }
 }
@@ -50,11 +67,11 @@ function bindPrimaryActions(ctrl: GeneratorController): void {
         onChangePage: (step: number) => ctrl.changePage(step),
         onCopyJson: () => ctrl.copyJSONToClipboard(),
         onZipAllPdfs: () => mitDruckFehlermeldung(async () => {
-            const pdfGenerator = await ladePdfGenerator();
+            const pdfGenerator = await ladeDruckteil();
             await pdfGenerator.generateAllPDFsAsZip(ctrl.funkUebung);
         }),
         onDownloadUebersichtPdf: () => mitDruckFehlermeldung(async () => {
-            const pdfGenerator = await ladePdfGenerator();
+            const pdfGenerator = await ladeDruckteil();
             await pdfGenerator.generateAllTeilnehmerUebersichtPrint(ctrl.funkUebung);
         }),
         onDrehbuchPdf: () => mitDruckFehlermeldung(async () => {
@@ -62,7 +79,7 @@ function bindPrimaryActions(ctrl: GeneratorController): void {
             if (!drehbuch) {
                 return;
             }
-            const pdfGenerator = await ladePdfGenerator();
+            const pdfGenerator = await ladeDruckteil();
             await pdfGenerator.generateDrehbuchPDF(ctrl.funkUebung, drehbuch);
         })
     });
@@ -92,8 +109,10 @@ function bindTeilnehmerEvents(ctrl: GeneratorController): void {
 
 function bindQuickJoin(ctrl: GeneratorController): void {
     ctrl.view.bindQuickJoin((uebungCode, teilnehmerCode) => {
-        if (!uebungCode || !teilnehmerCode) {
-            uiFeedback.error("Bitte Übungscode und Teilnehmercode eingeben.");
+        ctrl.hinweise.entferneFeldFehler();
+        const fehler = pruefeZugangsCodes(uebungCode, teilnehmerCode);
+        if (fehler.length > 0) {
+            ctrl.hinweise.zeigeFeldFehler(fehler);
             return;
         }
         window.location.hash = `#/teilnehmer?${new URLSearchParams({
