@@ -119,8 +119,8 @@
     "jspdf": "^4.2.1",
     "jspdf-autotable": "^5.0.8",
     "jszip": "^3.10.2",
-    "marked": "^18.0.14",
-    "pdfjs-dist": "^6.3.289"
+    "marked": "^18.1.0",
+    "pdfjs-dist": "^6.4.299"
   },
   "overrides": {
     "braces": "3.0.3",
