@@ -115,7 +115,7 @@
     "bootstrap": "^5.3.8",
     "bos-nachrichtenvordruck": "github:wattnpapa/bos-nachrichtenvordruck#v1.0.0",
     "chart.js": "^4.5.1",
-    "firebase": "^12.19.0",
+    "firebase": "^13.0.0",
     "jspdf": "^4.2.1",
     "jspdf-autotable": "^5.0.8",
     "jszip": "^3.10.2",
