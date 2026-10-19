@@ -117,10 +117,10 @@
     "chart.js": "^4.5.1",
     "firebase": "^12.19.0",
     "jspdf": "^4.2.1",
-    "jspdf-autotable": "^5.0.8",
+    "jspdf-autotable": "^5.0.9",
     "jszip": "^3.10.2",
-    "marked": "^18.0.14",
-    "pdfjs-dist": "^6.3.289"
+    "marked": "^18.1.1",
+    "pdfjs-dist": "^6.4.299"
   },
   "overrides": {
     "braces": "3.0.3",
