@@ -49,7 +49,9 @@ describe("Werkzeugleiste im Footer", () => {
 
     it("öffnet fremde Werkzeuge im neuen Tab, das eigene nicht", () => {
         for (const anker of leiste.matchAll(/<a\s[^>]*>/g)) {
-            const eigenes = anker[0].includes("https://sprechfunk-uebung.de/");
+            // Über den Host entscheiden, nicht über einen Teilstring der URL.
+            const href = /href="([^"]*)"/.exec(anker[0])?.[1] ?? "";
+            const eigenes = new URL(href, "https://sprechfunk-uebung.de/").hostname === "sprechfunk-uebung.de";
             if (eigenes) {
                 expect(anker[0]).not.toContain("target=");
             } else {
