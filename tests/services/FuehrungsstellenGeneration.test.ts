@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { GenerationService } from "../../src/services/GenerationService";
 import { FunkUebung } from "../../src/models/FunkUebung";
+import { fuehrungsstellenZeitachse } from "../../src/types/FuehrungsstellenUebung";
 import type { FuehrungsstellenUebung } from "../../src/types/FuehrungsstellenUebung";
 import type { Nachricht } from "../../src/types/Nachricht";
 
@@ -216,5 +217,72 @@ describe("GenerationService Führungsstellen-Übung", () => {
         uebung.spruecheAnMehrere = 0;
         service.generate(uebung);
         expect(uebung.fuehrungsstelle).toBeUndefined();
+    });
+});
+
+describe("GenerationService Führungsstellen-Übung mit eingespielter Führung", () => {
+    function mitFuehrung(): FuehrungsstellenUebung {
+        return {
+            ...baueDrehbuch(),
+            fuehrung: {
+                bezeichnung: "Leitung der Einsatzleitung",
+                hintergrund: "Hintergrund der Führung.",
+                nachrichten: [
+                    { zeit: 6, an: ["ea:s1"], weg: "funk", art: "auftrag", text: "{{ea:s1}}: Einsatzstelle 1 verstärken.", erwartung: "An {{ea:s1}} übermitteln." },
+                    // s1 und s3 liegen bei zwei Abschnitten beim selben Abschnitt.
+                    { zeit: 10, an: ["ea:s1", "ea:s3", "stab"], weg: "funk", art: "information", text: "Lage an alle.", erwartung: "Mehrfachspruch." },
+                    { zeit: 12, an: ["stab"], weg: "email", art: "lagemeldung", betreff: "Lagemeldung an {{stab}}", text: "Gesamtstärke folgt.", erwartung: "Per E-Mail." },
+                    { zeit: 20, an: ["alle-ea"], weg: "funk", art: "information", text: "Wetterwarnung.", erwartung: "An alle Abschnitte." }
+                ]
+            }
+        };
+    }
+
+    it("macht die Ausgänge zu Nachrichten der beübten Stelle mit aufgelösten Empfängern", () => {
+        const uebung = baueUebung();
+        uebung.fuehrungsstelle = { ...uebung.fuehrungsstelle!, fuehrungEingespielt: true };
+        new GenerationService().generateFuehrungsstelle(uebung, mitFuehrung());
+
+        expect(uebung.fuehrungsstelle?.fuehrungEingespielt).toBe(true);
+        const ausgaenge = uebung.nachrichten["EL 10"] ?? [];
+        expect(ausgaenge.map(n => n.empfaenger)).toEqual([
+            ["EA 11"],
+            ["EA 11", "Kater Test"],
+            ["Kater Test"],
+            ["EA 11", "EA 12"]
+        ]);
+        expect(ausgaenge[0]).toMatchObject({ nachricht: "EA 11: Einsatzstelle 1 verstärken.", erwartung: "An EA 11 übermitteln.", xZeitSlot: 6, weg: "funk", meldeart: "auftrag" });
+        expect(ausgaenge[2]).toMatchObject({ betreff: "Lagemeldung an Kater Test", weg: "email" });
+        // Alle anderen senden weiter nur an die beübte Stelle.
+        alleNachrichten(uebung)
+            .filter(({ sender }) => sender !== "EL 10")
+            .forEach(({ nachricht }) => expect(nachricht.empfaenger).toEqual(["EL 10"]));
+    });
+
+    it("ordnet Ausgänge bei gleicher Minute hinter Stränge und Stab", () => {
+        const uebung = baueUebung();
+        uebung.fuehrungsstelle = { ...uebung.fuehrungsstelle!, fuehrungEingespielt: true };
+        new GenerationService().generateFuehrungsstelle(uebung, mitFuehrung());
+        const minute10 = alleNachrichten(uebung)
+            .filter(({ nachricht }) => nachricht.xZeitSlot === 10)
+            .sort((a, b) => (a.nachricht.szenarioNr ?? 0) - (b.nachricht.szenarioNr ?? 0));
+        expect(minute10.at(-1)?.sender).toBe("EL 10");
+        expect(fuehrungsstellenZeitachse(mitFuehrung()).some(e => e.an)).toBe(false);
+        expect(fuehrungsstellenZeitachse(mitFuehrung(), true).filter(e => e.an)).toHaveLength(4);
+    });
+
+    it("lässt die Ausgänge ohne Schalter weg und speichert den ausgeschalteten Zustand nicht", () => {
+        const uebung = baueUebung();
+        uebung.fuehrungsstelle = { ...uebung.fuehrungsstelle!, fuehrungEingespielt: false };
+        new GenerationService().generateFuehrungsstelle(uebung, mitFuehrung());
+        expect(uebung.nachrichten["EL 10"]).toEqual([]);
+        expect(uebung.fuehrungsstelle).not.toHaveProperty("fuehrungEingespielt");
+    });
+
+    it("lehnt den Schalter bei einem Drehbuch ohne Ausgänge ab", () => {
+        const uebung = baueUebung();
+        uebung.fuehrungsstelle = { ...uebung.fuehrungsstelle!, fuehrungEingespielt: true };
+        expect(() => new GenerationService().generateFuehrungsstelle(uebung, baueDrehbuch()))
+            .toThrow("enthält keine Ausgänge der Führung");
     });
 });

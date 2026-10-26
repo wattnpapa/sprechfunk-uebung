@@ -12,6 +12,8 @@ const MARKUP = `
 <button id="fuehrungsstelleAbschnittHinzufuegen"></button>
 <small id="fuehrungsstelleAbschnitteHinweis"></small>
 <input id="fuehrungsstelleBeginn">
+<input type="checkbox" id="fuehrungsstelleFuehrungEingespielt">
+<small id="fuehrungsstelleFuehrungHinweis"></small>
 <div id="fuehrungsstelleDownloads" style="display:none"></div>`;
 
 describe("GeneratorFuehrungsstellenForm", () => {
@@ -43,6 +45,21 @@ describe("GeneratorFuehrungsstellenForm", () => {
         expect(form.getRollen()).toEqual({ beuebteStelle: "EL", uebergeordnet: "Stab", unterstellt: ["EA"] });
         expect(form.getRollen()).not.toHaveProperty("beginn");
         expect(form.getRollen()).not.toHaveProperty("stellen");
+    });
+
+    it("liefert die eingespielte Führung nur, wenn der Schalter an und freigegeben ist", () => {
+        const rollen = { beuebteStelle: "EL", uebergeordnet: "Stab", unterstellt: ["EA"] };
+        form.setRollen({ ...rollen, fuehrungEingespielt: true }, { min: 1, max: 6 });
+        form.setFuehrungEinspielbar(true);
+        expect(form.getRollen()).toEqual({ ...rollen, fuehrungEingespielt: true });
+
+        form.setFuehrungEinspielbar(false);
+        expect(form.getRollen()).toEqual(rollen);
+        expect(document.getElementById("fuehrungsstelleFuehrungHinweis")?.textContent).toContain("keine Ausgänge");
+
+        form.setFuehrungEinspielbar(true);
+        form.setRollen(rollen, { min: 1, max: 6 });
+        expect(form.getRollen()).not.toHaveProperty("fuehrungEingespielt");
     });
 
     it("führt je Rolle einen Stellennamen, der mit dem Funkrufnamen verknüpft bleibt", () => {

@@ -1,7 +1,8 @@
 /**
  * Formularteil der Führungsstellen-Übung im Generator: Drehbuch-Auswahl,
  * Rollenbesetzung (beübte Stelle, übergeordnete Stelle, Einsatzabschnitte,
- * je mit Funkrufname und Stellenname) und der Drehbuch-Download. Reine DOM-Arbeit; die Grenzen der
+ * je mit Funkrufname und Stellenname), der Schalter für die eingespielte
+ * Führung und der Drehbuch-Download. Reine DOM-Arbeit; die Grenzen der
  * Abschnittszahl kommen vom Controller aus dem gewählten Drehbuch.
  */
 
@@ -13,6 +14,8 @@ export interface FuehrungsstellenRollenFormular {
     beginn?: string;
     /** Stellenname je Funkrufname; nur gefüllte Felder. */
     stellen?: Record<string, string>;
+    /** Nur gesetzt, wenn der Schalter an ist. */
+    fuehrungEingespielt?: boolean;
 }
 
 /** Eine Zeile der Abschnittsliste: Funkrufname und Stellenname. */
@@ -70,6 +73,10 @@ export class GeneratorFuehrungsstellenForm {
         this.setWert("fuehrungsstelleUebergeordnet", rollen.uebergeordnet);
         this.setWert("fuehrungsstelleUebergeordnetName", stellen[rollen.uebergeordnet] ?? "");
         this.setWert("fuehrungsstelleBeginn", rollen.beginn ?? "");
+        const fuehrung = this.fuehrungSchalter();
+        if (fuehrung) {
+            fuehrung.checked = rollen.fuehrungEingespielt === true;
+        }
         this.renderAbschnitte(
             rollen.unterstellt.map(funkrufname => ({ funkrufname, stelle: stellen[funkrufname] ?? "" })),
             grenzen
@@ -81,6 +88,8 @@ export class GeneratorFuehrungsstellenForm {
         const beuebteStelle = this.wert("fuehrungsstelleBeuebteStelle");
         const uebergeordnet = this.wert("fuehrungsstelleUebergeordnet");
         const beginn = this.wert("fuehrungsstelleBeginn");
+        const schalter = this.fuehrungSchalter();
+        const fuehrungEingespielt = !!schalter && schalter.checked && !schalter.disabled;
         const stellen: Record<string, string> = {};
         const merke = (funkrufname: string, stelle: string): void => {
             if (funkrufname && stelle) {
@@ -95,8 +104,34 @@ export class GeneratorFuehrungsstellenForm {
             uebergeordnet,
             unterstellt: abschnitte.map(zeile => zeile.funkrufname),
             ...(beginn ? { beginn } : {}),
-            ...(Object.keys(stellen).length > 0 ? { stellen } : {})
+            ...(Object.keys(stellen).length > 0 ? { stellen } : {}),
+            ...(fuehrungEingespielt ? { fuehrungEingespielt } : {})
         };
+    }
+
+    /**
+     * Den Schalter gibt es nur für Drehbücher mit Ausgängen der Führung; bei
+     * den anderen bleibt er gesperrt und zählt nicht.
+     */
+    public setFuehrungEinspielbar(moeglich: boolean): void {
+        const schalter = this.fuehrungSchalter();
+        if (schalter) {
+            schalter.disabled = !moeglich;
+        }
+        const hinweis = document.getElementById("fuehrungsstelleFuehrungHinweis");
+        if (hinweis && !moeglich) {
+            hinweis.textContent = "Dieses Drehbuch enthält keine Ausgänge der Führung.";
+        } else if (hinweis) {
+            hinweis.textContent = GeneratorFuehrungsstellenForm.FUEHRUNG_HINWEIS;
+        }
+    }
+
+    private static readonly FUEHRUNG_HINWEIS = "Die Übungsleitung spielt auch Leitung und Sachgebiete der beübten Stelle ein. "
+        + "Deren Ausgänge an Einsatzabschnitte und Stab kommen als ausgefüllte Nachrichtenvordrucke ins ZIP und "
+        + "werden der Fernmeldezentrale zur angegebenen Minute übergeben.";
+
+    private fuehrungSchalter(): HTMLInputElement | null {
+        return document.getElementById("fuehrungsstelleFuehrungEingespielt") as HTMLInputElement | null;
     }
 
     /** Die Abschnittszeilen, wie sie gerade im Formular stehen (getrimmt). */

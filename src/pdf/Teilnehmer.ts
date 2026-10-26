@@ -201,23 +201,35 @@ export class Teilnehmer extends BasePDFTeilnehmer {
     /**
      * Rollenblatt einer Führungsstellen-Übung: Wer einen Abschnitt oder den
      * Stab spielt, braucht neben dem Text die Minute ab Übungsbeginn, den Weg
-     * und die Reaktion, die von der beübten Stelle erwartet wird.
+     * und die Reaktion, die von der beübten Stelle erwartet wird. Für die
+     * eingespielte Führung ist es die Liste ihrer Ausgänge, mit Empfängern.
      */
     private drawFuehrungsstellenTable(nachrichten: Nachricht[], startY: number): void {
         const beginn = this.funkUebung.fuehrungsstelle?.beginn;
+        // Abschnitte und Stab senden nur an die beübte Stelle; erst die
+        // Ausgänge der eingespielten Führung haben wechselnde Empfänger.
+        const beuebteStelle = this.funkUebung.fuehrungsstelle?.beuebteStelle;
+        const zeigeEmpfaenger = nachrichten.some(n => n.empfaenger.some(e => e !== beuebteStelle));
         const zeitWidth = 24;
         const wegWidth = 20;
         const lfdnrWidth = 12;
         const erledigtWidth = 18;
-        const rest = this.contentWidth - lfdnrWidth - zeitWidth - wegWidth - erledigtWidth;
+        const empfaengerWidth = zeigeEmpfaenger ? this.contentWidth * 0.16 : 0;
+        const rest = this.contentWidth - lfdnrWidth - zeitWidth - wegWidth - empfaengerWidth - erledigtWidth;
         const textWidth = rest * 0.6;
         const erwartungWidth = rest - textWidth;
+        const spalten = zeigeEmpfaenger
+            ? [lfdnrWidth, zeitWidth, empfaengerWidth, wegWidth, textWidth, erwartungWidth, erledigtWidth]
+            : [lfdnrWidth, zeitWidth, wegWidth, textWidth, erwartungWidth, erledigtWidth];
 
         (this.pdf as any).autoTable({
-            head: [["Nr.", "Zeit", "Weg", "Nachrichtentext", "Erwartete Reaktion", "Erledigt (Uhrzeit)"]],
+            head: [zeigeEmpfaenger
+                ? ["Nr.", "Zeit", "Empfänger", "Weg", "Nachrichtentext", "Erwartete Reaktion", "Erledigt (Uhrzeit)"]
+                : ["Nr.", "Zeit", "Weg", "Nachrichtentext", "Erwartete Reaktion", "Erledigt (Uhrzeit)"]],
             body: nachrichten.map((n: Nachricht) => [
                 n.id,
                 formatFuehrungsstellenZeit(n.xZeitSlot ?? 0, beginn),
+                ...(zeigeEmpfaenger ? [n.empfaenger.join("\n")] : []),
                 uebermittlungsWegLabel(n.weg),
                 (n.betreff ? `Betreff: ${n.betreff}\n` : "") + String(n.nachricht ?? "").replace(/\\n/g, "\n"),
                 n.erwartung ?? "",
@@ -231,14 +243,7 @@ export class Teilnehmer extends BasePDFTeilnehmer {
                 bottom: this.pageMarginBottom
             },
             tableWidth: this.contentWidth,
-            columnStyles: {
-                0: { cellWidth: lfdnrWidth },
-                1: { cellWidth: zeitWidth },
-                2: { cellWidth: wegWidth },
-                3: { cellWidth: textWidth },
-                4: { cellWidth: erwartungWidth },
-                5: { cellWidth: erledigtWidth }
-            },
+            columnStyles: Object.fromEntries(spalten.map((breite, index) => [index, { cellWidth: breite }])),
             styles: { fontSize: 9, cellPadding: 1.5, lineWidth: 0.1, lineColor: [0, 0, 0], overflow: "linebreak", valign: "top" },
             headStyles: { fillColor: [200, 200, 200] }
         });

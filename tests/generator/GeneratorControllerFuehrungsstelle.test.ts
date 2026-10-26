@@ -69,6 +69,7 @@ function baueView(overrides: Record<string, unknown> = {}) {
         getSelectedLoesungswortOption: () => "none",
         getZentralesLoesungswort: () => "",
         renderFuehrungsstelleInfo: vi.fn(),
+        setFuehrungEinspielbar: vi.fn(),
         renderFuehrungsstellenAbschnitte: vi.fn(),
         getFuehrungsstellenAbschnitte: () => [{ funkrufname: "EA 11", stelle: "" }, { funkrufname: "EA 12", stelle: "" }],
         setFuehrungsstellenRollen: vi.fn(),
@@ -185,6 +186,19 @@ describe("GeneratorController Führungsstellen-Übung", () => {
         expect(view.renderFuehrungsstelleInfo).toHaveBeenCalledWith([
             "Beschreibung des Drehbuchs.",
             "Für 2 bis 4 Einsatzabschnitte · 5 Nachrichten · 180 Minuten."
+        ]);
+        expect(view.setFuehrungEinspielbar).toHaveBeenLastCalledWith(false);
+
+        mocks.lade.mockResolvedValue({
+            ...baueDrehbuch(4, 2),
+            fuehrung: { bezeichnung: "Leitung", hintergrund: "x", nachrichten: [baueDrehbuch(4, 2).uebergeordnet.nachrichten[0]] }
+        });
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        await (controller as any).updateFuehrungsstelleInfo();
+        expect(view.setFuehrungEinspielbar).toHaveBeenLastCalledWith(true);
+        expect(view.renderFuehrungsstelleInfo).toHaveBeenLastCalledWith([
+            "Beschreibung des Drehbuchs.",
+            "Für 2 bis 4 Einsatzabschnitte · 5 Nachrichten · 180 Minuten · 1 Ausgang der Führung zum Einspielen."
         ]);
         // Ein Abschnitt zu wenig: mit einer leeren Zeile auf das Minimum aufgefüllt
         // (Beispielnamen nur als Platzhalter), der getippte Stellenname bleibt erhalten.

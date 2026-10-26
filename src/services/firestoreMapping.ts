@@ -182,12 +182,17 @@ function parseFuehrungsstellenKonfiguration(roh: unknown): FuehrungsstellenKonfi
     if (!slug || !beuebteStelle || !uebergeordnet || unterstellt.length === 0) {
         return undefined;
     }
+    return { slug, beuebteStelle, uebergeordnet, unterstellt, ...optionaleRollenFelder(obj) };
+}
+
+/** Beginn, Stellennamen und eingespielte Führung; nur gültige Werte. */
+function optionaleRollenFelder(obj: Record<string, unknown>): Partial<FuehrungsstellenKonfiguration> {
     const beginn = parseBeginn(obj["beginn"]);
     const stellen = parseStellen(obj["stellen"]);
     return {
-        slug, beuebteStelle, uebergeordnet, unterstellt,
         ...(beginn ? { beginn } : {}),
-        ...(stellen ? { stellen } : {})
+        ...(stellen ? { stellen } : {}),
+        ...(obj["fuehrungEingespielt"] === true ? { fuehrungEingespielt: true } : {})
     };
 }
 

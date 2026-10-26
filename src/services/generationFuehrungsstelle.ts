@@ -8,7 +8,7 @@ import {
     type FuehrungsstellenKonfiguration,
     type FuehrungsstellenUebung
 } from "../types/FuehrungsstellenUebung";
-import { ersetzeFuehrungsstellenPlatzhalter, strangAbschnittNamen } from "../utils/fuehrungsstelle";
+import { ausgangsEmpfaenger, ersetzeFuehrungsstellenPlatzhalter, strangAbschnittNamen } from "../utils/fuehrungsstelle";
 
 /**
  * Prüft die Rollenbesetzung gegen das Drehbuch, normalisiert sie und legt
@@ -41,6 +41,15 @@ export function pruefeFuehrungsstellenKonfiguration(
         konfiguration.stellen = stellen;
     } else {
         delete konfiguration.stellen;
+    }
+    if (roh.fuehrungEingespielt === true) {
+        if (!drehbuch.fuehrung) {
+            throw new Error(`Das Drehbuch "${drehbuch.titel}" enthält keine Ausgänge der Führung.`);
+        }
+        konfiguration.fuehrungEingespielt = true;
+    } else {
+        // Nur der eingeschaltete Zustand wird gespeichert.
+        delete konfiguration.fuehrungEingespielt;
     }
     uebung.fuehrungsstelle = konfiguration;
     return konfiguration;
@@ -98,10 +107,14 @@ export function verteileNachrichtenNachDrehbuch(
     const zuordnung = verteileStraenge(drehbuch.straenge.length, konfiguration.unterstellt.length);
     const letzteMinute: Record<string, number> = {};
 
-    const geplant = fuehrungsstellenZeitachse(drehbuch).map(({ nachricht, strangIndex }, position) => {
-        const sender = strangIndex === null
-            ? konfiguration.uebergeordnet
-            : konfiguration.unterstellt[zuordnung[strangIndex] ?? 0] ?? konfiguration.uebergeordnet;
+    // Mit eingespielter Führung sind deren Ausgänge Nachrichten der beübten Stelle.
+    const zeitachse = fuehrungsstellenZeitachse(drehbuch, konfiguration.fuehrungEingespielt === true);
+    const geplant = zeitachse.map(({ nachricht, strangIndex, an }, position) => {
+        const sender = an
+            ? konfiguration.beuebteStelle
+            : strangIndex === null
+                ? konfiguration.uebergeordnet
+                : konfiguration.unterstellt[zuordnung[strangIndex] ?? 0] ?? konfiguration.uebergeordnet;
         const eigenerAbschnitt = strangIndex === null ? undefined : sender;
         const ersetze = (text: string): string =>
             ersetzeFuehrungsstellenPlatzhalter(text, konfiguration, strangNamen, eigenerAbschnitt);
@@ -118,7 +131,7 @@ export function verteileNachrichtenNachDrehbuch(
             zeit,
             position,
             nachricht: {
-                empfaenger: [konfiguration.beuebteStelle],
+                empfaenger: an ? ausgangsEmpfaenger(an, konfiguration, strangNamen) : [konfiguration.beuebteStelle],
                 nachricht: ersetze(nachricht.text),
                 weg: nachricht.weg,
                 meldeart: nachricht.art,

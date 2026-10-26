@@ -5,6 +5,7 @@ import { FunkUebung } from "../models/FunkUebung";
 import type { Nachricht } from "../types/Nachricht";
 import {
     verteileStraenge,
+    type FuehrungsstellenFuehrung,
     type FuehrungsstellenKonfiguration,
     type FuehrungsstellenUebung
 } from "../types/FuehrungsstellenUebung";
@@ -20,7 +21,9 @@ import {
  * Drehbuch einer Führungsstellen-Übung für die Übungsleitung: Deckblatt mit
  * Lage, Auftrag und Rollenbesetzung, Rollenkarten mit dem Hintergrund jeder
  * Einsatzstelle und des Stabs, dann die Zeitachse aller Nachrichten mit Weg,
- * Meldeart und der Reaktion, die von der beübten Stelle erwartet wird.
+ * Meldeart und der Reaktion, die von der beübten Stelle erwartet wird. Ist
+ * die Führung eingespielt, kommen ihre Rolle und ihre Ausgänge dazu; bei
+ * Ausgängen beschreibt die Erwartung, was die Fernmeldezentrale tun soll.
  * Querformat A4 wie Uebungsleitung.pdf.
  */
 export class Drehbuch extends BasePDF {
@@ -83,9 +86,15 @@ export class Drehbuch extends BasePDF {
     /** Wer spielt wen: beübte Stelle, Abschnitte mit ihren Einsatzstellen, Stab. */
     private drawRollenTabelle(startY: number): number {
         const zuordnung = verteileStraenge(this.drehbuch.straenge.length, this.konfiguration.unterstellt.length);
-        const rows: string[][] = [
-            ["Beübte Führungsstelle", this.rufnameMitStelle(this.konfiguration.beuebteStelle), "wird beübt, kennt das Drehbuch nicht", ""]
-        ];
+        const fuehrung = this.eingespielteFuehrung();
+        const rows: string[][] = fuehrung
+            ? [
+                ["Fernmeldezentrale der beübten Stelle", this.rufnameMitStelle(this.konfiguration.beuebteStelle),
+                    "wird beübt, kennt das Drehbuch nicht", ""],
+                ["Führung der beübten Stelle", "eingespielt",
+                    `${fuehrung.bezeichnung}: übergibt die Ausgänge zur angegebenen Minute als Vordruck an die Fernmeldezentrale`, ""]
+            ]
+            : [["Beübte Führungsstelle", this.rufnameMitStelle(this.konfiguration.beuebteStelle), "wird beübt, kennt das Drehbuch nicht", ""]];
         this.konfiguration.unterstellt.forEach((name, abschnittIndex) => {
             const einsatzstellen = this.drehbuch.straenge
                 .filter((_, strangIndex) => zuordnung[strangIndex] === abschnittIndex)
@@ -141,6 +150,10 @@ export class Drehbuch extends BasePDF {
             `${this.drehbuch.uebergeordnet.bezeichnung}\n${this.konfiguration.uebergeordnet}`,
             this.drehbuch.uebergeordnet.hintergrund
         ]];
+        const fuehrung = this.eingespielteFuehrung();
+        if (fuehrung) {
+            rows.push([`${fuehrung.bezeichnung}\n(Führung von ${this.konfiguration.beuebteStelle})`, fuehrung.hintergrund]);
+        }
         this.drehbuch.straenge.forEach((strang, strangIndex) => {
             const abschnitt = this.konfiguration.unterstellt[zuordnung[strangIndex] ?? 0] ?? "";
             rows.push([`${strang.bezeichnung}\n${abschnitt}`, strang.hintergrund]);
@@ -158,6 +171,11 @@ export class Drehbuch extends BasePDF {
         });
     }
 
+    /** Die Führung der beübten Stelle, wenn sie in dieser Übung eingespielt wird. */
+    private eingespielteFuehrung(): FuehrungsstellenFuehrung | null {
+        return this.konfiguration.fuehrungEingespielt ? this.drehbuch.fuehrung ?? null : null;
+    }
+
     private drawZeitachse(): void {
         const w = this.contentWidth;
         const spalten = [10, 24, 34, 16, 20, 0, 0, 14];
@@ -166,7 +184,13 @@ export class Drehbuch extends BasePDF {
         spalten[6] = (w - fest) * 0.4;
 
         (this.pdf as any).autoTable({
-            head: [["Nr", "Zeit", "Von", "Weg", "Art", "Nachricht", "Erwartete Reaktion der Führungsstelle", "Erledigt"]],
+            head: [[
+                "Nr", "Zeit", this.eingespielteFuehrung() ? "Von / An" : "Von", "Weg", "Art", "Nachricht",
+                this.eingespielteFuehrung()
+                    ? "Erwartete Reaktion (bei Ausgängen: der Fernmeldezentrale)"
+                    : "Erwartete Reaktion der Führungsstelle",
+                "Erledigt"
+            ]],
             body: this.zeitachsenZeilen(),
             startY: this.pageMarginTop + 5,
             theme: "grid",
@@ -203,10 +227,14 @@ export class Drehbuch extends BasePDF {
             const text = nachricht.betreff
                 ? `Betreff: ${nachricht.betreff}\n${nachricht.nachricht}`
                 : nachricht.nachricht;
+            // Ausgänge der eigenen Führung gehen nicht an die beübte Stelle, sondern von ihr weg.
+            const von = sender === this.konfiguration.beuebteStelle
+                ? `Ausgang\n${sender}\nan ${nachricht.empfaenger.join(", ")}`
+                : sender;
             return [
                 nachricht.szenarioNr ?? index + 1,
                 zeit,
-                sender,
+                von,
                 uebermittlungsWegLabel(nachricht.weg),
                 meldeartLabel(nachricht.meldeart),
                 text,

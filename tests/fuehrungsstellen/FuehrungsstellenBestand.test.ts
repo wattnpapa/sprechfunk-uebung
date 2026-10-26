@@ -187,5 +187,100 @@ describe("Führungsstellen-Bestand", () => {
                 expect(text).not.toMatch(/(^|\s)(kommen|ende|roger|over)[.!]?$/i);
             });
         });
+
+        // Mit eingespielter Führung wird nur die Fernmeldezentrale beübt. Ihre
+        // Ausgänge müssen zu den Eingängen passen: Was der Stab an einen
+        // Abschnitt weitergeben lässt, geht rechtzeitig hinaus, die Lage geht im
+        // vorgegebenen Takt an den Stab, und jeder Abschnitt bekommt Post.
+        describe("Ausgänge der eigenen Führung", () => {
+            const fuehrung = uebung.fuehrung;
+
+            it("sind vorhanden und tragen eine Rollenkarte", () => {
+                expect(fuehrung).toBeDefined();
+                expect(fuehrung?.hintergrund.length ?? 0).toBeGreaterThan(80);
+                expect(fuehrung?.nachrichten.length ?? 0).toBeGreaterThanOrEqual(30);
+            });
+
+            if (!fuehrung) {
+                return;
+            }
+            const ausgaenge = fuehrung.nachrichten;
+            const erreicht = (key: string, an: readonly string[]): boolean =>
+                an.includes(`ea:${key}`) || an.includes("alle-ea");
+
+            it("geben jeden Auftrag des Stabs binnen 10 Minuten an die genannten Abschnitte weiter", () => {
+                vomStab.filter(n => n.art === "auftrag").forEach(auftrag => {
+                    const keys = [...auftrag.erwartung.matchAll(/\{\{ea:([a-z0-9-]+)\}\}/g)].map(treffer => treffer[1] as string);
+                    keys.forEach(key => {
+                        const weitergabe = ausgaenge.find(a =>
+                            a.zeit >= auftrag.zeit && a.zeit <= auftrag.zeit + 10 && erreicht(key, a.an));
+                        expect(weitergabe, `Auftrag aus Minute ${auftrag.zeit} erreicht ${key} nicht`).toBeDefined();
+                    });
+                });
+            });
+
+            it("melden die Lage im 30-Minuten-Takt schriftlich an den Stab", () => {
+                const lagemeldungen = ausgaenge
+                    .filter(a => a.art === "lagemeldung" && a.weg !== "funk" && a.an.includes("stab"))
+                    .map(a => a.zeit);
+                expect(lagemeldungen[0]).toBeLessThanOrEqual(40);
+                expect(lagemeldungen[lagemeldungen.length - 1]).toBeGreaterThanOrEqual(uebung.dauerMinuten - 30);
+                for (let i = 1; i < lagemeldungen.length; i++) {
+                    expect((lagemeldungen[i] as number) - (lagemeldungen[i - 1] as number)).toBeLessThanOrEqual(35);
+                }
+            });
+
+            it("erreichen jeden Abschnitt, nutzen Sammelruf und alle Wege zum Stab", () => {
+                uebung.straenge.forEach(strang => {
+                    expect(ausgaenge.filter(a => erreicht(strang.key, a.an)).length, strang.key).toBeGreaterThanOrEqual(3);
+                });
+                expect(ausgaenge.some(a => a.an.includes("alle-ea"))).toBe(true);
+                expect(ausgaenge.some(a => a.an.length > 1 && !a.an.includes("alle-ea"))).toBe(true);
+                const anStab = ausgaenge.filter(a => a.an.includes("stab"));
+                expect(anStab.filter(a => a.weg === "drucker").length).toBeGreaterThanOrEqual(1);
+                expect(anStab.filter(a => a.weg === "email").length).toBeGreaterThanOrEqual(3);
+                expect(anStab.filter(a => a.weg === "funk").length).toBeGreaterThanOrEqual(10);
+            });
+
+            it("sind eindeutig, auch gegen die Eingänge, und frei von Regieanweisungen", () => {
+                const alleTexte = [...texte, ...ausgaenge.map(a => a.text)].map(text => text.toLowerCase());
+                expect(new Set(alleTexte).size).toBe(alleTexte.length);
+                ausgaenge.forEach(a => {
+                    expect(a.text.toLowerCase()).not.toContain("übungsleitung");
+                    expect(a.erwartung.length).toBeGreaterThanOrEqual(20);
+                });
+            });
+
+            it("überfahren die Fernmeldezentrale nicht: höchstens drei Ein- und Ausgänge je Minute", () => {
+                const jeMinute = new Map<number, number>();
+                fuehrungsstellenZeitachse(uebung, true).forEach(({ nachricht }) =>
+                    jeMinute.set(nachricht.zeit, (jeMinute.get(nachricht.zeit) ?? 0) + 1));
+                jeMinute.forEach((anzahl, minute) => expect(anzahl, `Minute ${minute}`).toBeLessThanOrEqual(3));
+            });
+
+            it("lassen sich für jede erlaubte Abschnittszahl als Nachrichten der beübten Stelle generieren", () => {
+                for (let anzahl = uebung.minAbschnitte; anzahl <= uebung.straenge.length; anzahl++) {
+                    const funkUebung = new FunkUebung("test");
+                    funkUebung.fuehrungsstelle = {
+                        slug, beuebteStelle: "EL 10", uebergeordnet: "Kater",
+                        unterstellt: Array.from({ length: anzahl }, (_, i) => `EA ${i + 11}`),
+                        fuehrungEingespielt: true
+                    };
+                    new GenerationService().generateFuehrungsstelle(funkUebung, uebung);
+                    const eigene = funkUebung.nachrichten["EL 10"] ?? [];
+                    expect(eigene).toHaveLength(ausgaenge.length);
+                    expect(Object.values(funkUebung.nachrichten).flat()).toHaveLength(alle.length + ausgaenge.length);
+                    eigene.forEach((n, index) => {
+                        expect(`${n.nachricht} ${n.betreff ?? ""} ${n.erwartung ?? ""}`).not.toContain("{{");
+                        expect(n.xZeitSlot).toBeLessThanOrEqual(uebung.dauerMinuten);
+                        expect(n.empfaenger.length).toBeGreaterThan(0);
+                        expect(n.empfaenger).not.toContain("EL 10");
+                        if (index > 0) {
+                            expect(n.xZeitSlot ?? 0).toBeGreaterThan(eigene[index - 1]?.xZeitSlot ?? 0);
+                        }
+                    });
+                }
+            });
+        });
     });
 });

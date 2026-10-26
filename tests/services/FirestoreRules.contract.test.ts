@@ -51,7 +51,8 @@ function baueVollstaendigeUebung(): FunkUebung {
         uebergeordnet: "Kater Jever",
         unterstellt: ["Heros Leer 21/10"],
         beginn: "09:00",
-        stellen: { "Heros Jever 21/10": "Einsatzleitung" }
+        stellen: { "Heros Jever 21/10": "Einsatzleitung" },
+        fuehrungEingespielt: true
     };
     u.seed = "vergleichslauf-2026";
     return u;

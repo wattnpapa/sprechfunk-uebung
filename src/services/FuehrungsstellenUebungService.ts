@@ -1,6 +1,9 @@
 import {
     MELDEARTEN,
     UEBERMITTLUNGS_WEGE,
+    type AusgangsZiel,
+    type FuehrungsstellenAusgang,
+    type FuehrungsstellenFuehrung,
     type FuehrungsstellenNachricht,
     type FuehrungsstellenRolle,
     type FuehrungsstellenStab,
@@ -84,12 +87,16 @@ export function parseFuehrungsstellenUebung(slug: string, roh: unknown): Fuehrun
     };
     const straenge = parseStraenge(obj["straenge"], kontext, fehler);
     const uebergeordnet = parseStab(obj["uebergeordnet"], kontext, fehler);
+    const fuehrung = obj["fuehrung"] === undefined ? undefined : parseFuehrung(obj["fuehrung"], kontext, fehler);
     const minAbschnitte = parseMinAbschnitte(obj["minAbschnitte"], straenge.length, fehler);
 
     if (fehler.length > 0) {
         throw new FuehrungsstellenParseError(slug, fehler);
     }
-    return { slug, titel, beschreibung, lage, auftrag, dauerMinuten, minAbschnitte, uebergeordnet, straenge };
+    return {
+        slug, titel, beschreibung, lage, auftrag, dauerMinuten, minAbschnitte, uebergeordnet, straenge,
+        ...(fuehrung ? { fuehrung } : {})
+    };
 }
 
 function parseDauer(roh: unknown, fehler: string[]): number {
@@ -153,6 +160,15 @@ function parseStab(roh: unknown, kontext: NachrichtenKontext, fehler: string[]):
     return { ...rolle, nachrichten };
 }
 
+function parseFuehrung(roh: unknown, kontext: NachrichtenKontext, fehler: string[]): FuehrungsstellenFuehrung {
+    const rolle = parseRolle(roh, "fuehrung", fehler) ?? { bezeichnung: "", hintergrund: "" };
+    const nachrichten = roh && typeof roh === "object"
+        ? parseNachrichten((roh as Record<string, unknown>)["nachrichten"], "fuehrung", { ...kontext, imStrang: false, ausgang: true }, fehler)
+        : [];
+    // parseNachricht setzt `an` für jede gültige Nachricht im Ausgangs-Kontext.
+    return { ...rolle, nachrichten: nachrichten as FuehrungsstellenAusgang[] };
+}
+
 function parseStraenge(roh: unknown, kontext: NachrichtenKontext, fehler: string[]): FuehrungsstellenStrang[] {
     if (!Array.isArray(roh) || roh.length === 0) {
         fehler.push("Feld \"straenge\" fehlt oder ist leer");
@@ -188,6 +204,8 @@ interface NachrichtenKontext {
 
 interface NachrichtKontext extends NachrichtenKontext {
     imStrang: boolean;
+    /** Ausgang der eigenen Führung: braucht Empfänger („an“). */
+    ausgang?: boolean;
 }
 
 function parseNachrichten(
@@ -249,6 +267,7 @@ function parseNachricht(
         // Einsatzabschnitte melden über Funk; Ausdruck und E-Mail kommen vom Stab.
         fehler.push(`${pfad}: Stränge senden nur über funk`);
     }
+    const an = parseAusgangsZiele(nachricht, kontext, pfad, fehler);
     const art = nachricht["art"];
     if (!MELDEARTEN.includes(art as Meldeart)) {
         fehler.push(`${pfad}: art muss ${MELDEARTEN.join(", ")} sein`);
@@ -278,8 +297,56 @@ function parseNachricht(
         art: art as Meldeart,
         ...(betreff ? { betreff } : {}),
         text: textWert as string,
-        erwartung: erwartung as string
+        erwartung: erwartung as string,
+        ...(an ? { an } : {})
     };
+}
+
+/**
+ * Empfänger eines Ausgangs der eigenen Führung; null außerhalb des
+ * Ausgangs-Kontexts. „stab“, „alle-ea“ oder „ea:<strang>“; ohne Dubletten, „alle-ea“ nicht neben
+ * einzelnen Abschnitten, Abschnitte nur über Funk.
+ */
+function parseAusgangsZiele(
+    nachricht: Record<string, unknown>,
+    kontext: NachrichtKontext,
+    pfad: string,
+    fehler: string[]
+): AusgangsZiel[] | null {
+    if (!kontext.ausgang) {
+        return null;
+    }
+    const roh = nachricht["an"];
+    if (!Array.isArray(roh) || roh.length === 0) {
+        fehler.push(`${pfad}: an fehlt oder ist leer`);
+        return null;
+    }
+    const anzahlFehlerVorher = fehler.length;
+    roh.forEach((ziel, index) => {
+        if (!istAusgangsZiel(ziel, kontext.strangKeys)) {
+            fehler.push(`${pfad}.an[${index}]: erlaubt sind stab, alle-ea und ea:<strang> mit einem vorhandenen Strang`);
+        }
+    });
+    if (new Set(roh).size !== roh.length) {
+        fehler.push(`${pfad}: an enthält ein Ziel doppelt`);
+    }
+    pruefeZielKombination(roh, nachricht["weg"], pfad, fehler);
+    return fehler.length > anzahlFehlerVorher ? null : roh as AusgangsZiel[];
+}
+
+function pruefeZielKombination(ziele: unknown[], weg: unknown, pfad: string, fehler: string[]): void {
+    if (ziele.includes("alle-ea") && ziele.some(ziel => typeof ziel === "string" && ziel.startsWith("ea:"))) {
+        fehler.push(`${pfad}: alle-ea schließt einzelne Abschnitte schon ein`);
+    }
+    if ((weg === "drucker" || weg === "email") && ziele.some(ziel => ziel !== "stab")) {
+        // Einsatzabschnitte sind nur über Funk erreichbar; Ausdruck und E-Mail gehen an den Stab.
+        fehler.push(`${pfad}: an Einsatzabschnitte nur über funk`);
+    }
+}
+
+function istAusgangsZiel(ziel: unknown, strangKeys: readonly string[]): boolean {
+    return ziel === "stab" || ziel === "alle-ea"
+        || (typeof ziel === "string" && ziel.startsWith("ea:") && strangKeys.includes(ziel.slice(3)));
 }
 
 export function erlaubtePlatzhalter(strangKeys: readonly string[], imStrang: boolean): string[] {

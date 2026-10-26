@@ -7,6 +7,7 @@ import { uiFeedback } from "../core/UiFeedback";
 import { FUEHRUNGSSTELLEN_UEBUNGEN } from "../data/fuehrungsstellenUebungen";
 import { ladeFuehrungsstellenUebung } from "../services/FuehrungsstellenUebungService";
 import {
+    fuehrungsstellenAusgangAnzahl,
     fuehrungsstellenMaxAbschnitte,
     fuehrungsstellenNachrichtenAnzahl,
     type FuehrungsstellenUebung
@@ -127,10 +128,13 @@ function zeigeDrehbuchInfo(ctrl: GeneratorController, drehbuch: Fuehrungsstellen
         max: fuehrungsstellenMaxAbschnitte(drehbuch)
     };
     ctrl.aendereAbschnitte(namen => namen);
+    const ausgaenge = fuehrungsstellenAusgangAnzahl(drehbuch);
+    ctrl.view.setFuehrungEinspielbar(ausgaenge > 0);
     ctrl.view.renderFuehrungsstelleInfo([
         drehbuch.beschreibung,
         `Für ${ctrl.fuehrungsstelleGrenzen.min} bis ${ctrl.fuehrungsstelleGrenzen.max} Einsatzabschnitte · ` +
-        `${fuehrungsstellenNachrichtenAnzahl(drehbuch)} Nachrichten · ${drehbuch.dauerMinuten} Minuten.`
+        `${fuehrungsstellenNachrichtenAnzahl(drehbuch)} Nachrichten · ${drehbuch.dauerMinuten} Minuten` +
+        (ausgaenge > 0 ? ` · ${ausgaenge} ${ausgaenge === 1 ? "Ausgang" : "Ausgänge"} der Führung zum Einspielen.` : ".")
     ]);
 }
 

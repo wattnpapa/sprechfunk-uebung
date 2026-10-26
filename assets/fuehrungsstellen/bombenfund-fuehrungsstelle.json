@@ -577,5 +577,707 @@
         }
       ]
     }
-  ]
+  ],
+  "fuehrung": {
+    "bezeichnung": "Leitung und Sachgebiete der Einsatzleitung THW",
+    "hintergrund": "Leiter der Einsatzleitung und die Sachgebiete Lage, Einsatz und Versorgung. Sie werten aus, was die Fernmeldezentrale vorlegt, entscheiden und schreiben die Ausgänge. Getroffene Entscheidungen, auf denen die Meldungen der Einsatzabschnitte aufbauen: Die Reserve-Bergungsgruppe wird geteilt (3. Tragetrupp für den Transport, der Rest zur Betreuungsstelle), der Tragetrupp der Reserve wird in der Stärke des Transports nicht mitgezählt; der Lichtmast geht an die Fundstelle, der Vorplatz der Betreuungsstelle bekommt 2 Flutlichtstrahler an der Netzersatzanlage; „Gebiet geräumt“ geht erst hinaus, wenn Bestreifung und Transport fertig sind. Einen Ausgang, der auf einen Eingang antwortet, erst übergeben, wenn die Fernmeldezentrale diesen Eingang vorgelegt hat; eine Verzögerung vermerkt die Übungsleitung. Fragt die Fernmeldezentrale nach, etwa wegen einer unklaren Anschrift oder eines Verkehrskreises, antwortet die Führung kurz und knapp wie im Einsatz.",
+    "nachrichten": [
+      {
+        "zeit": 5,
+        "an": [
+          "stab"
+        ],
+        "weg": "funk",
+        "art": "vollzug",
+        "text": "Einsatzleitung THW hat die Führung aller THW-Kräfte an den 6 Einsatzstellen im Einsatzraum Moorkamp übernommen. Fernmeldezentrale im FüKomKW am Festplatz HOLTKAMP ist erreichbar. Erste Lagemeldung in 30 Minuten.",
+        "erwartung": "Übernahme und Erreichbarkeit zu Einsatzauftrag Nr. 1 an {{stab}} absetzen. Quittung einholen, Ausgang mit Uhrzeit im Einsatztagebuch vermerken."
+      },
+      {
+        "zeit": 7,
+        "an": [
+          "alle-ea"
+        ],
+        "weg": "funk",
+        "art": "information",
+        "text": "An alle: Die Einsatzleitung THW führt ab sofort alle THW-Kräfte im Einsatzraum. Rettungsdienst nur über die Einsatzleitung anfordern. Über Durchlässe an der Absperrung entscheiden Polizei und Stab. Lagemeldungen an die Einsatzleitung alle 30 Minuten.",
+        "erwartung": "Als Sammelruf an alle Einsatzabschnitte übermitteln und die Quittung jedes Abschnitts einholen; Abschnitte, die sich noch nicht angemeldet haben, später nachversorgen."
+      },
+      {
+        "zeit": 24,
+        "an": [
+          "ea:transport"
+        ],
+        "weg": "funk",
+        "art": "auftrag",
+        "text": "Einsatzauftrag Nr. 2: Nachgemeldete bettlägerige Person im LERCHENWEG 21, 1. Obergeschoss. Aus der Wohnung tragen und am Hauseingang liegend an den Rettungsdienst übergeben, der Rettungswagen kommt von der Grundschule. Übergabe melden. Damit sind es 12 Personen.",
+        "erwartung": "An {{ea:transport}} übermitteln. Quittung einholen, Ausgang mit Uhrzeit im Einsatztagebuch vermerken."
+      },
+      {
+        "zeit": 25,
+        "an": [
+          "stab"
+        ],
+        "weg": "funk",
+        "art": "rueckfrage",
+        "text": "Frage: Wann schaltet der Netzbetreiber den Ortsnetzstrang Wiesengrund ab? Die Umschaltung der Grundschule auf Ersatzstrom braucht 15 Minuten Vorlauf.",
+        "erwartung": "An {{stab}} absetzen und die Frage als offen führen, bis der Stab antwortet (Einsatzauftrag Nr. 4)."
+      },
+      {
+        "zeit": 26,
+        "an": [
+          "ea:stromversorgung"
+        ],
+        "weg": "funk",
+        "art": "information",
+        "text": "Die Abschaltzeit des Netzbetreibers ist beim Stab angefragt. Bis dahin umschaltbereit bleiben.",
+        "erwartung": "An {{ea:stromversorgung}} übermitteln. Quittung einholen, Ausgang mit Uhrzeit im Einsatztagebuch vermerken."
+      },
+      {
+        "zeit": 32,
+        "an": [
+          "stab"
+        ],
+        "weg": "funk",
+        "art": "information",
+        "text": "Antwort Stand der Evakuierung: 46 Personen in der Betreuungsstelle registriert. Von jetzt 12 immobilen Personen sind 2 an der Betreuungsstelle übergeben, 10 noch im Gebiet.",
+        "erwartung": "Als Antwort auf die Rückfrage des Stabs absetzen und dem Eingang im Einsatztagebuch zuordnen."
+      },
+      {
+        "zeit": 33,
+        "an": [
+          "stab"
+        ],
+        "weg": "email",
+        "art": "lagemeldung",
+        "betreff": "Lagemeldung Nr. 1 der Einsatzleitung THW mit Kräfteübersicht",
+        "text": "1. Lage je Einsatzstelle: Absperrung 1/5/16//22, Absperrpunkte 1 bis 3 besetzt, Absperrpunkt 4 im Aufbau. Transport 0/2/8//10, 2 von 12 Personen heraus. Betreuungsstelle 0/3/12//15, 150 Sitzplätze, 46 Personen registriert, Heizung der Turnhalle aus. Bereitstellungsraum 0/3/9//12 mit Reserve 1 Bergungsgruppe. Stromversorgung 0/3/6//9, Netzersatzanlage am Hausanschluss. Bestreifung 0/1/5//6, Nordteil bis Lerchenweg, 3 Gebäude ohne Öffnung an die Polizei gemeldet.\n\n2. Maßnahmen: Einsatzauftrag Nr. 2 an Transport weitergegeben.\n\n3. Anforderungen: 6 Absperrschranken und 20 Leitkegel für Absperrpunkt 4 am Lerchenweg. Hausmeister der Grundschule für die Heizung. Abschaltzeit des Netzbetreibers.\n\n4. Sicherheitsereignisse: keine.\n\n5. Absichten: Absperrring schließen, Transporte fortsetzen, Umschaltung der Schule vorbereiten.",
+        "erwartung": "Fristgerecht per E-Mail an {{stab}} senden, gegliedert nach der Vorgabe des Stabs. Versand im Einsatztagebuch vermerken; verspätet vermerkt die Übungsleitung das."
+      },
+      {
+        "zeit": 37,
+        "an": [
+          "ea:transport",
+          "ea:betreuungsstelle",
+          "ea:bereitstellungsraum"
+        ],
+        "weg": "funk",
+        "art": "auftrag",
+        "text": "Entscheidung der Einsatzleitung: Die Reserve-Bergungsgruppe wird geteilt. 1 Unterführer und 4 Helfer als 3. Tragetrupp zum Transport, Treffpunkt MÜHLENKAMP 12. 1 Unterführer und 3 Helfer zur Betreuungsstelle für die Feldbetten.",
+        "erwartung": "Als Mehrfachspruch an {{ea:transport}}, {{ea:betreuungsstelle}} und {{ea:bereitstellungsraum}} übermitteln, Quittung aller drei einholen; beantwortet beide Anforderungen."
+      },
+      {
+        "zeit": 38,
+        "an": [
+          "stab"
+        ],
+        "weg": "funk",
+        "art": "anforderung",
+        "text": "Reserve ist geteilt, Vorrang hatten Menschen im Gefahrenbereich. Damit keine Reserve mehr. Anforderung: Ersatz für die Reserve sowie 6 Absperrschranken und 20 Leitkegel für Absperrpunkt 4 am LERCHENWEG.",
+        "erwartung": "An {{stab}} absetzen, beide Anforderungen als offen führen. Quittung einholen, Ausgang mit Uhrzeit im Einsatztagebuch vermerken."
+      },
+      {
+        "zeit": 40,
+        "an": [
+          "alle-ea"
+        ],
+        "weg": "funk",
+        "art": "information",
+        "text": "An alle: Kampfmittelräumdienst an der Fundstelle eingetroffen. Die Entschärfung beginnt erst nach der Meldung „Gebiet geräumt“. Fachgruppe Logistik ist nachalarmiert, Eintreffen im Bereitstellungsraum in etwa 40 Minuten.",
+        "erwartung": "Als Sammelruf an alle Einsatzabschnitte übermitteln und die Quittung jedes Abschnitts einholen."
+      },
+      {
+        "zeit": 46,
+        "an": [
+          "stab"
+        ],
+        "weg": "funk",
+        "art": "rueckfrage",
+        "text": "Frage: 2 Personen aus dem LERCHENWEG 17 brauchen dauerhaft Sauerstoff. Die Betreuungsstelle hat keine Pflegeplätze. Wo werden sie untergebracht, wer transportiert?",
+        "erwartung": "An {{stab}} absetzen und die Frage als offen führen."
+      },
+      {
+        "zeit": 47,
+        "an": [
+          "ea:absperrung"
+        ],
+        "weg": "funk",
+        "art": "auftrag",
+        "text": "Einsatzauftrag Nr. 3: Am jenseitigen Ende des LOHNESTEGS, außerhalb des Radius, mit der Polizei Absperrpunkt 5 einrichten und dauerhaft besetzen. Durchlass nur für Einsatzkräfte. Material für Absperrpunkt 4 ist angefordert. Einrichtung und Stärke melden.",
+        "erwartung": "An {{ea:absperrung}} übermitteln. Quittung einholen, Ausgang mit Uhrzeit im Einsatztagebuch vermerken."
+      },
+      {
+        "zeit": 48,
+        "an": [
+          "stab"
+        ],
+        "weg": "funk",
+        "art": "rueckfrage",
+        "text": "Frage: In der Tischlerei am Lerchenweg arbeiten 2 Beschäftigte weiter und lassen die Trocknungsanlage laufen. Die Polizei vor Ort verweist an den Stab. Ohne Räumung des Betriebs kann die Entschärfung nicht beginnen. Wer räumt?",
+        "erwartung": "Sofort an {{stab}} absetzen und die Frage als offen führen."
+      },
+      {
+        "zeit": 49,
+        "an": [
+          "stab"
+        ],
+        "weg": "funk",
+        "art": "rueckfrage",
+        "text": "Frage: 3 Anwohner wollen am Absperrpunkt 2 Medikamente aus ihren Wohnungen holen. Dürfen sie mit Begleitung in den Radius, oder bleibt er für alle geschlossen?",
+        "erwartung": "An {{stab}} absetzen und die Frage als offen führen."
+      },
+      {
+        "zeit": 50,
+        "an": [
+          "ea:absperrung",
+          "ea:bestreifung"
+        ],
+        "weg": "funk",
+        "art": "information",
+        "text": "Zwischenbescheid: Die Fragen zur Tischlerei und zu den Medikamenten liegen beim Stab. Bis zur Entscheidung bleibt der Radius geschlossen, über Ausnahmen entscheiden Polizei und Stab.",
+        "erwartung": "Als Mehrfachspruch an {{ea:absperrung}} und {{ea:bestreifung}} übermitteln. Quittung einholen, Ausgang mit Uhrzeit im Einsatztagebuch vermerken."
+      },
+      {
+        "zeit": 53,
+        "an": [
+          "ea:stromversorgung",
+          "ea:betreuungsstelle"
+        ],
+        "weg": "funk",
+        "art": "auftrag",
+        "text": "Einsatzauftrag Nr. 4: Der Netzbetreiber schaltet den Ortsnetzstrang in etwa 45 Minuten ab, erst nach Bestätigung durch den Stab. Grundschule vorher auf die Netzersatzanlage umschalten, Unterbrechung kurz halten und mit dem Betreuungsdienst abstimmen. Vollzug sofort melden.",
+        "erwartung": "Als Mehrfachspruch an {{ea:stromversorgung}} und {{ea:betreuungsstelle}} übermitteln, Quittung beider einholen; beantwortet die Rückfrage von {{ea:stromversorgung}}."
+      },
+      {
+        "zeit": 54,
+        "an": [
+          "ea:transport"
+        ],
+        "weg": "funk",
+        "art": "information",
+        "text": "Die 2 Personen aus dem LERCHENWEG 17 bringt der Rettungsdienst in das Seniorenheim am Holtkamp. Am Hauseingang liegend übergeben.",
+        "erwartung": "An {{ea:transport}} übermitteln; beantwortet deren Rückfrage. Setzt voraus, dass der Stab so geantwortet hat (Rollenkarte des Stabs); sonst vor dem Übergeben an die Antwort anpassen."
+      },
+      {
+        "zeit": 56,
+        "an": [
+          "ea:absperrung"
+        ],
+        "weg": "funk",
+        "art": "information",
+        "text": "Entscheidung des Stabs: Wohnungsgänge für Medikamente nur einzeln, mit Polizeibegleitung und nur bis zum Beginn der Entschärfung. THW-Kräfte gehen nicht allein in den Radius.",
+        "erwartung": "An {{ea:absperrung}} übermitteln; beantwortet deren Rückfrage. Setzt voraus, dass der Stab so geantwortet hat (Rollenkarte des Stabs); sonst vor dem Übergeben an die Antwort anpassen."
+      },
+      {
+        "zeit": 58,
+        "an": [
+          "stab"
+        ],
+        "weg": "funk",
+        "art": "vollzug",
+        "text": "Vollzug Einsatzauftrag Nr. 2: Person aus dem Lerchenweg 21 liegend an den Rettungsdienst übergeben. Stand: 6 von 12 immobilen Personen aus dem Gebiet.",
+        "erwartung": "An {{stab}} absetzen. Quittung einholen, Ausgang mit Uhrzeit im Einsatztagebuch vermerken."
+      },
+      {
+        "zeit": 59,
+        "an": [
+          "stab"
+        ],
+        "weg": "funk",
+        "art": "information",
+        "text": "Antwort Gesamtstärke THW ohne Einsatzleitung 1/17/56//74: Absperrung 1/5/16//22, Transport 0/3/12//15 mit 3. Tragetrupp, Betreuungsstelle 0/4/15//19, Bereitstellungsraum 0/1/2//3, Stromversorgung 0/3/6//9, Bestreifung 0/1/5//6.",
+        "erwartung": "Als Antwort auf die Rückfrage des Stabs absetzen, die Stärken als Spruch mitschreiben lassen."
+      },
+      {
+        "zeit": 61,
+        "an": [
+          "stab"
+        ],
+        "weg": "funk",
+        "art": "rueckfrage",
+        "text": "Frage: Unsere Einsatzkräfte sind seit der Alarmierung ohne Verpflegung, im Bereitstellungsraum wird danach gefragt. Wann und wo gibt es Verpflegung?",
+        "erwartung": "An {{stab}} absetzen und die Frage als offen führen (Antwort kommt mit dem Verpflegungsplan)."
+      },
+      {
+        "zeit": 63,
+        "an": [
+          "stab"
+        ],
+        "weg": "email",
+        "art": "lagemeldung",
+        "betreff": "Lagemeldung Nr. 2 der Einsatzleitung THW",
+        "text": "1. Lage je Einsatzstelle: Absperrung: Absperrpunkt 5 am Lohnesteg eingerichtet, 0/1/3//4, Material dafür von Absperrpunkt 3. Transport: 6 von 12 Personen heraus, 2 Personen mit Sauerstoffbedarf gehen in das Seniorenheim. Betreuungsstelle: 164 Personen registriert, Turnhalle voll, Aula mit 60 Plätzen geöffnet. Bereitstellungsraum: 2 Linienbusse pendeln zwischen Fliederweg und Grundschule. Stromversorgung: Einspeisung hergestellt, Umschaltung jederzeit möglich. Bestreifung: Tischlerei am Lerchenweg arbeitet weiter.\n\n2. Maßnahmen: Reserve geteilt, Einsatzaufträge Nr. 3 und 4 weitergegeben.\n\n3. Anforderungen: Ersatz für die Reserve, Absperrmaterial für die Absperrpunkte 3 und 4, Hausmeister, Verpflegung der Einsatzkräfte.\n\n4. Sicherheitsereignisse: keine.\n\n5. Absichten: Umschaltung der Schule nach Ihrer Freigabe, Räumung abschließen.",
+        "erwartung": "Fristgerecht per E-Mail an {{stab}} senden, Versand im Einsatztagebuch vermerken."
+      },
+      {
+        "zeit": 64,
+        "an": [
+          "ea:absperrung"
+        ],
+        "weg": "funk",
+        "art": "rueckfrage",
+        "text": "Frage: Ist Absperrpunkt 3 nach dem Umsetzen des Materials zum Lohnesteg noch dicht?",
+        "erwartung": "An {{ea:absperrung}} übermitteln und die Antwort der Führung vorlegen."
+      },
+      {
+        "zeit": 65,
+        "an": [
+          "stab"
+        ],
+        "weg": "funk",
+        "art": "anforderung",
+        "text": "Sofortmeldung Unfall: Helfer beim Treppentransport im MÜHLENKAMP 12 gestürzt, Verdacht auf Verletzung am Sprunggelenk, ansprechbar. Wir fordern einen Rettungswagen zum Mühlenkamp 12 an. Die Bewohnerin ist in der Wohnung gesichert.",
+        "erwartung": "Sofort an {{stab}} absetzen, vor allen anderen Ausgängen. Unfall mit Uhrzeit im Einsatztagebuch festhalten. Quittung einholen, Ausgang mit Uhrzeit im Einsatztagebuch vermerken."
+      },
+      {
+        "zeit": 70,
+        "an": [
+          "ea:bestreifung"
+        ],
+        "weg": "funk",
+        "art": "auftrag",
+        "text": "Einsatzauftrag Nr. 5: Mit der Polizei alle Gebäude im Radius kontrollieren und kennzeichnen, Abschluss melden. Die Tischlerei räumt die Polizei, die Anlage schaltet der Betreiber ab. Die Entschärfung beginnt erst nach der Meldung „Gebiet geräumt“.",
+        "erwartung": "An {{ea:bestreifung}} übermitteln; beantwortet auch deren Frage zur Tischlerei. Quittung einholen, Ausgang mit Uhrzeit im Einsatztagebuch vermerken."
+      },
+      {
+        "zeit": 71,
+        "an": [
+          "ea:transport"
+        ],
+        "weg": "funk",
+        "art": "rueckfrage",
+        "text": "Frage: Wie viele immobile Personen sind noch im Gebiet? Melden Sie sofort, wenn alle 12 heraus sind. Das ist Voraussetzung für die Meldung „Gebiet geräumt“.",
+        "erwartung": "An {{ea:transport}} übermitteln und die Antwort für die Meldung „Gebiet geräumt“ festhalten."
+      },
+      {
+        "zeit": 72,
+        "an": [
+          "ea:transport"
+        ],
+        "weg": "funk",
+        "art": "information",
+        "text": "Rettungswagen für den verletzten Helfer ist alarmiert, Eintreffen in etwa 8 Minuten. Den Rettungswagen am Hauseingang MÜHLENKAMP 12 einweisen.",
+        "erwartung": "An {{ea:transport}} übermitteln. Quittung einholen, Ausgang mit Uhrzeit im Einsatztagebuch vermerken."
+      },
+      {
+        "zeit": 76,
+        "an": [
+          "stab"
+        ],
+        "weg": "email",
+        "art": "information",
+        "betreff": "Unfallmeldung – Helfer der Einsatzstelle Transport im Mühlenkamp 12",
+        "text": "Unfallmeldung zu der Sofortmeldung über Funk.\n\nEinsatzstelle: Transport immobiler Personen, Mühlenkamp 12, Treppenhaus.\nHergang: Ein Helfer ist beim Tragen einer Bewohnerin auf der Treppe gestürzt.\nVerletzung: Verdacht auf Verletzung am Sprunggelenk, ansprechbar.\nMaßnahmen: Erste Hilfe durch den Tragetrupp, Bewohnerin in der Wohnung gesichert, Rettungswagen über den Stab angefordert und am Hauseingang eingewiesen.\nFolgen: Der Transport im Mühlenkamp 12 läuft mit einem Trupp weiter.",
+        "erwartung": "Per E-Mail an {{stab}} senden (der Stab hat die schriftliche Meldung verlangt), Versand im Einsatztagebuch vermerken."
+      },
+      {
+        "zeit": 77,
+        "an": [
+          "stab"
+        ],
+        "weg": "funk",
+        "art": "rueckfrage",
+        "text": "Frage: 14 Evakuierte haben Hunde und Katzen dabei, in die Turnhalle dürfen keine Tiere. Wo werden die Tiere untergebracht?",
+        "erwartung": "An {{stab}} absetzen und die Frage als offen führen."
+      },
+      {
+        "zeit": 78,
+        "an": [
+          "ea:betreuungsstelle"
+        ],
+        "weg": "funk",
+        "art": "information",
+        "text": "Die Unterbringung der Tiere ist beim Stab angefragt. Bis dahin bleiben die Tiere mit ihren Haltern vor der Halle.",
+        "erwartung": "An {{ea:betreuungsstelle}} übermitteln. Quittung einholen, Ausgang mit Uhrzeit im Einsatztagebuch vermerken."
+      },
+      {
+        "zeit": 81,
+        "an": [
+          "alle-ea"
+        ],
+        "weg": "funk",
+        "art": "information",
+        "text": "An alle: Presseanfragen an den Einsatzstellen an die Pressestelle des Landkreises verweisen. Einsatzkräfte geben keine Auskünfte.",
+        "erwartung": "Als Sammelruf an alle Einsatzabschnitte übermitteln und die Quittung jedes Abschnitts einholen."
+      },
+      {
+        "zeit": 82,
+        "an": [
+          "ea:bereitstellungsraum"
+        ],
+        "weg": "funk",
+        "art": "auftrag",
+        "text": "Fachgruppe Logistik einsetzen: Absperrmaterial vom Bauhof im Bereitstellungsraum übernehmen und an die Absperrpunkte 3 und 4 bringen. Danach für Transporte zur Betreuungsstelle bereithalten.",
+        "erwartung": "An {{ea:bereitstellungsraum}} übermitteln. Quittung einholen, Ausgang mit Uhrzeit im Einsatztagebuch vermerken."
+      },
+      {
+        "zeit": 83,
+        "an": [
+          "stab"
+        ],
+        "weg": "email",
+        "art": "information",
+        "betreff": "Korrekturen zum Entwurf der Pressemitteilung Nr. 2",
+        "text": "An S 5 – Presse- und Medienarbeit.\n\nZum Entwurf der Pressemitteilung Nr. 2 bitten wir um folgende Korrekturen:\n\n1. Das THW ist mit 81 Einsatzkräften im Einsatz, nicht mit 60.\n2. In der Betreuungsstelle sind über 160 Personen registriert, nicht rund 100.\n3. Das THW arbeitet an 6 Einsatzstellen: neben Absperrung, Transport und Stromversorgung auch Betreuungsstelle, Bereitstellungsraum und Bestreifung.",
+        "erwartung": "Vor der nächsten Lagemeldung per E-Mail an {{stab}} senden, Versand im Einsatztagebuch vermerken."
+      },
+      {
+        "zeit": 86,
+        "an": [
+          "stab"
+        ],
+        "weg": "funk",
+        "art": "lagemeldung",
+        "text": "Verletzter Helfer der Einsatzstelle Transport ist vom Rettungsdienst übernommen, Transport ins Krankenhaus. Stärke Transport ohne den Tragetrupp der Reserve jetzt 0/2/7//9.",
+        "erwartung": "An {{stab}} absetzen, Stärke als Spruch mitschreiben lassen. Quittung einholen, Ausgang mit Uhrzeit im Einsatztagebuch vermerken."
+      },
+      {
+        "zeit": 87,
+        "an": [
+          "ea:betreuungsstelle"
+        ],
+        "weg": "funk",
+        "art": "information",
+        "text": "Das Ordnungsamt richtet den Werkraum der Grundschule als Tierraum ein. Tiere nur angeleint oder in Transportboxen, Futter bringt der Tierschutzverein.",
+        "erwartung": "An {{ea:betreuungsstelle}} übermitteln; beantwortet deren Rückfrage. Quittung einholen, Ausgang mit Uhrzeit im Einsatztagebuch vermerken."
+      },
+      {
+        "zeit": 89,
+        "an": [
+          "stab"
+        ],
+        "weg": "funk",
+        "art": "vollzug",
+        "text": "Vollzug Einsatzauftrag Nr. 4: Grundschule auf die Netzersatzanlage umgeschaltet, Unterbrechung 3 Minuten, Last 34 kW. Der Netzbetreiber kann abschalten.",
+        "erwartung": "Sofort an {{stab}} absetzen, der Netzbetreiber wartet darauf. Quittung einholen, Ausgang mit Uhrzeit im Einsatztagebuch vermerken."
+      },
+      {
+        "zeit": 93,
+        "an": [
+          "stab"
+        ],
+        "weg": "email",
+        "art": "lagemeldung",
+        "betreff": "Lagemeldung Nr. 3 der Einsatzleitung THW",
+        "text": "1. Lage je Einsatzstelle: Transport: alle 12 Personen heraus, 8 in der Betreuungsstelle, 4 im Seniorenheim am Holtkamp. Bestreifung: Räumungskontrolle läuft. Stromversorgung: Grundschule auf Ersatzstrom, Last 34 kW. Betreuungsstelle: Turnhalle und Aula belegt, Tierraum im Werkraum. Absperrung: Ring geschlossen, ein Fernsehteam wurde an Absperrpunkt 1 abgewiesen. Bereitstellungsraum: Fachgruppe Logistik 0/2/6//8 mit 2 Lastkraftwagen eingetroffen.\n\n2. Maßnahmen: Einsatzauftrag Nr. 5 weitergegeben, Hinweis zu Presseanfragen an alle Einsatzstellen.\n\n3. Anforderungen: Ersatz für die Reserve, Hausmeister.\n\n4. Sicherheitsereignisse: Helfer der Einsatzstelle Transport gestürzt, im Krankenhaus.\n\n5. Absichten: „Gebiet geräumt“ melden, sobald die Räumungskontrolle abgeschlossen ist.",
+        "erwartung": "Fristgerecht per E-Mail an {{stab}} senden, Versand im Einsatztagebuch vermerken."
+      },
+      {
+        "zeit": 94,
+        "an": [
+          "alle-ea"
+        ],
+        "weg": "funk",
+        "art": "information",
+        "text": "An alle: Warmverpflegung in etwa 60 Minuten im Bereitstellungsraum am Festplatz. Kaltverpflegung und Getränke für Absperrpunkte und Streifen gibt es gleichzeitig dort, bitte selbst abholen.",
+        "erwartung": "Als Sammelruf an alle Einsatzabschnitte übermitteln; beantwortet die Rückfrage von {{ea:bereitstellungsraum}}. Quittung einholen, Ausgang mit Uhrzeit im Einsatztagebuch vermerken."
+      },
+      {
+        "zeit": 95,
+        "an": [
+          "stab"
+        ],
+        "weg": "funk",
+        "art": "information",
+        "text": "Zum Verpflegungsplan: An den Einsatzstellen sind 81 THW-Einsatzkräfte, dazu die Einsatzleitung. Bitte die Warmverpflegung entsprechend erhöhen, geplant sind 80.",
+        "erwartung": "An {{stab}} absetzen. Quittung einholen, Ausgang mit Uhrzeit im Einsatztagebuch vermerken."
+      },
+      {
+        "zeit": 96,
+        "an": [
+          "stab"
+        ],
+        "weg": "funk",
+        "art": "vollzug",
+        "text": "Meldung „Gebiet geräumt“: Alle 180 Gebäude im Radius kontrolliert und gekennzeichnet, den Südteil hat die Polizei kontrolliert, die Tischlerei ist geräumt. Alle 12 immobilen Personen sind aus dem Gebiet.",
+        "erwartung": "Sofort an {{stab}} absetzen. Erst übergeben, wenn die Fernmeldezentrale die Meldungen von Bestreifung und Transport vorgelegt hat; eine zu frühe Meldung vermerkt die Übungsleitung."
+      },
+      {
+        "zeit": 102,
+        "an": [
+          "stab"
+        ],
+        "weg": "funk",
+        "art": "information",
+        "text": "Bestätigung: Die Grundschule läuft seit der Vollzugsmeldung auf Ersatzstrom, Last 34 kW. Der Netzbetreiber kann abschalten.",
+        "erwartung": "Als Antwort auf die Rückfrage des Stabs sofort absetzen."
+      },
+      {
+        "zeit": 110,
+        "an": [
+          "ea:absperrung"
+        ],
+        "weg": "funk",
+        "art": "auftrag",
+        "text": "Der Uferweg an der Lohne ist am Radius nicht abgesperrt. Sofort sperren und mit einem Posten besetzen, Vollzug melden.",
+        "erwartung": "An {{ea:absperrung}} übermitteln. Quittung einholen, Ausgang mit Uhrzeit im Einsatztagebuch vermerken."
+      },
+      {
+        "zeit": 111,
+        "an": [
+          "stab"
+        ],
+        "weg": "funk",
+        "art": "lagemeldung",
+        "text": "Sicherheitsereignis: Vom Uferweg aus war ein Radfahrer im Radius, die Polizei hat ihn herausgeholt. Das Gebiet war nach der Meldung „Gebiet geräumt“ kurzzeitig nicht geräumt. Uferweg wird gesperrt. Bitte den Kampfmittelräumdienst informieren.",
+        "erwartung": "Sofort an {{stab}} absetzen. Quittung einholen, Ausgang mit Uhrzeit im Einsatztagebuch vermerken."
+      },
+      {
+        "zeit": 114,
+        "an": [
+          "ea:stromversorgung"
+        ],
+        "weg": "funk",
+        "art": "auftrag",
+        "text": "Einsatzauftrag Nr. 6: Lichtmast zur Fundstelle am MOORKAMP, Arbeitsbereich 30 m x 30 m, Zufahrt über Absperrpunkt 1. Aufbau nur mit dem Kampfmittelräumdienst, danach aus dem Radius zurück. Vorplatz der Schule mit 2 Flutlichtstrahlern ausleuchten. Betriebsbereitschaft melden.",
+        "erwartung": "An {{ea:stromversorgung}} übermitteln. Quittung einholen, Ausgang mit Uhrzeit im Einsatztagebuch vermerken."
+      },
+      {
+        "zeit": 115,
+        "an": [
+          "ea:absperrung",
+          "ea:betreuungsstelle"
+        ],
+        "weg": "funk",
+        "art": "information",
+        "text": "Der Lichtmast der Stromversorgung fährt über Absperrpunkt 1 zur Fundstelle, Durchfahrt freigeben. Den Vorplatz der Betreuungsstelle leuchten danach 2 Flutlichtstrahler aus statt des Lichtmasts.",
+        "erwartung": "Als Mehrfachspruch an {{ea:absperrung}} und {{ea:betreuungsstelle}} übermitteln. Quittung einholen, Ausgang mit Uhrzeit im Einsatztagebuch vermerken."
+      },
+      {
+        "zeit": 116,
+        "an": [
+          "stab"
+        ],
+        "weg": "funk",
+        "art": "information",
+        "text": "Zu Einsatzauftrag Nr. 6: Der einzige Lichtmast stand an der Betreuungsstelle. Entscheidung: Lichtmast an die Fundstelle, Vorplatz mit 2 Flutlichtstrahlern an der Netzersatzanlage. Betriebsbereitschaft folgt.",
+        "erwartung": "An {{stab}} absetzen. Quittung einholen, Ausgang mit Uhrzeit im Einsatztagebuch vermerken."
+      },
+      {
+        "zeit": 120,
+        "an": [
+          "ea:absperrung"
+        ],
+        "weg": "funk",
+        "art": "information",
+        "text": "Der Lichtmast ist an der Fundstelle gebunden. Für die Absperrpunkte 3 bis 5 fordern wir 3 Stromerzeuger beim Stab an, die 4 freien Flutlichtstrahler der Stromversorgung kommen dazu.",
+        "erwartung": "An {{ea:absperrung}} übermitteln; beantwortet deren Anforderung. Quittung einholen, Ausgang mit Uhrzeit im Einsatztagebuch vermerken."
+      },
+      {
+        "zeit": 121,
+        "an": [
+          "stab"
+        ],
+        "weg": "funk",
+        "art": "anforderung",
+        "text": "Anforderung Beleuchtung Absperrung: 3 Stromerzeuger für die Absperrpunkte 3 bis 5, die Flutlichtstrahler stellt das THW. Lieferung an den Bereitstellungsraum vor der Dämmerung.",
+        "erwartung": "An {{stab}} absetzen, als offene Anforderung führen. Quittung einholen, Ausgang mit Uhrzeit im Einsatztagebuch vermerken."
+      },
+      {
+        "zeit": 123,
+        "an": [
+          "stab"
+        ],
+        "weg": "email",
+        "art": "lagemeldung",
+        "betreff": "Lagemeldung Nr. 4 der Einsatzleitung THW",
+        "text": "1. Lage je Einsatzstelle: „Gebiet geräumt“ ist gemeldet. Bestreifung: Streifen an der Absperrgrenze, ein Radfahrer war vom Uferweg aus im Radius, der Uferweg wird gesperrt. Stromversorgung: Netz abgeschaltet, Kraftstoff der Netzersatzanlage reicht etwa 3 Stunden, Lichtmast geht an die Fundstelle. Betreuungsstelle: 212 Personen registriert, 131 anwesend, 11 Hunde und 6 Katzen im Tierraum, 3 Personen mit Kreislaufbeschwerden vom Sanitätsdienst versorgt, Hausmeister da, Turnhalle bei 17 °C.\n\n2. Maßnahmen: Einsatzauftrag Nr. 6 weitergegeben, Vorplatz mit Flutlichtstrahlern.\n\n3. Anforderungen: 3 Stromerzeuger für die Absperrpunkte 3 bis 5, Ersatz für die Reserve.\n\n4. Sicherheitsereignisse: Radfahrer im Radius nach der Meldung „Gebiet geräumt“.\n\n5. Absichten: Ausleuchtung der Fundstelle und der Absperrung vor der Dämmerung.",
+        "erwartung": "Fristgerecht per E-Mail an {{stab}} senden, Versand im Einsatztagebuch vermerken."
+      },
+      {
+        "zeit": 125,
+        "an": [
+          "ea:stromversorgung"
+        ],
+        "weg": "funk",
+        "art": "information",
+        "text": "Vorrang hat die Fundstelle, wie mit Einsatzauftrag Nr. 6 angewiesen. Den Vorplatz mit 2 Flutlichtstrahlern an der Netzersatzanlage ausleuchten.",
+        "erwartung": "An {{ea:stromversorgung}} übermitteln; beantwortet deren Rückfrage. Quittung einholen, Ausgang mit Uhrzeit im Einsatztagebuch vermerken."
+      },
+      {
+        "zeit": 132,
+        "an": [
+          "alle-ea"
+        ],
+        "weg": "funk",
+        "art": "information",
+        "text": "An alle: Der Zünder ist beschädigt, die Freigabe verzögert sich um mindestens 3 Stunden, der Radius von 500 m bleibt. Absperrung, Bestreifung und Betreuungsstelle bleiben bis in die Nacht. In 15 Minuten Ablösebedarf, Kraftstoffbedarf und fehlendes Material melden.",
+        "erwartung": "Als Sammelruf an alle Einsatzabschnitte übermitteln, die Antworten sammeln und der Führung vorlegen (die Übungsleitung antwortet aus Sicht der Abschnitte)."
+      },
+      {
+        "zeit": 133,
+        "an": [
+          "ea:betreuungsstelle"
+        ],
+        "weg": "funk",
+        "art": "auftrag",
+        "text": "Übernachtung für bis zu 150 Personen vorbereiten. Bedarf an Feldbetten, Decken und Trennwänden melden.",
+        "erwartung": "An {{ea:betreuungsstelle}} übermitteln. Quittung einholen, Ausgang mit Uhrzeit im Einsatztagebuch vermerken."
+      },
+      {
+        "zeit": 143,
+        "an": [
+          "stab"
+        ],
+        "weg": "funk",
+        "art": "vollzug",
+        "text": "Vollzug Einsatzauftrag Nr. 6: Lichtmast an der Fundstelle am Moorkamp in Betrieb, Vorplatz der Betreuungsstelle mit 2 Flutlichtstrahlern ausgeleuchtet.",
+        "erwartung": "An {{stab}} absetzen. Quittung einholen, Ausgang mit Uhrzeit im Einsatztagebuch vermerken."
+      },
+      {
+        "zeit": 148,
+        "an": [
+          "ea:bereitstellungsraum",
+          "ea:absperrung"
+        ],
+        "weg": "funk",
+        "art": "auftrag",
+        "text": "Einsatzauftrag Nr. 7: 2 Bergungsgruppen zur Ablösung treffen in etwa 20 Minuten im Bereitstellungsraum ein, dort aufnehmen und einweisen. Zuerst die Absperrpunkte 1 bis 3 ablösen, abgelöste Kräfte zur Verpflegung in den Bereitstellungsraum.",
+        "erwartung": "Als Mehrfachspruch an {{ea:bereitstellungsraum}} und {{ea:absperrung}} übermitteln, Quittung beider einholen."
+      },
+      {
+        "zeit": 149,
+        "an": [
+          "ea:bestreifung",
+          "ea:betreuungsstelle"
+        ],
+        "weg": "funk",
+        "art": "rueckfrage",
+        "text": "Frage: Wann brauchen Sie für die Nacht Ablösung, mit welcher Stärke? Die erste Ablösung geht an die Absperrung.",
+        "erwartung": "Als Mehrfachspruch an {{ea:bestreifung}} und {{ea:betreuungsstelle}} übermitteln und die Antworten der Führung vorlegen."
+      },
+      {
+        "zeit": 151,
+        "an": [
+          "stab"
+        ],
+        "weg": "email",
+        "art": "anforderung",
+        "betreff": "Bedarf an Ablösung, Material und Kraftstoff für die Nacht",
+        "text": "Bedarf für die Nacht nach der Verzögerung der Freigabe:\n\nAblösung: Absperrung 16 Helfer, mit Einsatzauftrag Nr. 7 vorgesehen. Bestreifung 0/1/5//6 und Betreuungsstelle 0/3/12//15 brauchen ebenfalls Ablösung, dafür reicht die angekündigte Ablösung nicht.\n\nMaterial: 110 Feldbetten, 150 Decken und Trennwände für einen Ruhebereich an die Betreuungsstelle, Transport über unsere Fachgruppe Logistik. 6 Handscheinwerfer mit Ersatzakkus für die Bestreifung. 3 Stromerzeuger für die Absperrpunkte 3 bis 5 sind bereits angefordert.\n\nKraftstoff: Im Bereitstellungsraum liegen nur 60 l Diesel. Der Bedarf der Netzersatzanlage bis zur Wiederzuschaltung des Netzes folgt gesondert.",
+        "erwartung": "Bis zur nächsten Lagemeldung per E-Mail an {{stab}} senden (vom Stab mit der Lageinformation verlangt), Versand im Einsatztagebuch vermerken."
+      },
+      {
+        "zeit": 153,
+        "an": [
+          "stab"
+        ],
+        "weg": "drucker",
+        "art": "lagemeldung",
+        "betreff": "Lagemeldung Nr. 5 der Einsatzleitung THW",
+        "text": "1. Lage je Einsatzstelle: Freigabe frühestens in 3 Stunden. Absperrung: Ring mit Uferweg geschlossen, Kräfte seit über 3 Stunden im Einsatz. Bestreifung der Absperrgrenze im 30-Minuten-Takt. Betreuungsstelle bereitet die Übernachtung vor. Stromversorgung: Lichtmast an der Fundstelle in Betrieb. Bereitstellungsraum: Warmverpflegung für 80 Einsatzkräfte eingetroffen, Ausgabe läuft.\n\n2. Maßnahmen: Einsatzauftrag Nr. 7 weitergegeben, Ablösung der Absperrpunkte 1 bis 3 zuerst.\n\n3. Anforderungen: siehe E-Mail zum Bedarf für die Nacht.\n\n4. Sicherheitsereignisse: keine neuen.\n\n5. Absichten: Ablösung einweisen, Absperrung bis zur Freigabe halten.",
+        "erwartung": "Fristgerecht als Ausdruck an {{stab}} übermitteln, Versand im Einsatztagebuch vermerken."
+      },
+      {
+        "zeit": 154,
+        "an": [
+          "ea:betreuungsstelle"
+        ],
+        "weg": "funk",
+        "art": "information",
+        "text": "Feldbetten, Decken und Trennwände sind beim Stab angefordert, den Transport übernimmt die Fachgruppe Logistik. Liefertermin folgt.",
+        "erwartung": "An {{ea:betreuungsstelle}} übermitteln; beantwortet deren Anforderung. Quittung einholen, Ausgang mit Uhrzeit im Einsatztagebuch vermerken."
+      },
+      {
+        "zeit": 156,
+        "an": [
+          "alle-ea"
+        ],
+        "weg": "funk",
+        "art": "information",
+        "text": "An alle: Die Warmverpflegung wird im Bereitstellungsraum ausgegeben. Absperrung und Bestreifung truppweise zur Ausgabe, Absperrpunkte und Streifen bleiben besetzt.",
+        "erwartung": "Als Sammelruf an alle Einsatzabschnitte übermitteln und die Quittung jedes Abschnitts einholen."
+      },
+      {
+        "zeit": 160,
+        "an": [
+          "alle-ea"
+        ],
+        "weg": "funk",
+        "art": "auftrag",
+        "text": "An alle: Stand zur Übergabe an die Nachtbesetzung in 10 Minuten melden: Lage, Stärke, offene Anforderungen und Kräfte, die bis zur Freigabe bleiben.",
+        "erwartung": "Als Sammelruf an alle Einsatzabschnitte übermitteln und die Quittung jedes Abschnitts einholen."
+      },
+      {
+        "zeit": 162,
+        "an": [
+          "stab"
+        ],
+        "weg": "funk",
+        "art": "anforderung",
+        "text": "Anforderung Diesel: 200 l für die Netzersatzanlage an der Grundschule bis zur übernächsten Lagemeldung. Im Bereitstellungsraum liegen nur 60 l, die Tankstelle im Ort schließt.",
+        "erwartung": "An {{stab}} absetzen, als offene Anforderung führen. Quittung einholen, Ausgang mit Uhrzeit im Einsatztagebuch vermerken."
+      },
+      {
+        "zeit": 163,
+        "an": [
+          "ea:stromversorgung"
+        ],
+        "weg": "funk",
+        "art": "information",
+        "text": "200 l Diesel für die Netzersatzanlage sind beim Stab angefordert. Liefertermin folgt.",
+        "erwartung": "An {{ea:stromversorgung}} übermitteln; beantwortet deren Anforderung. Quittung einholen, Ausgang mit Uhrzeit im Einsatztagebuch vermerken."
+      },
+      {
+        "zeit": 165,
+        "an": [
+          "stab"
+        ],
+        "weg": "funk",
+        "art": "rueckfrage",
+        "text": "Frage: Bleiben die 4 Personen im Seniorenheim am Holtkamp über Nacht, oder bereiten wir den Rücktransport nach der Freigabe noch heute vor?",
+        "erwartung": "An {{stab}} absetzen und die Frage als offen führen."
+      },
+      {
+        "zeit": 166,
+        "an": [
+          "ea:transport"
+        ],
+        "weg": "funk",
+        "art": "information",
+        "text": "Die Frage zum Rücktransport liegt beim Stab. Bis zur Entscheidung keinen Rücktransport beginnen.",
+        "erwartung": "An {{ea:transport}} übermitteln. Quittung einholen, Ausgang mit Uhrzeit im Einsatztagebuch vermerken."
+      },
+      {
+        "zeit": 168,
+        "an": [
+          "stab"
+        ],
+        "weg": "funk",
+        "art": "vollzug",
+        "text": "Zu Einsatzauftrag Nr. 7: 2 Bergungsgruppen zur Ablösung, Stärke 0/4/14//18, mit 2 Gerätekraftwagen im Bereitstellungsraum aufgenommen, sie werden zur Absperrung geführt.",
+        "erwartung": "An {{stab}} absetzen, die Stärke als Spruch mitschreiben lassen. Quittung einholen, Ausgang mit Uhrzeit im Einsatztagebuch vermerken."
+      },
+      {
+        "zeit": 171,
+        "an": [
+          "ea:transport"
+        ],
+        "weg": "funk",
+        "art": "information",
+        "text": "Entscheidung des Stabs: Die 4 Personen bleiben über Nacht im Seniorenheim am Holtkamp, heute kein Rücktransport.",
+        "erwartung": "An {{ea:transport}} übermitteln. Setzt voraus, dass der Stab so geantwortet hat (Rollenkarte des Stabs); sonst vor dem Übergeben an die Antwort anpassen."
+      },
+      {
+        "zeit": 176,
+        "an": [
+          "stab"
+        ],
+        "weg": "funk",
+        "art": "vollzug",
+        "text": "Vollzug Einsatzauftrag Nr. 7: Absperrpunkte 1 bis 3 abgelöst, die abgelösten Kräfte gehen in den Bereitstellungsraum. Absperrpunkte 4 und 5 folgen nach Einweisung der 2. Bergungsgruppe.",
+        "erwartung": "An {{stab}} absetzen. Quittung einholen, Ausgang mit Uhrzeit im Einsatztagebuch vermerken."
+      },
+      {
+        "zeit": 178,
+        "an": [
+          "stab"
+        ],
+        "weg": "email",
+        "art": "lagemeldung",
+        "betreff": "Übergabemeldung zum Schichtwechsel mit Kräfteübersicht",
+        "text": "1. Stand je Einsatzstelle: Absperrung: Absperrpunkte 1 bis 3 abgelöst, 4 und 5 folgen. Bestreifung: keine Personen im Radius, Uferweg abgesperrt, alle Gebäude gekennzeichnet. Betreuungsstelle: 238 Personen registriert, 142 anwesend, 40 Feldbetten belegt, 19 Tiere. Transport: abgeschlossen, Kräfte auf Abruf. Stromversorgung: Schule auf Ersatzstrom, Lichtmast an der Fundstelle.\n\n2. Kräfte: 1/23/75//99 ohne Einsatzleitung, davon Ablösung 0/4/14//18 und Fachgruppe Logistik 0/2/6//8.\n\n3. Offen: 200 l Diesel, 110 Feldbetten, 150 Decken, Trennwände, 3 Stromerzeuger, 6 Handscheinwerfer.\n\n4. Unfälle: 1 Helfer Transport, Sprunggelenk, im Krankenhaus.\n\n5. Bis zur Freigabe bleiben Absperrung, Bestreifung, Betreuungsstelle und Stromversorgung. Rückbau danach: Lichtmast, dann Absperrmaterial, zuletzt die Netzersatzanlage nach Rückschaltung der Schule.",
+        "erwartung": "Fristgerecht per E-Mail an {{stab}} senden. Liegen noch nicht alle Stände vor, die Führung fragen, ob gesendet oder gewartet wird."
+      }
+    ]
+  }
 }

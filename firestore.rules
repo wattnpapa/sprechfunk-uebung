@@ -196,7 +196,8 @@ function sindOptionaleZahlenGueltig(daten) {
 
 function istFuehrungsstelle(wert) {
   return wert is map
-         && wert.keys().hasOnly(['slug', 'beuebteStelle', 'uebergeordnet', 'unterstellt', 'beginn', 'stellen'])
+         && wert.keys().hasOnly(['slug', 'beuebteStelle', 'uebergeordnet', 'unterstellt', 'beginn', 'stellen',
+                                 'fuehrungEingespielt'])
          && wert.keys().hasAll(['slug', 'beuebteStelle', 'uebergeordnet', 'unterstellt'])
          && wert.slug is string && wert.slug.size() <= 64
          && wert.beuebteStelle is string && wert.beuebteStelle.size() <= 100
@@ -204,7 +205,9 @@ function istFuehrungsstelle(wert) {
          && wert.unterstellt is list && wert.unterstellt.size() <= 8
          && (!('beginn' in wert) || (wert.beginn is string && wert.beginn.size() <= 5))
          // Stellenname je Funkrufname; höchstens eine Stelle je Rolle (1 + 8 + 1).
-         && (!('stellen' in wert) || (wert.stellen is map && wert.stellen.size() <= 10));
+         && (!('stellen' in wert) || (wert.stellen is map && wert.stellen.size() <= 10))
+         // Führung wird eingespielt, beübt wird nur die Fernmeldezentrale.
+         && (!('fuehrungEingespielt' in wert) || wert.fuehrungEingespielt is bool);
 }
 
 // Die stat*-Felder speisen die Aggregations-Queries des Admin-Dashboards.

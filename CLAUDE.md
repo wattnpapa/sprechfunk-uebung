@@ -81,6 +81,13 @@ Each mode is a self-contained module with an `index.ts` entry:
   `tests/fuehrungsstellen/FuehrungsstellenBestand.test.ts`). The role assignment is persisted
   in `Uebung.fuehrungsstelle` (allowlisted in `firestore.rules`); the beübte Stelle gets no
   participant link. `src/pdf/Drehbuch.ts` renders the Drehbuch PDF that the ZIP includes.
+  Optionally the Übungsleitung also plays the beübte Stelle's own Führung, so only its
+  Fernmeldezentrale is trained (`fuehrungEingespielt` in the Konfiguration, allowlisted in
+  `firestore.rules`): the Drehbuch block `fuehrung` holds Ausgänge with recipients `an`
+  (`stab`, `alle-ea`, `ea:<strang>`), which become messages *from* the beübte Stelle; to
+  Abschnitte only via `funk`. The Ausgänge assume the decisions their Rollenkarte names, and
+  the strand texts build on them; the inventory test checks that every Stab-Auftrag reaches
+  the named Abschnitte within 10 minutes and that Lagemeldungen keep the 30-minute rhythm.
 
 ### Services
 - `GenerationService` — creates message distribution, join codes (Übungs-/Teilnehmercodes), checksums

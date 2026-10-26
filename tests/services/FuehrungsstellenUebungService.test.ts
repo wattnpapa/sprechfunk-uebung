@@ -195,3 +195,61 @@ describe("ladeFuehrungsstellenUebung", () => {
         vi.unstubAllGlobals();
     });
 });
+
+describe("parseFuehrungsstellenUebung – Ausgänge der eigenen Führung", () => {
+    function mitFuehrung(nachrichten: unknown[]): Record<string, unknown> {
+        return {
+            ...gueltigesDrehbuch(),
+            fuehrung: {
+                bezeichnung: "Leitung und Sachgebiete der Einsatzleitung",
+                hintergrund: "Die Leitung entscheidet über Kräfte und Aufträge und schreibt die Ausgänge. ".repeat(2),
+                nachrichten
+            }
+        };
+    }
+
+    const ausgang = {
+        zeit: 25, an: ["ea:nord", "stab"], weg: "funk", art: "auftrag",
+        text: "{{ea:nord}}: Sickerstelle mit Quellkade sichern, Vollzug an {{el}} melden.",
+        erwartung: "An beide Empfänger übermitteln und Quittung einholen."
+    };
+
+    it("ist optional und wird mit Empfängern übernommen", () => {
+        expect(parseFuehrungsstellenUebung("test", gueltigesDrehbuch()).fuehrung).toBeUndefined();
+        const uebung = parseFuehrungsstellenUebung("test", mitFuehrung([
+            ausgang,
+            { zeit: 30, an: ["stab"], weg: "email", art: "lagemeldung", betreff: "Lagemeldung Nr. 1", text: "Lage ruhig.", erwartung: "Per E-Mail senden." },
+            { zeit: 31, an: ["alle-ea"], weg: "funk", art: "information", text: "Wetterwarnung bis morgen früh.", erwartung: "Als Mehrfachspruch an alle." }
+        ]));
+        expect(uebung.fuehrung?.bezeichnung).toBe("Leitung und Sachgebiete der Einsatzleitung");
+        expect(uebung.fuehrung?.nachrichten.map(n => n.an)).toEqual([["ea:nord", "stab"], ["stab"], ["alle-ea"]]);
+    });
+
+    it("prüft Empfänger, Weg und Platzhalter", () => {
+        const fehler = fehlerVon(mitFuehrung([
+            { ...ausgang, an: undefined },
+            { ...ausgang, zeit: 26, an: ["ea:west"] },
+            { ...ausgang, zeit: 27, an: ["stab", "stab"] },
+            { ...ausgang, zeit: 28, an: ["alle-ea", "ea:nord"] },
+            { ...ausgang, zeit: 29, weg: "drucker", betreff: "Auftrag" },
+            { ...ausgang, zeit: 30, text: "Auftrag an {{ea}}." }
+        ]));
+        expect(fehler).toEqual(expect.arrayContaining([
+            "fuehrung.nachrichten[0]: an fehlt oder ist leer",
+            expect.stringContaining("fuehrung.nachrichten[1].an[0]: erlaubt sind stab, alle-ea und ea:<strang>"),
+            "fuehrung.nachrichten[2]: an enthält ein Ziel doppelt",
+            "fuehrung.nachrichten[3]: alle-ea schließt einzelne Abschnitte schon ein",
+            "fuehrung.nachrichten[4]: an Einsatzabschnitte nur über funk",
+            expect.stringContaining("fuehrung.nachrichten[5].text: unbekannter Platzhalter")
+        ]));
+        expect(fehler).toHaveLength(6);
+    });
+
+    it("verlangt Rolle und mindestens einen Ausgang, wenn der Block da ist", () => {
+        expect(fehlerVon({ ...gueltigesDrehbuch(), fuehrung: { bezeichnung: "", hintergrund: "x", nachrichten: [] } }))
+            .toEqual([
+                "fuehrung: bezeichnung fehlt, ist leer oder länger als 80 Zeichen",
+                "fuehrung: nachrichten fehlt oder ist leer"
+            ]);
+    });
+});

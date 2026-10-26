@@ -13,6 +13,11 @@
  * wie Stränge. Anders als im Szenario hat jede Nachricht eine feste Minute ab
  * Übungsbeginn, einen Übermittlungsweg und die Reaktion, die von der beübten
  * Stelle erwartet wird.
+ *
+ * Optional spielt die Übungsleitung auch die Führung der beübten Stelle ein
+ * (Leitung und Sachgebiete). Dann wird nur deren Fernmeldezentrale beübt: Sie
+ * bekommt die Ausgänge der Führung als ausgefüllte Vordrucke und übermittelt
+ * sie an die Einsatzabschnitte und an den Stab.
  */
 
 /** Übermittlungsweg: Sprechfunk, Ausdruck (Fernschreiben/Fax) oder E-Mail. */
@@ -73,6 +78,24 @@ export interface FuehrungsstellenStab extends FuehrungsstellenRolle {
     nachrichten: FuehrungsstellenNachricht[];
 }
 
+/**
+ * Empfänger eines Ausgangs der eigenen Führung: der Stab, der Abschnitt, der
+ * einen bestimmten Strang führt („ea:<strang>“), oder alle Abschnitte.
+ */
+export type AusgangsZiel = "stab" | "alle-ea" | `ea:${string}`;
+
+/** Nachricht, die die Führung der beübten Stelle über ihre Fernmeldezentrale absetzt. */
+export interface FuehrungsstellenAusgang extends FuehrungsstellenNachricht {
+    /** Mindestens ein Ziel; bei mehreren Zielen ist die Nachricht ein Mehrfachspruch. */
+    an: AusgangsZiel[];
+}
+
+/** Leitung und Sachgebiete der beübten Stelle, wenn nur die Fernmeldezentrale beübt wird. */
+export interface FuehrungsstellenFuehrung extends FuehrungsstellenRolle {
+    /** Aufsteigend nach `zeit`. An Abschnitte nur über Funk. */
+    nachrichten: FuehrungsstellenAusgang[];
+}
+
 export interface FuehrungsstellenUebung {
     slug: string;
     titel: string;
@@ -87,6 +110,8 @@ export interface FuehrungsstellenUebung {
     minAbschnitte: number;
     uebergeordnet: FuehrungsstellenStab;
     straenge: FuehrungsstellenStrang[];
+    /** Ausgänge der eigenen Führung; ohne diesen Block lässt sich die Führung nicht einspielen. */
+    fuehrung?: FuehrungsstellenFuehrung;
 }
 
 /**
@@ -110,6 +135,12 @@ export interface FuehrungsstellenKonfiguration {
      * Funkrufnamen. Nur gefüllte Einträge werden geführt.
      */
     stellen?: Record<string, string>;
+    /**
+     * Die Übungsleitung spielt auch die Führung der beübten Stelle ein; beübt
+     * wird nur deren Fernmeldezentrale. Die Ausgänge der Führung werden dann
+     * Nachrichten der beübten Stelle.
+     */
+    fuehrungEingespielt?: boolean;
 }
 
 /** Jeder Einsatzabschnitt braucht mindestens einen eigenen Strang. */
@@ -117,11 +148,16 @@ export function fuehrungsstellenMaxAbschnitte(uebung: Pick<FuehrungsstellenUebun
     return uebung.straenge.length;
 }
 
+/** Eingehende Nachrichten: Stränge und Stab, ohne die Ausgänge der eigenen Führung. */
 export function fuehrungsstellenNachrichtenAnzahl(
     uebung: Pick<FuehrungsstellenUebung, "straenge" | "uebergeordnet">
 ): number {
     return uebung.uebergeordnet.nachrichten.length
         + uebung.straenge.reduce((summe, strang) => summe + strang.nachrichten.length, 0);
+}
+
+export function fuehrungsstellenAusgangAnzahl(uebung: Pick<FuehrungsstellenUebung, "fuehrung">): number {
+    return uebung.fuehrung?.nachrichten.length ?? 0;
 }
 
 /**
@@ -141,23 +177,32 @@ export function fuehrungsstellenTeilnehmerListe(konfiguration: FuehrungsstellenK
 
 export interface ZeitachsenEintrag {
     nachricht: FuehrungsstellenNachricht;
-    /** Index des Strangs oder null für den Stab. */
+    /** Index des Strangs oder null für den Stab und die eigene Führung. */
     strangIndex: number | null;
+    /** Nur bei Ausgängen der eigenen Führung gesetzt. */
+    an?: AusgangsZiel[];
 }
 
 /**
  * Alle Nachrichten des Drehbuchs in Sendereihenfolge: nach Minute, bei
- * gleicher Minute Stränge vor dem Stab und in Strangreihenfolge. Stabil,
- * damit Generierung, Drehbuch und Tests dieselbe Reihenfolge sehen.
+ * gleicher Minute Stränge vor dem Stab vor der eigenen Führung (sie reagiert
+ * auf beide) und in Strangreihenfolge. Die Ausgänge der Führung nur mit
+ * `mitFuehrung`. Stabil, damit Generierung, Drehbuch und Tests dieselbe
+ * Reihenfolge sehen.
  */
 export function fuehrungsstellenZeitachse(
-    uebung: Pick<FuehrungsstellenUebung, "straenge" | "uebergeordnet">
+    uebung: Pick<FuehrungsstellenUebung, "straenge" | "uebergeordnet" | "fuehrung">,
+    mitFuehrung = false
 ): ZeitachsenEintrag[] {
     const eintraege: ZeitachsenEintrag[] = [];
     uebung.straenge.forEach((strang, strangIndex) => {
         strang.nachrichten.forEach(nachricht => eintraege.push({ nachricht, strangIndex }));
     });
     uebung.uebergeordnet.nachrichten.forEach(nachricht => eintraege.push({ nachricht, strangIndex: null }));
+    if (mitFuehrung) {
+        uebung.fuehrung?.nachrichten.forEach(nachricht =>
+            eintraege.push({ nachricht, strangIndex: null, an: nachricht.an }));
+    }
     return eintraege
         .map((eintrag, position) => ({ eintrag, position }))
         .sort((a, b) => a.eintrag.nachricht.zeit - b.eintrag.nachricht.zeit || a.position - b.position)

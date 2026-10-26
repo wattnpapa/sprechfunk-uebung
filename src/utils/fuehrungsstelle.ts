@@ -1,4 +1,5 @@
 import type {
+    AusgangsZiel,
     FuehrungsstellenKonfiguration,
     FuehrungsstellenUebung,
     Meldeart,
@@ -128,6 +129,29 @@ export function ersetzeFuehrungsstellenPlatzhalter(
         }
         return eigenerAbschnitt ?? konfiguration.uebergeordnet;
     });
+}
+
+/**
+ * Funkrufnamen zu den Zielen eines Ausgangs der eigenen Führung, in der
+ * Reihenfolge der Ziele und ohne Dubletten — zwei Stränge können beim selben
+ * Abschnitt liegen.
+ */
+export function ausgangsEmpfaenger(
+    an: readonly AusgangsZiel[],
+    konfiguration: Pick<FuehrungsstellenKonfiguration, "uebergeordnet" | "unterstellt">,
+    strangNamen: Record<string, string>
+): string[] {
+    const namen = an.flatMap(ziel => {
+        if (ziel === "stab") {
+            return [konfiguration.uebergeordnet];
+        }
+        if (ziel === "alle-ea") {
+            return konfiguration.unterstellt;
+        }
+        const name = strangNamen[ziel.slice(3)];
+        return name ? [name] : [];
+    });
+    return [...new Set(namen)];
 }
 
 export interface FuehrungsstellenHinweise {

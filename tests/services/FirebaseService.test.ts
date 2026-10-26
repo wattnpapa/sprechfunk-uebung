@@ -295,5 +295,17 @@ describe("FirebaseService Führungsstellen-Felder", () => {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         expect((s as any).mapToDomain("u3", basis).fuehrungsstelle).toBeUndefined();
     });
+
+    it("übernimmt die eingespielte Führung nur als echtes true", () => {
+        const s = new FirebaseService({} as never);
+        const basis = { datum: "2026-11-14T08:00:00.000Z", createDate: "2026-09-30T10:00:00.000Z", teilnehmerListe: [], teilnehmerIds: {}, nachrichten: {} };
+        const rollen = { slug: "x", beuebteStelle: "EL", uebergeordnet: "Stab", unterstellt: ["EA"] };
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const an = (s as any).mapToDomain("u1", { ...basis, fuehrungsstelle: { ...rollen, fuehrungEingespielt: true } });
+        expect(an.fuehrungsstelle).toEqual({ ...rollen, fuehrungEingespielt: true });
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const kaputt = (s as any).mapToDomain("u2", { ...basis, fuehrungsstelle: { ...rollen, fuehrungEingespielt: "ja" } });
+        expect(kaputt.fuehrungsstelle).toEqual(rollen);
+    });
 });
 

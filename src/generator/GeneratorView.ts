@@ -308,6 +308,10 @@ export class GeneratorView {
         return this.fuehrungsstellenForm.getRollen();
     }
 
+    public setFuehrungEinspielbar(moeglich: boolean) {
+        this.fuehrungsstellenForm.setFuehrungEinspielbar(moeglich);
+    }
+
     public renderFuehrungsstellenAbschnitte(zeilen: AbschnittZeile[], grenzen: AbschnittsGrenzen) {
         this.fuehrungsstellenForm.renderAbschnitte(zeilen, grenzen);
     }

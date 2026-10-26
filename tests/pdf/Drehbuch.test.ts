@@ -108,6 +108,35 @@ describe("pdf/Drehbuch", () => {
         expect(kopf).toContain("________ Uhr");
     });
 
+    it("führt bei eingespielter Führung deren Rolle und kennzeichnet ihre Ausgänge", () => {
+        const { pdf, calls } = bauePdfMock();
+        const u = baueUebung();
+        u.fuehrungsstelle = { ...u.fuehrungsstelle!, fuehrungEingespielt: true };
+        u.nachrichten["EL 10"] = [{
+            id: 1, empfaenger: ["EA 11", "Kater"], nachricht: "Auftrag an EA 11", xZeitSlot: 6, szenarioNr: 3,
+            weg: "funk", meldeart: "auftrag", erwartung: "Übermitteln"
+        }];
+        const drehbuch = { ...baueDrehbuch(), fuehrung: { bezeichnung: "Leitung", hintergrund: "Kennt die Absichten.", nachrichten: [] } };
+        new Drehbuch(u, drehbuch, pdf as never).draw();
+
+        const rollen = calls[0]?.body as string[][];
+        expect(rollen[0]?.[0]).toBe("Fernmeldezentrale der beübten Stelle");
+        expect(rollen[1]?.[0]).toBe("Führung der beübten Stelle");
+        const rollenkarten = calls[3]?.body as string[][];
+        expect(rollenkarten[1]).toEqual(["Leitung\n(Führung von EL 10)", "Kennt die Absichten."]);
+        const zeitachse = calls[4]?.body as (string | number)[][];
+        expect((calls[4]?.head as string[][])[0]?.[2]).toBe("Von / An");
+        expect(zeitachse[2]?.[2]).toBe("Ausgang\nEL 10\nan EA 11, Kater");
+    });
+
+    it("blendet die Führung aus, solange der Schalter aus ist", () => {
+        const { pdf, calls } = bauePdfMock();
+        const drehbuch = { ...baueDrehbuch(), fuehrung: { bezeichnung: "Leitung", hintergrund: "x", nachrichten: [] } };
+        new Drehbuch(baueUebung(), drehbuch, pdf as never).draw();
+        expect((calls[0]?.body as string[][])[0]?.[0]).toBe("Beübte Führungsstelle");
+        expect(calls[3]?.body as string[][]).toHaveLength(4);
+    });
+
     it("verweigert Übungen ohne Rollenbesetzung", () => {
         const { pdf } = bauePdfMock();
         const u = baueUebung();

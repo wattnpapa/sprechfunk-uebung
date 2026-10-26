@@ -74,7 +74,7 @@ function klassischeUebung(teilnehmer: number): Record<string, unknown> {
     return speicherAbbild(uebung);
 }
 
-/** Führungsstellen-Übung mit der größten erlaubten Rollenbesetzung. */
+/** Führungsstellen-Übung mit der größten erlaubten Rollenbesetzung und eingespielter Führung. */
 function fuehrungsstellenUebung(): Record<string, unknown> {
     const drehbuch = parseFuehrungsstellenUebung("hochwasser-fuehrungsstelle", hochwasser);
     const abschnitte = drehbuch.straenge.map((_, i) => `Heros Musterstadt 2${i + 1}/10`);
@@ -92,7 +92,9 @@ function fuehrungsstellenUebung(): Record<string, unknown> {
         beginn: "09:00",
         stellen: Object.fromEntries(
             ["Heros Musterstadt 10", "Kater Musterstadt", ...abschnitte].map(name => [name, `Stelle ${name}`])
-        )
+        ),
+        // Mit eingespielter Führung: die meisten Nachrichten und alle Felder.
+        fuehrungEingespielt: true
     };
     new GenerationService().generateFuehrungsstelle(uebung, drehbuch);
     uebung.id = "fuehrungsstelle";
