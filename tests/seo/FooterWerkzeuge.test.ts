@@ -13,6 +13,7 @@ import { renderFooter, renderWerkzeugleiste, WERKZEUGE } from "../../scripts/lib
 const root = path.resolve(__dirname, "..", "..");
 
 const ERWARTET = [
+    ["einsatzauftrag.app", "https://einsatzauftrag.app/"],
     ["erfassungsbogen.app", "https://erfassungsbogen.app/"],
     ["fmbauplaner.app", "https://fmbauplaner.app/"],
     ["nachrichtenvordruck.app", "https://nachrichtenvordruck.app/"],
@@ -23,7 +24,7 @@ const leiste: string = renderWerkzeugleiste();
 
 describe("Werkzeugleiste im Footer", () => {
 
-    it("führt alle vier Werkzeuge in fester Reihenfolge, Linktext ist die Domain", () => {
+    it("führt alle fünf Werkzeuge in fester Reihenfolge, Linktext ist die Domain", () => {
         const links = [...leiste.matchAll(/<a\s[^>]*href="([^"]*)"[^>]*>([^<]*)<\/a>/g)]
             .map(treffer => [treffer[2], treffer[1]]);
         expect(links).toEqual(ERWARTET);
@@ -44,7 +45,7 @@ describe("Werkzeugleiste im Footer", () => {
         }
         // Abwechselnd Link und Trenner, beginnend und endend mit einem Link.
         const folge = [...leiste.matchAll(/<(a|span)\s/g)].map(treffer => treffer[1]).join("");
-        expect(folge).toBe("aspanaspanaspana");
+        expect(folge).toBe("aspanaspanaspanaspana");
     });
 
     it("öffnet fremde Werkzeuge im neuen Tab, das eigene nicht", () => {

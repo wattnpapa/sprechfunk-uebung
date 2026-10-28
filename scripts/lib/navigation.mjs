@@ -269,6 +269,7 @@ ${karten}
  * steht bewusst mit drin: die Zeile ist auf allen Werkzeugen gleich.
  */
 export const WERKZEUGE = [
+    { domain: "einsatzauftrag.app", href: "https://einsatzauftrag.app/" },
     { domain: "erfassungsbogen.app", href: "https://erfassungsbogen.app/" },
     { domain: "fmbauplaner.app", href: "https://fmbauplaner.app/" },
     { domain: "nachrichtenvordruck.app", href: "https://nachrichtenvordruck.app/" },
