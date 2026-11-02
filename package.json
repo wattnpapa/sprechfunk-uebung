@@ -119,7 +119,7 @@
     "jspdf": "^4.2.1",
     "jspdf-autotable": "^5.0.9",
     "jszip": "^3.10.2",
-    "marked": "^18.1.1",
+    "marked": "^18.1.2",
     "pdfjs-dist": "^6.4.299"
   },
   "overrides": {
