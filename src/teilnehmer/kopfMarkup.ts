@@ -135,7 +135,7 @@ function unterlagenUndGefahrHtml(): string {
             <details class="mt-4 teilnehmer-gefahr" id="teilnehmerGefahrBereich">
                 <summary>Abhak-Stand komplett zurücksetzen</summary>
                 <div class="teilnehmer-gefahr-inhalt">
-                    <p class="small mb-2" id="teilnehmerResetHinweis">Setzt alle als abgesetzt markierten Funksprüche wieder auf „offen“. Einen einzelnen falsch markierten Spruch korrigierst du mit „Zurücknehmen“ in seiner Zeile.</p>
+                    <p class="small mb-2" id="teilnehmerResetHinweis">Setzt alle als abgesetzt markierten Funksprüche wieder auf „offen“. Eine einzelne falsch markierte Nachricht korrigierst du mit „Zurücknehmen“ in ihrer Zeile.</p>
                     <button class="btn btn-outline-danger" id="btn-reset-teilnehmer-data" type="button">
                         <i class="fas fa-undo"></i> <span id="teilnehmerResetLabel">Abhak-Stand zurücksetzen</span>
                     </button>

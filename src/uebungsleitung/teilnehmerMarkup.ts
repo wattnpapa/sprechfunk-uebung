@@ -358,7 +358,7 @@ export function renderNotizUndDebriefCells(name: string, status: TeilnehmerStatu
                 class="btn btn-sm btn-outline-secondary"
                 data-action="download-debrief"
                 data-teilnehmer="${escapeAttr(name)}"
-                title="Debrief-PDF für die Nachbesprechung: alle Sprüche dieser Stelle mit Zeiten und Notizen">
+                title="Debrief-PDF für die Nachbesprechung: alle Nachrichten dieser Stelle mit Zeiten und Notizen">
                 Debrief (PDF)
               </button>
             </td>`;

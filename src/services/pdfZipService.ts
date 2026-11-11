@@ -37,7 +37,7 @@ export function liesmichAlle(funkUebung: FunkUebung): string {
         "",
         "Druck die Unterlagen VOR der Übung aus. Sie sind die Rückfallebene, wenn Netz,",
         "Akku oder Gerät ausfallen – auf Papier läuft die Übung vollständig weiter.",
-        "Abgehakte Sprüche und notierte Uhrzeiten lassen sich danach in der App nachtragen.",
+        "Abgehakte Nachrichten und notierte Uhrzeiten lassen sich danach in der App nachtragen.",
         "",
         "Was wofür:",
         "- Uebungsleitung.pdf: Teilnehmerliste mit Teilnehmercodes und Soll-/Ist-Feldern,",

@@ -12,7 +12,7 @@ const INFO_ID = "funkspruchVorlageInfo";
 export function vorlagenZusatz(vorlage: FunkspruchVorlage): string {
     const teile: string[] = [];
     if (typeof vorlage.anzahl === "number") {
-        teile.push(`${vorlage.anzahl.toLocaleString("de-DE")} Sprüche`);
+        teile.push(`${vorlage.anzahl.toLocaleString("de-DE")} Nachrichten`);
     }
     if (vorlage.herkunft) {
         teile.push(HERKUNFT_TEXT[vorlage.herkunft]);

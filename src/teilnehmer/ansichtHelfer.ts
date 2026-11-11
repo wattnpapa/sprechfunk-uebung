@@ -72,7 +72,7 @@ export function syncAnzeige(state: LiveSyncState, info: ZustellInfo): { text: st
         return { ...label, text, title: `${label.title}${seit}` };
     }
     if ((state === "offline" || state === "fehler") && info.offen > 0) {
-        const wort = info.offen === 1 ? "Spruch" : "Sprüche";
+        const wort = info.offen === 1 ? "Nachricht" : "Nachrichten";
         const text = state === "offline"
             ? `Keine Verbindung – ${info.offen} ${wort} nur hier`
             : `Fehler – ${info.offen} ${wort} nur hier`;
@@ -84,11 +84,11 @@ export function syncAnzeige(state: LiveSyncState, info: ZustellInfo): { text: st
 export const RESET_TEXTE = {
     live: {
         label: "Abhak-Stand für alle zurücksetzen",
-        hinweis: "Setzt alle als abgesetzt markierten Funksprüche wieder auf „offen“ – auf diesem Gerät, auf deinen anderen Geräten und bei der Übungsleitung. Einen einzelnen falsch markierten Spruch korrigierst du besser mit „Zurücknehmen“ in seiner Zeile."
+        hinweis: "Setzt alle als abgesetzt markierten Funksprüche wieder auf „offen“ – auf diesem Gerät, auf deinen anderen Geräten und bei der Übungsleitung. Eine einzelne falsch markierte Nachricht korrigierst du besser mit „Zurücknehmen“ in ihrer Zeile."
     },
     lokal: {
         label: "Abhak-Stand auf diesem Gerät löschen",
-        hinweis: "Setzt alle als abgesetzt markierten Funksprüche auf diesem Gerät wieder auf „offen“. Einen einzelnen falsch markierten Spruch korrigierst du besser mit „Zurücknehmen“ in seiner Zeile."
+        hinweis: "Setzt alle als abgesetzt markierten Funksprüche auf diesem Gerät wieder auf „offen“. Eine einzelne falsch markierte Nachricht korrigierst du besser mit „Zurücknehmen“ in ihrer Zeile."
     }
 };
 

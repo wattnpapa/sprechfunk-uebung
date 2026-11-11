@@ -175,20 +175,20 @@
                 </div>
                 <div id="nachrichtenStatsStrip" class="d-flex flex-wrap gap-2 mt-2">
                     <span class="badge bg-secondary" id="uebungsleitungLiveSyncBadge" aria-live="polite" title="Status der Live-Meldungen der Teilnehmer">Live-Status: –</span>
-                    <small class="badge text-bg-secondary" id="nachrichtenTempoLabel" title="Tempo: abgesetzte Sprüche pro Minute, gemittelt über die letzten sechs (ohne nachgetragene Zeiten)">Tempo: –</small>
+                    <small class="badge text-bg-secondary" id="nachrichtenTempoLabel" title="Tempo: abgesetzte Nachrichten pro Minute, gemittelt über die letzten sechs (ohne nachgetragene Zeiten)">Tempo: –</small>
                     <small class="badge text-bg-secondary" id="nachrichtenLoadLabel" title="Funklast: wer bisher am meisten gesendet und empfangen hat">Funklast: –</small>
-                    <small class="badge text-bg-secondary" id="nachrichtenHeatmapLabel" title="Erledigte Sprüche je 5 Minuten, die letzten sechs Abschnitte">Sprüche je 5 min: –</small>
+                    <small class="badge text-bg-secondary" id="nachrichtenHeatmapLabel" title="Erledigte Nachrichten je 5 Minuten, die letzten sechs Abschnitte">Nachrichten je 5 min: –</small>
                 </div>
                 <details class="ul-kennzahlen-hilfe mt-1">
                     <summary class="small">Was bedeuten die Kennzahlen?</summary>
                     <ul class="small mb-0 mt-1">
                         <li><strong>Live-Status</strong>: ob dieses Gerät mit dem Server verbunden ist. „offline“ heißt: deine Markierungen liegen hier und werden nachgereicht.</li>
-                        <li><strong>Tempo</strong>: abgesetzte Sprüche pro Minute über die letzten sechs, ohne von Hand nachgetragene Zeiten.</li>
+                        <li><strong>Tempo</strong>: abgesetzte Nachrichten pro Minute über die letzten sechs, ohne von Hand nachgetragene Zeiten.</li>
                         <li><strong>Funklast</strong>: welche Stelle bisher am meisten gesendet und welche am meisten empfangen hat.</li>
-                        <li><strong>Sprüche je 5 min</strong> und <strong>Heatmap</strong>: wie viele Sprüche in jedem 5-Minuten-Abschnitt erledigt wurden.</li>
-                        <li><strong>ETA</strong>: geschätztes Ende. Im X-Zeit-Modus aus dem Zeitplan, sonst aus dem bisherigen Tempo (erst ab fünf Sprüchen).</li>
+                        <li><strong>Nachrichten je 5 min</strong> und <strong>Heatmap</strong>: wie viele Nachrichten in jedem 5-Minuten-Abschnitt erledigt wurden.</li>
+                        <li><strong>ETA</strong>: geschätztes Ende. Im X-Zeit-Modus aus dem Zeitplan, sonst aus dem bisherigen Tempo (erst ab fünf Nachrichten).</li>
                         <li><strong>Nr</strong> zählt den Plan durch, <strong>Abs.-Nr.</strong> ist die Nummer beim Absender – die nennt er am Funk und sie steht auf seinem Vordruck.</li>
-                        <li><strong>gemeldet (TN)</strong>: der Teilnehmer hat den Spruch abgehakt; mit „Bestätigen“ hältst du fest, dass du ihn gehört hast.</li>
+                        <li><strong>gemeldet (TN)</strong>: der Teilnehmer hat die Nachricht abgehakt; mit „Bestätigen“ hältst du fest, dass du sie gehört hast.</li>
                     </ul>
                 </details>
             </div>
@@ -353,7 +353,7 @@
                     <li class="list-group-item"><strong>📡 Ø Funksprüche pro Teilnehmer:</strong> <span id="infoSpruecheProTeilnehmer" class="float-end">–</span></li>
                     <li class="list-group-item"><strong>📦 Gesamtdatenmenge:</strong> <span id="infoGroesse" class="float-end">–</span></li>
                     <li class="list-group-item"><strong>👥 Ø Teilnehmerzahl:</strong> <span id="infoTeilnehmer" class="float-end">–</span></li>
-                    <li class="list-group-item"><strong>⏱️ Ø reine Sprechzeit je Übung (grob, 15 s je Spruch):</strong> <span id="infoDauer" class="float-end">–</span></li>
+                    <li class="list-group-item"><strong>⏱️ Ø reine Sprechzeit je Übung (grob, 15 s je Nachricht):</strong> <span id="infoDauer" class="float-end">–</span></li>
                     <li class="list-group-item"><strong>🔤 Anteil mit Lösungswörtern:</strong> <span id="infoLoesungswort" class="float-end">–%</span></li>
                     <li class="list-group-item"><strong>💪 Anteil mit Stärkemeldungen:</strong> <span id="infoStaerke" class="float-end">–%</span></li>
                     <li class="list-group-item"><strong>🧩 Anteil mit Buchstabieraufgaben:</strong> <span id="infoBuchstabieren" class="float-end">–%</span></li>

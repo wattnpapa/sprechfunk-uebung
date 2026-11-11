@@ -123,7 +123,7 @@ function renderFokusZuletzt(zustand: FokusZustand): string {
 function keineBasisHtml(zustand: FokusZustand): string {
     const n = zustand.aktuelle;
     const vorschau = n
-        ? `<div class="mt-2">Dein erster Spruch: <strong>Nr. ${n.id}</strong> an ${escapeHtml(n.empfaenger.join(", "))}, ${n.xZeitSlot} min nach der X-Zeit.</div>`
+        ? `<div class="mt-2">Deine erste Nachricht: <strong>Nr. ${n.id}</strong> an ${escapeHtml(n.empfaenger.join(", "))}, ${n.xZeitSlot} min nach der X-Zeit.</div>`
         : "";
     return `
                 <div class="card mb-3">

@@ -664,7 +664,7 @@ describe("GeneratorView – Links, Hilfsfunktionen und Führungsstelle", () => {
         expect(info.open).toBe(true);
         const leer = info.querySelector("li[data-vorlage='thwleer']")?.textContent ?? "";
         expect(leer).toContain("Ostfriesland");
-        expect(leer).toContain("118 Sprüche");
+        expect(leer).toContain("118 Nachrichten");
         expect(leer).toContain("aus einer gefunkten Übung");
         const feuerwehr = info.querySelector("li[data-vorlage='feuerwehrUnwetter']")?.textContent ?? "";
         expect(feuerwehr).toContain("für den Generator geschrieben");

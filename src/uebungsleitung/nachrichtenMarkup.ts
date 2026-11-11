@@ -85,7 +85,7 @@ export function renderNachrichtenTabelle(options: NachrichtenRenderOptionen, row
                 </table>
             </div>
             <div class="mt-3" id="nachrichtenAuswertung">
-              <div class="small text-body-secondary mb-2">Heatmap: erledigte Sprüche je 5 Minuten</div>
+              <div class="small text-body-secondary mb-2">Heatmap: erledigte Nachrichten je 5 Minuten</div>
               <div id="nachrichtenHeatmapChart" class="d-flex align-items-end gap-1" style="height: 110px;"></div>
             </div>
             <div class="mt-3">

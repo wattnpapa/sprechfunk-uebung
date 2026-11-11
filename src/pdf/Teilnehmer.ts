@@ -302,7 +302,7 @@ export class Teilnehmer extends BasePDFTeilnehmer {
             this.pdf.text(
                 [
                     "Wörter in GROSSBUCHSTABEN müssen buchstabiert werden. "
-                    + "Abgesetzte Sprüche abhaken und Uhrzeit notieren – so geht auch ohne Netz nichts verloren.",
+                    + "Abgesetzte Nachrichten abhaken und Uhrzeit notieren – so geht auch ohne Netz nichts verloren.",
                     UEBERSICHT_ZEITEN_HINWEIS
                 ],
                 this.pageMarginLeft,

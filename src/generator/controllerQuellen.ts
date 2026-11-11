@@ -181,7 +181,7 @@ export function warnIfSpruchPoolTooSmall(ctrl: GeneratorController): void {
     if (bedarf > 0 && vorhanden < bedarf) {
         uiFeedback.info(
             `Nur ${vorhanden} eindeutige Funksprüche für ${bedarf} benötigte Nachrichten – ` +
-            "einzelne Sprüche wiederholen sich zwangsläufig. Wähle mehr Vorlagen aus oder " +
+            "einzelne Funksprüche wiederholen sich zwangsläufig. Wähle mehr Vorlagen aus oder " +
             "reduziere 'Funksprüche pro Teilnehmer'."
         );
     }

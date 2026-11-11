@@ -104,7 +104,7 @@ function bestaetigenTeil(zuBestaetigen: number): string {
         return "";
     }
     return `<button type="button" class="btn btn-sm btn-outline-primary" data-action="gemeldete-bestaetigen" title="Übernimmt alle vom Teilnehmer gemeldeten Nachrichten mit der Uhrzeit, zu der der Teilnehmer getippt hat">${zuBestaetigen} gemeldete bestätigen (mit Meldezeit des Teilnehmers)</button>
-            <small class="text-body-secondary w-100">„Gemeldet“ heißt: der Teilnehmer hat abgehakt. Bestätige, wenn du den Spruch gehört hast. Die Sammelbestätigung übernimmt seine Tippzeit, nicht die Zeit vom Papier.</small>`;
+            <small class="text-body-secondary w-100">„Gemeldet“ heißt: der Teilnehmer hat abgehakt. Bestätige, wenn du die Nachricht gehört hast. Die Sammelbestätigung übernimmt seine Tippzeit, nicht die Zeit vom Papier.</small>`;
 }
 
 /**

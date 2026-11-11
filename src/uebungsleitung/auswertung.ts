@@ -125,7 +125,7 @@ export function calculateTempoLabel(sentNachrichten: SentNachricht[]): string {
     }
 
     const perMinute = 60000 / avgIntervalMs;
-    return `Tempo: ${perMinute.toFixed(1).replace(".", ",")} Sprüche/min`;
+    return `Tempo: ${perMinute.toFixed(1).replace(".", ",")} Nachrichten/min`;
 }
 
 function getTopEntry(values: Map<string, number>): { name: string; count: number } | null {
@@ -170,12 +170,12 @@ export function calculateLoadLabel(sentNachrichten: SentNachricht[], alleTeilneh
 
 export function calculateHeatmapLabel(bins: HeatmapBin[]): string {
     if (!bins.length) {
-        return "Sprüche je 5 min: –";
+        return "Nachrichten je 5 min: –";
     }
     const lastBins = bins
         .slice(-6)
         .map(bin => `ab ${formatHHMM(bin.bucket)}: ${bin.count}`);
-    return `Sprüche je 5 min: ${lastBins.join(" | ")}`;
+    return `Nachrichten je 5 min: ${lastBins.join(" | ")}`;
 }
 
 export function buildHeatmapBins(sentNachrichten: SentNachricht[]): HeatmapBin[] {

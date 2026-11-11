@@ -88,7 +88,7 @@ export class Uebungsleitung extends BasePDF {
                 ? "Ohne Netz läuft die Übung auf Papier weiter: Einspielzeit und Reaktion der beübten Stelle "
                     + "eintragen und später in der App nachtragen."
                 : "Ohne Netz läuft die Übung auf Papier weiter: Anmeldung, Lösungswort und Stärke unter „Ist“, "
-                    + "abgesetzte Sprüche mit Uhrzeit eintragen und später in der App nachtragen.",
+                    + "abgesetzte Nachrichten mit Uhrzeit eintragen und später in der App nachtragen.",
             this.pdfWidth / 2, y, { align: "center" }
         );
         return y;

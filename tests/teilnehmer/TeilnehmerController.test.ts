@@ -467,7 +467,7 @@ describe("TeilnehmerController", () => {
 
         c.toggleUebertragen(4, false);
         expect(c.storage.nachrichten[4].uebertragen).toBe(false);
-        expect(mocks.zeigeRueckgaengig).toHaveBeenLastCalledWith("Spruch 4 wieder offen.", expect.any(Function));
+        expect(mocks.zeigeRueckgaengig).toHaveBeenLastCalledWith("Nachricht 4 wieder offen.", expect.any(Function));
 
         const undo = mocks.zeigeRueckgaengig.mock.calls.at(-1)?.[1] as () => void;
         undo();
@@ -476,7 +476,7 @@ describe("TeilnehmerController", () => {
         expect(c.storage.nachrichten[4].geaendertUm > "2026-10-04T18:00:00.000Z").toBe(true);
 
         c.toggleUebertragen(5, true);
-        expect(mocks.zeigeRueckgaengig).toHaveBeenLastCalledWith("Spruch 5 als abgesetzt markiert.", expect.any(Function));
+        expect(mocks.zeigeRueckgaengig).toHaveBeenLastCalledWith("Nachricht 5 als abgesetzt markiert.", expect.any(Function));
         (mocks.zeigeRueckgaengig.mock.calls.at(-1)?.[1] as () => void)();
         expect(c.storage.nachrichten[5]).toMatchObject({ uebertragen: false });
     });

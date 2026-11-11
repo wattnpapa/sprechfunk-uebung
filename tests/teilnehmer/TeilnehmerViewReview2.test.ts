@@ -56,8 +56,8 @@ describe("TeilnehmerView – THW-Review 2026-10-05", () => {
         expect(leiste.hidden).toBe(true);
         view.updateLiveSyncState("offline", { offen: 2, bestaetigtUm: "21:07" });
         expect(leiste.hidden).toBe(false);
-        expect(leiste.textContent).toContain("2 Sprüche nur auf diesem Gerät");
-        expect(document.getElementById("teilnehmerLiveSyncBadge")?.textContent).toBe("Keine Verbindung – 2 Sprüche nur hier");
+        expect(leiste.textContent).toContain("2 Nachrichten nur auf diesem Gerät");
+        expect(document.getElementById("teilnehmerLiveSyncBadge")?.textContent).toBe("Keine Verbindung – 2 Nachrichten nur hier");
         view.updateLiveSyncState("live", { offen: 0, bestaetigtUm: "21:09" });
         expect(leiste.hidden).toBe(true);
         expect(document.getElementById("teilnehmerLiveSyncBadge")?.textContent).toContain("alles gesendet 21:09");

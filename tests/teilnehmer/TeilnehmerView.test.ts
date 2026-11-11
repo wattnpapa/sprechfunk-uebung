@@ -568,7 +568,7 @@ describe("TeilnehmerView – Fokus-Modus", () => {
         const card = document.getElementById("teilnehmerFokusCard");
         expect(card?.textContent).toContain("die Übungsleitung setzt sie");
         expect(card?.textContent).not.toContain("Jetzt starten");
-        expect(card?.textContent).toContain("Dein erster Spruch: Nr. 1 an Bravo");
+        expect(card?.textContent).toContain("Deine erste Nachricht: Nr. 1 an Bravo");
         expect(card?.textContent).not.toContain("Erste");
         expect(card?.querySelector("[data-fokus-uebertragen]")).toBeNull();
     });
@@ -840,11 +840,11 @@ describe("TeilnehmerView – Bedienung am Handy (THW-Review 2026-10-04)", () => 
     it("Rückgängig-Hinweis: wirkt sofort, nach Ablauf verschwunden", () => {
         const { view } = renderMit({});
         const undo = vi.fn();
-        view.zeigeRueckgaengig("Spruch 2 als abgesetzt markiert.", undo);
+        view.zeigeRueckgaengig("Nachricht 2 als abgesetzt markiert.", undo);
         const box = document.getElementById("teilnehmerRueckgaengig") as HTMLElement;
         const knopf = document.getElementById("btn-teilnehmer-rueckgaengig") as HTMLButtonElement;
         expect(box.hidden).toBe(false);
-        expect(box.textContent).toContain("Spruch 2");
+        expect(box.textContent).toContain("Nachricht 2");
 
         // Kein Sperrfenster mehr: die Leiste taucht nie unter dem Finger auf
         // (error-recovery P3-1, 2026-10-05).
@@ -907,7 +907,7 @@ describe("TeilnehmerView – Bedienung am Handy (THW-Review 2026-10-04)", () => 
         const { view } = renderMit({});
         (document.getElementById("teilnehmerDocModal") as HTMLElement).classList.add("show");
         const undo = vi.fn();
-        view.zeigeRueckgaengig("Spruch 1 als abgesetzt markiert.", undo);
+        view.zeigeRueckgaengig("Nachricht 1 als abgesetzt markiert.", undo);
         const leiste = document.getElementById("teilnehmerDocRueckgaengig") as HTMLElement;
         expect(leiste.hidden).toBe(false);
         expect((document.getElementById("teilnehmerRueckgaengig") as HTMLElement).hidden).toBe(true);

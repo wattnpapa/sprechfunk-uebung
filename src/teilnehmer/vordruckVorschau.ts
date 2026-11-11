@@ -198,7 +198,7 @@ export function togglePdfModal(show: boolean): void {
 
 function statusText(isTransmitted: boolean, vorhanden: boolean): string {
     if (!vorhanden) {
-        return "kein Spruch";
+        return "keine Nachricht";
     }
     return isTransmitted ? "✓ abgesetzt" : "offen";
 }

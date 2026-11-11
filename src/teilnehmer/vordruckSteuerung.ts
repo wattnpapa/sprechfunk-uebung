@@ -59,8 +59,8 @@ export abstract class TeilnehmerVordruckSteuerung extends TeilnehmerControllerBa
      */
     protected bieteRueckgaengigAn(id: number, abgesetzt: boolean, vorher: NachrichtenEintrag): void {
         const text = abgesetzt
-            ? `Spruch ${id} als abgesetzt markiert.`
-            : `Spruch ${id} wieder offen.`;
+            ? `Nachricht ${id} als abgesetzt markiert.`
+            : `Nachricht ${id} wieder offen.`;
         this.view.zeigeRueckgaengig(text, () => this.stelleWiederHer(id, vorher));
     }
 

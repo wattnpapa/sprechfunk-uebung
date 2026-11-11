@@ -84,9 +84,9 @@ describe("Verbindungsanzeige mit Zahl und Uhrzeit", () => {
     it("nennt offene Sprüche und die letzte Bestätigung", () => {
         expect(syncAnzeige("live", { offen: 0, bestaetigtUm: "21:07" }).text).toBe("Übungsleitung: live · alles gesendet 21:07");
         expect(syncAnzeige("live", { offen: 1, bestaetigtUm: "" }).text).toBe("Übungsleitung: live · 1 wird gesendet");
-        expect(syncAnzeige("offline", { offen: 2, bestaetigtUm: "21:07" }).text).toBe("Keine Verbindung – 2 Sprüche nur hier");
+        expect(syncAnzeige("offline", { offen: 2, bestaetigtUm: "21:07" }).text).toBe("Keine Verbindung – 2 Nachrichten nur hier");
         expect(syncAnzeige("offline", { offen: 2, bestaetigtUm: "21:07" }).title).toContain("21:07");
-        expect(syncAnzeige("fehler", { offen: 1, bestaetigtUm: "" }).text).toBe("Fehler – 1 Spruch nur hier");
+        expect(syncAnzeige("fehler", { offen: 1, bestaetigtUm: "" }).text).toBe("Fehler – 1 Nachricht nur hier");
         expect(syncAnzeige("offline", { offen: 0, bestaetigtUm: "" }).text).toBe("Keine Verbindung – wird nachgereicht");
         expect(syncAnzeige("aus", { offen: 0, bestaetigtUm: "" }).text).toBe("Nur auf diesem Gerät");
         // Klartext statt „Sync“ (field-user P3).
@@ -98,8 +98,8 @@ describe("Verbindungsanzeige mit Zahl und Uhrzeit", () => {
     it("zeigt den mitlaufenden Hinweis nur ohne Verbindung", () => {
         expect(syncLeistenText("live", { offen: 0, bestaetigtUm: "" })).toBe("");
         expect(syncLeistenText("aus", { offen: 3, bestaetigtUm: "" })).toBe("");
-        expect(syncLeistenText("offline", { offen: 3, bestaetigtUm: "" })).toContain("3 Sprüche nur auf diesem Gerät");
-        expect(syncLeistenText("offline", { offen: 1, bestaetigtUm: "" })).toContain("1 Spruch nur auf diesem Gerät");
+        expect(syncLeistenText("offline", { offen: 3, bestaetigtUm: "" })).toContain("3 Nachrichten nur auf diesem Gerät");
+        expect(syncLeistenText("offline", { offen: 1, bestaetigtUm: "" })).toContain("1 Nachricht nur auf diesem Gerät");
         expect(syncLeistenText("offline", { offen: 0, bestaetigtUm: "" })).toContain("Keine Verbindung");
         expect(syncLeistenText("fehler", { offen: 0, bestaetigtUm: "" })).toContain("per Funk");
     });

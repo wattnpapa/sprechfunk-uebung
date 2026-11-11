@@ -161,7 +161,7 @@ export function renderStatusZelle(id: number, z: StatusZellenZustand): string {
                     ${zustellung.lokal ? "<span aria-hidden=\"true\">⚠</span> " : ""}${zustellung.text}
                 </div>
                 <div class="teilnehmer-zuruecknehmen-zeile">
-                    <button type="button" class="btn btn-outline-secondary btn-sm teilnehmer-zuruecknehmen" data-aktion="zuruecknehmen" data-id="${id}" aria-label="Spruch ${id} zurücknehmen (wieder offen)">
+                    <button type="button" class="btn btn-outline-secondary btn-sm teilnehmer-zuruecknehmen" data-aktion="zuruecknehmen" data-id="${id}" aria-label="Nachricht ${id} zurücknehmen (wieder offen)">
                         Zurücknehmen
                     </button>
                 </div>`;

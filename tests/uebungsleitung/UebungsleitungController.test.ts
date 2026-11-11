@@ -266,7 +266,7 @@ describe("UebungsleitungController", () => {
         expect(a.calculateTempoLabel(sent)).toContain("Tempo:");
         expect(a.calculateLoadLabel(sent, teilnehmer)).toContain("Funklast:");
         const bins = a.buildHeatmapBins(sent);
-        expect(a.calculateHeatmapLabel(bins)).toContain("Sprüche je 5 min:");
+        expect(a.calculateHeatmapLabel(bins)).toContain("Nachrichten je 5 min:");
         const timeline = a.buildTeilnehmerTimeline(flat, effektiv, teilnehmer);
         expect(timeline.length).toBeGreaterThan(0);
     });
@@ -354,7 +354,7 @@ describe("UebungsleitungController", () => {
         const a = await import("../../src/uebungsleitung/auswertung");
         expect(a.calculateTempoLabel([])).toBe("Tempo: –");
         expect(a.calculateLoadLabel([], [])).toBe("Funklast: –");
-        expect(a.calculateHeatmapLabel([])).toBe("Sprüche je 5 min: –");
+        expect(a.calculateHeatmapLabel([])).toBe("Nachrichten je 5 min: –");
         expect(a.buildHeatmapBins([])).toEqual([]);
 
         const sent = a.collectSentNachrichten([{ sender: "A", nr: 1, empfaenger: ["A"], text: "x" }], {});

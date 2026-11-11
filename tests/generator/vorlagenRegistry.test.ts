@@ -37,7 +37,7 @@ describe("Beschreibung der Funkspruch-Vorlagen", () => {
 
     it("formt den Zusatz aus Anzahl und Herkunft", () => {
         expect(vorlagenZusatz({ text: "x", filename: "x", anzahl: 1660, herkunft: "geschrieben" }))
-            .toBe(`1.660 Sprüche · ${HERKUNFT_TEXT.geschrieben}`);
+            .toBe(`1.660 Nachrichten · ${HERKUNFT_TEXT.geschrieben}`);
         expect(vorlagenZusatz({ text: "x", filename: "x" })).toBe("");
     });
 });

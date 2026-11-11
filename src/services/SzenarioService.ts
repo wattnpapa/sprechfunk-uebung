@@ -85,7 +85,7 @@ function parseMinTeilnehmer(roh: unknown, fehler: string[]): number {
         ? roh
         : (fehler.push("Feld \"minTeilnehmer\" fehlt oder ist keine ganze Zahl"), 0);
     if (minTeilnehmer < 2) {
-        fehler.push("minTeilnehmer muss mindestens 2 sein (Partner-Sprüche brauchen ein Gegenüber)");
+        fehler.push("minTeilnehmer muss mindestens 2 sein (Partner-Nachrichten brauchen ein Gegenüber)");
     }
     return minTeilnehmer;
 }
@@ -181,7 +181,7 @@ function parseStrangSprueche(roh: unknown, strangPfad: string, fehler: string[])
     });
 
     if (sprueche.length > 0 && sprueche[0]?.absender !== "ich") {
-        fehler.push(`${strangPfad}: der erste Spruch muss vom Inhaber ("ich") stammen`);
+        fehler.push(`${strangPfad}: die erste Nachricht muss vom Inhaber ("ich") stammen`);
     }
     return sprueche;
 }

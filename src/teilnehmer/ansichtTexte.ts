@@ -24,7 +24,7 @@ export function bindeCodeSprung(uebungInput: HTMLInputElement | null, teilnehmer
 }
 
 function sprueche(anzahl: number): string {
-    return anzahl === 1 ? "1 Spruch" : `${anzahl} Sprüche`;
+    return anzahl === 1 ? "1 Nachricht" : `${anzahl} Nachrichten`;
 }
 
 /**

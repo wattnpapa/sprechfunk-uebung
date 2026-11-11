@@ -228,7 +228,7 @@ export const SITE_PAGES = [
     ...ARCHIV_SEITEN,
     {
         slug: "funkuebung-feuerwehr", source: "pages/funkuebung-feuerwehr.html", sources: ["src/pages/funkuebung-feuerwehr.html"],
-        kurzGesagt: "Eine Funkübung für die Feuerwehr ist in wenigen Minuten vorbereitet: Teilnehmer mit ihren Florian-Rufnamen eintragen, Umfang festlegen, Vorlage wählen. Der Generator verteilt die Funksprüche und erzeugt für jede Funkstelle die Druckunterlagen. Für den Dienstabend haben sich sechs bis zehn Funkstellen mit je sechs bis zehn Sprüchen bewährt. Gefunkt wird über die vorhandenen Handfunkgeräte.",
+        kurzGesagt: "Eine Funkübung für die Feuerwehr ist in wenigen Minuten vorbereitet: Teilnehmer mit ihren Florian-Rufnamen eintragen, Umfang festlegen, Vorlage wählen. Der Generator verteilt die Funksprüche und erzeugt für jede Funkstelle die Druckunterlagen. Für den Dienstabend haben sich sechs bis zehn Funkstellen mit je sechs bis zehn Nachrichten bewährt. Gefunkt wird über die vorhandenen Handfunkgeräte.",
         related: ["funkuebung-dienstabend", "funksprueche", "funkrufnamen"],
         label: "Funkübung Feuerwehr",
         hubCategory: "uebungen",
@@ -815,7 +815,7 @@ export const SITE_PAGES = [
             },
             {
                 q: "Welches Intervall ist für einen Dienstabend sinnvoll?",
-                a: "Es ergibt sich aus dem Zeitrahmen geteilt durch die Zahl der Nachrichten. Bei acht Funkstellen mit je sechs Sprüchen und 90 Minuten Rahmen sind das etwa 2 Minuten. Unter einer Minute entstehen Wartezeiten, weil ein Verkehr 45 bis 90 Sekunden braucht."
+                a: "Es ergibt sich aus dem Zeitrahmen geteilt durch die Zahl der Nachrichten. Bei acht Funkstellen mit je sechs Nachrichten und 90 Minuten Rahmen sind das etwa 2 Minuten. Unter einer Minute entstehen Wartezeiten, weil ein Verkehr 45 bis 90 Sekunden braucht."
             },
             {
                 q: "Sehen die Teilnehmer alle Nachrichten im Voraus?",

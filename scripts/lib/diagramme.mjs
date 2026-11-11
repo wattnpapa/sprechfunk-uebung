@@ -423,7 +423,7 @@ export const DIAGRAMME = {
         beschreibung: "Die häufigsten Fragen betreffen den Ablauf einer Übung und den Umgang mit den Daten.",
         alt: "Zwei Spalten im Vergleich: Fragen zum Ablauf einer Übung gegenüber Fragen zu Daten, Kosten und Lizenz",
         bauen: () => gegenueber(
-            { titel: "Zum Ablauf", punkte: ["Wie lange dauert es?", "Wie viele Sprüche?", "Welche Unterlagen?"] },
+            { titel: "Zum Ablauf", punkte: ["Wie lange dauert es?", "Wie viele Nachrichten?", "Welche Unterlagen?"] },
             { titel: "Zu Daten und Recht", punkte: ["Was wird gespeichert?", "Was kostet es?", "Welche Lizenz?"] }
         )
     }

@@ -19,7 +19,7 @@ export function xZeitBannerHtml(): string {
                     <div class="teilnehmer-xzeit-optionen">
                         <div class="form-check form-switch teilnehmer-schalter mb-0" title="Zeigt nur die aktuell fällige Meldung mit Countdown – künftige Meldungen bleiben verborgen.">
                             <input class="form-check-input" type="checkbox" id="toggle-fokus-modus">
-                            <label class="form-check-label" for="toggle-fokus-modus">Nur fälligen Spruch zeigen (Fokus)</label>
+                            <label class="form-check-label" for="toggle-fokus-modus">Nur fällige Nachricht zeigen (Fokus)</label>
                         </div>
                         <details class="teilnehmer-xzeit-eigene" id="xZeitEigene">
                             <summary>Ohne Übungsleitung üben: X-Zeit selbst setzen</summary>
