@@ -1,24 +1,24 @@
 import type { NachrichtArt } from "../types/Nachricht";
 
 /**
- * Beschriftung der Übermittlungsart. Leer, wenn die Übung ohne Kennzeichnung
+ * Beschriftung der Nachrichtenart. Leer, wenn die Übung ohne Kennzeichnung
  * generiert wurde – dann soll auch nichts angezeigt werden.
  */
 export function nachrichtenArtLabel(art: NachrichtArt | undefined): string {
     switch (art) {
-    case "spruch":
-        return "Spruch";
     case "durchsage":
         return "Durchsage";
+    case "gespraech":
+        return "Gespräch";
     default:
         return "";
     }
 }
 
 /**
- * Bootstrap-Badge-Klasse zur Art. Sprüche sind hervorgehoben, weil die
+ * Bootstrap-Badge-Klasse zur Art. Durchsagen sind hervorgehoben, weil die
  * Gegenstelle sie mitschreiben muss.
  */
 export function nachrichtenArtBadgeClass(art: NachrichtArt | undefined): string {
-    return art === "spruch" ? "badge bg-primary" : "badge bg-secondary";
+    return art === "durchsage" ? "badge bg-primary" : "badge bg-secondary";
 }

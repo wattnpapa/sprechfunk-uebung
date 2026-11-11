@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 import { GenerationService } from "../../src/services/GenerationService";
 import { FunkUebung } from "../../src/models/FunkUebung";
 
-describe("Übermittlungsart Spruch/Durchsage", () => {
+describe("Nachrichtenart Durchsage/Gespräch", () => {
     const baueUebung = (): FunkUebung => {
         const u = new FunkUebung("dev");
         u.teilnehmerListe = ["A", "B", "C", "D"];
@@ -33,26 +33,26 @@ describe("Übermittlungsart Spruch/Durchsage", () => {
 
         new GenerationService().generate(u);
 
-        expect(alleNachrichten(u).every(n => n.art === "spruch" || n.art === "durchsage")).toBe(true);
+        expect(alleNachrichten(u).every(n => n.art === "durchsage" || n.art === "gespraech")).toBe(true);
     });
 
-    it("macht Nachrichten mit Lösungsbuchstaben immer zum Spruch, weil mitgeschrieben werden muss", () => {
+    it("macht Nachrichten mit Lösungsbuchstaben immer zur Durchsage, weil mitgeschrieben werden muss", () => {
         const u = baueUebung();
         u.nachrichtenArtAktiv = true;
-        u.spruchAnteilProzent = 0;
+        u.durchsageAnteilProzent = 0;
         u.loesungswoerter = { A: "ALFA", B: "BRAVO", C: "CHARLIE", D: "DELTA" };
 
         new GenerationService().generate(u);
 
         const mitLoesungsbuchstaben = alleNachrichten(u).filter(n => (n.loesungsbuchstaben?.length ?? 0) > 0);
         expect(mitLoesungsbuchstaben.length).toBeGreaterThan(0);
-        expect(mitLoesungsbuchstaben.every(n => n.art === "spruch")).toBe(true);
+        expect(mitLoesungsbuchstaben.every(n => n.art === "durchsage")).toBe(true);
     });
 
-    it("macht Stärkemeldungen und Buchstabier-Aufgaben auch bei 0 % zum Spruch", () => {
+    it("macht Stärkemeldungen und Buchstabier-Aufgaben auch bei 0 % zur Durchsage", () => {
         const u = baueUebung();
         u.nachrichtenArtAktiv = true;
-        u.spruchAnteilProzent = 0;
+        u.durchsageAnteilProzent = 0;
         u.funksprueche = [
             "wir sind mit 1/2/9 ausgerueckt",
             "die Lage am OBJEKT ist unveraendert",
@@ -61,36 +61,36 @@ describe("Übermittlungsart Spruch/Durchsage", () => {
 
         new GenerationService().generate(u);
 
-        const sprueche = alleNachrichten(u).filter(n => n.art === "spruch");
-        expect(sprueche.length).toBeGreaterThan(0);
-        expect(sprueche.every(n =>
+        const durchsagen = alleNachrichten(u).filter(n => n.art === "durchsage");
+        expect(durchsagen.length).toBeGreaterThan(0);
+        expect(durchsagen.every(n =>
             (n.staerken?.length ?? 0) > 0 || /[A-ZÄÖÜ]{2,}/.test(n.nachricht)
         )).toBe(true);
     });
 
-    it("erlaubt Sprüche unabhängig von der Empfängerzahl", () => {
+    it("erlaubt Durchsagen unabhängig von der Empfängerzahl", () => {
         const u = baueUebung();
         u.nachrichtenArtAktiv = true;
-        u.spruchAnteilProzent = 100;
+        u.durchsageAnteilProzent = 100;
 
         new GenerationService().generate(u);
 
         const anMehrere = alleNachrichten(u).filter(n => n.empfaenger.length > 1);
         expect(anMehrere.length).toBeGreaterThan(0);
-        expect(anMehrere.every(n => n.art === "spruch")).toBe(true);
+        expect(anMehrere.every(n => n.art === "durchsage")).toBe(true);
     });
 
-    it("hält die Anmeldung formlos und meldet sie als Durchsage", () => {
+    it("führt die Anmeldung als Gespräch ohne Mitschrift", () => {
         const u = baueUebung();
         u.nachrichtenArtAktiv = true;
-        u.spruchAnteilProzent = 100;
+        u.durchsageAnteilProzent = 100;
         u.anmeldungAktiv = true;
 
         new GenerationService().generate(u);
 
         const anmeldungen = alleNachrichten(u).filter(n => n.id === 1);
         expect(anmeldungen.length).toBe(4);
-        expect(anmeldungen.every(n => n.art === "durchsage")).toBe(true);
+        expect(anmeldungen.every(n => n.art === "gespraech")).toBe(true);
     });
 
     it("liefert bei gleichem Seed dieselbe Aufteilung", () => {

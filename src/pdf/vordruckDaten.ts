@@ -50,8 +50,10 @@ export function vordruckDatenAusUebung(
     }
     daten.absender = teilnehmer;
     daten.verfasser = teilnehmer;
-    if (nachricht.art) {
-        daten.art = nachricht.art;
+    // Nur die Durchsage hat ein Kästchen im Spruchkopf. Ein Gespräch wird
+    // nicht mitgeschrieben, das Feld bleibt dann offen.
+    if (nachricht.art === "durchsage") {
+        daten.art = "durchsage";
     }
 
     daten.titel = uebung.name;

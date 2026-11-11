@@ -101,8 +101,11 @@ function parseOptionaleNachrichtenFelder(obj: Record<string, unknown>): Partial<
     if (xZeitSlot !== undefined) {
         felder.xZeitSlot = xZeitSlot;
     }
-    if (obj["art"] === "spruch" || obj["art"] === "durchsage") {
+    if (obj["art"] === "durchsage" || obj["art"] === "gespraech") {
         felder.art = obj["art"];
+    } else if (obj["art"] === "spruch") {
+        // Nur in Übungen vor der Umstellung; `uebersetzeAlteNachrichtenArt` ordnet zu.
+        (felder as Record<string, unknown>)["art"] = "spruch";
     }
     const szenarioNr = endlicheZahl(obj["szenarioNr"]);
     if (szenarioNr !== undefined) {
@@ -245,13 +248,43 @@ function inhaltsFelder(data: Record<string, unknown>): Record<string, unknown> {
     };
 }
 
+/**
+ * Übungen vor der Umstellung auf Durchsage/Gespräch erkennt man daran, dass
+ * ihnen `durchsageAnteilProzent` fehlt. Sie nannten die mitzuschreibende
+ * Nachricht `spruch` und die ohne Mitschrift `durchsage`.
+ */
+function istAlteNachrichtenArt(data: Record<string, unknown>): boolean {
+    return !("durchsageAnteilProzent" in data);
+}
+
+function durchsageAnteil(data: Record<string, unknown>): number {
+    const neu = data["durchsageAnteilProzent"];
+    const alt = data["spruchAnteilProzent"];
+    if (typeof neu === "number") {
+        return neu;
+    }
+    return typeof alt === "number" ? alt : 50;
+}
+
+/** Übersetzt die Nachrichtenart alter Übungen in die heutige Bedeutung. */
+function uebersetzeAlteNachrichtenArt(nachrichten: Record<string, Nachricht[]>): void {
+    Object.values(nachrichten).forEach(liste => liste.forEach(n => {
+        const alt = n.art as string | undefined;
+        if (alt === "spruch") {
+            n.art = "durchsage";
+        } else if (alt === "durchsage") {
+            n.art = "gespraech";
+        }
+    }));
+}
+
 /** Einstellungen, mit denen die Übung generiert wurde. */
 function einstellungsFelder(data: Record<string, unknown>): Record<string, unknown> {
     const szenarioSlug = data["szenarioSlug"];
     return {
         anmeldungAktiv: boolOder(data["anmeldungAktiv"], true),
         nachrichtenArtAktiv: boolOder(data["nachrichtenArtAktiv"], false),
-        spruchAnteilProzent: typeof data["spruchAnteilProzent"] === "number" ? data["spruchAnteilProzent"] : 50,
+        durchsageAnteilProzent: durchsageAnteil(data),
         seed: textOder(data["seed"], undefined),
         verwendeteVorlagen: toStringArray(data["verwendeteVorlagen"]),
         istStandardKonfiguration: boolOder(data["istStandardKonfiguration"], false),
@@ -272,6 +305,16 @@ export function mapUebungToDomain(id: string, roh: unknown): FunkUebung {
     const data = roh as Record<string, unknown>;
     const uebung = new FunkUebung(textOder(data["buildVersion"], ""));
     Object.assign(uebung, { id, ...inhaltsFelder(data), ...einstellungsFelder(data) });
+    if (istAlteNachrichtenArt(data)) {
+        uebersetzeAlteNachrichtenArt(uebung.nachrichten || {});
+    } else {
+        // Neue Übungen kennen `spruch` nicht; ein solcher Wert wäre Unsinn.
+        Object.values(uebung.nachrichten || {}).forEach(liste => liste.forEach(n => {
+            if ((n.art as string | undefined) === "spruch") {
+                delete n.art;
+            }
+        }));
+    }
 
     // Legacy-Daten kompatibel machen: "Alle" immer in explizite Empfängerliste auflösen.
     Object.entries(uebung.nachrichten || {}).forEach(([sender, list]) => {

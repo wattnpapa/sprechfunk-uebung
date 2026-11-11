@@ -326,7 +326,7 @@ function verteilungsFehler(ctrl: GeneratorController): FeldFehler[] {
             prozentAnMehrere: leseZahlAusFormular("prozentAnMehrere"),
             prozentAnBuchstabieren: leseZahlAusFormular("prozentAnBuchstabieren"),
             ...(ctrl.funkUebung.nachrichtenArtAktiv
-                ? { prozentSprueche: leseZahlAusFormular("prozentSprueche") }
+                ? { prozentDurchsagen: leseZahlAusFormular("prozentDurchsagen") }
                 : {})
         }
     });

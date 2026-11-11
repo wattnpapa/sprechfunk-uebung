@@ -38,4 +38,11 @@ describe("pdf/vordruckDaten", () => {
         expect(daten.anschriften).toEqual(["Führungsstab"]);
         expect(daten.nummer).toBe("1");
     });
+
+    it("kreuzt nur die Durchsage an; ein Gespräch lässt das Feld offen", () => {
+        const durchsage = vordruckDatenAusUebung("EL 10", uebung, { id: 1, empfaenger: ["Kater"], nachricht: "a", art: "durchsage" });
+        const gespraech = vordruckDatenAusUebung("EL 10", uebung, { id: 2, empfaenger: ["Kater"], nachricht: "b", art: "gespraech" });
+        expect(durchsage.art).toBe("durchsage");
+        expect(gespraech.art).toBeUndefined();
+    });
 });

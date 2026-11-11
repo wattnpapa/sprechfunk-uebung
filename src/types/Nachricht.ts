@@ -1,9 +1,14 @@
 /**
- * Übermittlungsart nach BOS-Sprechfunkbetrieb: ein `spruch` wird mit
- * Nachrichtenkopf abgesetzt und von der Gegenstelle in den Vordruck
- * aufgenommen, eine `durchsage` läuft formlos ohne Mitschrift.
+ * Formlose Nachrichtenart nach BOS-Fernmeldebetrieb, wie sie die Übung
+ * kennzeichnet: eine `durchsage` schreibt die Gegenstelle grundsätzlich mit
+ * (Regelfall), ein `gespraech` ist unmittelbarer Austausch ohne Mitschrift.
+ *
+ * Der formgebundene Spruch (Spruchkopf, Anschrift, Inhalt unveränderlich)
+ * ist im Betrieb die Ausnahme und wird hier bewusst nicht vergeben.
+ * Übungen vor dieser Unterscheidung speicherten `spruch` für „mitschreiben“
+ * und `durchsage` für „nur hören“; `firestoreMapping` übersetzt sie beim Laden.
  */
-export type NachrichtArt = "spruch" | "durchsage";
+export type NachrichtArt = "durchsage" | "gespraech";
 
 import type { Meldeart, UebermittlungsWeg } from "./FuehrungsstellenUebung";
 

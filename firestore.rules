@@ -83,7 +83,7 @@ function erlaubteFelder() {
     'teilnehmerStellen', 'nachrichten', 'loesungswoerter', 'loesungsStaerken',
     'spruecheProTeilnehmer', 'spruecheAnAlle', 'spruecheAnMehrere',
     'buchstabierenAn', 'anmeldungAktiv', 'nachrichtenArtAktiv',
-    'spruchAnteilProzent', 'verwendeteVorlagen',
+    'spruchAnteilProzent', 'durchsageAnteilProzent', 'verwendeteVorlagen',
     'istStandardKonfiguration', 'spielModus', 'xZeitIntervallMinuten',
     'xZeitStartOffsetMinuten', 'szenarioSlug', 'fuehrungsstelle', 'seed',
     'statTeilnehmerAnzahl', 'statNachrichtenAnzahl',

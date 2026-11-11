@@ -33,7 +33,7 @@ export class FunkUebung implements Uebung {
     verwendeteVorlagen?: string[];
     istStandardKonfiguration?: boolean;
     nachrichtenArtAktiv = false;
-    spruchAnteilProzent = 50;
+    durchsageAnteilProzent = 50;
     seed?: string;
     spielModus?: "klassisch" | "xZeit";
     xZeitIntervallMinuten?: number;
@@ -144,7 +144,7 @@ export class FunkUebung implements Uebung {
             buchstabierenAn: this.buchstabierenAn,
             anmeldungAktiv: this.anmeldungAktiv,
             nachrichtenArtAktiv: this.nachrichtenArtAktiv,
-            spruchAnteilProzent: this.spruchAnteilProzent,
+            durchsageAnteilProzent: this.durchsageAnteilProzent,
             seed: this.seed,
             verwendeteVorlagen: this.verwendeteVorlagen,
             istStandardKonfiguration: this.istStandardKonfiguration,

@@ -2,7 +2,7 @@ import type { FunkUebung } from "../models/FunkUebung";
 import { setLoesungswortUI } from "./GeneratorLoesungswortDom";
 
 /**
- * Kopfdaten, Verteilung, Spielmodus und Spruch/Durchsage im Formular des
+ * Kopfdaten, Verteilung, Spielmodus und Durchsage/Gespräch im Formular des
  * Generators: lesen, setzen und die abhängigen Bereiche ein- und ausblenden.
  */
 
@@ -14,12 +14,12 @@ function eingabeOderNull(id: string): HTMLInputElement | null {
     return document.getElementById(id) as HTMLInputElement | null;
 }
 
-function getNachrichtenArtFormData(): Pick<FunkUebung, "nachrichtenArtAktiv" | "spruchAnteilProzent"> {
+function getNachrichtenArtFormData(): Pick<FunkUebung, "nachrichtenArtAktiv" | "durchsageAnteilProzent"> {
     const checkbox = eingabeOderNull("nachrichtenArtAktiv");
-    const anteil = eingabeOderNull("prozentSprueche");
+    const anteil = eingabeOderNull("prozentDurchsagen");
     return {
         nachrichtenArtAktiv: checkbox?.checked ?? false,
-        spruchAnteilProzent: Number(anteil?.value ?? 50)
+        durchsageAnteilProzent: Number(anteil?.value ?? 50)
     };
 }
 
@@ -78,7 +78,7 @@ function setNachrichtenArtFormData(uebung: FunkUebung): void {
     if (checkbox) {
         checkbox.checked = uebung.nachrichtenArtAktiv ?? false;
     }
-    setzeWertWennDa("prozentSprueche", String(uebung.spruchAnteilProzent ?? 50));
+    setzeWertWennDa("prozentDurchsagen", String(uebung.durchsageAnteilProzent ?? 50));
     updateNachrichtenArtOptionsVisibility();
 }
 

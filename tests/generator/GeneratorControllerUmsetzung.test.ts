@@ -370,7 +370,7 @@ describe("GeneratorController – THW-Review", () => {
             formular: {
                 name: "Entwurf", datum: "2026-10-06T00:00:00.000Z", rufgruppe: "", leitung: "Heros 10",
                 spruecheProTeilnehmer: 10, spruecheAnAlle: 1, spruecheAnMehrere: 1, buchstabierenAn: 0,
-                anmeldungAktiv: true, autoStaerkeErgaenzen: true, nachrichtenArtAktiv: false, spruchAnteilProzent: 50,
+                anmeldungAktiv: true, autoStaerkeErgaenzen: true, nachrichtenArtAktiv: false, durchsageAnteilProzent: 50,
                 spielModus: "klassisch", xZeitIntervallMinuten: 3, xZeitStartOffsetMinuten: 0
             },
             quelle: "vorlagen",

@@ -179,6 +179,38 @@ describe("FirebaseService local mock mode", () => {
         expect((await s.getAlleUebungen(true)).map(u => u.id)).toEqual(["t1"]);
     });
 
+    it("übersetzt die Nachrichtenart alter Übungen: Spruch → Durchsage, Durchsage → Gespräch", () => {
+        const s = new FirebaseService({} as never);
+        const basis = {
+            teilnehmerListe: ["A", "B"],
+            nachrichtenArtAktiv: true,
+            nachrichten: {
+                A: [
+                    { id: 1, nachricht: "mitschreiben", empfaenger: ["B"], art: "spruch" },
+                    { id: 2, nachricht: "nur hören", empfaenger: ["B"], art: "durchsage" },
+                    { id: 3, nachricht: "unbekannt", empfaenger: ["B"], art: "fernschreiben" }
+                ]
+            }
+        };
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const alt = (s as any).mapToDomain("alt", { ...basis, spruchAnteilProzent: 30 });
+        expect(alt.nachrichten.A.map((n: { art?: string }) => n.art)).toEqual(["durchsage", "gespraech", undefined]);
+        expect(alt.durchsageAnteilProzent).toBe(30);
+
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const neu = (s as any).mapToDomain("neu", {
+            ...basis,
+            durchsageAnteilProzent: 70,
+            nachrichten: { A: [
+                { id: 1, nachricht: "a", empfaenger: ["B"], art: "durchsage" },
+                { id: 2, nachricht: "b", empfaenger: ["B"], art: "gespraech" },
+                { id: 3, nachricht: "c", empfaenger: ["B"], art: "spruch" }
+            ] }
+        });
+        expect(neu.nachrichten.A.map((n: { art?: string }) => n.art)).toEqual(["durchsage", "gespraech", undefined]);
+        expect(neu.durchsageAnteilProzent).toBe(70);
+    });
+
     it("maps rich message payload incl staerken/letters and defaults", () => {
         const s = new FirebaseService({} as never);
         // eslint-disable-next-line @typescript-eslint/no-explicit-any

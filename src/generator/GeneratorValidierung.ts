@@ -88,7 +88,7 @@ export interface VerteilungsWerte {
     spruecheAnMehrere: number;
     anmeldungAktiv: boolean;
     /** Rohwerte der Prozentfelder; fehlende Felder werden nicht geprüft. */
-    prozent?: Partial<Record<"prozentAnAlle" | "prozentAnMehrere" | "prozentAnBuchstabieren" | "prozentSprueche", number | undefined>>;
+    prozent?: Partial<Record<"prozentAnAlle" | "prozentAnMehrere" | "prozentAnBuchstabieren" | "prozentDurchsagen", number | undefined>>;
 }
 
 export function pruefeVerteilung(werte: VerteilungsWerte): FeldFehler[] {

@@ -30,7 +30,7 @@ export interface EntwurfFormular {
     anmeldungAktiv: boolean;
     autoStaerkeErgaenzen: boolean;
     nachrichtenArtAktiv: boolean;
-    spruchAnteilProzent: number;
+    durchsageAnteilProzent: number;
     spielModus: "klassisch" | "xZeit";
     xZeitIntervallMinuten: number;
     xZeitStartOffsetMinuten: number;
@@ -108,7 +108,7 @@ function istStringListe(wert: unknown): wert is string[] {
 
 const ZAHLEN: readonly (keyof EntwurfFormular)[] = [
     "spruecheProTeilnehmer", "spruecheAnAlle", "spruecheAnMehrere", "buchstabierenAn",
-    "spruchAnteilProzent", "xZeitIntervallMinuten", "xZeitStartOffsetMinuten"
+    "durchsageAnteilProzent", "xZeitIntervallMinuten", "xZeitStartOffsetMinuten"
 ];
 const TEXTE: readonly (keyof EntwurfFormular)[] = ["name", "datum", "rufgruppe", "leitung"];
 const SCHALTER: readonly (keyof EntwurfFormular)[] = ["anmeldungAktiv", "autoStaerkeErgaenzen", "nachrichtenArtAktiv"];
@@ -138,12 +138,27 @@ function hatGueltigeQuellenangaben(e: Partial<GeneratorEntwurf>): boolean {
         && (e.fuehrungsstelle === undefined || istFuehrungsstellenKonfiguration(e.fuehrungsstelle));
 }
 
+/**
+ * Entwürfe und Profile vor der Umstellung auf Durchsage/Gespräch speicherten
+ * den Anteil der mitzuschreibenden Nachrichten als `spruchAnteilProzent`.
+ * Der Wert bedeutet dasselbe und wird nur umbenannt.
+ */
+function uebernimmAltenDurchsageAnteil(e: Partial<GeneratorEntwurf>): Partial<GeneratorEntwurf> {
+    const formular = e.formular as (Partial<EntwurfFormular> & { spruchAnteilProzent?: unknown }) | undefined;
+    if (!formular || typeof formular !== "object" || "durchsageAnteilProzent" in formular
+        || typeof formular.spruchAnteilProzent !== "number") {
+        return e;
+    }
+    const { spruchAnteilProzent, ...rest } = formular;
+    return { ...e, formular: { ...rest, durchsageAnteilProzent: spruchAnteilProzent } as EntwurfFormular };
+}
+
 /** Prüft einen gelesenen Entwurf; alles Unerwartete verwirft ihn ganz. */
 export function pruefeEntwurf(roh: unknown): GeneratorEntwurf | null {
     if (!roh || typeof roh !== "object") {
         return null;
     }
-    const e = roh as Partial<GeneratorEntwurf>;
+    const e = uebernimmAltenDurchsageAnteil(roh as Partial<GeneratorEntwurf>);
     const gueltig = e.version === 1
         && istGueltigesFormular(e.formular as Partial<EntwurfFormular> | undefined)
         && hatGueltigeListen(e)

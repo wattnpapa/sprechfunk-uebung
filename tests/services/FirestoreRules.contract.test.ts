@@ -63,6 +63,15 @@ function speicherAbbild(uebung: FunkUebung): Record<string, unknown> {
     return sanitizeDataForSave(JSON.parse(uebung.toJson()));
 }
 
+/**
+ * Felder, die nur noch ältere, im Browser zwischengespeicherte Fassungen der
+ * App schreiben. Die Regeln gehen vor der Website live; ohne diese Einträge
+ * würde ein solcher Client bis zum Neuladen abgewiesen.
+ * `spruchAnteilProzent`: seit der Umstellung auf Durchsage/Gespräch (2026-11)
+ * heißt das Feld `durchsageAnteilProzent`.
+ */
+const UEBERGANGSFELDER = ["spruchAnteilProzent"];
+
 describe("firestore.rules Feldvertrag", () => {
     it("erlaubt jedes Feld, das FirebaseService tatsächlich speichert", () => {
         const gespeichert = speicherAbbild(baueVollstaendigeUebung());
@@ -76,7 +85,7 @@ describe("firestore.rules Feldvertrag", () => {
         const gespeichert = speicherAbbild(baueVollstaendigeUebung());
         const erlaubt = leseFeldliste("erlaubteFelder");
 
-        const ueberfluessig = erlaubt.filter(feld => !(feld in gespeichert));
+        const ueberfluessig = erlaubt.filter(feld => !(feld in gespeichert) && !UEBERGANGSFELDER.includes(feld));
         expect(ueberfluessig).toEqual([]);
     });
 

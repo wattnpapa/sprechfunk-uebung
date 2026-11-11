@@ -46,7 +46,7 @@ export function rueckfrageText(uebungName: string): string {
         "Die Funksprüche werden neu verteilt, Übungscode und Teilnehmer-Links bleiben gleich. Danach gilt:",
         "• Verteilte Ausdrucke und Vordrucke passen nicht mehr zur Übung.",
         "• Geöffnete Teilnehmer-Links zeigen andere Funksprüche; umbenannte Teilnehmer bekommen einen neuen Code.",
-        "• Der Übungsstand wird für alle zurückgesetzt: abgesetzte Sprüche, Anmeldungen, empfangene " +
+        "• Der Übungsstand wird für alle zurückgesetzt: abgesetzte Nachrichten, Anmeldungen, empfangene " +
         "Lösungswörter und Stärken sowie die Notizen der Übungsleitung. Sie gehören zur alten Fassung. " +
         "Wer ihn behalten will, sichert ihn vorher in der Übungsleitung mit „Übungsleitung als PDF“.",
         "• Geänderte Lösungswörter gelten sofort, auch gegenüber schon ausgedruckten.",
@@ -151,7 +151,7 @@ export function createConfigFingerprint(uebung: FunkUebung): string {
         buchstabierenAn: uebung.buchstabierenAn,
         anmeldungAktiv: uebung.anmeldungAktiv,
         nachrichtenArtAktiv: uebung.nachrichtenArtAktiv ?? false,
-        spruchAnteilProzent: uebung.spruchAnteilProzent ?? 50,
+        durchsageAnteilProzent: uebung.durchsageAnteilProzent ?? 50,
         loesungswoerter: uebung.loesungswoerter || {},
         loesungsStaerken: uebung.loesungsStaerken || {},
         szenarioSlug: uebung.szenarioSlug ?? null,
@@ -278,7 +278,7 @@ export function formularFuerEntwurf(formular: Formular): GeneratorEntwurf["formu
         anmeldungAktiv: schalter(formular.anmeldungAktiv, true),
         autoStaerkeErgaenzen: schalter(formular.autoStaerkeErgaenzen, true),
         nachrichtenArtAktiv: schalter(formular.nachrichtenArtAktiv, false),
-        spruchAnteilProzent: endlich(formular.spruchAnteilProzent, 50),
+        durchsageAnteilProzent: endlich(formular.durchsageAnteilProzent, 50),
         spielModus: formular.spielModus === "xZeit" ? "xZeit" : "klassisch",
         xZeitIntervallMinuten: endlich(formular.xZeitIntervallMinuten, 3),
         xZeitStartOffsetMinuten: endlich(formular.xZeitStartOffsetMinuten, 0)

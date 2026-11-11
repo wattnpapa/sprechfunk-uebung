@@ -103,42 +103,43 @@ export function balanciereBuchstabierAufgaben(
 
 /**
  * Nachrichten, deren Inhalt die Gegenstelle zum Mitschreiben zwingt und die
- * deshalb unabhängig vom eingestellten Anteil immer Spruch sind.
+ * deshalb unabhängig vom eingestellten Anteil immer Durchsage sind.
  */
-function istZwingendSpruch(nachricht: Nachricht): boolean {
+function istZwingendDurchsage(nachricht: Nachricht): boolean {
     return (nachricht.loesungsbuchstaben?.length ?? 0) > 0
         || (nachricht.staerken?.length ?? 0) > 0
         || enthaeltBuchstabierAufgabe(nachricht.nachricht);
 }
 
 /**
- * Vermerkt je Nachricht, ob sie als Spruch oder als Durchsage abzusetzen ist.
+ * Vermerkt je Nachricht, ob sie als Durchsage (Gegenstelle schreibt mit)
+ * oder als Gespräch (ohne Mitschrift) abzusetzen ist.
  *
- * Zwingend Spruch sind Nachrichten mit mitschreibpflichtigem Inhalt:
+ * Zwingend Durchsage sind Nachrichten mit mitschreibpflichtigem Inhalt:
  * Lösungsbuchstaben, Stärkemeldungen und Buchstabier-Aufgaben gehen
  * verloren, wenn die Gegenstelle sie nicht in den Vordruck aufnimmt. Die
- * An-/Abmeldung ist formlos und damit Durchsage. Alle übrigen Nachrichten
- * verteilt `spruchAnteilProzent`.
+ * Anmeldung ist ein Gespräch. Alle übrigen Nachrichten verteilt
+ * `durchsageAnteilProzent`.
  *
  * Die Empfängerzahl spielt bewusst keine Rolle – auch eine Nachricht an
- * alle oder an mehrere kann ein Spruch sein.
+ * alle oder an mehrere kann eine Durchsage sein.
  */
 export function markiereNachrichtenArt(uebung: FunkUebung, rng: Rng): void {
     if (!uebung.nachrichtenArtAktiv) {
         return;
     }
 
-    const anteil = Math.min(100, Math.max(0, uebung.spruchAnteilProzent ?? 50));
+    const anteil = Math.min(100, Math.max(0, uebung.durchsageAnteilProzent ?? 50));
 
     Object.values(uebung.nachrichten).forEach(nachrichtenListe => {
         const frei: Nachricht[] = [];
 
         nachrichtenListe.forEach(nachricht => {
-            if (istZwingendSpruch(nachricht)) {
-                nachricht.art = "spruch";
+            if (istZwingendDurchsage(nachricht)) {
+                nachricht.art = "durchsage";
                 return;
             }
-            nachricht.art = "durchsage";
+            nachricht.art = "gespraech";
             const istAnmeldung = uebung.anmeldungAktiv && nachricht.id === 1;
             if (!istAnmeldung) {
                 frei.push(nachricht);
@@ -147,11 +148,11 @@ export function markiereNachrichtenArt(uebung: FunkUebung, rng: Rng): void {
 
         // Pro Teilnehmer aufteilen statt je Nachricht zu würfeln, damit der
         // eingestellte Anteil auch bei wenigen Nachrichten eingehalten wird.
-        const zielSprueche = Math.round((frei.length * anteil) / 100);
+        const zielDurchsagen = Math.round((frei.length * anteil) / 100);
         shuffle(frei, rng)
-            .slice(0, zielSprueche)
+            .slice(0, zielDurchsagen)
             .forEach(nachricht => {
-                nachricht.art = "spruch";
+                nachricht.art = "durchsage";
             });
     });
 }

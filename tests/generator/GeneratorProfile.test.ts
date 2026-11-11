@@ -23,7 +23,7 @@ const baueEntwurf = (anders: Partial<GeneratorEntwurf> = {}): GeneratorEntwurf =
         name: "Sprechfunkübung OBLG GA 10/2026", datum: "2026-10-03T00:00:00.000Z", rufgruppe: "DMO OV A",
         leitung: "Heros Bad Belzig 21/10",
         spruecheProTeilnehmer: 5, spruecheAnAlle: 1, spruecheAnMehrere: 2, buchstabierenAn: 3,
-        anmeldungAktiv: true, autoStaerkeErgaenzen: true, nachrichtenArtAktiv: true, spruchAnteilProzent: 50,
+        anmeldungAktiv: true, autoStaerkeErgaenzen: true, nachrichtenArtAktiv: true, durchsageAnteilProzent: 50,
         spielModus: "klassisch", xZeitIntervallMinuten: 3, xZeitStartOffsetMinuten: 0
     },
     quelle: "vorlagen",

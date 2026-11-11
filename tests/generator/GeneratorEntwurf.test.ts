@@ -17,7 +17,7 @@ const baueEntwurf = (anders: Partial<GeneratorEntwurf> = {}): GeneratorEntwurf =
     formular: {
         name: "Dienstabend", datum: "2026-10-06T00:00:00.000Z", rufgruppe: "RG 1", leitung: "Heros 10",
         spruecheProTeilnehmer: 12, spruecheAnAlle: 1, spruecheAnMehrere: 2, buchstabierenAn: 0,
-        anmeldungAktiv: true, autoStaerkeErgaenzen: false, nachrichtenArtAktiv: false, spruchAnteilProzent: 50,
+        anmeldungAktiv: true, autoStaerkeErgaenzen: false, nachrichtenArtAktiv: false, durchsageAnteilProzent: 50,
         spielModus: "xZeit", xZeitIntervallMinuten: 4, xZeitStartOffsetMinuten: 2
     },
     quelle: "vorlagen",
@@ -50,6 +50,14 @@ describe("GeneratorEntwurf", () => {
         expect(ladeEntwurf()).toEqual(entwurf);
         verwerfeEntwurf();
         expect(ladeEntwurf()).toBeNull();
+    });
+
+    it("übernimmt den Anteil aus Entwürfen vor der Umstellung auf Durchsage/Gespräch", () => {
+        const { durchsageAnteilProzent: _weg, ...formular } = baueEntwurf().formular;
+        const alt = { ...baueEntwurf(), formular: { ...formular, spruchAnteilProzent: 30 } };
+        const geprueft = pruefeEntwurf(alt);
+        expect(geprueft?.formular.durchsageAnteilProzent).toBe(30);
+        expect(geprueft?.formular).not.toHaveProperty("spruchAnteilProzent");
     });
 
     it("verwirft kaputte oder fremde Daten", () => {
