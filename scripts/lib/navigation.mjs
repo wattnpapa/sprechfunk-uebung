@@ -300,6 +300,20 @@ ${links}
 }
 
 /**
+ * Stand der App: Versionsnummer und Übungs-ID. Die App schreibt in `#version`
+ * und `#uebungsId` (FooterView, GeneratorView); fehlen die Elemente, bleibt die
+ * Version unsichtbar – so geschehen von AP-04 bis 2026-11, als der neue Footer
+ * die Zeile ersatzlos verdrängt hatte. Die Versionsnummer ist zugleich der
+ * Einstieg in den Änderungsverlauf („Was ist neu“, src/core/aenderungen.ts).
+ */
+export function renderFooterStand() {
+    return `      <p class="footer-stand mb-0" data-testid="footer-stand">
+        <button type="button" class="footer-version" data-bs-toggle="modal" data-bs-target="#aenderungenModal" data-testid="footer-version">Version <span id="version">dev</span> · Was ist neu</button>
+        <span class="footer-uebung"><b>Übung ID:</b> <span id="uebungsId">-</span></span>
+      </p>`;
+}
+
+/**
  * Footer in Spalten (AP-04). Die meistgefragten Inhaltsseiten stehen in der
  * Wissen-Spalte, damit sie sitewide verlinkt sind. Darunter, als letztes
  * Element, die Werkzeugleiste.
@@ -355,12 +369,15 @@ ${spalte.eintraege.join("\n")}
             </ul>
         </div>`).join("\n");
 
+    // Nur die Startseite lädt die App und kennt damit Version und Übung.
+    const stand = aktuellerSlug === "" ? `${renderFooterStand()}\n` : "";
+
     return `<footer class="main-footer" data-testid="site-footer">
     <div class="container">
       <div class="row g-4">
 ${markup}
       </div>
-${renderWerkzeugleiste()}
+${stand}${renderWerkzeugleiste()}
     </div>
 </footer>
 `;

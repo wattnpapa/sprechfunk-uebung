@@ -3469,6 +3469,88 @@ select option {
     color: var(--text-2);
 }
 
+/* Stand der App: Versionsnummer (öffnet „Was ist neu“) und Übungs-ID. */
+.main-footer .footer-stand {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: center;
+    gap: 0.25rem 1.25rem;
+    margin-top: 1.25rem;
+    font-variant-numeric: tabular-nums;
+}
+
+.main-footer .footer-stand + .footer-werkzeuge {
+    margin-top: 0.75rem;
+}
+
+.main-footer .footer-version {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3em;
+    min-height: calc(2.25rem + var(--ziel));
+    padding: 0;
+    border: 0;
+    background: none;
+    color: inherit;
+    font: inherit;
+    text-decoration: underline;
+    text-decoration-color: var(--linie-stark);
+    overflow-wrap: anywhere;
+}
+
+.main-footer .footer-version:hover {
+    color: var(--text);
+    text-decoration-color: currentcolor;
+}
+
+.main-footer .footer-uebung {
+    overflow-wrap: anywhere;
+}
+
+/* Dialog „Was ist neu“ */
+.aenderungen-blaettern {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem;
+    margin-bottom: 1rem;
+}
+
+.aenderungen-seite {
+    color: var(--text-2);
+    font-size: var(--t-s);
+    font-variant-numeric: tabular-nums;
+}
+
+.aenderungen-monat {
+    font-size: var(--t-xl);
+    margin-bottom: 0.5rem;
+}
+
+.aenderungen-kurz {
+    color: var(--text-2);
+    padding-bottom: 1rem;
+    margin-bottom: 1rem;
+    border-bottom: var(--strich) solid var(--linie);
+}
+
+.aenderung-tag {
+    font-size: var(--t-m);
+    font-weight: 600;
+    margin-bottom: 0.35rem;
+    font-variant-numeric: tabular-nums;
+}
+
+.aenderung-punkte {
+    padding-left: 1.2rem;
+    margin-bottom: 1.1rem;
+}
+
+.aenderung-punkte li + li {
+    margin-top: 0.3rem;
+}
+
 @media (max-width: 768px) {
     .main-footer {
         padding: 0.55rem 0.8rem;

@@ -22,6 +22,7 @@ import { NatoClock } from "./core/NatoClock";
 import { ThemeManager } from "./core/ThemeManager";
 import { AppView } from "./core/AppView";
 import { FooterView } from "./core/FooterView";
+import { AenderungenDialog } from "./core/AenderungenDialog";
 import { featureFlags } from "./services/featureFlags";
 import { errorMonitoring } from "./services/errorMonitoring";
 import { initFirebaseClient } from "./services/firebaseClient";
@@ -176,6 +177,7 @@ window.addEventListener("DOMContentLoaded", () => {
     appView.initModals();
     appView.initGlobalListeners();
     initOfflineStandHinweis();
+    new AenderungenDialog().init(document.getElementById("aenderungenModal"));
     // Routing sofort starten: Die Ansicht darf nicht auf den build.json-Fetch
     // warten, sonst springt der Einstiegstext nach dem ersten Paint (CLS) und
     // die Startseite rendert einen Netzwerk-Roundtrip später als nötig. Die

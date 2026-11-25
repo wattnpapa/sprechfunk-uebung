@@ -170,6 +170,28 @@ deshalb nicht in der CI).
     job `firestore-rules-emulator`.
 - **`localStorage` seed paths** support mock/E2E mode; don't break them when refactoring storage logic
 
+## Änderungsverlauf („Was ist neu“) bei jeder sichtbaren Änderung fortschreiben
+
+Der Changelog der App ist `src/core/aenderungen.ts` (in der App: Versionsnummer in der
+Fußzeile der Startseite → „Was ist neu“, Dialog `src/core/AenderungenDialog.ts`). Aufbau
+und Regeln wie in der Erfassungsbogen-App. Er wird von Hand gepflegt:
+
+- **Jeder Commit, der etwas ändert, das man in der App, auf den Ausdrucken (PDF, ZIP) oder
+  auf der Website bemerkt, trägt im selben Commit einen Eintrag in `AENDERUNGEN` nach.**
+  Nicht „später“, nicht in einem eigenen Aufräum-Commit.
+- Ein Eintrag je Tag (`datum` als ISO-Datum, Tag des Commits), neueste oben. Gibt es den Tag
+  schon, den Punkt dort ergänzen. Ein Punkt = ein ganzer Satz aus Nutzersicht in Du-Form,
+  ohne Dateinamen, Ticketnummern oder Fachjargon der Entwicklung.
+- Beginnt ein neuer Monat, braucht `MONATE` einen Satz für ihn. Kommt in einem laufenden
+  Monat etwas Größeres dazu, den Monatssatz nachziehen.
+- Draußen bleiben reine Technik-Änderungen ohne sichtbare Wirkung: Abhängigkeiten, Tests,
+  Refactorings, CI.
+- Es gelten die Regeln unter „Eigene Position“: keine anderen Anbieter beurteilen, die
+  Funkspruch-Anzahl nicht von Hand zitieren.
+- `tests/core/Aenderungen.test.ts` prüft Reihenfolge, Monatssätze und dass die Versionszeile
+  im Footer der Startseite steht (`renderFooterStand` in `scripts/lib/navigation.mjs`) – sie
+  war von AP-04 bis 2026-11 unbemerkt verschwunden, weil der Postbuild den Footer ersetzt.
+
 ## Funkspruch-Vorlagen erweitern (Skills)
 
 Der Bestand war lange THW-lastig. Seit 2026-09 gibt es dafür Projekt-Skills unter

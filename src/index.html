@@ -418,6 +418,22 @@
     </div>
 </div>
 
+<!-- Änderungsverlauf „Was ist neu“ (AenderungenDialog füllt den Inhalt beim Öffnen) -->
+<div class="modal fade" id="aenderungenModal" tabindex="-1" aria-labelledby="aenderungenModalLabel" aria-hidden="true" data-testid="aenderungen-modal">
+    <div class="modal-dialog modal-lg modal-dialog-scrollable">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="aenderungenModalLabel">Was ist neu</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Schließen"></button>
+            </div>
+            <div class="modal-body aenderungen" id="aenderungenInhalt">Lädt…</div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" data-bs-dismiss="modal">Schließen</button>
+            </div>
+        </div>
+    </div>
+</div>
+
 <!-- JSON Modal (wird von GeneratorView genutzt) -->
 <div class="modal fade" id="jsonModal" tabindex="-1" aria-labelledby="jsonModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-lg modal-dialog-scrollable">
@@ -438,7 +454,9 @@
 </div>
 
 <footer class="main-footer">
-    <span><b>Version</b> <span id="version">dev</span></span>
+    <!-- Der Postbuild ersetzt diesen Footer (renderFooter in scripts/lib/navigation.mjs);
+         Version und Übungs-ID stehen dort in derselben Form. -->
+    <button type="button" class="footer-version" data-bs-toggle="modal" data-bs-target="#aenderungenModal">Version <span id="version">dev</span> · Was ist neu</button>
     <span><b>Übung ID:</b> <span id="uebungsId">-</span></span>
     <span class="footer-links">
         <a href="impressum/" data-testid="footer-link-impressum">Impressum</a>
